@@ -104,7 +104,7 @@ export default function AdminCertificatesPage() {
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`/api/admin/certificates/${certId}/approve`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${session.access_token}` },
+      headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
     })
     if (res.ok) {
       setCerts(prev => prev.map(c => c.id === certId ? { ...c, status: 'approved' } : c))
@@ -119,7 +119,7 @@ export default function AdminCertificatesPage() {
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`/api/admin/certificates/${certId}/reject`, {
       method: 'POST',
-      headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ reason }),
     })
     if (res.ok) {

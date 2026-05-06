@@ -79,7 +79,7 @@ export default function OrdersPage() {
     await fetch(`/api/orders/splits/${splitId}/status`, {
       method: 'PATCH',
       headers: {
-        'Authorization': `Bearer ${session.access_token}`,
+        'Authorization': `Bearer ${session?.access_token ?? ''}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ status: 'delivered' }),

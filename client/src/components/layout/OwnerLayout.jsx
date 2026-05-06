@@ -61,7 +61,7 @@ export default function OwnerLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center py-2 text-xs font-medium transition-colors ${isActive ? 'text-primary' : 'text-gray-400'}`
+              `flex-1 flex flex-col items-center py-3 text-xs font-medium transition-colors ${isActive ? 'text-emerald-600' : 'text-gray-400'}`
             }
           >
             <div className="relative">

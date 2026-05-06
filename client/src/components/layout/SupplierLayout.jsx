@@ -1,49 +1,24 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, Package, ShoppingBag, Award, CreditCard, User, Clock } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, Award, CreditCard, User } from 'lucide-react'
 import AnnouncementBar from './AnnouncementBar'
 import Navbar from './Navbar'
-import NotificationBell from '../ui/NotificationBell'
 import { useAuth } from '../../context/AuthContext'
-import { useEffect, useState } from 'react'
-import { supabase } from '../../lib/supabase'
 
 const navItems = [
   { to: '/supplier/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/supplier/products', icon: Package, label: 'Products' },
   { to: '/supplier/orders', icon: ShoppingBag, label: 'Orders' },
-  { to: '/supplier/certificates', icon: Award, label: 'Certificates' },
-  { to: '/supplier/bank-details', icon: CreditCard, label: 'Bank Details' },
+  { to: '/supplier/certificates', icon: Award, label: 'Certs' },
+  { to: '/supplier/bank-details', icon: CreditCard, label: 'Bank' },
   { to: '/supplier/profile', icon: User, label: 'Profile' },
 ]
 
-function PendingScreen() {
-  return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
-      <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-        <Clock className="w-8 h-8 text-yellow-600" />
-      </div>
-      <h2 className="text-xl font-bold text-gray-900 mb-2">Account Under Review</h2>
-      <p className="text-gray-500 max-w-md">
-        Our team is verifying your Halal certificates. This typically takes within 48 hours.
-        You'll receive a notification once your account is approved.
-      </p>
-    </div>
-  )
-}
-
 export default function SupplierLayout() {
   const { user } = useAuth()
-  const [isVerified, setIsVerified] = useState(null)
 
-  useEffect(() => {
-    if (!user) return
-    supabase
-      .from('supplier_profiles')
-      .select('is_verified')
-      .eq('user_id', user.id)
-      .single()
-      .then(({ data }) => setIsVerified(data?.is_verified ?? false))
-  }, [user])
+  // In demo mode (id starts with 'demo-'), always show dashboard.
+  // In production with real Supabase auth, you'd check is_verified from DB.
+  const isDemoMode = user?.id?.startsWith('demo-')
 
   return (
     <div className="min-h-screen bg-surface">
@@ -69,7 +44,7 @@ export default function SupplierLayout() {
         </aside>
 
         <main className="flex-1 lg:ml-56 pb-20 lg:pb-0">
-          {isVerified === false ? <PendingScreen /> : <Outlet />}
+          <Outlet />
         </main>
       </div>
 
@@ -79,7 +54,7 @@ export default function SupplierLayout() {
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center py-2 text-xs font-medium transition-colors ${isActive ? 'text-primary' : 'text-gray-400'}`
+              `flex-1 flex flex-col items-center py-3 text-xs font-medium transition-colors ${isActive ? 'text-emerald-600' : 'text-gray-400'}`
             }
           >
             <Icon className="w-5 h-5" />

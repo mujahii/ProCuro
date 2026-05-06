@@ -41,7 +41,7 @@ export default function ChatbotDrawer({ open, onClose }) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const context = await getContext()
-      const response = await askGemini(text, context, session.access_token)
+      const response = await askGemini(text, context, session?.access_token ?? '')
       setMessages(prev => [...prev, { role: 'assistant', content: response }])
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'AI assistant is temporarily unavailable. Please try again.' }])

@@ -13,8 +13,8 @@ export default function Navbar({ onCartOpen }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
 
-  async function handleSignOut() {
-    await signOut()
+  function handleSignOut() {
+    signOut()
     navigate('/')
   }
 
@@ -24,10 +24,8 @@ export default function Navbar({ onCartOpen }) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to={role === 'restaurant_owner' ? '/owner/store' : role === 'supplier' ? '/supplier/dashboard' : '/'} className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
-            </div>
-            <span className="text-primary font-bold text-xl tracking-tight">ProCuro</span>
+            <ShoppingCart className="w-6 h-6 text-emerald-600" />
+            <span className="text-slate-900 font-bold text-xl tracking-tight">ProCuro</span>
           </Link>
 
           {/* Address switcher — center, only for owners */}

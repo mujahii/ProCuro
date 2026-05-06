@@ -1,68 +1,83 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
 
+const MOCK_PROFILES = {
+  restaurant_owner: {
+    id: 'demo-owner-001',
+    email: 'owner@demo.com',
+    full_name: 'Star Doner Kebab',
+    role: 'restaurant_owner',
+    is_banned: false,
+    phone: '+49 30 12345678',
+    created_at: new Date().toISOString(),
+  },
+  supplier: {
+    id: 'demo-supplier-001',
+    email: 'supplier@demo.com',
+    full_name: 'Berlin Halal Meats',
+    role: 'supplier',
+    is_banned: false,
+    is_verified: true,
+    phone: '+49 30 98765432',
+    created_at: new Date().toISOString(),
+  },
+  admin: {
+    id: 'demo-admin-001',
+    email: 'admin@demo.com',
+    full_name: 'ProCuro Admin',
+    role: 'admin',
+    is_banned: false,
+    created_at: new Date().toISOString(),
+  },
+}
+
+const STORAGE_KEY = 'procuro_mock_user'
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  async function fetchProfile(userId) {
-    let attempts = 0
-    while (attempts < 5) {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .single()
-      if (data && !error) return data
-      attempts++
-      await new Promise(r => setTimeout(r, 300))
-    }
-    return null
-  }
-
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user)
-        const p = await fetchProfile(session.user.id)
-        setProfile(p)
-      }
-      setLoading(false)
-    })
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'INITIAL_SESSION') return
-      if (session?.user) {
-        setUser(session.user)
-        const p = await fetchProfile(session.user.id)
-        setProfile(p)
-      } else {
-        setUser(null)
-        setProfile(null)
-      }
-    })
-
-    return () => subscription.unsubscribe()
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) setProfile(JSON.parse(saved))
+    } catch (_) {}
+    setLoading(false)
   }, [])
 
-  async function signIn(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw error
-    return data
+  function signIn(email, password, role = 'restaurant_owner') {
+    const base = MOCK_PROFILES[role] || MOCK_PROFILES.restaurant_owner
+    const mock = { ...base, email: email || base.email }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mock))
+    setProfile(mock)
+    return mock
   }
 
-  async function signOut() {
+  function signUp(name, email, role = 'restaurant_owner') {
+    const base = MOCK_PROFILES[role] || MOCK_PROFILES.restaurant_owner
+    const mock = { ...base, full_name: name || base.full_name, email: email || base.email }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mock))
+    setProfile(mock)
+    return mock
+  }
+
+  function signOut() {
+    localStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem('procuro_cart')
-    await supabase.auth.signOut()
-    setUser(null)
     setProfile(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, role: profile?.role, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{
+      user: profile,
+      profile,
+      role: profile?.role ?? null,
+      loading,
+      signIn,
+      signUp,
+      signOut,
+    }}>
       {children}
     </AuthContext.Provider>
   )

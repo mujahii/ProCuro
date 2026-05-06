@@ -14,6 +14,7 @@ export function usePlaceOrder() {
     setError(null)
     try {
       const { data: { session } } = await supabase.auth.getSession()
+      const token = session?.access_token ?? ''
 
       // Upload receipts first (client side, requires auth session for storage policy)
       const groupsWithUrls = {}
@@ -44,7 +45,7 @@ export function usePlaceOrder() {
       const res = await fetch('/api/orders', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ groups: groupsWithUrls, totalAmount }),

@@ -1,37 +1,18 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Loader2, Shield } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
+import { Shield } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import toast from 'react-hot-toast'
 
 export default function AdminLoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault()
-    setError('')
-    setLoading(true)
-    try {
-      await signIn(email, password)
-      // Verify admin role
-      const { data: profile } = await supabase.from('users').select('role').eq('email', email).single()
-      if (profile?.role !== 'admin') {
-        await supabase.auth.signOut()
-        throw new Error('Access denied. Admin accounts only.')
-      }
-      toast.success('Welcome, Administrator')
-      navigate('/admin/dashboard')
-    } catch (err) {
-      setError(err.message || 'Invalid credentials')
-    } finally {
-      setLoading(false)
-    }
+    signIn(email, password, 'admin')
+    navigate('/admin/dashboard')
   }
 
   return (
@@ -47,11 +28,6 @@ export default function AdminLoginPage() {
 
         <div className="bg-gray-800 rounded-2xl p-6 sm:p-8 border border-gray-700">
           <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-red-900/40 border border-red-700 text-red-300 text-sm rounded-lg px-4 py-3">
-                {error}
-              </div>
-            )}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
               <input
@@ -76,10 +52,9 @@ export default function AdminLoginPage() {
             </div>
             <button
               type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent-dark text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-50"
+              className="w-full bg-accent hover:bg-accent-dark text-white font-semibold py-3 rounded-lg transition-colors"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In as Admin'}
+              Sign In as Admin
             </button>
           </form>
         </div>

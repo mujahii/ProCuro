@@ -102,7 +102,7 @@ export default function SupplierOrdersPage() {
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`/api/orders/splits/${splitId}/status`, {
       method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
     })
     if (res.ok) {
@@ -115,7 +115,7 @@ export default function SupplierOrdersPage() {
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch(`/api/orders/splits/${splitId}/status`, {
       method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'cancelled', cancellationReason: reason }),
     })
     if (res.ok) {

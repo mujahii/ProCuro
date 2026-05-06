@@ -5,7 +5,6 @@ import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import NotificationBell from '../ui/NotificationBell'
-import ProCuroLogo from '../ui/ProCuroLogo'
 import toast from 'react-hot-toast'
 
 export default function Navbar() {
@@ -112,7 +111,7 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link to={getHomeLink()} className="flex-shrink-0 flex items-center cursor-pointer gap-2">
-              <ProCuroLogo size={32} />
+              <ShoppingCart className="w-8 h-8 text-slate-900" />
               <span className="font-bold text-xl text-slate-900 hidden sm:block">ProCuro</span>
             </Link>
 

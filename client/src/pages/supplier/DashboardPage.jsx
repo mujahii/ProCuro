@@ -1,22 +1,20 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import RevenueChart from '../../components/charts/RevenueChart'
-import OrdersByStatusChart from '../../components/charts/OrdersByStatusChart'
-import TopProductsChart from '../../components/charts/TopProductsChart'
-import CategorySalesChart from '../../components/charts/CategorySalesChart'
 import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
-import { SkeletonCard } from '../../components/ui/Skeleton'
-import { Euro, ShoppingBag, Clock, Package } from 'lucide-react'
+import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react'
+
+const PAGE_SIZE = 4
 
 export default function SupplierDashboardPage() {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [stats, setStats] = useState(null)
-  const [monthlyRevenue, setMonthlyRevenue] = useState([])
-  const [statusBreakdown, setStatusBreakdown] = useState([])
+  const [products, setProducts] = useState([])
+  const [page, setPage] = useState(0)
   const [topProducts, setTopProducts] = useState([])
-  const [categoryRevenue, setCategoryRevenue] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -33,42 +31,19 @@ export default function SupplierDashboardPage() {
     const now = new Date()
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
-    const [splitsRes, itemsRes] = await Promise.all([
+    const [splitsRes, productsRes, itemsRes] = await Promise.all([
       supabase.from('order_splits').select('*').eq('supplier_id', supplierId),
+      supabase.from('products').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false }),
       supabase.from('order_items').select('*, product:products(name, category), order_split:order_splits!inner(supplier_id)').eq('order_split.supplier_id', supplierId),
     ])
 
     const splits = splitsRes.data || []
     const items = itemsRes.data || []
 
-    // Stats
     const deliveredSplits = splits.filter(s => s.status === 'delivered')
     const monthSplits = splits.filter(s => new Date(s.created_at) >= monthStart)
-    const pending = splits.filter(s => ['pending_confirmation', 'pending_payment'].includes(s.status))
+    const activeSplits = splits.filter(s => !['delivered', 'cancelled'].includes(s.status))
 
-    setStats({
-      totalRevenue: deliveredSplits.reduce((s, sp) => s + Number(sp.subtotal), 0),
-      monthRevenue: monthSplits.filter(s => s.status === 'delivered').reduce((s, sp) => s + Number(sp.subtotal), 0),
-      totalOrders: splits.length,
-      monthOrders: monthSplits.length,
-      pendingOrders: pending.length,
-      activeProducts: 0,
-    })
-
-    // Monthly revenue
-    const monthMap = {}
-    splits.forEach(sp => {
-      const month = new Date(sp.created_at).toLocaleDateString('de-DE', { month: 'short', year: '2-digit' })
-      monthMap[month] = (monthMap[month] || 0) + Number(sp.subtotal)
-    })
-    setMonthlyRevenue(Object.entries(monthMap).slice(-12).map(([month, revenue]) => ({ month, revenue })))
-
-    // Status breakdown
-    const statusMap = {}
-    splits.forEach(sp => { statusMap[sp.status] = (statusMap[sp.status] || 0) + 1 })
-    setStatusBreakdown(Object.entries(statusMap).map(([name, value]) => ({ name, value })))
-
-    // Top products
     const productMap = {}
     items.forEach(item => {
       const name = item.product?.name || 'Unknown'
@@ -76,64 +51,171 @@ export default function SupplierDashboardPage() {
     })
     setTopProducts(Object.entries(productMap).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([name, quantity]) => ({ name, quantity })))
 
-    // Category revenue
-    const catMap = {}
-    items.forEach(item => {
-      const cat = item.product?.category || 'Other'
-      catMap[cat] = (catMap[cat] || 0) + item.price_at_time * item.quantity
+    setStats({
+      totalRevenue: deliveredSplits.reduce((s, sp) => s + Number(sp.subtotal), 0),
+      monthRevenue: monthSplits.filter(s => s.status === 'delivered').reduce((s, sp) => s + Number(sp.subtotal), 0),
+      activeOrders: activeSplits.length,
+      totalOrders: splits.length,
+      monthOrders: monthSplits.length,
+      pendingOrders: splits.filter(s => s.status === 'pending_confirmation').length,
     })
-    setCategoryRevenue(Object.entries(catMap).map(([name, revenue]) => ({ name, revenue })))
 
-    // Active products count
-    const { count } = await supabase.from('products').select('*', { count: 'exact', head: true }).eq('supplier_id', supplierId).eq('is_active', true)
-    setStats(prev => ({ ...prev, activeProducts: count || 0 }))
+    setProducts(productsRes.data || [])
     setLoading(false)
   }
+
+  const pageProducts = products.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE)
+  const totalPages = Math.ceil(products.length / PAGE_SIZE)
 
   const summaryContext = stats ? {
     revenueThisMonth: stats.monthRevenue?.toFixed(2),
     ordersThisMonth: stats.monthOrders,
     pendingOrders: stats.pendingOrders,
     topProduct: topProducts[0]?.name,
-    activeProducts: stats.activeProducts,
+    activeProducts: products.filter(p => p.is_active).length,
   } : null
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6">
-      <h1 className="text-2xl font-black text-gray-900 mb-6">Dashboard</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
 
       {loading ? (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1,2,3,4].map(i => <SkeletonCard key={i} />)}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-white rounded-xl border border-slate-100 animate-pulse" />)}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {[
-              { label: 'Revenue (Month)', value: `€${stats?.monthRevenue?.toFixed(2) || '0.00'}`, icon: Euro, color: 'text-primary' },
-              { label: 'Orders (Month)', value: stats?.monthOrders || 0, icon: ShoppingBag, color: 'text-blue-600' },
-              { label: 'Pending Orders', value: stats?.pendingOrders || 0, icon: Clock, color: 'text-yellow-600' },
-              { label: 'Active Products', value: stats?.activeProducts || 0, icon: Package, color: 'text-purple-600' },
-            ].map(({ label, value, icon: Icon, color }) => (
-              <div key={label} className="card p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Icon className={`w-4 h-4 ${color}`} />
-                  <p className="text-xs text-gray-500">{label}</p>
-                </div>
-                <p className="text-xl font-black text-gray-900">{value}</p>
+          {/* Stats cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Revenue */}
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-xl shadow-md">
+              <div className="flex items-center gap-2 mb-3">
+                <Euro className="w-5 h-5 text-emerald-400" />
+                <p className="text-slate-300 text-sm font-medium">Total Revenue</p>
               </div>
-            ))}
+              <p className="text-3xl font-black">€{stats.totalRevenue.toFixed(2)}</p>
+              <div className="flex items-center gap-1 mt-2">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                <p className="text-xs text-emerald-400 font-medium">€{stats.monthRevenue.toFixed(2)} this month</p>
+              </div>
+            </div>
+
+            {/* Active Orders */}
+            <div
+              onClick={() => navigate('/supplier/orders')}
+              className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <ShoppingBag className="w-5 h-5 text-blue-500" />
+                <p className="text-slate-500 text-sm font-medium">Active Orders</p>
+              </div>
+              <p className="text-3xl font-black text-slate-900">{stats.activeOrders}</p>
+              <p className="text-xs text-slate-400 mt-2">{stats.pendingOrders} awaiting confirmation</p>
+            </div>
+
+            {/* Analytics link */}
+            <div
+              onClick={() => navigate('/supplier/analytics')}
+              className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="w-5 h-5 text-emerald-600" />
+                <p className="text-slate-500 text-sm font-medium">Analytics</p>
+              </div>
+              <p className="text-lg font-bold text-slate-900">See Full Analysis</p>
+              <p className="text-xs text-slate-400 mt-2">Charts, trends & AI insights</p>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <RevenueChart data={monthlyRevenue} title="Monthly Revenue" />
-            <OrdersByStatusChart data={statusBreakdown} title="Orders by Status" />
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <TopProductsChart data={topProducts} title="Top Products by Quantity" />
-            <CategorySalesChart data={categoryRevenue} title="Revenue by Category" />
-          </div>
+          {/* AI Summary */}
           {summaryContext && <AnalyticsSummary context={summaryContext} />}
+
+          {/* Products */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-slate-900">My Products</h2>
+              <button
+                onClick={() => navigate('/supplier/products')}
+                className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
+              >
+                Manage All
+              </button>
+            </div>
+
+            {products.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-xl border border-slate-100">
+                <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-400 text-sm">No products yet</p>
+                <button
+                  onClick={() => navigate('/supplier/products')}
+                  className="mt-3 text-sm text-emerald-600 font-semibold hover:underline"
+                >
+                  Add your first product
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {pageProducts.map(product => (
+                    <div key={product.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-3 flex gap-4 items-center">
+                      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
+                        {product.image_url ? (
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className={`w-full h-full object-cover ${!product.in_stock ? 'grayscale opacity-60' : ''}`}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-300">
+                            <Package className="w-8 h-8" />
+                          </div>
+                        )}
+                        {!product.in_stock && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-[9px] font-bold text-slate-600 bg-white/80 px-1 py-0.5 rounded">Out of Stock</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-slate-900 text-sm truncate">{product.name}</p>
+                        <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5 ${product.in_stock ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                          {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                        </span>
+                        <p className="text-sm font-bold text-slate-900 mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">/ {product.unit_type}</span></p>
+                      </div>
+                      <button
+                        onClick={() => navigate(`/supplier/products?edit=${product.id}`)}
+                        className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-3 mt-4">
+                    <button
+                      onClick={() => setPage(p => Math.max(0, p - 1))}
+                      disabled={page === 0}
+                      className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors disabled:opacity-40"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-slate-600" />
+                    </button>
+                    <span className="text-sm text-slate-500">{page + 1} / {totalPages}</span>
+                    <button
+                      onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                      disabled={page >= totalPages - 1}
+                      className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors disabled:opacity-40"
+                    >
+                      <ChevronRight className="w-4 h-4 text-slate-600" />
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </>
       )}
     </div>

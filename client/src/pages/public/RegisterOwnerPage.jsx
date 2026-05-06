@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ShoppingCart, Check } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import AnnouncementBar from '../../components/layout/AnnouncementBar'
-import Navbar from '../../components/layout/Navbar'
+import toast from 'react-hot-toast'
 
 function getPasswordStrength(pass) {
   let score = 0
@@ -19,6 +18,7 @@ export default function RegisterOwnerPage() {
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' })
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const strength = getPasswordStrength(form.password)
   const strengthInfo = [
@@ -32,20 +32,25 @@ export default function RegisterOwnerPage() {
     setForm(f => ({ ...f, [field]: val }))
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setError('')
     if (form.password !== form.confirmPassword) return setError('Passwords do not match')
     if (form.password.length < 6) return setError('Password must be at least 6 characters')
-    signUp(form.fullName, form.email, 'restaurant_owner')
-    navigate('/owner/store')
+    setLoading(true)
+    try {
+      await signUp(form.fullName, form.email, form.password, 'restaurant_owner')
+      toast.success('Account created! Check your email to verify.')
+      navigate('/owner/store')
+    } catch (err) {
+      setError(err.message || 'Registration failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <AnnouncementBar />
-      <Navbar />
-      <div className="flex-1 bg-slate-900 flex items-center justify-center p-4 py-10">
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 py-10">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
           <div className="text-center mb-8">
@@ -120,9 +125,9 @@ export default function RegisterOwnerPage() {
                 placeholder="••••••••" />
             </div>
 
-            <button type="submit"
-              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md mt-2">
-              Create Account
+            <button type="submit" disabled={loading}
+              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md mt-2 disabled:opacity-60">
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 
@@ -135,7 +140,6 @@ export default function RegisterOwnerPage() {
             <Link to="/register/supplier" className="text-emerald-600 font-semibold hover:underline">Register as Supplier</Link>
           </p>
         </div>
-      </div>
       </div>
     </div>
   )

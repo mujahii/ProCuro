@@ -1,69 +1,90 @@
 import { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
+import toast from 'react-hot-toast'
 
 const AuthContext = createContext(null)
-
-const MOCK_PROFILES = {
-  restaurant_owner: {
-    id: 'demo-owner-001',
-    email: 'owner@demo.com',
-    full_name: 'Star Doner Kebab',
-    role: 'restaurant_owner',
-    is_banned: false,
-    phone: '+49 30 12345678',
-    created_at: new Date().toISOString(),
-  },
-  supplier: {
-    id: 'demo-supplier-001',
-    email: 'supplier@demo.com',
-    full_name: 'Berlin Halal Meats',
-    role: 'supplier',
-    is_banned: false,
-    is_verified: true,
-    phone: '+49 30 98765432',
-    created_at: new Date().toISOString(),
-  },
-  admin: {
-    id: 'demo-admin-001',
-    email: 'admin@demo.com',
-    full_name: 'ProCuro Admin',
-    role: 'admin',
-    is_banned: false,
-    created_at: new Date().toISOString(),
-  },
-}
-
-const STORAGE_KEY = 'procuro_mock_user'
 
 export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  async function fetchProfile(userId) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    if (error) return null
+    return data
+  }
+
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) setProfile(JSON.parse(saved))
-    } catch (_) {}
-    setLoading(false)
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        const p = await fetchProfile(session.user.id)
+        if (p?.is_banned) {
+          await supabase.auth.signOut()
+          toast.error('Your account has been suspended.')
+          setProfile(null)
+        } else {
+          setProfile(p)
+        }
+      }
+      setLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        const p = await fetchProfile(session.user.id)
+        if (p?.is_banned) {
+          await supabase.auth.signOut()
+          toast.error('Your account has been suspended.')
+          setProfile(null)
+        } else {
+          setProfile(p)
+        }
+      } else {
+        setProfile(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [])
 
-  function signIn(email, password, role = 'restaurant_owner') {
-    const base = MOCK_PROFILES[role] || MOCK_PROFILES.restaurant_owner
-    const mock = { ...base, email: email || base.email }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mock))
-    setProfile(mock)
-    return mock
+  async function signIn(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    const p = await fetchProfile(data.user.id)
+    if (p?.is_banned) {
+      await supabase.auth.signOut()
+      throw new Error('Your account has been suspended.')
+    }
+    setProfile(p)
+    return p
   }
 
-  function signUp(name, email, role = 'restaurant_owner') {
-    const base = MOCK_PROFILES[role] || MOCK_PROFILES.restaurant_owner
-    const mock = { ...base, full_name: name || base.full_name, email: email || base.email }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(mock))
-    setProfile(mock)
-    return mock
+  async function signUp(name, email, password, role = 'restaurant_owner') {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: name, role } },
+    })
+    if (error) throw error
+
+    // Insert into public.users
+    if (data.user) {
+      await supabase.from('users').insert({
+        id: data.user.id,
+        email,
+        full_name: name,
+        role,
+      })
+    }
+    return data
   }
 
-  function signOut() {
-    localStorage.removeItem(STORAGE_KEY)
+  async function signOut() {
+    await supabase.auth.signOut()
     localStorage.removeItem('procuro_cart')
     setProfile(null)
   }

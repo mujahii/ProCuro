@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingCart, CheckCircle, Upload, Clock, Check, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import AnnouncementBar from '../../components/layout/AnnouncementBar'
-import Navbar from '../../components/layout/Navbar'
+import { supabase } from '../../lib/supabase'
+import toast from 'react-hot-toast'
 
 const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Beverages', 'Vegetables', 'Fruits', 'Spices', 'Bakery', 'Other']
 
@@ -26,6 +26,7 @@ export default function RegisterSupplierPage() {
   })
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
 
   const strength = getPasswordStrength(form.password)
@@ -48,7 +49,7 @@ export default function RegisterSupplierPage() {
     update('certFile', file)
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setError('')
     if (step === 1) {
@@ -57,17 +58,47 @@ export default function RegisterSupplierPage() {
     }
     if (step < 3) { setStep(s => s + 1); return }
     if (!form.certFile) return setError('Please upload a Halal certificate')
-    // Mock sign up — no real Supabase call
-    signUp(form.businessName || form.fullName, form.email, 'supplier')
-    setDone(true)
+    setLoading(true)
+    try {
+      const { data: authData } = await signUp(form.businessName || form.fullName, form.email, form.password, 'supplier')
+      if (authData?.user) {
+        // Insert supplier profile
+        const { data: sp } = await supabase.from('supplier_profiles').insert({
+          user_id: authData.user.id,
+          business_name: form.businessName || form.fullName,
+          city: form.city,
+          address_full: form.address,
+          iban: form.iban,
+          account_name: form.accountName,
+        }).select().single()
+
+        // Upload certificate
+        if (sp && form.certFile) {
+          const ext = form.certFile.name.split('.').pop()
+          const path = `${sp.id}/${Date.now()}.${ext}`
+          const { data: uploadData } = await supabase.storage.from('halal-certificates').upload(path, form.certFile)
+          if (uploadData) {
+            const { data: { publicUrl } } = supabase.storage.from('halal-certificates').getPublicUrl(path)
+            await supabase.from('halal_certificates').insert({
+              supplier_id: sp.id,
+              file_url: publicUrl,
+              file_name: form.certFile.name,
+              status: 'pending',
+            })
+          }
+        }
+      }
+      setDone(true)
+    } catch (err) {
+      setError(err.message || 'Registration failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (done) {
     return (
-      <div className="min-h-screen flex flex-col">
-      <AnnouncementBar />
-      <Navbar />
-      <div className="flex-1 bg-emerald-900 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-emerald-900 flex items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 text-center">
           <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Clock className="w-8 h-8 text-yellow-600" />
@@ -85,15 +116,11 @@ export default function RegisterSupplierPage() {
           </button>
         </div>
       </div>
-      </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <AnnouncementBar />
-      <Navbar />
-      <div className="flex-1 bg-emerald-900 flex items-center justify-center p-4 py-10">
+    <div className="min-h-screen bg-emerald-900 flex items-center justify-center p-4 py-10">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
           <div className="text-center mb-8">
@@ -242,9 +269,9 @@ export default function RegisterSupplierPage() {
                   Back
                 </button>
               )}
-              <button type="submit"
-                className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-md">
-                {step === 3 ? 'Submit Application' : 'Next'}
+              <button type="submit" disabled={loading}
+                className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-md disabled:opacity-60">
+                {loading ? 'Submitting...' : step === 3 ? 'Submit Application' : 'Next'}
               </button>
             </div>
           </form>
@@ -254,7 +281,6 @@ export default function RegisterSupplierPage() {
             <Link to="/login" className="text-emerald-600 font-semibold hover:underline">Sign In</Link>
           </p>
         </div>
-      </div>
       </div>
     </div>
   )

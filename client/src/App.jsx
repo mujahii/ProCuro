@@ -9,6 +9,8 @@ import LandingPage from './pages/public/LandingPage'
 import LoginPage from './pages/public/LoginPage'
 import RegisterOwnerPage from './pages/public/RegisterOwnerPage'
 import RegisterSupplierPage from './pages/public/RegisterSupplierPage'
+import SupplierProfilePage from './pages/public/SupplierProfilePage'
+import SupplierListPage from './pages/public/SupplierListPage'
 
 // Admin pages
 import AdminLoginPage from './pages/admin/AdminLoginPage'
@@ -65,6 +67,8 @@ export default function App() {
             <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
             <Route path="/register" element={<PublicOnlyRoute><RegisterOwnerPage /></PublicOnlyRoute>} />
             <Route path="/register/supplier" element={<PublicOnlyRoute><RegisterSupplierPage /></PublicOnlyRoute>} />
+            <Route path="/suppliers" element={<SupplierListPage />} />
+            <Route path="/supplier/:id" element={<SupplierProfilePage />} />
 
             {/* Admin (separate, not linked from public login) */}
             <Route path="/admin/login" element={<AdminLoginPage />} />

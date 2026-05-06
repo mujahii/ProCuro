@@ -2,62 +2,27 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
-import Badge from '../../components/ui/Badge'
-import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Download, CheckCircle, Package, Truck, Clock } from 'lucide-react'
+import StatusBadge from '../../components/ui/StatusBadge'
+import { Download, Package, ChevronRight, ArrowLeft } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
-const statusSteps = ['pending_confirmation', 'confirmed', 'shipped', 'delivered']
-
-function StatusTimeline({ status }) {
-  const steps = [
-    { key: 'pending_confirmation', label: 'Confirmed', icon: Clock },
-    { key: 'confirmed', label: 'Confirmed', icon: CheckCircle },
-    { key: 'shipped', label: 'Shipped', icon: Truck },
-    { key: 'delivered', label: 'Delivered', icon: Package },
-  ]
-  const currentIdx = statusSteps.indexOf(status)
-
-  if (status === 'cancelled') {
-    return <Badge status="cancelled" />
-  }
-
-  return (
-    <div className="flex items-center gap-1 mt-2">
-      {steps.map((step, idx) => {
-        const Icon = step.icon
-        const isActive = idx <= currentIdx
-        return (
-          <div key={step.key} className="flex items-center">
-            <div className={`flex flex-col items-center ${idx > 0 ? 'ml-1' : ''}`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${isActive ? 'bg-primary text-white' : 'bg-gray-200 text-gray-400'}`}>
-                <Icon className="w-3 h-3" />
-              </div>
-              <span className={`text-xs mt-0.5 hidden sm:block ${isActive ? 'text-primary font-medium' : 'text-gray-400'}`}>
-                {step.label}
-              </span>
-            </div>
-            {idx < steps.length - 1 && (
-              <div className={`h-0.5 w-6 mx-1 ${idx < currentIdx ? 'bg-primary' : 'bg-gray-200'}`} />
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
+const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'shipped']
+const COMPLETED = ['delivered', 'cancelled']
 
 export default function OrdersPage() {
   const { user, profile } = useAuth()
+  const [tab, setTab] = useState('ongoing')
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedOrder, setSelectedOrder] = useState(null)
 
   useEffect(() => {
     if (user) fetchOrders()
   }, [user])
 
   async function fetchOrders() {
+    setLoading(true)
     const { data } = await supabase
       .from('orders')
       .select(`
@@ -88,85 +53,199 @@ export default function OrdersPage() {
     fetchOrders()
   }
 
-  if (loading) return <div className="px-4 sm:px-6 lg:px-8 py-6"><SkeletonTable rows={4} /></div>
+  async function cancelOrder(splitId) {
+    const { data: { session } } = await supabase.auth.getSession()
+    await fetch(`/api/orders/splits/${splitId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: 'cancelled', cancellation_reason: 'Cancelled by restaurant owner' }),
+    })
+    toast.success('Order cancelled')
+    fetchOrders()
+  }
+
+  const allSplits = orders.flatMap(order =>
+    (order.order_splits || []).map(split => ({ ...split, order }))
+  )
+  const ongoingSplits = allSplits.filter(s => ONGOING.includes(s.status))
+  const completedSplits = allSplits.filter(s => COMPLETED.includes(s.status))
+  const displayed = tab === 'ongoing' ? ongoingSplits : completedSplits
+
+  if (selectedOrder) {
+    return <OrderDetailView split={selectedOrder} profile={profile} onBack={() => setSelectedOrder(null)} onMarkDelivered={markDelivered} onCancel={cancelOrder} />
+  }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6">
-      <h1 className="text-2xl font-black text-gray-900 mb-6">My Orders</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-slate-900">My Orders</h1>
 
-      {orders.length === 0 ? (
+      {/* Tabs */}
+      <div className="flex gap-4 border-b border-slate-200">
+        {[
+          { id: 'ongoing', label: 'Ongoing Orders', count: ongoingSplits.length },
+          { id: 'completed', label: 'Completed Orders', count: completedSplits.length },
+        ].map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === t.id ? 'text-emerald-600 border-b-2 border-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+          >
+            {t.label}
+            {t.count > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === t.id ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                {t.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl border border-slate-100 h-28 animate-pulse" />
+          ))}
+        </div>
+      ) : displayed.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-4xl mb-3">📦</p>
-          <p className="text-gray-500 font-medium">No orders yet</p>
-          <button onClick={() => window.location.href = '/owner/store'} className="btn-primary mt-4">Start Shopping</button>
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Package className="w-8 h-8 text-slate-400" />
+          </div>
+          <p className="text-slate-500 font-medium">No {tab} orders</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {orders.map(order => (
-            <div key={order.id} className="card p-5">
-              <div className="flex items-center justify-between mb-4">
+          {displayed.map(split => (
+            <div key={split.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 hover:shadow-md transition-shadow">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs text-gray-500">Order #{order.id.slice(0, 8).toUpperCase()}</p>
-                  <p className="text-sm text-gray-600">{format(new Date(order.created_at), 'dd MMM yyyy')}</p>
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="font-bold text-lg text-slate-900">#{split.order.id.slice(0, 8).toUpperCase()}</span>
+                    <StatusBadge status={split.status} />
+                  </div>
+                  <p className="text-sm text-slate-600 font-medium">{split.supplier?.business_name}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm')}</p>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-gray-900">€{Number(order.total_amount).toFixed(2)}</p>
-                  <p className="text-xs text-gray-500">{order.order_splits?.length} supplier{order.order_splits?.length !== 1 ? 's' : ''}</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {order.order_splits?.map(split => (
-                  <div key={split.id} className="border border-gray-100 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-semibold text-sm text-gray-900">{split.supplier?.business_name}</p>
-                      <Badge status={split.status} />
-                    </div>
-
-                    <StatusTimeline status={split.status} />
-
-                    <div className="mt-3 space-y-1">
-                      {split.order_items?.map(item => (
-                        <p key={item.id} className="text-xs text-gray-600">
-                          {item.quantity}x {item.product?.name} — €{(item.price_at_time * item.quantity).toFixed(2)}
-                        </p>
-                      ))}
-                    </div>
-
-                    <div className="mt-3 flex items-center justify-between">
-                      <p className="text-xs text-gray-500">
-                        {split.payment_method === 'cash_on_delivery' ? '💵 Cash on Delivery' : '🏦 Bank Transfer'} · €{Number(split.subtotal).toFixed(2)}
-                      </p>
-                      <div className="flex gap-2">
-                        {split.status === 'shipped' && (
-                          <button
-                            onClick={() => markDelivered(split.id)}
-                            className="text-xs btn-primary py-1.5 px-3"
-                          >
-                            Mark Delivered
-                          </button>
-                        )}
-                        <button
-                          onClick={() => generateInvoice(order, [split], profile)}
-                          className="flex items-center gap-1 text-xs text-primary hover:underline"
-                        >
-                          <Download className="w-3 h-3" /> Invoice
-                        </button>
-                      </div>
-                    </div>
-
-                    {split.cancellation_reason && (
-                      <p className="mt-2 text-xs text-red-600 bg-red-50 rounded px-2 py-1">
-                        Cancelled: {split.cancellation_reason}
-                      </p>
+                <div className="flex items-center gap-3">
+                  <span className="text-xl font-bold text-slate-900">€{Number(split.subtotal).toFixed(2)}</span>
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => setSelectedOrder(split)}
+                      className="flex items-center gap-1 px-3 py-1.5 border-2 border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+                    >
+                      View Details <ChevronRight className="w-4 h-4" />
+                    </button>
+                    {split.status === 'shipped' && (
+                      <button
+                        onClick={() => markDelivered(split.id)}
+                        className="px-3 py-1.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors"
+                      >
+                        Mark Delivered
+                      </button>
+                    )}
+                    {split.status === 'pending_confirmation' && (
+                      <button
+                        onClick={() => cancelOrder(split.id)}
+                        className="px-3 py-1.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors"
+                      >
+                        Cancel Order
+                      </button>
                     )}
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancel }) {
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back to Orders
+      </button>
+
+      <div className="flex items-center gap-3">
+        <h2 className="text-2xl font-bold text-slate-900">Order Details</h2>
+        <StatusBadge status={split.status} />
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p className="text-xs text-slate-500 font-medium mb-1">Order ID</p>
+            <p className="font-bold text-slate-900">#{split.order.id.slice(0, 8).toUpperCase()}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium mb-1">Date</p>
+            <p className="font-semibold text-slate-900">{format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm')}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium mb-1">Supplier</p>
+            <p className="font-semibold text-slate-900">{split.supplier?.business_name}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium mb-1">Payment</p>
+            <p className="font-semibold text-slate-900 capitalize">{split.payment_method?.replace(/_/g, ' ')}</p>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm font-bold text-slate-900 mb-3">Items Ordered</p>
+          <div className="bg-slate-50 p-4 rounded-xl space-y-2">
+            {split.order_items?.map(item => (
+              <div key={item.id} className="flex justify-between text-sm">
+                <span className="text-slate-700">{item.quantity}x {item.product?.name}</span>
+                <span className="font-semibold text-slate-900">€{(item.price_at_time * item.quantity).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
+          <span className="text-xl font-bold text-slate-900">Total</span>
+          <span className="text-2xl font-bold text-emerald-600">€{Number(split.subtotal).toFixed(2)}</span>
+        </div>
+      </div>
+
+      {split.cancellation_reason && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
+          <p className="font-semibold mb-1">Order Cancelled</p>
+          <p>{split.cancellation_reason}</p>
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => generateInvoice(split.order, [split], profile)}
+          className="flex items-center gap-2 px-4 py-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors"
+        >
+          <Download className="w-4 h-4" /> Download Invoice
+        </button>
+        {split.status === 'shipped' && (
+          <button
+            onClick={() => { onMarkDelivered(split.id); onBack() }}
+            className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
+          >
+            Mark as Delivered
+          </button>
+        )}
+        {split.status === 'pending_confirmation' && (
+          <button
+            onClick={() => { onCancel(split.id); onBack() }}
+            className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors"
+          >
+            Cancel Order
+          </button>
+        )}
+      </div>
     </div>
   )
 }

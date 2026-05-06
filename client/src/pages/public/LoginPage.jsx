@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ShoppingCart } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import AnnouncementBar from '../../components/layout/AnnouncementBar'
-import Navbar from '../../components/layout/Navbar'
+import toast from 'react-hot-toast'
 
 const GoogleLogo = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -27,21 +26,26 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const bgClass = tab === 'owner' ? 'bg-slate-900' : 'bg-emerald-900'
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    const role = tab === 'owner' ? 'restaurant_owner' : 'supplier'
-    signIn(email, password, role)
-    navigate(role === 'restaurant_owner' ? '/owner/store' : '/supplier/dashboard')
+    setLoading(true)
+    try {
+      const profile = await signIn(email, password)
+      const role = profile?.role
+      navigate(role === 'restaurant_owner' ? '/owner/store' : role === 'supplier' ? '/supplier/dashboard' : role === 'admin' ? '/admin/dashboard' : '/')
+    } catch (err) {
+      toast.error(err.message || 'Login failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <AnnouncementBar />
-      <Navbar />
-      <div className={`flex-1 flex items-center justify-center p-4 py-10 transition-colors duration-500 ${bgClass}`}>
+    <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-500 ${bgClass}`}>
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
           {/* Logo */}
@@ -98,9 +102,10 @@ export default function LoginPage() {
             </div>
             <button
               type="submit"
-              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md mt-2"
+              disabled={loading}
+              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md mt-2 disabled:opacity-60"
             >
-              Log In
+              {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
 
@@ -134,7 +139,6 @@ export default function LoginPage() {
             )}
           </p>
         </div>
-      </div>
       </div>
     </div>
   )

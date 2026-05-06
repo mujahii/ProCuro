@@ -1,0 +1,187 @@
+import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
+import Badge from '../../components/ui/Badge'
+import { SkeletonTable } from '../../components/ui/Skeleton'
+import { CheckCircle, XCircle, ExternalLink, Loader2 } from 'lucide-react'
+import { format } from 'date-fns'
+import toast from 'react-hot-toast'
+
+function CertModal({ cert, onApprove, onReject, onClose }) {
+  const [rejectionReason, setRejectionReason] = useState('')
+  const [showReject, setShowReject] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [signedUrl, setSignedUrl] = useState(null)
+
+  useEffect(() => {
+    async function fetchUrl() {
+      const { data } = await supabase.storage.from('halal-certificates').createSignedUrl(cert.file_url, 600)
+      setSignedUrl(data?.signedUrl)
+    }
+    if (cert.file_url) fetchUrl()
+  }, [cert])
+
+  async function handleApprove() {
+    setLoading(true)
+    await onApprove(cert.id)
+    setLoading(false)
+  }
+
+  async function handleReject() {
+    if (!rejectionReason.trim()) return toast.error('Please provide a rejection reason')
+    setLoading(true)
+    await onReject(cert.id, rejectionReason)
+    setLoading(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="relative bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+        <h3 className="font-bold text-gray-900 text-lg mb-4">Review Certificate</h3>
+
+        <div className="space-y-2 mb-4">
+          <p className="text-sm"><span className="text-gray-500">Supplier:</span> {cert.supplier?.business_name}</p>
+          <p className="text-sm"><span className="text-gray-500">Uploaded:</span> {format(new Date(cert.uploaded_at), 'dd MMM yyyy')}</p>
+          <p className="text-sm"><span className="text-gray-500">Status:</span> <Badge status={cert.status} /></p>
+        </div>
+
+        {signedUrl && (
+          <a href={signedUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm text-primary hover:underline mb-4">
+            <ExternalLink className="w-4 h-4" /> View Certificate File
+          </a>
+        )}
+
+        {cert.status === 'pending' && (
+          <div className="space-y-3">
+            {!showReject ? (
+              <div className="flex gap-3">
+                <button onClick={() => setShowReject(true)} className="flex-1 flex items-center justify-center gap-2 border border-red-200 text-red-600 font-semibold py-2.5 rounded-lg hover:bg-red-50 text-sm">
+                  <XCircle className="w-4 h-4" /> Reject
+                </button>
+                <button onClick={handleApprove} disabled={loading} className="flex-1 flex items-center justify-center gap-2 bg-primary text-white font-semibold py-2.5 rounded-lg hover:bg-primary-light text-sm disabled:opacity-50">
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />} Approve
+                </button>
+              </div>
+            ) : (
+              <div>
+                <label className="label">Rejection Reason *</label>
+                <textarea value={rejectionReason} onChange={e => setRejectionReason(e.target.value)} className="input h-20 resize-none mb-3" placeholder="Certificate is expired, invalid authority, etc." />
+                <div className="flex gap-3">
+                  <button onClick={() => setShowReject(false)} className="flex-1 btn-secondary text-sm">Back</button>
+                  <button onClick={handleReject} disabled={loading} className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white font-semibold py-2.5 rounded-lg hover:bg-red-700 text-sm disabled:opacity-50">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />} Reject
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <button onClick={onClose} className="mt-3 w-full text-sm text-gray-500 hover:text-gray-700">Close</button>
+      </div>
+    </div>
+  )
+}
+
+export default function AdminCertificatesPage() {
+  const [certs, setCerts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('pending')
+  const [selected, setSelected] = useState(null)
+
+  useEffect(() => { loadCerts() }, [])
+
+  async function loadCerts() {
+    const { data } = await supabase
+      .from('halal_certificates')
+      .select('*, supplier:supplier_profiles(business_name, city)')
+      .order('uploaded_at', { ascending: false })
+    setCerts(data || [])
+    setLoading(false)
+  }
+
+  async function handleApprove(certId) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch(`/api/admin/certificates/${certId}/approve`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session.access_token}` },
+    })
+    if (res.ok) {
+      setCerts(prev => prev.map(c => c.id === certId ? { ...c, status: 'approved' } : c))
+      toast.success('Certificate approved! Supplier is now active.')
+      setSelected(null)
+    } else {
+      toast.error('Failed to approve certificate')
+    }
+  }
+
+  async function handleReject(certId, reason) {
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch(`/api/admin/certificates/${certId}/reject`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason }),
+    })
+    if (res.ok) {
+      setCerts(prev => prev.map(c => c.id === certId ? { ...c, status: 'rejected', rejection_reason: reason } : c))
+      toast.success('Certificate rejected')
+      setSelected(null)
+    } else {
+      toast.error('Failed to reject certificate')
+    }
+  }
+
+  const filtered = filter === 'all' ? certs : certs.filter(c => c.status === filter)
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-black text-gray-900">Halal Certificates</h1>
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+          {['all', 'pending', 'approved', 'rejected'].map(f => (
+            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors capitalize ${filter === f ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+              {f} {f !== 'all' && `(${certs.filter(c => c.status === f).length})`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? <SkeletonTable rows={5} /> : (
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Supplier</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">City</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Uploaded</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map(cert => (
+                <tr key={cert.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelected(cert)}>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{cert.supplier?.business_name || '—'}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-500">{cert.supplier?.city || '—'}</td>
+                  <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">{format(new Date(cert.uploaded_at), 'dd MMM yyyy')}</td>
+                  <td className="px-4 py-3"><Badge status={cert.status} /></td>
+                  <td className="px-4 py-3 text-xs text-primary font-medium">Review →</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No certificates</p>}
+        </div>
+      )}
+
+      {selected && (
+        <CertModal
+          cert={selected}
+          onApprove={handleApprove}
+          onReject={handleReject}
+          onClose={() => setSelected(null)}
+        />
+      )}
+    </div>
+  )
+}

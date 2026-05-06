@@ -5,7 +5,6 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Beverages', 'Vegetables', 'Fruits', 'Spices', 'Bakery', 'Other']
 
@@ -62,23 +61,18 @@ export default function RegisterSupplierPage() {
     if (!form.certFile) return setError('Please upload a Halal certificate')
     setLoading(true)
     try {
-      // Register via backend admin API — no email confirmation needed
-      const res = await fetch(`${API}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName: form.fullName,
-          email: form.email,
-          password: form.password,
-          role: 'supplier',
-          businessName: form.businessName,
-          city: form.city,
-        }),
+      // Register via DB function — no email confirmation, no rate limits
+      const { data: regData, error: regError } = await supabase.rpc('register_user', {
+        p_email: form.email,
+        p_password: form.password,
+        p_full_name: form.fullName,
+        p_role: 'supplier',
+        p_business_name: form.businessName,
+        p_city: form.city,
       })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error || 'Registration failed')
+      if (regError) throw new Error(regError.message)
 
-      const userId = json.userId
+      const userId = regData.user_id
 
       // Get supplier profile id
       const { data: sp } = await supabase

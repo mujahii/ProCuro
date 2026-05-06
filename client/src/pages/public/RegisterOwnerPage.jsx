@@ -2,9 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ShoppingCart, Check } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3001'
 
 function getPasswordStrength(pass) {
   let score = 0
@@ -41,14 +40,13 @@ export default function RegisterOwnerPage() {
     if (form.password.length < 6) return setError('Password must be at least 6 characters')
     setLoading(true)
     try {
-      const res = await fetch(`${API}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName: form.fullName, email: form.email, password: form.password, role: 'restaurant_owner' }),
+      const { data, error } = await supabase.rpc('register_user', {
+        p_email: form.email,
+        p_password: form.password,
+        p_full_name: form.fullName,
+        p_role: 'restaurant_owner',
       })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error || 'Registration failed')
-      // Auto sign in after account created
+      if (error) throw new Error(error.message)
       await signIn(form.email, form.password)
       toast.success('Account created!')
       navigate('/owner/store')

@@ -61,7 +61,7 @@ export default function RegisterSupplierPage() {
     if (!form.certFile) return setError('Please upload a Halal certificate')
     setLoading(true)
     try {
-      // Register via DB function — no email confirmation, no rate limits
+      // 1. Create account via DB function (no email, no rate limits)
       const { data: regData, error: regError } = await supabase.rpc('register_user', {
         p_email: form.email,
         p_password: form.password,
@@ -72,33 +72,33 @@ export default function RegisterSupplierPage() {
       })
       if (regError) throw new Error(regError.message)
 
-      const userId = regData.user_id
+      // 2. Sign in first so storage upload is authenticated
+      await signIn(form.email, form.password)
 
-      // Get supplier profile id
+      // 3. Get supplier profile id (created by register_user)
       const { data: sp } = await supabase
         .from('supplier_profiles')
         .select('id')
-        .eq('user_id', userId)
+        .eq('user_id', regData.user_id)
         .single()
 
-      // Upload certificate if we have a supplier profile
+      // 4. Upload certificate with authenticated session
       if (sp && form.certFile) {
         const ext = form.certFile.name.split('.').pop()
         const path = `${sp.id}/${Date.now()}.${ext}`
-        const { data: uploadData } = await supabase.storage.from('halal-certificates').upload(path, form.certFile)
-        if (uploadData) {
-          const { data: { publicUrl } } = supabase.storage.from('halal-certificates').getPublicUrl(path)
-          await supabase.from('halal_certificates').insert({
-            supplier_id: sp.id,
-            file_url: publicUrl,
-            file_name: form.certFile.name,
-            status: 'pending',
-          })
-        }
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('halal-certificates')
+          .upload(path, form.certFile)
+        if (uploadError) throw new Error('Certificate upload failed: ' + uploadError.message)
+        const { data: { publicUrl } } = supabase.storage.from('halal-certificates').getPublicUrl(path)
+        await supabase.from('halal_certificates').insert({
+          supplier_id: sp.id,
+          file_url: publicUrl,
+          file_name: form.certFile.name,
+          status: 'pending',
+        })
       }
 
-      // Auto sign in
-      await signIn(form.email, form.password)
       setDone(true)
     } catch (err) {
       setError(err.message || 'Registration failed')

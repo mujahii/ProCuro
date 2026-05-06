@@ -1,9 +1,15 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { LogOut, Camera, Loader2, User } from 'lucide-react'
+import { LogOut, Camera, Loader2, User, FileText, CheckCircle, Clock, XCircle, ExternalLink } from 'lucide-react'
 import toast from 'react-hot-toast'
+
+const CERT_STATUS = {
+  pending:  { label: 'Pending Review', icon: Clock,         color: 'text-amber-600 bg-amber-50 border-amber-200' },
+  approved: { label: 'Approved',       icon: CheckCircle,   color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
+  rejected: { label: 'Rejected',       icon: XCircle,       color: 'text-red-600 bg-red-50 border-red-200' },
+}
 
 export default function SupplierProfilePage() {
   const navigate = useNavigate()
@@ -11,6 +17,26 @@ export default function SupplierProfilePage() {
   const fileRef = useRef(null)
   const [uploading, setUploading] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null)
+  const [certs, setCerts] = useState([])
+  const [certsLoading, setCertsLoading] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('supplier_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data: sp }) => {
+        if (!sp) { setCertsLoading(false); return }
+        supabase
+          .from('halal_certificates')
+          .select('*')
+          .eq('supplier_id', sp.id)
+          .order('created_at', { ascending: false })
+          .then(({ data }) => { setCerts(data || []); setCertsLoading(false) })
+      })
+  }, [user])
 
   async function handleAvatarChange(e) {
     const file = e.target.files[0]
@@ -75,6 +101,45 @@ export default function SupplierProfilePage() {
             {avatarUrl ? 'Change photo' : 'Add profile photo'}
           </button>
         </div>
+      </div>
+
+      {/* Halal Certificates */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+        <h3 className="font-bold text-slate-900 text-base mb-4 flex items-center gap-2">
+          <FileText className="w-5 h-5 text-emerald-600" /> Halal Certificates
+        </h3>
+        {certsLoading ? (
+          <div className="flex items-center gap-2 text-slate-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Loading...</div>
+        ) : certs.length === 0 ? (
+          <p className="text-sm text-slate-400">No certificates uploaded yet.</p>
+        ) : (
+          <div className="space-y-3">
+            {certs.map(cert => {
+              const status = CERT_STATUS[cert.status] || CERT_STATUS.pending
+              const Icon = status.icon
+              return (
+                <div key={cert.id} className="flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <FileText className="w-8 h-8 text-slate-400 flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 truncate">{cert.file_name}</p>
+                      <p className="text-xs text-slate-400">{new Date(cert.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border ${status.color}`}>
+                      <Icon className="w-3 h-3" /> {status.label}
+                    </span>
+                    <a href={cert.file_url} target="_blank" rel="noreferrer"
+                      className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors">
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Sign Out */}

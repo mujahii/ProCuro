@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingCart, CheckCircle, Upload, Clock, Check, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import AnnouncementBar from '../../components/layout/AnnouncementBar'
+import Navbar from '../../components/layout/Navbar'
 
 const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Beverages', 'Vegetables', 'Fruits', 'Spices', 'Bakery', 'Other']
 
@@ -62,7 +64,10 @@ export default function RegisterSupplierPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-emerald-900 flex items-center justify-center p-4">
+      <div className="min-h-screen flex flex-col">
+      <AnnouncementBar />
+      <Navbar />
+      <div className="flex-1 bg-emerald-900 flex items-center justify-center p-4">
         <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8 text-center">
           <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Clock className="w-8 h-8 text-yellow-600" />
@@ -80,12 +85,16 @@ export default function RegisterSupplierPage() {
           </button>
         </div>
       </div>
+      </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-emerald-900 flex items-center justify-center p-4 py-10">
-      <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
+    <div className="min-h-screen flex flex-col">
+      <AnnouncementBar />
+      <Navbar />
+      <div className="flex-1 bg-emerald-900 flex items-center justify-center p-4 py-10">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-2">
@@ -245,6 +254,7 @@ export default function RegisterSupplierPage() {
             <Link to="/login" className="text-emerald-600 font-semibold hover:underline">Sign In</Link>
           </p>
         </div>
+      </div>
       </div>
     </div>
   )

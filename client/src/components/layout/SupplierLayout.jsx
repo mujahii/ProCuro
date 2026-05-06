@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, Package, ShoppingBag, Award, CreditCard, User } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, Award, CreditCard, User, BarChart3 } from 'lucide-react'
 import AnnouncementBar from './AnnouncementBar'
 import Navbar from './Navbar'
 import { useAuth } from '../../context/AuthContext'
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/supplier/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/supplier/products', icon: Package, label: 'Products' },
   { to: '/supplier/orders', icon: ShoppingBag, label: 'Orders' },
+  { to: '/supplier/analytics', icon: BarChart3, label: 'Analytics' },
   { to: '/supplier/certificates', icon: Award, label: 'Certs' },
   { to: '/supplier/bank-details', icon: CreditCard, label: 'Bank' },
   { to: '/supplier/profile', icon: User, label: 'Profile' },
@@ -49,7 +50,7 @@ export default function SupplierLayout() {
       </div>
 
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-40 flex">
-        {navItems.slice(0, 5).map(({ to, icon: Icon, label }) => (
+        {[navItems[0], navItems[1], navItems[2], navItems[3], navItems[6]].map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
             to={to}

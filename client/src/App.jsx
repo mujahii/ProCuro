@@ -31,6 +31,7 @@ import SupplierLayout from './components/layout/SupplierLayout'
 import SupplierDashboardPage from './pages/supplier/DashboardPage'
 import SupplierProductsPage from './pages/supplier/ProductsPage'
 import SupplierOrdersPage from './pages/supplier/OrdersPage'
+import SupplierAnalyticsPage from './pages/supplier/AnalyticsPage'
 import SupplierCertificatesPage from './pages/supplier/CertificatesPage'
 import SupplierBankDetailsPage from './pages/supplier/BankDetailsPage'
 import SupplierProfilePage from './pages/supplier/ProfilePage'
@@ -92,6 +93,7 @@ export default function App() {
               <Route path="dashboard" element={<SupplierDashboardPage />} />
               <Route path="products" element={<SupplierProductsPage />} />
               <Route path="orders" element={<SupplierOrdersPage />} />
+              <Route path="analytics" element={<SupplierAnalyticsPage />} />
               <Route path="certificates" element={<SupplierCertificatesPage />} />
               <Route path="bank-details" element={<SupplierBankDetailsPage />} />
               <Route path="profile" element={<SupplierProfilePage />} />

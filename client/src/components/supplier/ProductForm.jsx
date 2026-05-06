@@ -13,6 +13,8 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
     price: product?.price || '',
     unit_type: product?.unit_type || 'kg',
     stock_quantity: product?.stock_quantity || 0,
+    discount_percentage: product?.discount_percentage || '',
+    delivery_fee: product?.delivery_fee || '',
     is_active: product?.is_active ?? true,
   })
   const [imageFile, setImageFile] = useState(null)
@@ -53,6 +55,8 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
         ...form,
         price: parseFloat(form.price),
         stock_quantity: parseInt(form.stock_quantity),
+        discount_percentage: form.discount_percentage ? parseFloat(form.discount_percentage) : null,
+        delivery_fee: form.delivery_fee ? parseFloat(form.delivery_fee) : null,
         supplier_id: supplierId,
         image_url: imageUrl,
       }
@@ -105,9 +109,22 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
           <label className="label">Stock Quantity</label>
           <input type="number" min="0" value={form.stock_quantity} onChange={e => update('stock_quantity', e.target.value)} className="input" />
         </div>
-        <div className="flex items-center gap-3 pt-6">
+        <div>
+          <label className="label">Discount % <span className="text-gray-400 font-normal">(optional)</span></label>
+          <input type="number" min="0" max="100" step="0.1" value={form.discount_percentage} onChange={e => update('discount_percentage', e.target.value)} className="input" placeholder="e.g. 10" />
+          {form.discount_percentage > 0 && form.price > 0 && (
+            <p className="text-xs text-emerald-600 mt-1">
+              Discounted price: €{(form.price * (1 - form.discount_percentage / 100)).toFixed(2)}
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="label">Delivery Fee (€) <span className="text-gray-400 font-normal">(optional)</span></label>
+          <input type="number" min="0" step="0.01" value={form.delivery_fee} onChange={e => update('delivery_fee', e.target.value)} className="input" placeholder="e.g. 5.00" />
+        </div>
+        <div className="flex items-center gap-3 pt-2">
           <input type="checkbox" id="is_active" checked={form.is_active} onChange={e => update('is_active', e.target.checked)} className="w-4 h-4 accent-primary" />
-          <label htmlFor="is_active" className="text-sm font-medium text-gray-700">Active (visible in store)</label>
+          <label htmlFor="is_active" className="text-sm font-medium text-gray-700">In Stock (visible in store)</label>
         </div>
       </div>
 

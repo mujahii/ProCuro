@@ -1,14 +1,17 @@
-import { Link } from 'react-router-dom'
 import { ArrowRight, ChevronDown } from 'lucide-react'
+
+const BG_IMAGE = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1920&q=80'
 
 export default function HeroSection({ onBrowse }) {
   return (
-    <section className="relative bg-primary overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-white blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 rounded-full bg-accent blur-3xl" />
-      </div>
+    <section className="relative overflow-hidden">
+      {/* Background image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url('${BG_IMAGE}')` }}
+      />
+      {/* Dark green overlay for readability */}
+      <div className="absolute inset-0" style={{ backgroundColor: 'rgba(27, 67, 50, 0.78)' }} />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div className="max-w-2xl">
@@ -25,19 +28,13 @@ export default function HeroSection({ onBrowse }) {
           <p className="mt-6 text-lg text-white/80 max-w-lg leading-relaxed">
             Order from verified Halal suppliers across Germany — all in one place. Streamline your procurement, track orders in real-time.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-8">
             <button
               onClick={onBrowse}
-              className="inline-flex items-center gap-2 bg-accent hover:bg-accent-dark text-white font-bold px-6 py-3.5 rounded-xl transition-colors duration-200"
+              className="inline-flex items-center gap-2 bg-accent hover:bg-accent-dark text-white font-bold px-6 py-3.5 rounded-xl transition-colors duration-200 shadow-lg"
             >
               Browse Products <ArrowRight className="w-4 h-4" />
             </button>
-            <Link
-              to="/register/supplier"
-              className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3.5 rounded-xl transition-colors duration-200 border border-white/20"
-            >
-              Become a Supplier
-            </Link>
           </div>
 
           {/* Stats */}
@@ -56,7 +53,7 @@ export default function HeroSection({ onBrowse }) {
         </div>
       </div>
 
-      <div className="flex justify-center pb-6">
+      <div className="relative flex justify-center pb-6">
         <ChevronDown className="w-6 h-6 text-white/40 animate-bounce" />
       </div>
     </section>

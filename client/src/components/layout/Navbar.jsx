@@ -24,8 +24,8 @@ export default function Navbar({ onCartOpen }) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to={role === 'restaurant_owner' ? '/owner/store' : role === 'supplier' ? '/supplier/dashboard' : '/'} className="flex items-center gap-2 flex-shrink-0">
-            <ShoppingCart className="w-6 h-6 text-emerald-600" />
-            <span className="text-slate-900 font-bold text-xl tracking-tight">ProCuro</span>
+            <ShoppingCart className="w-7 h-7 text-emerald-600" />
+            <span className="text-slate-900 font-black text-2xl tracking-tight">ProCuro</span>
           </Link>
 
           {/* Address switcher — center, only for owners */}

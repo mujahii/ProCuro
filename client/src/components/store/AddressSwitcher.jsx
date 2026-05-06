@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MapPin, ChevronDown, Plus } from 'lucide-react'
 import { useAddresses } from '../../context/AddressContext'
 import { useAuth } from '../../context/AuthContext'
 
 export default function AddressSwitcher({ onAddNew }) {
+  const navigate = useNavigate()
   const { user } = useAuth()
   const { addresses, selectedAddress, selectAddress } = useAddresses()
   const [open, setOpen] = useState(false)
@@ -40,7 +42,7 @@ export default function AddressSwitcher({ onAddNew }) {
           ))}
           <div className="border-t border-gray-100 mt-1 pt-1">
             <button
-              onClick={() => { setOpen(false); onAddNew?.() }}
+              onClick={() => { setOpen(false); onAddNew?.(); navigate('/owner/profile#addresses') }}
               className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center gap-2 text-sm text-primary font-medium"
             >
               <Plus className="w-4 h-4" /> Add new address

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { SlidersHorizontal } from 'lucide-react'
 import CategoryChips from '../../components/store/CategoryChips'
 import ProductGrid from '../../components/store/ProductGrid'
@@ -37,55 +37,72 @@ export default function StorePage() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-6">
-      <div className="mb-5">
-        <h1 className="text-2xl font-black text-gray-900 mb-1">Browse Products</h1>
-        {selectedAddress && (
-          <p className="text-sm text-gray-500">Showing products near <strong>{selectedAddress.label || selectedAddress.city}</strong></p>
-        )}
-      </div>
+    <div className="py-6">
+      <div className="px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-5">
+          <h1 className="text-2xl font-black text-gray-900">Browse Products</h1>
+          {selectedAddress && (
+            <p className="text-sm text-gray-500 mt-0.5">Near <strong>{selectedAddress.label || selectedAddress.city}</strong></p>
+          )}
+        </div>
 
-      {/* Search + filter button */}
-      <div className="flex gap-3 mb-4">
-        <input
-          type="text"
-          placeholder="Search Halal products..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="flex-1 input text-sm py-2.5"
-        />
-        <button
-          onClick={() => setFilterOpen(true)}
-          className="lg:hidden flex items-center gap-2 border border-gray-200 bg-white rounded-lg px-4 py-2.5 text-sm font-medium"
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          Filters
-        </button>
-      </div>
-
-      <div className="mb-5">
-        <CategoryChips selected={category} onSelect={setCategory} />
-      </div>
-
-      <div className="flex gap-6">
-        <FilterSidebar
-          filters={filters}
-          onChange={setFilters}
-          onNearMe={handleNearMe}
-          geoLoading={geoLoading}
-          mobileOpen={filterOpen}
-          onMobileClose={() => setFilterOpen(false)}
-        />
-        <div className="flex-1 min-w-0">
-          <ProductGrid
-            products={filteredProducts}
-            loading={loading}
-            hasMore={hasMore}
-            onLoadMore={loadMore}
-            onAddToCart={product => setSelectedProduct(product)}
+        {/* Search + filter toggle */}
+        <div className="flex gap-2 mb-6">
+          <input
+            type="text"
+            placeholder="Search Halal products..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors shadow-sm"
           />
+          <button
+            onClick={() => setFilterOpen(true)}
+            className="lg:hidden flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-semibold text-gray-600 shadow-sm flex-shrink-0"
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Square category tiles */}
+        <div className="mb-6">
+          <CategoryChips selected={category} onSelect={setCategory} />
+        </div>
+
+        {/* Desktop: sidebar + grid */}
+        <div className="flex gap-6 items-start">
+          <div className="hidden lg:block w-52 flex-shrink-0">
+            <FilterSidebar
+              filters={filters}
+              onChange={setFilters}
+              onNearMe={handleNearMe}
+              geoLoading={geoLoading}
+              mobileOpen={false}
+              onMobileClose={() => {}}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <ProductGrid
+              products={filteredProducts}
+              loading={loading}
+              hasMore={hasMore}
+              onLoadMore={loadMore}
+              onAddToCart={product => setSelectedProduct(product)}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Mobile filter drawer */}
+      <FilterSidebar
+        filters={filters}
+        onChange={setFilters}
+        onNearMe={handleNearMe}
+        geoLoading={geoLoading}
+        mobileOpen={filterOpen}
+        onMobileClose={() => setFilterOpen(false)}
+        mobileOnly
+      />
 
       {selectedProduct && (
         <AddToCartModal

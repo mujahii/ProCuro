@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShoppingCart, ImageOff } from 'lucide-react'
+import { ShoppingCart, ImageOff, Plus } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
@@ -22,11 +22,13 @@ export default function ProductCard({ product, onAddToCart }) {
   const [imgError, setImgError] = useState(false)
   const imageUrl = getImageUrl(product.image_url)
 
+  const discountPct = product.discount_percentage
+  const displayPrice = discountPct > 0
+    ? (Number(product.price) * (1 - discountPct / 100))
+    : Number(product.price)
+
   function handleAdd() {
-    if (!user) {
-      navigate('/login')
-      return
-    }
+    if (!user) { navigate('/login'); return }
     if (role !== 'restaurant_owner') return
     if (onAddToCart) {
       onAddToCart(product)
@@ -36,63 +38,81 @@ export default function ProductCard({ product, onAddToCart }) {
     }
   }
 
+  const outOfStock = product.stock_quantity === 0 || product.is_active === false
+
   return (
-    <div className="card overflow-hidden group hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden active:scale-[0.98] transition-transform duration-150">
       {/* Image */}
-      <div className="relative h-44 bg-gray-100 overflow-hidden">
+      <div className="relative h-40 bg-gray-100 overflow-hidden">
         {imageUrl && !imgError ? (
           <img
             src={imageUrl}
             alt={product.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover"
             loading="lazy"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <ImageOff className="w-10 h-10 text-gray-300" />
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+            <ImageOff className="w-8 h-8 text-gray-200" />
           </div>
         )}
+
+        {/* Category badge */}
         <div className="absolute top-2 left-2">
-          <span className="bg-primary/90 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+          <span className="bg-white/90 backdrop-blur-sm text-primary text-xs px-2.5 py-1 rounded-full font-semibold shadow-sm">
             {product.category}
           </span>
         </div>
+
+        {/* Discount badge */}
+        {discountPct > 0 && (
+          <div className="absolute top-2 right-2">
+            <span className="bg-accent text-white text-xs px-2 py-0.5 rounded-full font-bold">
+              -{discountPct}%
+            </span>
+          </div>
+        )}
+
+        {/* Out of stock overlay */}
+        {outOfStock && (
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+            <span className="bg-gray-700 text-white text-xs font-bold px-3 py-1 rounded-full">Sold Out</span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        <p className="text-xs text-primary font-semibold uppercase tracking-wide mb-1">
+      <div className="p-3.5">
+        <p className="text-[11px] text-primary font-semibold uppercase tracking-wide mb-0.5 truncate">
           {product.supplier?.business_name || 'Supplier'}
         </p>
-        <h3 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2 mb-2">
+        <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2">
           {product.name}
         </h3>
-        {product.description && (
-          <p className="text-xs text-gray-500 line-clamp-2 mb-3">{product.description}</p>
-        )}
-        <div className="flex items-center justify-between">
+
+        <div className="flex items-end justify-between">
           <div>
-            <span className="text-lg font-black text-gray-900">€{Number(product.price).toFixed(2)}</span>
-            <span className="text-xs text-gray-400 ml-1">/{product.unit_type}</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-base font-black text-gray-900">€{displayPrice.toFixed(2)}</span>
+              <span className="text-xs text-gray-400">/{product.unit_type}</span>
+            </div>
+            {discountPct > 0 && (
+              <span className="text-xs text-gray-400 line-through">€{Number(product.price).toFixed(2)}</span>
+            )}
           </div>
-          {product.stock_quantity !== undefined && (
-            <span className={`text-xs ${product.stock_quantity > 0 ? 'text-green-600' : 'text-red-500'}`}>
-              {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : 'Out of stock'}
-            </span>
+
+          {role !== 'supplier' && role !== 'admin' && (
+            <button
+              onClick={handleAdd}
+              disabled={outOfStock}
+              className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/25 disabled:opacity-30 disabled:cursor-not-allowed active:scale-90 transition-transform"
+              aria-label="Add to cart"
+            >
+              <Plus className="w-4 h-4" strokeWidth={3} />
+            </button>
           )}
         </div>
-
-        {role !== 'supplier' && role !== 'admin' && (
-          <button
-            onClick={handleAdd}
-            disabled={product.stock_quantity === 0}
-            className="mt-3 w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-light text-white text-sm font-semibold py-2.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <ShoppingCart className="w-4 h-4" />
-            {!user ? 'Log in to Order' : 'Add to Cart'}
-          </button>
-        )}
       </div>
     </div>
   )

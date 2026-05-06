@@ -21,7 +21,7 @@ export default function OwnerLayout() {
   const { itemCount } = useCart()
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface overflow-x-hidden">
       <AnnouncementBar />
       <Navbar onCartOpen={() => setCartOpen(true)} />
       <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />

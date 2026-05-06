@@ -22,7 +22,7 @@ export default function SupplierLayout() {
   const isDemoMode = user?.id?.startsWith('demo-')
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface overflow-x-hidden">
       <AnnouncementBar />
       <Navbar />
 

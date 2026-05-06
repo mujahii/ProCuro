@@ -5,6 +5,8 @@ import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
 const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Beverages', 'Vegetables', 'Fruits', 'Spices', 'Bakery', 'Other']
 
 function getPasswordStrength(pass) {
@@ -16,7 +18,7 @@ function getPasswordStrength(pass) {
 }
 
 export default function RegisterSupplierPage() {
-  const { signUp } = useAuth()
+  const { signIn } = useAuth()
   const navigate = useNavigate()
   const [step, setStep] = useState(1)
   const [form, setForm] = useState({
@@ -60,34 +62,49 @@ export default function RegisterSupplierPage() {
     if (!form.certFile) return setError('Please upload a Halal certificate')
     setLoading(true)
     try {
-      const { data: authData } = await signUp(form.businessName || form.fullName, form.email, form.password, 'supplier')
-      if (authData?.user) {
-        // Insert supplier profile
-        const { data: sp } = await supabase.from('supplier_profiles').insert({
-          user_id: authData.user.id,
-          business_name: form.businessName || form.fullName,
+      // Register via backend admin API — no email confirmation needed
+      const res = await fetch(`${API}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: form.fullName,
+          email: form.email,
+          password: form.password,
+          role: 'supplier',
+          businessName: form.businessName,
           city: form.city,
-          address_full: form.address,
-          iban: form.iban,
-          account_name: form.accountName,
-        }).select().single()
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Registration failed')
 
-        // Upload certificate
-        if (sp && form.certFile) {
-          const ext = form.certFile.name.split('.').pop()
-          const path = `${sp.id}/${Date.now()}.${ext}`
-          const { data: uploadData } = await supabase.storage.from('halal-certificates').upload(path, form.certFile)
-          if (uploadData) {
-            const { data: { publicUrl } } = supabase.storage.from('halal-certificates').getPublicUrl(path)
-            await supabase.from('halal_certificates').insert({
-              supplier_id: sp.id,
-              file_url: publicUrl,
-              file_name: form.certFile.name,
-              status: 'pending',
-            })
-          }
+      const userId = json.userId
+
+      // Get supplier profile id
+      const { data: sp } = await supabase
+        .from('supplier_profiles')
+        .select('id')
+        .eq('user_id', userId)
+        .single()
+
+      // Upload certificate if we have a supplier profile
+      if (sp && form.certFile) {
+        const ext = form.certFile.name.split('.').pop()
+        const path = `${sp.id}/${Date.now()}.${ext}`
+        const { data: uploadData } = await supabase.storage.from('halal-certificates').upload(path, form.certFile)
+        if (uploadData) {
+          const { data: { publicUrl } } = supabase.storage.from('halal-certificates').getPublicUrl(path)
+          await supabase.from('halal_certificates').insert({
+            supplier_id: sp.id,
+            file_url: publicUrl,
+            file_name: form.certFile.name,
+            status: 'pending',
+          })
         }
       }
+
+      // Auto sign in
+      await signIn(form.email, form.password)
       setDone(true)
     } catch (err) {
       setError(err.message || 'Registration failed')

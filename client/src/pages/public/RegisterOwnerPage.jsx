@@ -4,6 +4,8 @@ import { Eye, EyeOff, ShoppingCart, Check } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+
 function getPasswordStrength(pass) {
   let score = 0
   if (pass.length > 8) score++
@@ -13,7 +15,7 @@ function getPasswordStrength(pass) {
 }
 
 export default function RegisterOwnerPage() {
-  const { signUp } = useAuth()
+  const { signIn } = useAuth()
   const navigate = useNavigate()
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' })
   const [showPw, setShowPw] = useState(false)
@@ -39,8 +41,16 @@ export default function RegisterOwnerPage() {
     if (form.password.length < 6) return setError('Password must be at least 6 characters')
     setLoading(true)
     try {
-      await signUp(form.fullName, form.email, form.password, 'restaurant_owner')
-      toast.success('Account created! Check your email to verify.')
+      const res = await fetch(`${API}/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName: form.fullName, email: form.email, password: form.password, role: 'restaurant_owner' }),
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Registration failed')
+      // Auto sign in after account created
+      await signIn(form.email, form.password)
+      toast.success('Account created!')
       navigate('/owner/store')
     } catch (err) {
       setError(err.message || 'Registration failed')

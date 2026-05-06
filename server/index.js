@@ -13,6 +13,7 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
 // Routes
+app.use('/api/auth', require('./routes/auth'))
 app.use('/api/orders', require('./routes/orders'))
 app.use('/api/notifications', require('./routes/notifications'))
 app.use('/api/ai', require('./routes/ai'))

@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, CheckCircle, MapPin, ChevronRight, ChevronDown } from 'lucide-react'
+import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown } from 'lucide-react'
+import HalalBadge from '../../components/ui/HalalBadge'
 import { useProducts } from '../../hooks/useProducts'
 import { useAddresses } from '../../context/AddressContext'
 import { useGeolocation } from '../../hooks/useGeolocation'
@@ -47,7 +48,12 @@ export default function StorePage() {
   })
 
   useEffect(() => {
-    supabase.from('supplier_profiles').select('*').eq('is_visible', true).limit(8).then(({ data }) => setSuppliers(data || []))
+    supabase
+      .from('supplier_profiles')
+      .select('*, halal_certificates(status)')
+      .eq('is_active', true)
+      .limit(8)
+      .then(({ data }) => setSuppliers(data || []))
   }, [])
 
   useEffect(() => {
@@ -153,9 +159,17 @@ export default function StorePage() {
                   <span>★</span> {Number(supplier.rating).toFixed(1)}
                 </div>
               )}
-              <div className="mt-2 flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-medium border border-emerald-100">
-                <CheckCircle className="w-3 h-3" /> Halal Certified
-              </div>
+              {(() => {
+                const certs = supplier.halal_certificates || []
+                const certStatus = certs.find(c => c.status === 'approved') ? 'approved'
+                  : certs.find(c => c.status === 'pending') ? 'pending' : null
+                return certStatus ? (
+                  <div className={`mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${certStatus === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
+                    <HalalBadge status={certStatus} size={12} />
+                    {certStatus === 'approved' ? 'Halal Certified' : 'Pending Review'}
+                  </div>
+                ) : null
+              })()}
             </div>
           ))}
         </div>

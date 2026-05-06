@@ -22,46 +22,39 @@ const mobileNavItems = [
   { to: '/supplier/profile', icon: User, label: 'Profile' },
 ]
 
-function PendingScreen() {
-  return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-slate-100 p-8 text-center">
-        <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Award className="w-8 h-8 text-amber-600" />
-        </div>
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Account Pending Verification</h2>
-        <p className="text-slate-500 text-sm">
-          Your account is pending admin review. Upload a Halal certificate to speed up the process. You'll be notified once approved.
-        </p>
-      </div>
-    </div>
-  )
-}
-
 export default function SupplierLayout() {
   const { user } = useAuth()
-  const [verified, setVerified] = useState(null)
+  const [certStatus, setCertStatus] = useState(null)
 
   useEffect(() => {
     if (!user) return
     supabase
-      .from('halal_certificates')
-      .select('status')
-      .eq('supplier_id', user.id)
-      .eq('status', 'approved')
-      .limit(1)
-      .then(({ data }) => {
-        setVerified(data && data.length > 0)
+      .from('supplier_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data: sp }) => {
+        if (!sp) return
+        supabase
+          .from('halal_certificates')
+          .select('status')
+          .eq('supplier_id', sp.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .then(({ data }) => setCertStatus(data?.[0]?.status || 'none'))
       })
   }, [user])
-
-  if (verified === null) return null
-
-  if (!verified) return <PendingScreen />
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col overflow-x-hidden">
       <Navbar />
+      {certStatus && certStatus !== 'approved' && (
+        <div className={`px-4 py-2.5 text-sm font-medium text-center ${certStatus === 'none' ? 'bg-amber-500 text-white' : 'bg-amber-100 text-amber-800'}`}>
+          {certStatus === 'none'
+            ? '⚠️ Upload a Halal certificate to get verified and appear to restaurant owners.'
+            : '🕐 Your Halal certificate is under review. You\'ll be notified once approved.'}
+        </div>
+      )}
 
       <div className="flex flex-1">
         <aside className="hidden lg:flex flex-col w-56 min-h-full bg-white border-r border-slate-100 fixed top-16 left-0 bottom-0 z-20">

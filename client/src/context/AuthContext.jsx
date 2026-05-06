@@ -83,6 +83,18 @@ export function AuthProvider({ children }) {
     return data
   }
 
+  async function refreshProfile() {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    const p = await fetchProfile(user.id)
+    setProfile(p)
+    return p
+  }
+
+  function updateProfileState(updates) {
+    setProfile(prev => prev ? { ...prev, ...updates } : prev)
+  }
+
   async function signOut() {
     await supabase.auth.signOut()
     localStorage.removeItem('procuro_cart')
@@ -98,6 +110,8 @@ export function AuthProvider({ children }) {
       signIn,
       signUp,
       signOut,
+      refreshProfile,
+      updateProfileState,
     }}>
       {children}
     </AuthContext.Provider>

@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Zap } from 'lucide-react'
+import { Eye, EyeOff, Zap, ShoppingCart } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import ProCuroLogo from '../../components/ui/ProCuroLogo'
 import toast from 'react-hot-toast'
 
 const DEMO_OWNER_EMAIL = import.meta.env.VITE_DEMO_OWNER_EMAIL || 'owner@demo.procuro'
@@ -74,7 +73,7 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-2">
-              <ProCuroLogo size={36} />
+              <ShoppingCart className="w-8 h-8 text-emerald-600" />
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
             <p className="text-slate-500 text-sm">The Halal Procurement Platform</p>

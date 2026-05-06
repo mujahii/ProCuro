@@ -1,8 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, ShoppingCart } from 'lucide-react'
+import { Eye, EyeOff, Zap } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import ProCuroLogo from '../../components/ui/ProCuroLogo'
 import toast from 'react-hot-toast'
+
+const DEMO_OWNER_EMAIL = import.meta.env.VITE_DEMO_OWNER_EMAIL || 'owner@demo.procuro'
+const DEMO_OWNER_PASS = import.meta.env.VITE_DEMO_OWNER_PASS || 'Demo1234!'
+const DEMO_SUPPLIER_EMAIL = import.meta.env.VITE_DEMO_SUPPLIER_EMAIL || 'supplier@demo.procuro'
+const DEMO_SUPPLIER_PASS = import.meta.env.VITE_DEMO_SUPPLIER_PASS || 'Demo1234!'
 
 const GoogleLogo = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -44,14 +50,31 @@ export default function LoginPage() {
     }
   }
 
+  async function quickLogin(role) {
+    const e = role === 'owner' ? DEMO_OWNER_EMAIL : DEMO_SUPPLIER_EMAIL
+    const p = role === 'owner' ? DEMO_OWNER_PASS : DEMO_SUPPLIER_PASS
+    setEmail(e)
+    setPassword(p)
+    setLoading(true)
+    try {
+      const profile = await signIn(e, p)
+      const r = profile?.role
+      navigate(r === 'restaurant_owner' ? '/owner/store' : r === 'supplier' ? '/supplier/dashboard' : '/')
+    } catch (err) {
+      toast.error(err.message || 'Demo login failed — make sure demo accounts are created in Supabase')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-500 ${bgClass}`}>
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <ShoppingCart className="w-7 h-7 text-emerald-600" />
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <ProCuroLogo size={36} />
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
             <p className="text-slate-500 text-sm">The Halal Procurement Platform</p>
@@ -109,21 +132,33 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="my-6 flex items-center">
-            <div className="flex-1 border-t border-slate-200" />
-            <span className="px-4 text-xs text-slate-400 font-medium">OR CONTINUE WITH</span>
-            <div className="flex-1 border-t border-slate-200" />
-          </div>
-
-          {/* Social buttons */}
-          <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-              <GoogleLogo /> Google
-            </button>
-            <button className="flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors">
-              <AppleLogo /> Apple
-            </button>
+          {/* Quick Access */}
+          <div className="my-6">
+            <div className="flex items-center mb-3">
+              <div className="flex-1 border-t border-slate-200" />
+              <span className="px-3 text-xs text-slate-400 font-medium flex items-center gap-1"><Zap className="w-3 h-3" /> QUICK ACCESS</span>
+              <div className="flex-1 border-t border-slate-200" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => quickLogin('owner')}
+                disabled={loading}
+                className="flex flex-col items-center gap-1 px-3 py-3 border-2 border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:border-emerald-400 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+              >
+                <span className="text-xl">🍽️</span>
+                <span>Restaurant Owner</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => quickLogin('supplier')}
+                disabled={loading}
+                className="flex flex-col items-center gap-1 px-3 py-3 border-2 border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:border-emerald-400 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+              >
+                <span className="text-xl">🏪</span>
+                <span>Supplier</span>
+              </button>
+            </div>
           </div>
 
           {/* Switch */}

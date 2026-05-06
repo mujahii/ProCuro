@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, CheckCircle, MapPin, ChevronRight } from 'lucide-react'
+import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, CheckCircle, MapPin, ChevronRight, ChevronDown } from 'lucide-react'
 import { useProducts } from '../../hooks/useProducts'
 import { useAddresses } from '../../context/AddressContext'
 import { useGeolocation } from '../../hooks/useGeolocation'
@@ -17,12 +17,22 @@ const CATEGORIES = [
   { name: 'Others', icon: Package },
 ]
 
+const SORT_OPTIONS = [
+  { value: '', label: 'Recommended' },
+  { value: 'price_asc', label: 'Price: Low to High' },
+  { value: 'price_desc', label: 'Price: High to Low' },
+  { value: 'name_asc', label: 'Name A–Z' },
+]
+
 export default function StorePage() {
   const navigate = useNavigate()
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [search, setSearch] = useState('')
+  const [sortBy, setSortBy] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [suppliers, setSuppliers] = useState([])
+  const filterRef = useRef(null)
   const { selectedAddress } = useAddresses()
   const { lat: geoLat, lng: geoLng } = useGeolocation()
 
@@ -40,33 +50,59 @@ export default function StorePage() {
     supabase.from('supplier_profiles').select('*').eq('is_visible', true).limit(8).then(({ data }) => setSuppliers(data || []))
   }, [])
 
+  useEffect(() => {
+    function handleClick(e) {
+      if (filterRef.current && !filterRef.current.contains(e.target)) setFilterOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const sortedProducts = [...(products || [])].sort((a, b) => {
+    if (sortBy === 'price_asc') return a.price - b.price
+    if (sortBy === 'price_desc') return b.price - a.price
+    if (sortBy === 'name_asc') return a.name.localeCompare(b.name)
+    return 0
+  })
+
   return (
     <div className="space-y-8">
-      {/* Mobile search bar */}
-      <div className="md:hidden">
-        <div className="flex items-center bg-white rounded-lg px-4 py-3 shadow-sm border border-slate-100">
-          <Search className="w-5 h-5 text-slate-400 mr-3" />
+      {/* Search bar with filter */}
+      <div className="flex gap-2 items-center">
+        <div className="flex-1 flex items-center bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-100 focus-within:border-emerald-400 transition-colors">
+          <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
           <input
             type="text"
             placeholder="Search Halal products..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="bg-transparent border-none focus:outline-none w-full text-base"
+            className="bg-transparent border-none focus:outline-none w-full text-sm"
           />
-          <Filter className="w-5 h-5 text-slate-400 ml-2" />
         </div>
-      </div>
-
-      {/* Desktop search bar */}
-      <div className="hidden md:flex items-center bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-100">
-        <Search className="w-5 h-5 text-slate-400 mr-3" />
-        <input
-          type="text"
-          placeholder="Search Halal products..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="bg-transparent border-none focus:outline-none w-full text-sm"
-        />
+        {/* Filter dropdown */}
+        <div className="relative" ref={filterRef}>
+          <button
+            onClick={() => setFilterOpen(o => !o)}
+            className={`flex items-center gap-2 px-4 py-3 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+          >
+            <Filter className="w-4 h-4" />
+            <span className="hidden sm:inline">{sortBy ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Filter'}</span>
+            <ChevronDown className="w-3 h-3" />
+          </button>
+          {filterOpen && (
+            <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 z-20 py-1">
+              {SORT_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setSortBy(opt.value); setFilterOpen(false) }}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-slate-700 hover:bg-slate-50'}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Categories */}
@@ -141,12 +177,12 @@ export default function StorePage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map(product => (
+            {sortedProducts.map(product => (
               <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} />
             ))}
           </div>
         )}
-        {!loading && products.length === 0 && (
+        {!loading && sortedProducts.length === 0 && (
           <div className="text-center py-12 text-slate-400">No products found</div>
         )}
       </div>

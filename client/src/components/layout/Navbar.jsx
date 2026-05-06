@@ -1,20 +1,26 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { ShoppingCart, Bell, User, ArrowLeft, MapPin, Search, Filter, Star, Plus, LogOut, Package, BarChart3 } from 'lucide-react'
+import { ShoppingCart, User, ArrowLeft, MapPin, Star, Plus, LogOut, Package, BarChart3, Loader2, Navigation, Check } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import NotificationBell from '../ui/NotificationBell'
+import ProCuroLogo from '../ui/ProCuroLogo'
+import toast from 'react-hot-toast'
 
 export default function Navbar() {
   const { user, role, profile, signOut } = useAuth()
   const { itemCount } = useCart()
-  const { addresses, selectedAddress, selectAddress } = useAddresses()
+  const { addresses, selectedAddress, selectAddress, addAddress } = useAddresses()
   const navigate = useNavigate()
   const location = useLocation()
 
   const [addrOpen, setAddrOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [addingAddr, setAddingAddr] = useState(false)
+  const [gpsLoading, setGpsLoading] = useState(false)
+  const [addrForm, setAddrForm] = useState({ label: '', street: '', city: '', country: 'Germany' })
+  const [savingAddr, setSavingAddr] = useState(false)
   const addrRef = useRef(null)
   const userRef = useRef(null)
 
@@ -23,7 +29,11 @@ export default function Navbar() {
 
   useEffect(() => {
     function handleClick(e) {
-      if (addrRef.current && !addrRef.current.contains(e.target)) setAddrOpen(false)
+      if (addrRef.current && !addrRef.current.contains(e.target)) {
+        setAddrOpen(false)
+        setAddingAddr(false)
+        setAddrForm({ label: '', street: '', city: '', country: 'Germany' })
+      }
       if (userRef.current && !userRef.current.contains(e.target)) setUserMenuOpen(false)
     }
     document.addEventListener('mousedown', handleClick)
@@ -39,6 +49,49 @@ export default function Navbar() {
     if (role === 'restaurant_owner') return '/owner/store'
     if (role === 'supplier') return '/supplier/dashboard'
     return '/'
+  }
+
+  async function detectGPS() {
+    if (!navigator.geolocation) { toast.error('GPS not supported'); return }
+    setGpsLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lng } = pos.coords
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+          const data = await res.json()
+          const addr = data.address || {}
+          setAddrForm(f => ({
+            ...f,
+            street: [addr.road, addr.house_number].filter(Boolean).join(' ') || '',
+            city: addr.city || addr.town || addr.village || '',
+            country: addr.country || 'Germany',
+          }))
+        } catch {
+          toast.error('Could not fetch address from GPS')
+        } finally {
+          setGpsLoading(false)
+        }
+      },
+      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
+  async function handleSaveAddress(e) {
+    e.preventDefault()
+    if (!addrForm.street || !addrForm.city) { toast.error('Street and city are required'); return }
+    setSavingAddr(true)
+    try {
+      await addAddress(addrForm)
+      toast.success('Address saved!')
+      setAddingAddr(false)
+      setAddrForm({ label: '', street: '', city: '', country: 'Germany' })
+    } catch {
+      toast.error('Failed to save address')
+    } finally {
+      setSavingAddr(false)
+    }
   }
 
   const initials = profile?.full_name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
@@ -59,7 +112,7 @@ export default function Navbar() {
 
             {/* Logo */}
             <Link to={getHomeLink()} className="flex-shrink-0 flex items-center cursor-pointer gap-2">
-              <ShoppingCart className="w-7 h-7 text-slate-900" />
+              <ProCuroLogo size={32} />
               <span className="font-bold text-xl text-slate-900 hidden sm:block">ProCuro</span>
             </Link>
 
@@ -87,35 +140,79 @@ export default function Navbar() {
                       >
                         <div>
                           <p className="font-semibold">{addr.label || addr.city}</p>
-                          <p className="text-xs text-slate-500">{addr.street} {addr.house_number}</p>
+                          <p className="text-xs text-slate-500">{addr.street}</p>
                         </div>
                         {addr.is_favorite && <Star className="w-3 h-3 text-amber-400 fill-amber-400" />}
                       </button>
                     ))}
-                    <button
-                      onClick={() => { setAddrOpen(false); navigate('/owner/profile') }}
-                      className="w-full text-left p-2 text-emerald-600 text-sm font-semibold hover:bg-emerald-50 rounded-md mt-1 flex items-center gap-1"
-                    >
-                      <Plus className="w-3 h-3" /> Add New Address
-                    </button>
+                    {!addingAddr ? (
+                      <button
+                        onClick={() => { setAddingAddr(true); detectGPS() }}
+                        className="w-full text-left p-2 text-emerald-600 text-sm font-semibold hover:bg-emerald-50 rounded-md mt-1 flex items-center gap-1"
+                      >
+                        <Plus className="w-3 h-3" /> Add New Address
+                      </button>
+                    ) : (
+                      <form onSubmit={handleSaveAddress} className="mt-2 p-2 bg-slate-50 rounded-lg space-y-2">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-slate-600">New Address</span>
+                          <button
+                            type="button"
+                            onClick={() => { detectGPS() }}
+                            disabled={gpsLoading}
+                            className="flex items-center gap-1 text-xs text-emerald-600 font-semibold hover:text-emerald-700"
+                          >
+                            {gpsLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Navigation className="w-3 h-3" />}
+                            {gpsLoading ? 'Detecting...' : 'Use GPS'}
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          placeholder="Label (e.g. Restaurant)"
+                          value={addrForm.label}
+                          onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))}
+                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Street & number *"
+                          value={addrForm.street}
+                          onChange={e => setAddrForm(f => ({ ...f, street: e.target.value }))}
+                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                          required
+                        />
+                        <input
+                          type="text"
+                          placeholder="City *"
+                          value={addrForm.city}
+                          onChange={e => setAddrForm(f => ({ ...f, city: e.target.value }))}
+                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                          required
+                        />
+                        <div className="flex gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => { setAddingAddr(false); setAddrForm({ label: '', street: '', city: '', country: 'Germany' }) }}
+                            className="flex-1 py-1.5 text-xs border border-slate-200 rounded-md text-slate-600 hover:bg-slate-100"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={savingAddr}
+                            className="flex-1 py-1.5 text-xs bg-emerald-600 text-white rounded-md hover:bg-emerald-700 flex items-center justify-center gap-1"
+                          >
+                            {savingAddr ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                            Save
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
                 )}
               </div>
             )}
 
-            {/* Search bar — owner on store view, lg+ */}
-            {role === 'restaurant_owner' && isStoreView && (
-              <div className="hidden lg:flex ml-8 items-center bg-slate-100 rounded-full px-4 py-2 w-64 border border-slate-200 focus-within:border-emerald-500 transition-colors">
-                <Search className="w-4 h-4 text-slate-400 mr-2" />
-                <input type="text" placeholder="Search..." className="bg-transparent border-none focus:outline-none text-sm w-full" />
-                <div className="h-4 w-px bg-slate-300 mx-2" />
-                <div className="relative group">
-                  <button className="flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-emerald-600">
-                    All <Filter className="w-3 h-3" />
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Right side */}
@@ -191,11 +288,11 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center gap-2">
                 <Link to="/login" className="border-2 border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
-                  Log In
-                </Link>
-                <Link to="/register" className="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm">
-                  Sign Up
-                </Link>
+                Log In
+              </Link>
+              <Link to="/register" className="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm">
+                Sign Up
+              </Link>
               </div>
             )}
           </div>

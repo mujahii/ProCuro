@@ -1,10 +1,16 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, MapPin } from 'lucide-react'
+import { Search, MapPin, Filter, ChevronDown } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import HalalBadge from '../../components/ui/HalalBadge'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
+
+const SORT_OPTIONS = [
+  { value: '', label: 'Recommended' },
+  { value: 'name_asc', label: 'Name A–Z' },
+  { value: 'rating_desc', label: 'Top Rated' },
+]
 
 const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Vegetables', 'Fruits', 'Bakery', 'Beverages', 'Spices', 'Other']
 
@@ -13,7 +19,18 @@ export default function SupplierListPage() {
   const [suppliers, setSuppliers] = useState([])
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState(null)
+  const [sortBy, setSortBy] = useState('')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const filterRef = useRef(null)
+
+  useEffect(() => {
+    function handleClick(e) {
+      if (filterRef.current && !filterRef.current.contains(e.target)) setFilterOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
   useEffect(() => {
     loadSuppliers()
@@ -28,19 +45,21 @@ export default function SupplierListPage() {
     setLoading(false)
   }
 
-  const filtered = suppliers.filter(s => {
-    const matchesSearch = !search ||
-      s.business_name?.toLowerCase().includes(search.toLowerCase()) ||
-      s.city?.toLowerCase().includes(search.toLowerCase())
-
-    const matchesCategory = !activeCategory || (
-      Array.isArray(s.category)
-        ? s.category.includes(activeCategory)
-        : s.category === activeCategory
-    )
-
-    return matchesSearch && matchesCategory
-  })
+  const filtered = suppliers
+    .filter(s => {
+      const matchesSearch = !search ||
+        s.business_name?.toLowerCase().includes(search.toLowerCase()) ||
+        s.city?.toLowerCase().includes(search.toLowerCase())
+      const matchesCategory = !activeCategory || (
+        Array.isArray(s.category) ? s.category.includes(activeCategory) : s.category === activeCategory
+      )
+      return matchesSearch && matchesCategory
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name_asc') return (a.business_name || '').localeCompare(b.business_name || '')
+      if (sortBy === 'rating_desc') return (b.rating || 0) - (a.rating || 0)
+      return 0
+    })
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
@@ -51,16 +70,41 @@ export default function SupplierListPage() {
           <span className="text-sm text-slate-400">{filtered.length} supplier{filtered.length !== 1 ? 's' : ''}</span>
         </div>
 
-        {/* Search bar */}
-        <div className="flex-1 flex items-center bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-100 mb-4">
-          <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
-          <input
-            type="text"
-            placeholder="Search suppliers by name or city..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="bg-transparent border-none outline-none focus:outline-none ring-0 focus:ring-0 w-full text-sm"
-          />
+        {/* Search + Sort */}
+        <div className="flex gap-2 mb-4">
+          <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-slate-100">
+            <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
+            <input
+              type="text"
+              placeholder="Search suppliers by name or city..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="bg-transparent border-none outline-none focus:outline-none ring-0 focus:ring-0 w-full text-sm"
+            />
+          </div>
+          <div className="relative" ref={filterRef}>
+            <button
+              onClick={() => setFilterOpen(o => !o)}
+              className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+            >
+              <Filter className="w-4 h-4" />
+              <span className="hidden sm:inline">{sortBy ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Sort'}</span>
+              <ChevronDown className="w-3 h-3" />
+            </button>
+            {filterOpen && (
+              <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 z-20 py-1">
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSortBy(opt.value); setFilterOpen(false) }}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-slate-700 hover:bg-slate-50'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Category filter chips */}

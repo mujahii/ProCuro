@@ -68,7 +68,7 @@ export default function CartPage() {
       }
     }
     try {
-      const ids = await placeOrder({ groups: fullGroups, totalAmount: total })
+      const ids = await placeOrder({ groups: fullGroups, totalAmount: total, deliveryAddress: selectedAddress })
       setOrderIds(ids || [])
       clearCart?.()
       setStep(3)

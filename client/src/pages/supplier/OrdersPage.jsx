@@ -178,18 +178,13 @@ function RefundSection({ split, supplierId, onUploaded }) {
 
 function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload }) {
   const [ownerInfo, setOwnerInfo] = useState(null)
-  const [ownerAddress, setOwnerAddress] = useState(null)
+  const deliveryAddress = split.order?.delivery_address
 
   useEffect(() => {
     const ownerId = split.order?.restaurant_owner_id
     if (!ownerId) return
-    Promise.all([
-      supabase.from('users').select('full_name, restaurant_name, phone').eq('id', ownerId).single(),
-      supabase.from('addresses').select('label, street, postal_code, city').eq('user_id', ownerId).eq('is_default', true).maybeSingle(),
-    ]).then(([userRes, addrRes]) => {
-      setOwnerInfo(userRes.data)
-      setOwnerAddress(addrRes.data)
-    })
+    supabase.from('users').select('full_name, restaurant_name, phone').eq('id', ownerId).single()
+      .then(({ data }) => setOwnerInfo(data))
   }, [split.order?.restaurant_owner_id])
 
   return (
@@ -220,18 +215,18 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
                 <a href={`tel:${ownerInfo.phone}`} className="hover:underline">{ownerInfo.phone}</a>
               </div>
             )}
-            {ownerAddress ? (
+            {deliveryAddress ? (
               <div className="flex items-start gap-1.5 text-sm text-slate-600">
                 <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
                 <span>
-                  {[ownerAddress.street, [ownerAddress.postal_code, ownerAddress.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
-                  {ownerAddress.label && <span className="text-xs text-slate-400 ml-1">({ownerAddress.label})</span>}
+                  {[deliveryAddress.street, [deliveryAddress.postal_code, deliveryAddress.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
+                  {deliveryAddress.label && <span className="text-xs text-slate-400 ml-1">({deliveryAddress.label})</span>}
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 text-sm text-slate-400">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>No delivery address set</span>
+                <span>No delivery address provided</span>
               </div>
             )}
           </div>
@@ -344,7 +339,7 @@ export default function SupplierOrdersPage() {
     setLoading(true)
     const { data, error } = await supabase
       .from('order_splits')
-      .select(`*, order:orders(created_at, restaurant_owner_id), order_items(*, product:products(name, unit_type))`)
+      .select(`*, order:orders(created_at, restaurant_owner_id, delivery_address), order_items(*, product:products(name, unit_type))`)
       .eq('supplier_id', supplierId)
       .order('created_at', { ascending: false })
     if (error) console.error('loadOrders error:', error)

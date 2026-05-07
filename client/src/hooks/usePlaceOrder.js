@@ -9,7 +9,7 @@ export function usePlaceOrder() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  async function placeOrder({ groups, totalAmount }) {
+  async function placeOrder({ groups, totalAmount, deliveryAddress }) {
     setLoading(true)
     setError(null)
     try {
@@ -56,6 +56,12 @@ export function usePlaceOrder() {
         p_owner_id: user.id,
         p_total_amount: totalAmount,
         p_groups: groupsForRpc,
+        p_delivery_address: deliveryAddress ? {
+          label: deliveryAddress.label || null,
+          street: deliveryAddress.street || null,
+          postal_code: deliveryAddress.postal_code || null,
+          city: deliveryAddress.city || null,
+        } : null,
       })
       if (rpcError) throw rpcError
       clearCart()

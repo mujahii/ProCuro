@@ -134,7 +134,7 @@ export default function CartPage() {
 
         <div className="grid grid-cols-2 gap-4">
           {[
-            { id: 'card', icon: CreditCard, label: 'Card Payment' },
+            { id: 'bank_transfer', icon: CreditCard, label: 'Bank Transfer' },
             { id: 'cash_on_delivery', icon: Banknote, label: 'Cash on Delivery' },
           ].map(({ id, icon: Icon, label }) => (
             <button
@@ -146,19 +146,6 @@ export default function CartPage() {
               <span className="text-sm font-semibold">{label}</span>
             </button>
           ))}
-        </div>
-
-        <div
-          onClick={() => setSelectedPayment('bank_transfer')}
-          className={`p-4 rounded-xl border-2 flex items-center gap-4 cursor-pointer transition-all ${selectedPayment === 'bank_transfer' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 bg-white hover:border-slate-300'}`}
-        >
-          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selectedPayment === 'bank_transfer' ? 'border-emerald-500 bg-emerald-500' : 'border-slate-300'}`}>
-            {selectedPayment === 'bank_transfer' && <div className="w-2 h-2 rounded-full bg-white" />}
-          </div>
-          <div>
-            <p className={`font-semibold text-sm ${selectedPayment === 'bank_transfer' ? 'text-emerald-700' : 'text-slate-700'}`}>Bank Transfer</p>
-            <p className="text-xs text-slate-400">Transfer to supplier's account + upload receipt</p>
-          </div>
         </div>
 
         {selectedPayment === 'bank_transfer' && (

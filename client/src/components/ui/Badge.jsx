@@ -22,8 +22,8 @@ const statusLabels = {
   pending: 'Pending',
   approved: 'Approved',
   rejected: 'Rejected',
-  active: 'Active',
-  inactive: 'Inactive',
+  active: 'In Stock',
+  inactive: 'Out of Stock',
 }
 
 export default function Badge({ status, className = '' }) {

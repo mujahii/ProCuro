@@ -41,7 +41,7 @@ export default function SupplierProductsPage() {
   async function toggleActive(product) {
     const { data } = await supabase.from('products').update({ is_active: !product.is_active }).eq('id', product.id).select().single()
     setProducts(prev => prev.map(p => p.id === product.id ? data : p))
-    toast.success(data.is_active ? 'Product activated' : 'Product paused')
+    toast.success(data.is_active ? 'Marked as In Stock' : 'Marked as Out of Stock')
   }
 
   function getImageUrl(path) {
@@ -145,8 +145,8 @@ export default function SupplierProductsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-end">
-                        <button onClick={() => toggleActive(product)} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400">
-                          {product.is_active ? <ToggleRight className="w-4 h-4 text-primary" /> : <ToggleLeft className="w-4 h-4" />}
+                        <button onClick={() => toggleActive(product)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                          {product.is_active ? <ToggleRight className="w-7 h-7 text-emerald-600" /> : <ToggleLeft className="w-7 h-7 text-gray-300" />}
                         </button>
                         <button onClick={() => { setEditProduct(product); setShowForm(true) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400">
                           <Edit2 className="w-4 h-4" />

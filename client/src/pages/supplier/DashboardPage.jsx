@@ -163,14 +163,14 @@ export default function SupplierDashboardPage() {
                           <img
                             src={product.image_url}
                             alt={product.name}
-                            className={`w-full h-full object-cover ${!product.in_stock ? 'grayscale opacity-60' : ''}`}
+                            className={`w-full h-full object-cover ${!product.is_active ? 'grayscale opacity-60' : ''}`}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-slate-300">
                             <Package className="w-8 h-8" />
                           </div>
                         )}
-                        {!product.in_stock && (
+                        {!product.is_active && (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <span className="text-[9px] font-bold text-slate-600 bg-white/80 px-1 py-0.5 rounded">Out of Stock</span>
                           </div>
@@ -178,8 +178,8 @@ export default function SupplierDashboardPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-slate-900 text-sm truncate">{product.name}</p>
-                        <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5 ${product.in_stock ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                          {product.in_stock ? 'In Stock' : 'Out of Stock'}
+                        <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5 ${product.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                          {product.is_active ? 'In Stock' : 'Out of Stock'}
                         </span>
                         <p className="text-sm font-bold text-slate-900 mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">/ {product.unit_type}</span></p>
                       </div>

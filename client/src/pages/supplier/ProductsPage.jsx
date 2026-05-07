@@ -108,7 +108,6 @@ export default function SupplierProductsPage() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Category</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Price</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Stock</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
                 <th className="px-4 py-3"></th>
               </tr>
@@ -139,7 +138,6 @@ export default function SupplierProductsPage() {
                       <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{product.category}</span>
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold">€{Number(product.price).toFixed(2)}</td>
-                    <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-600">{product.stock_quantity}</td>
                     <td className="px-4 py-3">
                       <Badge status={product.is_active ? 'active' : 'inactive'} />
                     </td>

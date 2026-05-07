@@ -33,14 +33,14 @@ export default function AdminUsersPage() {
 
   async function toggleBan(user) {
     const next = !user.is_banned
-    const { error } = await supabase.from('users').update({ is_banned: next }).eq('id', user.id)
-    if (!error) {
-      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_banned: next } : u))
-      toast.success(next ? 'User banned' : 'User unbanned')
+    try {
+      const { error } = await supabase.from('users').update({ is_banned: next }).eq('id', user.id)
+      if (error) throw error
 
       if (user.role === 'supplier') {
         if (next) {
-          await supabase.from('supplier_profiles').update({ is_active: false }).eq('user_id', user.id)
+          const { error: spErr } = await supabase.from('supplier_profiles').update({ is_active: false }).eq('user_id', user.id)
+          if (spErr) throw spErr
         } else {
           const { data: sp } = await supabase.from('supplier_profiles').select('is_verified').eq('user_id', user.id).single()
           if (sp?.is_verified) {
@@ -57,6 +57,11 @@ export default function AdminUsersPage() {
           type: 'warning',
         })
       }
+
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_banned: next } : u))
+      toast.success(next ? 'User banned' : 'User unbanned')
+    } catch (err) {
+      toast.error(err.message || 'Failed to update user')
     }
   }
 

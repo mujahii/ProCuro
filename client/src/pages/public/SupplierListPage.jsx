@@ -40,6 +40,8 @@ export default function SupplierListPage() {
     const { data } = await supabase
       .from('supplier_profiles')
       .select('*, halal_certificates(status)')
+      .eq('is_active', true)
+      .eq('is_verified', true)
       .order('rating', { ascending: false })
     setSuppliers(data || [])
     setLoading(false)

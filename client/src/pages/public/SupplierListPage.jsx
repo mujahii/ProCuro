@@ -59,7 +59,7 @@ export default function SupplierListPage() {
             placeholder="Search suppliers by name or city..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="bg-transparent border-none focus:outline-none w-full text-sm"
+            className="bg-transparent border-none outline-none focus:outline-none ring-0 focus:ring-0 w-full text-sm"
           />
         </div>
 

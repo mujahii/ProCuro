@@ -93,15 +93,15 @@ function RefundSection({ split, supplierId, onUploaded }) {
   const inputRef = useRef(null)
 
   useEffect(() => {
-    if (split.order?.restaurant_owner_id) {
+    if (split.restaurant_owner_id) {
       supabase
         .from('owner_bank_details')
         .select('*')
-        .eq('owner_id', split.order.restaurant_owner_id)
+        .eq('owner_id', split.restaurant_owner_id)
         .maybeSingle()
         .then(({ data }) => setOwnerBank(data))
     }
-  }, [split.order?.restaurant_owner_id])
+  }, [split.restaurant_owner_id])
 
   async function handleUpload() {
     if (!file) return toast.error('Please select a receipt file')
@@ -295,10 +295,10 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
   const [ownerInfo, setOwnerInfo] = useState(null)
   const [ownerDefaultAddress, setOwnerDefaultAddress] = useState(null)
   const [showOwnerModal, setShowOwnerModal] = useState(false)
-  const deliveryAddress = split.order?.delivery_address
+  const deliveryAddress = split.delivery_address
 
   useEffect(() => {
-    const ownerId = split.order?.restaurant_owner_id
+    const ownerId = split.restaurant_owner_id
     if (!ownerId) return
     supabase.from('users').select('full_name, restaurant_name, phone').eq('id', ownerId).single()
       .then(({ data }) => setOwnerInfo(data))
@@ -308,7 +308,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         .eq('user_id', ownerId).eq('is_default', true).maybeSingle()
         .then(({ data }) => setOwnerDefaultAddress(data))
     }
-  }, [split.order?.restaurant_owner_id])
+  }, [split.restaurant_owner_id])
 
   const displayAddress = deliveryAddress || ownerDefaultAddress
 
@@ -517,7 +517,7 @@ export default function SupplierOrdersPage() {
     setLoading(true)
     const { data, error } = await supabase
       .from('order_splits')
-      .select(`*, order:orders(created_at, restaurant_owner_id, delivery_address), order_items(*, product:products(name, unit_type))`)
+      .select(`*, order_items(*, product:products(name, unit_type))`)
       .eq('supplier_id', supplierId)
       .order('created_at', { ascending: false })
     if (error) console.error('loadOrders error:', error)

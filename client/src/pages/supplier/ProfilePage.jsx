@@ -892,6 +892,7 @@ export default function SupplierProfilePage() {
   const [businessName, setBusinessName] = useState('')
   const [certs, setCerts] = useState([])
   const [certsLoading, setCertsLoading] = useState(true)
+  const [bankDetails, setBankDetails] = useState(null)
 
   const [showAvatarModal, setShowAvatarModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -922,6 +923,12 @@ export default function SupplierProfilePage() {
           .eq('supplier_id', sp.id)
           .order('uploaded_at', { ascending: false })
           .then(({ data }) => { setCerts(data || []); setCertsLoading(false) })
+        supabase
+          .from('supplier_bank_details')
+          .select('*')
+          .eq('supplier_id', sp.id)
+          .maybeSingle()
+          .then(({ data }) => setBankDetails(data || null))
       })
   }, [user])
 
@@ -1069,6 +1076,48 @@ export default function SupplierProfilePage() {
               )}
             </div>
           </div>
+          {/* Bank Details */}
+          <div className="border-t border-slate-100 pt-3 mt-1">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide">Bank Details</p>
+              <button onClick={() => setShowBankModal(true)} className="text-xs text-emerald-600 font-semibold hover:underline">
+                {bankDetails ? 'Edit' : 'Add'}
+              </button>
+            </div>
+            {bankDetails ? (
+              <div className="space-y-1.5">
+                {bankDetails.bank_name && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Bank</span>
+                    <span className="font-medium text-slate-800">{bankDetails.bank_name}</span>
+                  </div>
+                )}
+                {bankDetails.account_holder && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Account Holder</span>
+                    <span className="font-medium text-slate-800">{bankDetails.account_holder}</span>
+                  </div>
+                )}
+                {bankDetails.iban && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">IBAN</span>
+                    <span className="font-mono font-semibold text-slate-800 text-xs">{bankDetails.iban}</span>
+                  </div>
+                )}
+                {bankDetails.bic && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">BIC</span>
+                    <span className="font-medium text-slate-800">{bankDetails.bic}</span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button onClick={() => setShowBankModal(true)} className="text-sm text-amber-600 font-semibold hover:underline">
+                Add bank details →
+              </button>
+            )}
+          </div>
+
           {/* Verification status */}
           <div className={`mt-3 p-3 rounded-xl border text-sm font-medium flex items-center gap-2 ${
             supplierProfile?.is_verified
@@ -1090,7 +1139,6 @@ export default function SupplierProfilePage() {
           <SettingRow label="Change Email & Password" onClick={() => setShowPasswordModal(true)} />
           <SettingRow label="Update Phone Number" onClick={() => setShowPhoneModal(true)} />
           <SettingRow label="Manage My Addresses" onClick={() => setShowAddressModal(true)} />
-          <SettingRow label="Payment Methods" onClick={() => setShowBankModal(true)} />
         </div>
       </div>
 
@@ -1194,7 +1242,13 @@ export default function SupplierProfilePage() {
         />
       )}
       {showAddressModal && <AddressModal onClose={() => setShowAddressModal(false)} />}
-      {showBankModal && <BankModal userId={user.id} onClose={() => setShowBankModal(false)} />}
+      {showBankModal && <BankModal userId={user.id} onClose={() => {
+        setShowBankModal(false)
+        if (supplierProfile) {
+          supabase.from('supplier_bank_details').select('*').eq('supplier_id', supplierProfile.id).maybeSingle()
+            .then(({ data }) => setBankDetails(data || null))
+        }
+      }} />}
       {showDeleteModal && (
         <DeleteAccountModal
           onClose={() => setShowDeleteModal(false)}

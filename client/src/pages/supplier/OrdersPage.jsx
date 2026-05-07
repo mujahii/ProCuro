@@ -234,8 +234,12 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
           <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
-          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
-            <Store className="w-8 h-8 text-white" />
+          <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 overflow-hidden">
+            {ownerInfo?.avatar_url ? (
+              <img src={ownerInfo.avatar_url} alt="avatar" className="w-full h-full object-cover" />
+            ) : (
+              <Store className="w-10 h-10 text-white" />
+            )}
           </div>
           <h2 className="text-xl font-bold text-white">
             {ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant'}
@@ -246,6 +250,12 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
         </div>
 
         <div className="p-5 space-y-3">
+          {ownerInfo?.bio && (
+            <div className="p-3 bg-slate-50 rounded-xl">
+              <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">About</p>
+              <p className="text-sm text-slate-700">{ownerInfo.bio}</p>
+            </div>
+          )}
           {ownerInfo?.phone && (
             <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
               <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -273,7 +283,7 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
               </div>
             </div>
           )}
-          {!ownerInfo?.phone && !deliveryAddress && (
+          {!ownerInfo?.bio && !ownerInfo?.phone && !deliveryAddress && (
             <p className="text-sm text-slate-400 text-center py-2">No additional contact details available.</p>
           )}
         </div>
@@ -300,7 +310,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
   useEffect(() => {
     const ownerId = split.restaurant_owner_id
     if (!ownerId) return
-    supabase.from('users').select('full_name, restaurant_name, phone').eq('id', ownerId).single()
+    supabase.from('users').select('full_name, restaurant_name, phone, bio, avatar_url').eq('id', ownerId).single()
       .then(({ data }) => setOwnerInfo(data))
     // Fallback: if this order has no stored delivery address, fetch owner's default address
     if (!deliveryAddress) {
@@ -629,7 +639,11 @@ export default function SupplierOrdersPage() {
       ) : (
         <div className="space-y-4">
           {displayed.map(split => (
-            <div key={split.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 hover:shadow-md transition-shadow">
+            <div
+              key={split.id}
+              onClick={() => setSelectedSplit(split)}
+              className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
+            >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
@@ -647,7 +661,7 @@ export default function SupplierOrdersPage() {
                     <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">Reason: {split.cancellation_reason}</p>
                   )}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
                   <span className="text-xl font-bold text-slate-900">€{Number(split.subtotal).toFixed(2)}</span>
                   <div className="flex flex-col gap-2">
                     <button

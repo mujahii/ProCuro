@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import toast from 'react-hot-toast'
 
 const AuthContext = createContext(null)
 
@@ -28,30 +27,16 @@ export function AuthProvider({ children }) {
       if (session?.user) {
         setAuthUser(session.user)
         const p = await fetchProfile(session.user.id)
-        if (p?.is_banned) {
-          await supabase.auth.signOut()
-          toast.error('Your account has been suspended.')
-          setAuthUser(null)
-          setProfile(null)
-        } else {
-          setProfile(p)
-        }
+        setProfile(p)
       }
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        setAuthUser(session.user)
         const p = await fetchProfile(session.user.id)
-        if (p?.is_banned) {
-          await supabase.auth.signOut()
-          toast.error('Your account has been suspended.')
-          setAuthUser(null)
-          setProfile(null)
-        } else {
-          setProfile(p)
-        }
+        setAuthUser(session.user)
+        setProfile(p)
       } else {
         setAuthUser(null)
         setProfile(null)
@@ -64,12 +49,8 @@ export function AuthProvider({ children }) {
   async function signIn(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
-    setAuthUser(data.user)
     const p = await fetchProfile(data.user.id)
-    if (p?.is_banned) {
-      await supabase.auth.signOut()
-      throw new Error('Your account has been suspended.')
-    }
+    setAuthUser(data.user)
     setProfile(p)
     return p
   }

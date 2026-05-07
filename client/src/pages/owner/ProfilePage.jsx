@@ -476,7 +476,6 @@ export default function ProfilePage() {
 
   function handleSignOut() {
     signOut()
-    navigate('/')
   }
 
   function handleAvatarSaved(url) {
@@ -595,7 +594,7 @@ export default function ProfilePage() {
       {showDeleteModal && (
         <DeleteAccountModal
           onClose={() => setShowDeleteModal(false)}
-          onDeleted={async () => { await signOut(); navigate('/') }}
+          onDeleted={() => signOut()}
         />
       )}
     </div>

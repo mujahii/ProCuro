@@ -96,9 +96,10 @@ export function AuthProvider({ children }) {
   }
 
   async function signOut() {
-    await supabase.auth.signOut()
+    await supabase.auth.signOut({ scope: 'global' })
     localStorage.removeItem('procuro_cart')
     setProfile(null)
+    window.location.href = '/'
   }
 
   return (

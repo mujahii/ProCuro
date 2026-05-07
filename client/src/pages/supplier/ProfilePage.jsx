@@ -662,7 +662,6 @@ export default function SupplierProfilePage() {
 
   function handleSignOut() {
     signOut()
-    navigate('/')
   }
 
   async function viewCert(cert) {
@@ -838,7 +837,7 @@ export default function SupplierProfilePage() {
       {showDeleteModal && (
         <DeleteAccountModal
           onClose={() => setShowDeleteModal(false)}
-          onDeleted={async () => { await signOut(); navigate('/') }}
+          onDeleted={() => signOut()}
         />
       )}
       {showCertUploadModal && supplierProfile && (

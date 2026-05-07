@@ -37,7 +37,6 @@ export default function Navbar({ onMenuClick }) {
 
   function handleSignOut() {
     signOut()
-    navigate('/')
   }
 
   function getHomeLink() {

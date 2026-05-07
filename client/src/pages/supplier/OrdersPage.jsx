@@ -5,6 +5,7 @@ import StatusBadge from '../../components/ui/StatusBadge'
 import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { formatIBAN } from '../../lib/formatIBAN'
 
 const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery']
 const COMPLETED = ['delivered', 'cancelled', 'refund_uploaded', 'completed']
@@ -125,25 +126,25 @@ function RefundSection({ split, supplierId, onUploaded }) {
           {ownerBank.bank_name && (
             <div>
               <p className="text-[10px] uppercase tracking-wide text-slate-400">Bank</p>
-              <p className="text-sm text-slate-800">{ownerBank.bank_name}</p>
+              <p className="text-sm text-slate-800 uppercase">{ownerBank.bank_name}</p>
             </div>
           )}
           {ownerBank.account_holder && (
             <div>
               <p className="text-[10px] uppercase tracking-wide text-slate-400">Account Holder</p>
-              <p className="text-sm text-slate-800">{ownerBank.account_holder}</p>
+              <p className="text-sm text-slate-800 uppercase">{ownerBank.account_holder}</p>
             </div>
           )}
           {ownerBank.iban && (
             <div>
               <p className="text-[10px] uppercase tracking-wide text-slate-400">IBAN</p>
-              <p className="text-sm text-slate-800 font-mono break-all">{ownerBank.iban}</p>
+              <p className="text-sm text-slate-800 font-mono break-all">{formatIBAN(ownerBank.iban)}</p>
             </div>
           )}
           {ownerBank.bic && (
             <div>
               <p className="text-[10px] uppercase tracking-wide text-slate-400">BIC</p>
-              <p className="text-sm text-slate-800">{ownerBank.bic}</p>
+              <p className="text-sm text-slate-800 font-mono uppercase">{ownerBank.bic}</p>
             </div>
           )}
         </div>

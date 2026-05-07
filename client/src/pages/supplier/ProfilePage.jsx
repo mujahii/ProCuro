@@ -10,6 +10,7 @@ import {
   Building2, MapPin, Tag
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { formatIBAN, handleIBANInput } from '../../lib/formatIBAN'
 
 const CERT_STATUS = {
   pending:  { label: 'Pending Review', icon: Clock,       color: 'text-amber-600 bg-amber-50 border-amber-200' },
@@ -521,15 +522,15 @@ function BankModal({ userId, onClose }) {
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">IBAN</label>
               <input
                 value={form.iban}
-                onChange={e => { setForm(f => ({ ...f, iban: e.target.value })); setIbanError('') }}
-                className={`w-full px-4 py-3 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 ${ibanError ? 'border-red-300' : 'border-slate-200'}`}
+                onChange={e => { setForm(f => ({ ...f, iban: handleIBANInput(e.target.value) })); setIbanError('') }}
+                className={`w-full px-4 py-3 rounded-xl border text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500 ${ibanError ? 'border-red-300' : 'border-slate-200'}`}
                 placeholder="DE89 3704 0044 0532 0130 00"
               />
               {ibanError && <p className="text-xs text-red-600 mt-1">{ibanError}</p>}
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">BIC / SWIFT</label>
-              <input value={form.bic} onChange={e => setForm(f => ({ ...f, bic: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="COBADEFFXXX" />
+              <input value={form.bic} onChange={e => setForm(f => ({ ...f, bic: e.target.value.toUpperCase() }))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="COBADEFFXXX" />
             </div>
             <div className="flex gap-3 pt-1">
               <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
@@ -1095,25 +1096,25 @@ export default function SupplierProfilePage() {
                 {bankDetails.bank_name && (
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-400">Bank</span>
-                    <span className="text-sm font-semibold text-slate-900">{bankDetails.bank_name}</span>
+                    <span className="text-sm font-semibold text-slate-900 uppercase">{bankDetails.bank_name}</span>
                   </div>
                 )}
                 {bankDetails.account_holder && (
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-400">Account Holder</span>
-                    <span className="text-sm font-semibold text-slate-900">{bankDetails.account_holder}</span>
+                    <span className="text-sm font-semibold text-slate-900 uppercase">{bankDetails.account_holder}</span>
                   </div>
                 )}
                 {bankDetails.iban && (
                   <div className="flex justify-between items-center gap-4">
                     <span className="text-xs text-slate-400 flex-shrink-0">IBAN</span>
-                    <span className="text-sm font-semibold text-slate-900">{bankDetails.iban}</span>
+                    <span className="text-sm font-semibold text-slate-900 font-mono">{formatIBAN(bankDetails.iban)}</span>
                   </div>
                 )}
                 {bankDetails.bic && (
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-400">BIC / SWIFT</span>
-                    <span className="text-sm font-semibold text-slate-900">{bankDetails.bic}</span>
+                    <span className="text-sm font-semibold text-slate-900 uppercase font-mono">{bankDetails.bic}</span>
                   </div>
                 )}
               </div>

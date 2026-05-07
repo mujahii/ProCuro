@@ -8,6 +8,7 @@ import {
   Package, TrendingUp, Star, Trash2, Pencil, Navigation, Banknote
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import { formatIBAN, handleIBANInput } from '../../lib/formatIBAN'
 
 function Modal({ title, onClose, children, maxW = 'max-w-sm' }) {
   return (
@@ -509,7 +510,7 @@ function BankModal({ userId, current, onClose, onSaved }) {
     try {
       const { error } = await supabase
         .from('owner_bank_details')
-        .upsert({ owner_id: userId, ...form }, { onConflict: 'owner_id' })
+        .upsert({ owner_id: userId, ...form, iban: form.iban.replace(/\s/g, '') }, { onConflict: 'owner_id' })
       if (error) throw error
       onSaved()
       onClose()
@@ -538,14 +539,14 @@ function BankModal({ userId, current, onClose, onSaved }) {
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">IBAN *</label>
-          <input value={form.iban} onChange={e => setForm(f => ({ ...f, iban: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+          <input value={form.iban} onChange={e => setForm(f => ({ ...f, iban: handleIBANInput(e.target.value) }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500"
             placeholder="DE89 3704 0044 0532 0130 00" />
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">BIC / SWIFT</label>
-          <input value={form.bic} onChange={e => setForm(f => ({ ...f, bic: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          <input value={form.bic} onChange={e => setForm(f => ({ ...f, bic: e.target.value.toUpperCase() }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500"
             placeholder="e.g. DEUTDEDB" />
         </div>
         <p className="text-xs text-slate-400">These details are shared with suppliers only when they need to process a refund to you.</p>
@@ -683,25 +684,25 @@ export default function ProfilePage() {
             {bankDetails.bank_name && (
               <div className="py-2">
                 <p className="text-[10px] uppercase tracking-wide text-slate-400">Bank</p>
-                <p className="text-sm text-slate-800 mt-0.5">{bankDetails.bank_name}</p>
+                <p className="text-sm text-slate-800 uppercase mt-0.5">{bankDetails.bank_name}</p>
               </div>
             )}
             {bankDetails.account_holder && (
               <div className="py-2">
                 <p className="text-[10px] uppercase tracking-wide text-slate-400">Account Holder</p>
-                <p className="text-sm text-slate-800 mt-0.5">{bankDetails.account_holder}</p>
+                <p className="text-sm text-slate-800 uppercase mt-0.5">{bankDetails.account_holder}</p>
               </div>
             )}
             {bankDetails.iban && (
               <div className="py-2">
                 <p className="text-[10px] uppercase tracking-wide text-slate-400">IBAN</p>
-                <p className="text-sm text-slate-800 font-mono mt-0.5 break-all">{bankDetails.iban}</p>
+                <p className="text-sm text-slate-800 font-mono mt-0.5 break-all">{formatIBAN(bankDetails.iban)}</p>
               </div>
             )}
             {bankDetails.bic && (
               <div className="py-2">
                 <p className="text-[10px] uppercase tracking-wide text-slate-400">BIC</p>
-                <p className="text-sm text-slate-800 mt-0.5">{bankDetails.bic}</p>
+                <p className="text-sm text-slate-800 font-mono uppercase mt-0.5">{bankDetails.bic}</p>
               </div>
             )}
           </div>

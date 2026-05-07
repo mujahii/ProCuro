@@ -10,7 +10,7 @@ export default function SelectRolePage() {
   const navigate = useNavigate()
   const [selecting, setSelecting] = useState(false)
 
-  // Returning user already has a profile — skip straight to dashboard
+  // Already has a role — go straight to their dashboard
   useEffect(() => {
     if (loading) return
     if (!authUser) { navigate('/login', { replace: true }); return }
@@ -65,9 +65,12 @@ export default function SelectRolePage() {
             <ShoppingCart className="w-8 h-8 text-emerald-600" />
             <span className="text-2xl font-bold text-slate-900">ProCuro</span>
           </div>
-          <h2 className="text-xl font-black text-slate-900 mb-2">One last step</h2>
-          <p className="text-sm text-slate-500">
-            How will you use ProCuro?{' '}
+          <div className="mb-2">
+            <span className="text-2xl">🎉</span>
+          </div>
+          <h2 className="text-xl font-black text-slate-900 mb-2">Welcome to ProCuro!</h2>
+          <p className="text-sm text-slate-500 leading-relaxed">
+            Your account is ready. Now choose how you'll use ProCuro.{' '}
             <span className="font-semibold text-slate-700">This choice is permanent and cannot be changed.</span>
           </p>
         </div>

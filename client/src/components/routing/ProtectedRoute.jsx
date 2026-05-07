@@ -18,8 +18,8 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   // No auth session at all → login
   if (!authUser) return <Navigate to="/login" replace />
 
-  // Auth session exists but no profile row → role not chosen yet
-  if (!user) return <Navigate to="/select-role" replace />
+  // Auth session exists but no profile row or role not yet chosen → select role
+  if (!user || !role) return <Navigate to="/select-role" replace />
 
   // Wrong role for this area → redirect to their correct dashboard
   if (allowedRoles && !allowedRoles.includes(role)) {

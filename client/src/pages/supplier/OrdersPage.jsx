@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store, X } from 'lucide-react'
+import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store, X, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { formatIBAN } from '../../lib/formatIBAN'
@@ -201,6 +201,31 @@ function RefundSection({ split, supplierId, onUploaded }) {
   )
 }
 
+function PaymentReceiptDisplay({ path }) {
+  const [url, setUrl] = useState(null)
+
+  useEffect(() => {
+    if (!path) return
+    supabase.storage
+      .from('payment-receipts')
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => setUrl(data?.signedUrl || null))
+  }, [path])
+
+  if (!url) return null
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-1.5 text-sm text-emerald-600 font-semibold hover:underline"
+    >
+      <ExternalLink className="w-4 h-4" /> View Payment Receipt
+    </a>
+  )
+}
+
 function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
@@ -354,6 +379,11 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">Payment</p>
             <p className="font-semibold text-slate-900 capitalize">{split.payment_method?.replace(/_/g, ' ')}</p>
+            {split.payment_method === 'bank_transfer' && split.receipt_url && (
+              <div className="mt-1">
+                <PaymentReceiptDisplay path={split.receipt_url} />
+              </div>
+            )}
           </div>
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">Status</p>

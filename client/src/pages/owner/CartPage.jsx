@@ -6,6 +6,7 @@ import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import { usePlaceOrder } from '../../hooks/usePlaceOrder'
 import toast from 'react-hot-toast'
+import ModalPortal from '../../components/ui/ModalPortal'
 
 function getProductImageUrl(path) {
   if (!path) return null
@@ -406,7 +407,7 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-0 sm:pb-4">
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-0 sm:pb-4">
       <div className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 flex-shrink-0">
@@ -494,6 +495,6 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
           )}
         </div>
       </div>
-    </div>
+    </div></ModalPortal>
   )
 }

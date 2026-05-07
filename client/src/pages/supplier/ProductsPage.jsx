@@ -6,6 +6,7 @@ import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff, X } from 'lucide-react'
 import toast from 'react-hot-toast'
+import ModalPortal from '../../components/ui/ModalPortal'
 
 export default function SupplierProductsPage() {
   const { user } = useAuth()
@@ -62,7 +63,7 @@ export default function SupplierProductsPage() {
       </div>
 
       {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
+        <ModalPortal><div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl my-6 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <h2 className="text-xl font-bold text-slate-900">{editProduct ? 'Edit Product' : 'Add New Product'}</h2>
@@ -89,7 +90,7 @@ export default function SupplierProductsPage() {
               onCancel={() => { setShowForm(false); setEditProduct(null) }}
             />
           </div>
-        </div>
+        </div></ModalPortal>
       )}
 
       {products.length === 0 ? (

@@ -1,4 +1,5 @@
 import { MapPin, Loader2, X } from 'lucide-react'
+import ModalPortal from '../ui/ModalPortal'
 
 const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Beverages', 'Vegetables', 'Fruits', 'Spices', 'Bakery', 'Other']
 const CITIES = ['Berlin', 'Munich', 'Hamburg', 'Frankfurt', 'Cologne', 'Stuttgart', 'Düsseldorf', 'Leipzig']
@@ -99,7 +100,9 @@ export default function FilterSidebar({ filters, onChange, onNearMe, geoLoading,
   return (
     <>
       {mobileOpen && (
-        <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={onMobileClose} />
+        <ModalPortal>
+          <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={onMobileClose} />
+        </ModalPortal>
       )}
       <div className={`
         lg:hidden fixed bottom-0 left-0 right-0 z-50

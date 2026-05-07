@@ -6,6 +6,7 @@ import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
 import ProductForm from '../../components/supplier/ProductForm'
 import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, X, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import toast from 'react-hot-toast'
+import ModalPortal from '../../components/ui/ModalPortal'
 
 const PAGE_SIZE = 4
 
@@ -298,7 +299,7 @@ export default function SupplierDashboardPage() {
         </>
       )}
       {editProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
+        <ModalPortal><div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl my-6 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <h2 className="text-xl font-bold text-slate-900">Edit Product</h2>
@@ -320,7 +321,7 @@ export default function SupplierDashboardPage() {
               onCancel={() => setEditProduct(null)}
             />
           </div>
-        </div>
+        </div></ModalPortal>
       )}
     </div>
   )

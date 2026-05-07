@@ -5,18 +5,21 @@ import Badge from '../../components/ui/Badge'
 import { Upload, CheckCircle, Loader2, Award, ExternalLink, Pencil, Trash2, X, FileText } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import ModalPortal from '../../components/ui/ModalPortal'
 
 function Modal({ title, onClose, children }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 flex-shrink-0">
-          <h3 className="font-bold text-slate-900 text-base">{title}</h3>
-          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+    <ModalPortal>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden max-h-[90vh] flex flex-col">
+          <div className="flex items-center justify-between p-5 border-b border-slate-100 flex-shrink-0">
+            <h3 className="font-bold text-slate-900 text-base">{title}</h3>
+            <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
+          </div>
+          <div className="p-5 overflow-y-auto">{children}</div>
         </div>
-        <div className="p-5 overflow-y-auto">{children}</div>
       </div>
-    </div>
+    </ModalPortal>
   )
 }
 

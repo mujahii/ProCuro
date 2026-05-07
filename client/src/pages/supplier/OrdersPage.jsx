@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import StatusBadge from '../../components/ui/StatusBadge'
 import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store, X, ExternalLink } from 'lucide-react'
+import ModalPortal from '../../components/ui/ModalPortal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { formatIBAN } from '../../lib/formatIBAN'
@@ -26,7 +27,7 @@ function CancelModal({ split, onCancel, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -82,7 +83,7 @@ function CancelModal({ split, onCancel, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </div></ModalPortal>
   )
 }
 
@@ -228,7 +229,7 @@ function PaymentReceiptDisplay({ path }) {
 
 function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
         <div className="bg-emerald-600 px-6 py-8 text-center relative">
           <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
@@ -297,7 +298,7 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </div></ModalPortal>
   )
 }
 

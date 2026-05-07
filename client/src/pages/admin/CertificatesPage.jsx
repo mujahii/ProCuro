@@ -3,6 +3,7 @@ import { supabase } from '../../lib/supabase'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import { CheckCircle, XCircle, ExternalLink, Loader2 } from 'lucide-react'
+import ModalPortal from '../../components/ui/ModalPortal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -34,7 +35,7 @@ function CertModal({ cert, onApprove, onReject, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
       <div className="relative bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
         <h3 className="font-bold text-gray-900 text-lg mb-4">Review Certificate</h3>
@@ -79,7 +80,7 @@ function CertModal({ cert, onApprove, onReject, onClose }) {
 
         <button onClick={onClose} className="mt-3 w-full text-sm text-gray-500 hover:text-gray-700">Close</button>
       </div>
-    </div>
+    </div></ModalPortal>
   )
 }
 

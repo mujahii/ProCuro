@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
 import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag } from 'lucide-react'
+import ModalPortal from '../../components/ui/ModalPortal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -18,7 +19,7 @@ function ProductCardModal({ item, onClose }) {
   const img = getProductImageUrl(item.product?.image_url)
   const unitPrice = item.price_at_time
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         {img ? (
           <img src={img} alt={item.product?.name} className="w-full h-52 object-cover" />
@@ -53,7 +54,7 @@ function ProductCardModal({ item, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </div></ModalPortal>
   )
 }
 
@@ -74,7 +75,7 @@ function CancelModal({ split, onCancel, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -120,7 +121,7 @@ function CancelModal({ split, onCancel, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </div></ModalPortal>
   )
 }
 
@@ -168,7 +169,7 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
         <div className="bg-slate-900 px-6 py-8 text-center relative">
           <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
@@ -219,7 +220,7 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </div></ModalPortal>
   )
 }
 

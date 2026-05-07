@@ -3,6 +3,7 @@ import { X, Truck, Package } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { supabase } from '../../lib/supabase'
+import ModalPortal from '../ui/ModalPortal'
 import toast from 'react-hot-toast'
 
 function getProductImageUrl(path) {
@@ -43,7 +44,7 @@ export default function AddToCartModal({ product, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <ModalPortal><div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
         {/* Image */}
         <div className="relative h-64">
@@ -153,6 +154,6 @@ export default function AddToCartModal({ product, onClose }) {
           </div>
         </div>
       </div>
-    </div>
+    </div></ModalPortal>
   )
 }

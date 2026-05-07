@@ -1,6 +1,7 @@
 import { X, ShoppingCart, Minus, Plus, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
+import ModalPortal from '../ui/ModalPortal'
 
 export default function CartDrawer({ open, onClose }) {
   const { groupedBySupplier, itemCount, total, updateQty, removeItem } = useCart()
@@ -8,7 +9,7 @@ export default function CartDrawer({ open, onClose }) {
 
   return (
     <>
-      {open && <div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} />}
+      {open && <ModalPortal><div className="fixed inset-0 bg-black/40 z-50" onClick={onClose} /></ModalPortal>}
       <div className={`fixed right-0 top-0 h-full w-full sm:w-96 bg-white z-50 flex flex-col shadow-2xl transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}>
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">

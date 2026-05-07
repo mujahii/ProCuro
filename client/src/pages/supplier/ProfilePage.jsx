@@ -6,7 +6,7 @@ import { useAddresses } from '../../context/AddressContext'
 import {
   LogOut, Loader2, User, FileText, CheckCircle, Clock, XCircle,
   ExternalLink, ChevronRight, X, Eye, EyeOff, Upload,
-  Package, TrendingUp, Star, Trash2, CreditCard, Pencil
+  Package, TrendingUp, Star, Trash2, CreditCard, Pencil, Navigation
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -281,6 +281,36 @@ function AddressModal({ onClose }) {
   const { addresses, addAddress, deleteAddress, setDefault, reload } = useAddresses()
   const [form, setForm] = useState({ label: '', street: '', house_number: '', postal_code: '', city: '' })
   const [saving, setSaving] = useState(false)
+  const [gpsLoading, setGpsLoading] = useState(false)
+
+  async function detectGPS() {
+    if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
+    setGpsLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lng } = pos.coords
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+          const data = await res.json()
+          const addr = data.address || {}
+          setForm(f => ({
+            ...f,
+            street: addr.road || '',
+            house_number: addr.house_number || '',
+            postal_code: addr.postcode || '',
+            city: addr.city || addr.town || addr.village || addr.suburb || '',
+          }))
+          toast.success('Location detected!')
+        } catch {
+          toast.error('Could not fetch address from GPS')
+        } finally {
+          setGpsLoading(false)
+        }
+      },
+      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
 
   async function handleAdd(e) {
     e.preventDefault()
@@ -353,7 +383,20 @@ function AddressModal({ onClose }) {
       </div>
 
       <form onSubmit={handleAdd}>
-        <p className="text-sm font-bold text-slate-900 mb-3">Add New Address (Germany)</p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-bold text-slate-900">Add New Address (Germany)</p>
+          <button
+            type="button"
+            onClick={detectGPS}
+            disabled={gpsLoading}
+            className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700 disabled:opacity-50 transition-colors"
+          >
+            {gpsLoading
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <Navigation className="w-3.5 h-3.5" />}
+            {gpsLoading ? 'Detecting...' : 'Use My Location'}
+          </button>
+        </div>
         <div className="space-y-2.5">
           <input
             value={form.label}

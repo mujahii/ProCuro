@@ -27,6 +27,7 @@ export default function SupplierProfilePage() {
   const [loading, setLoading] = useState(true)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [showAll, setShowAll] = useState(false)
+  const [activeCategory, setActiveCategory] = useState(null)
 
   useEffect(() => {
     if (id) loadData()
@@ -80,7 +81,8 @@ export default function SupplierProfilePage() {
 
   const isHalalCertified = certificates.length > 0 || supplier.is_verified
   const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))]
-  const visibleProducts = showAll ? products : products.slice(0, INITIAL_LIMIT)
+  const filteredProducts = activeCategory ? products.filter(p => p.category === activeCategory) : products
+  const visibleProducts = showAll ? filteredProducts : filteredProducts.slice(0, INITIAL_LIMIT)
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
@@ -126,26 +128,31 @@ export default function SupplierProfilePage() {
             {/* Header + See All */}
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-bold text-slate-900">Products</h2>
-              {products.length > INITIAL_LIMIT && (
+              {filteredProducts.length > INITIAL_LIMIT && (
                 <button
                   onClick={() => setShowAll(v => !v)}
                   className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
                 >
-                  {showAll ? 'Show Less' : `See All (${products.length})`}
+                  {showAll ? 'Show Less' : `See All (${filteredProducts.length})`}
                 </button>
               )}
             </div>
 
-            {/* Category chips — iOS style, text only */}
+            {/* Category chips — iOS style, text only, filterable */}
             {uniqueCategories.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-4">
                 {uniqueCategories.map(cat => (
-                  <span
+                  <button
                     key={cat}
-                    className="text-xs font-medium px-3 py-1 rounded-full bg-slate-100 text-slate-600"
+                    onClick={() => { setActiveCategory(activeCategory === cat ? null : cat); setShowAll(false) }}
+                    className={`text-xs font-medium px-3 py-1 rounded-full transition-colors ${
+                      activeCategory === cat
+                        ? 'bg-slate-900 text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
                   >
                     {cat}
-                  </span>
+                  </button>
                 ))}
               </div>
             )}
@@ -195,12 +202,12 @@ export default function SupplierProfilePage() {
             )}
 
             {/* Inline expand link at bottom too */}
-            {products.length > INITIAL_LIMIT && (
+            {filteredProducts.length > INITIAL_LIMIT && (
               <button
                 onClick={() => setShowAll(v => !v)}
                 className="mt-4 w-full py-2.5 text-sm text-emerald-600 font-semibold border border-emerald-200 rounded-xl hover:bg-emerald-50 transition-colors"
               >
-                {showAll ? 'Show Less' : `See All ${products.length} Products`}
+                {showAll ? 'Show Less' : `See All ${filteredProducts.length} Products`}
               </button>
             )}
           </div>

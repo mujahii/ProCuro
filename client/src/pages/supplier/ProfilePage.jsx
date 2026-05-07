@@ -106,7 +106,10 @@ function EditProfileModal({ userId, currentName, supplierProfile, currentBio, on
     try {
       await supabase.from('users').update({ full_name: name.trim(), bio: bio.trim() || null }).eq('id', userId)
       if (supplierProfile?.id) {
-        await supabase.from('supplier_profiles').update({ business_name: businessName.trim() || null }).eq('id', supplierProfile.id)
+        await supabase.from('supplier_profiles').update({
+          business_name: businessName.trim() || null,
+          description: bio.trim() || null,
+        }).eq('id', supplierProfile.id)
       }
       onSaved({ full_name: name.trim(), business_name: businessName.trim() || null, bio: bio.trim() || null })
       onClose()

@@ -92,17 +92,21 @@ function AvatarModal({ userId, onClose, onSaved }) {
   )
 }
 
-function EditProfileModal({ userId, supplierProfile, currentBio, onClose, onSaved }) {
-  const [name, setName] = useState(supplierProfile?.business_name || '')
+function EditProfileModal({ userId, currentName, supplierProfile, currentBio, onClose, onSaved }) {
+  const [name, setName] = useState(currentName || '')
+  const [businessName, setBusinessName] = useState(supplierProfile?.business_name || '')
   const [bio, setBio] = useState(currentBio || '')
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
+    if (!name.trim()) { toast.error('Name is required'); return }
     setSaving(true)
     try {
-      await supabase.from('supplier_profiles').update({ business_name: name }).eq('id', supplierProfile.id)
-      await supabase.from('users').update({ bio }).eq('id', userId)
-      onSaved({ business_name: name, bio })
+      await supabase.from('users').update({ full_name: name.trim(), bio: bio.trim() || null }).eq('id', userId)
+      if (supplierProfile?.id) {
+        await supabase.from('supplier_profiles').update({ business_name: businessName.trim() || null }).eq('id', supplierProfile.id)
+      }
+      onSaved({ full_name: name.trim(), business_name: businessName.trim() || null, bio: bio.trim() || null })
       onClose()
       toast.success('Profile updated!')
     } catch {
@@ -116,16 +120,26 @@ function EditProfileModal({ userId, supplierProfile, currentBio, onClose, onSave
     <Modal title="Edit Profile" onClose={onClose}>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Business Name</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Your Name</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            placeholder="Your business name"
+            placeholder="e.g. Ahmed Hassan"
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Bio</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Business Name</label>
+          <input
+            value={businessName}
+            onChange={e => setBusinessName(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. Al-Nour Meats GmbH"
+          />
+          <p className="text-xs text-slate-400 mt-1">Shown under your name in the app</p>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
           <textarea
             value={bio}
             onChange={e => setBio(e.target.value)}
@@ -133,6 +147,7 @@ function EditProfileModal({ userId, supplierProfile, currentBio, onClose, onSave
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             placeholder="A short description about your business..."
           />
+          <p className="text-xs text-slate-400 mt-1">Optional — tells restaurant owners about your supply business</p>
         </div>
         <div className="flex gap-3 pt-1">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
@@ -140,7 +155,7 @@ function EditProfileModal({ userId, supplierProfile, currentBio, onClose, onSave
           </button>
           <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save
+            Save Changes
           </button>
         </div>
       </div>
@@ -709,13 +724,11 @@ export default function SupplierProfilePage() {
     updateProfileState({ avatar_url: url })
   }
 
-  function handleProfileSaved({ business_name, bio: newBio }) {
-    setBusinessName(business_name)
-    setBio(newBio)
-    updateProfileState({ bio: newBio })
+  function handleProfileSaved({ full_name, business_name, bio: newBio }) {
+    setBusinessName(business_name || '')
+    setBio(newBio || '')
+    updateProfileState({ full_name, business_name, bio: newBio })
   }
-
-  const displayName = businessName || profile?.full_name || 'Supplier'
 
   return (
     <div className="max-w-sm mx-auto space-y-4 py-4">
@@ -741,8 +754,8 @@ export default function SupplierProfilePage() {
               <Pencil className="w-3 h-3" />
             </button>
           </div>
-          <h2 className="font-bold text-slate-900 text-lg mt-3">{displayName}</h2>
-          <p className="text-sm text-slate-500">Supplier</p>
+          <h2 className="font-bold text-slate-900 text-lg mt-3">{profile?.full_name || 'Supplier'}</h2>
+          <p className="text-sm text-slate-400 mt-0.5">{businessName || 'Supplier'}</p>
           {bio && <p className="text-sm text-slate-500 italic mt-1">"{bio}"</p>}
           <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-emerald-600 font-semibold hover:underline">
             Edit Profile
@@ -852,6 +865,7 @@ export default function SupplierProfilePage() {
       {showEditModal && (
         <EditProfileModal
           userId={user.id}
+          currentName={profile?.full_name || ''}
           supplierProfile={supplierProfile}
           currentBio={bio}
           onClose={() => setShowEditModal(false)}

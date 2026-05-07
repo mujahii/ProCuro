@@ -253,6 +253,8 @@ export default function Navbar({ onMenuClick }) {
                       <p className="text-xs text-slate-400 truncate max-w-[130px]">
                         {role === 'restaurant_owner'
                           ? (profile?.restaurant_name || 'Restaurant')
+                          : role === 'supplier'
+                          ? (profile?.business_name || 'Supplier')
                           : role?.replace('_', ' ')}
                       </p>
                     </div>

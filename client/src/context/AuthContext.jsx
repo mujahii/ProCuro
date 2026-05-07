@@ -12,11 +12,15 @@ export function AuthProvider({ children }) {
   async function fetchProfile(userId) {
     const { data, error } = await supabase
       .from('users')
-      .select('*')
+      .select('*, supplier_profiles(business_name)')
       .eq('id', userId)
       .single()
     if (error) return null
-    return data
+    const sp = Array.isArray(data?.supplier_profiles)
+      ? data.supplier_profiles[0]
+      : data?.supplier_profiles
+    const { supplier_profiles: _, ...rest } = data
+    return { ...rest, business_name: sp?.business_name || null }
   }
 
   useEffect(() => {

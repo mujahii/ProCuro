@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft } from 'lucide-react'
+import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
-const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'shipped']
-const COMPLETED = ['delivered', 'cancelled']
+const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery']
+const COMPLETED = ['delivered', 'cancelled', 'refund_uploaded', 'completed']
 
 function CancelModal({ split, onCancel, onClose }) {
   const [reason, setReason] = useState('')
@@ -51,7 +51,8 @@ function CancelModal({ split, onCancel, onClose }) {
             disabled={loading}
             className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
           >
-            <XCircle className="w-4 h-4" /> Cancel Order
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+            Cancel Order
           </button>
         </div>
       </div>
@@ -59,7 +60,122 @@ function CancelModal({ split, onCancel, onClose }) {
   )
 }
 
-function OrderDetailView({ split, onBack, onUpdateStatus, onCancel }) {
+function RefundSection({ split, supplierId, onUploaded }) {
+  const [ownerBank, setOwnerBank] = useState(null)
+  const [file, setFile] = useState(null)
+  const [uploading, setUploading] = useState(false)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    if (split.order?.restaurant_owner_id) {
+      supabase
+        .from('owner_bank_details')
+        .select('*')
+        .eq('owner_id', split.order.restaurant_owner_id)
+        .maybeSingle()
+        .then(({ data }) => setOwnerBank(data))
+    }
+  }, [split.order?.restaurant_owner_id])
+
+  async function handleUpload() {
+    if (!file) return toast.error('Please select a receipt file')
+    setUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `refunds/${supplierId}/${Date.now()}-${split.id}.${ext}`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('payment-receipts')
+        .upload(path, file)
+      if (uploadError) throw uploadError
+
+      const { error: rpcError } = await supabase.rpc('update_order_split_status', {
+        p_split_id: split.id,
+        p_status: 'refund_uploaded',
+        p_refund_receipt_url: uploadData.path,
+      })
+      if (rpcError) throw rpcError
+      toast.success('Refund receipt uploaded! Owner has been notified.')
+      onUploaded()
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  if (split.refund_receipt_url) {
+    return (
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+        <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+        <div>
+          <p className="text-sm font-bold text-emerald-800">Refund receipt uploaded</p>
+          <p className="text-xs text-emerald-700 mt-0.5">Waiting for the restaurant owner to confirm.</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+      <p className="text-sm font-bold text-amber-800">Bank Transfer Refund Required</p>
+      <p className="text-xs text-amber-700">This order was paid via bank transfer. Please return the payment to the restaurant owner and upload your refund receipt.</p>
+      {ownerBank ? (
+        <div className="bg-white rounded-lg p-3 border border-amber-100 space-y-2">
+          <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Owner Bank Details</p>
+          {ownerBank.bank_name && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400">Bank</p>
+              <p className="text-sm text-slate-800">{ownerBank.bank_name}</p>
+            </div>
+          )}
+          {ownerBank.account_holder && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400">Account Holder</p>
+              <p className="text-sm text-slate-800">{ownerBank.account_holder}</p>
+            </div>
+          )}
+          {ownerBank.iban && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400">IBAN</p>
+              <p className="text-sm text-slate-800 font-mono break-all">{ownerBank.iban}</p>
+            </div>
+          )}
+          {ownerBank.bic && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400">BIC</p>
+              <p className="text-sm text-slate-800">{ownerBank.bic}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-xs text-amber-700 italic">Owner bank details not available — contact them directly.</p>
+      )}
+      <div className="space-y-2">
+        <input ref={inputRef} type="file" className="hidden" accept="image/*,.pdf" onChange={e => setFile(e.target.files[0])} />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="w-full py-2.5 border-2 border-dashed border-amber-300 rounded-lg text-sm text-amber-800 font-medium hover:bg-amber-100 transition-colors flex items-center justify-center gap-2"
+        >
+          <Upload className="w-4 h-4" />
+          {file ? file.name : 'Select Refund Receipt'}
+        </button>
+        {file && (
+          <button
+            onClick={handleUpload}
+            disabled={uploading}
+            className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+          >
+            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+            Upload & Notify Owner
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
@@ -104,6 +220,28 @@ function OrderDetailView({ split, onBack, onUpdateStatus, onCancel }) {
           <span className="text-2xl font-bold text-emerald-600">€{Number(split.subtotal).toFixed(2)}</span>
         </div>
       </div>
+
+      {split.cancellation_reason && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
+          <p className="font-semibold mb-1">Cancellation Reason</p>
+          <p>{split.cancellation_reason}</p>
+        </div>
+      )}
+
+      {split.status === 'cancelled' && split.payment_method === 'bank_transfer' && (
+        <RefundSection split={split} supplierId={supplierId} onUploaded={() => { onReload(); onBack() }} />
+      )}
+
+      {split.status === 'refund_uploaded' && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-emerald-800">Refund receipt uploaded</p>
+            <p className="text-xs text-emerald-700 mt-0.5">Waiting for the restaurant owner to confirm the refund.</p>
+          </div>
+        </div>
+      )}
+
       <div className="flex gap-3">
         {split.status === 'pending_confirmation' && (
           <>
@@ -117,8 +255,8 @@ function OrderDetailView({ split, onBack, onUpdateStatus, onCancel }) {
         )}
         {split.status === 'confirmed' && (
           <>
-            <button onClick={() => { onUpdateStatus(split.id, 'shipped'); onBack() }} className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
-              <Truck className="w-4 h-4" /> Mark as Shipped
+            <button onClick={() => { onUpdateStatus(split.id, 'out_for_delivery'); onBack() }} className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
+              <Truck className="w-4 h-4" /> Mark Out for Delivery
             </button>
             <button onClick={() => onCancel(split)} className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors">
               Cancel
@@ -161,31 +299,28 @@ export default function SupplierOrdersPage() {
   }
 
   async function updateStatus(splitId, status) {
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch(`/api/orders/splits/${splitId}/status`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
+    const { error } = await supabase.rpc('update_order_split_status', {
+      p_split_id: splitId,
+      p_status: status,
     })
-    if (res.ok) {
-      setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status } : s))
-      toast.success(status === 'confirmed' ? 'Order confirmed!' : 'Order marked as shipped!')
-    }
+    if (error) { toast.error(error.message); return }
+    setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status } : s))
+    if (selectedSplit?.id === splitId) setSelectedSplit(prev => ({ ...prev, status }))
+    const msgs = { confirmed: 'Order confirmed!', out_for_delivery: 'Marked as out for delivery!' }
+    toast.success(msgs[status] || 'Status updated')
   }
 
   async function cancelOrder(splitId, reason) {
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch(`/api/orders/splits/${splitId}/status`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'cancelled', cancellationReason: reason }),
+    const { error } = await supabase.rpc('update_order_split_status', {
+      p_split_id: splitId,
+      p_status: 'cancelled',
+      p_cancellation_reason: reason,
     })
-    if (res.ok) {
-      setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status: 'cancelled', cancellation_reason: reason } : s))
-      toast.success('Order cancelled')
-      setCancelTarget(null)
-      if (selectedSplit?.id === splitId) setSelectedSplit(null)
-    }
+    if (error) { toast.error(error.message); return }
+    setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status: 'cancelled', cancellation_reason: reason } : s))
+    toast.success('Order cancelled')
+    setCancelTarget(null)
+    if (selectedSplit?.id === splitId) setSelectedSplit(null)
   }
 
   const ongoing = splits.filter(s => ONGOING.includes(s.status))
@@ -197,9 +332,11 @@ export default function SupplierOrdersPage() {
       <>
         <OrderDetailView
           split={selectedSplit}
+          supplierId={supplierProfile?.id}
           onBack={() => setSelectedSplit(null)}
           onUpdateStatus={updateStatus}
           onCancel={s => setCancelTarget(s)}
+          onReload={() => supplierProfile && loadOrders(supplierProfile.id)}
         />
         {cancelTarget && (
           <CancelModal split={cancelTarget} onCancel={cancelOrder} onClose={() => setCancelTarget(null)} />
@@ -212,7 +349,6 @@ export default function SupplierOrdersPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">Orders</h1>
 
-      {/* Tabs */}
       <div className="flex gap-4 border-b border-slate-200">
         {[
           { id: 'ongoing', label: 'Ongoing Orders', count: ongoing.length },
@@ -279,10 +415,10 @@ export default function SupplierOrdersPage() {
                     )}
                     {split.status === 'confirmed' && (
                       <button
-                        onClick={() => updateStatus(split.id, 'shipped')}
+                        onClick={() => updateStatus(split.id, 'out_for_delivery')}
                         className="px-3 py-1.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
                       >
-                        <Truck className="w-3.5 h-3.5" /> Mark Shipped
+                        <Truck className="w-3.5 h-3.5" /> Out for Delivery
                       </button>
                     )}
                     {(split.status === 'pending_confirmation' || split.status === 'confirmed') && (

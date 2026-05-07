@@ -1,11 +1,11 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
 import {
   LogOut, Loader2, User, ChevronRight, X, Eye, EyeOff,
-  Package, TrendingUp, Star, Trash2, Pencil, Navigation
+  Package, TrendingUp, Star, Trash2, Pencil, Navigation, Banknote
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -494,6 +494,73 @@ function DeleteAccountModal({ onClose, onDeleted }) {
   )
 }
 
+function BankModal({ userId, current, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    bank_name: current?.bank_name || '',
+    account_holder: current?.account_holder || '',
+    iban: current?.iban || '',
+    bic: current?.bic || '',
+  })
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave() {
+    if (!form.iban.trim()) { toast.error('IBAN is required'); return }
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('owner_bank_details')
+        .upsert({ owner_id: userId, ...form }, { onConflict: 'owner_id' })
+      if (error) throw error
+      onSaved()
+      onClose()
+      toast.success('Bank details saved!')
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Modal title="Bank Details" onClose={onClose}>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Bank Name</label>
+          <input value={form.bank_name} onChange={e => setForm(f => ({ ...f, bank_name: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. Deutsche Bank" />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Account Holder</label>
+          <input value={form.account_holder} onChange={e => setForm(f => ({ ...f, account_holder: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="Full name on account" />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">IBAN *</label>
+          <input value={form.iban} onChange={e => setForm(f => ({ ...f, iban: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+            placeholder="DE89 3704 0044 0532 0130 00" />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">BIC / SWIFT</label>
+          <input value={form.bic} onChange={e => setForm(f => ({ ...f, bic: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. DEUTDEDB" />
+        </div>
+        <p className="text-xs text-slate-400">These details are shared with suppliers only when they need to process a refund to you.</p>
+        <div className="flex gap-3 pt-1">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">Cancel</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+            Save
+          </button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
 function SettingRow({ label, onClick }) {
   return (
     <button
@@ -513,6 +580,7 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState(profile?.full_name || '')
   const [restaurantName, setRestaurantName] = useState(profile?.restaurant_name || '')
   const [bio, setBio] = useState(profile?.bio || '')
+  const [bankDetails, setBankDetails] = useState(null)
 
   const [showAvatarModal, setShowAvatarModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -520,6 +588,14 @@ export default function ProfilePage() {
   const [showPhoneModal, setShowPhoneModal] = useState(false)
   const [showAddressModal, setShowAddressModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showBankModal, setShowBankModal] = useState(false)
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('owner_bank_details').select('*').eq('owner_id', user.id).maybeSingle()
+        .then(({ data }) => setBankDetails(data))
+    }
+  }, [user])
 
   function handleSignOut() {
     signOut()
@@ -588,6 +664,54 @@ export default function ProfilePage() {
         </button>
       </div>
 
+      {/* Bank Details */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="flex items-center justify-between px-4 pt-5 pb-3">
+          <div className="flex items-center gap-2">
+            <Banknote className="w-4 h-4 text-emerald-600" />
+            <h3 className="font-bold text-slate-900 text-base">Bank Details</h3>
+          </div>
+          <button
+            onClick={() => setShowBankModal(true)}
+            className="text-xs text-emerald-600 font-semibold hover:underline"
+          >
+            {bankDetails ? 'Edit' : 'Add'}
+          </button>
+        </div>
+        {bankDetails ? (
+          <div className="px-4 pb-5 space-y-2 divide-y divide-slate-50">
+            {bankDetails.bank_name && (
+              <div className="py-2">
+                <p className="text-[10px] uppercase tracking-wide text-slate-400">Bank</p>
+                <p className="text-sm text-slate-800 mt-0.5">{bankDetails.bank_name}</p>
+              </div>
+            )}
+            {bankDetails.account_holder && (
+              <div className="py-2">
+                <p className="text-[10px] uppercase tracking-wide text-slate-400">Account Holder</p>
+                <p className="text-sm text-slate-800 mt-0.5">{bankDetails.account_holder}</p>
+              </div>
+            )}
+            {bankDetails.iban && (
+              <div className="py-2">
+                <p className="text-[10px] uppercase tracking-wide text-slate-400">IBAN</p>
+                <p className="text-sm text-slate-800 font-mono mt-0.5 break-all">{bankDetails.iban}</p>
+              </div>
+            )}
+            {bankDetails.bic && (
+              <div className="py-2">
+                <p className="text-[10px] uppercase tracking-wide text-slate-400">BIC</p>
+                <p className="text-sm text-slate-800 mt-0.5">{bankDetails.bic}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="px-4 pb-5">
+            <p className="text-sm text-slate-400">Add your bank details so suppliers can refund you if needed.</p>
+          </div>
+        )}
+      </div>
+
       {/* Account Settings */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <h3 className="font-bold text-slate-900 text-base px-4 pt-5 pb-2">Account Settings</h3>
@@ -595,7 +719,6 @@ export default function ProfilePage() {
           <SettingRow label="Change Email & Password" onClick={() => setShowPasswordModal(true)} />
           <SettingRow label="Update Phone Number" onClick={() => setShowPhoneModal(true)} />
           <SettingRow label="Manage My Addresses" onClick={() => setShowAddressModal(true)} />
-          <SettingRow label="Payment Methods" onClick={() => toast('Payment methods coming soon')} />
         </div>
       </div>
 
@@ -640,6 +763,17 @@ export default function ProfilePage() {
         />
       )}
       {showAddressModal && <AddressModal onClose={() => setShowAddressModal(false)} />}
+      {showBankModal && (
+        <BankModal
+          userId={user.id}
+          current={bankDetails}
+          onClose={() => setShowBankModal(false)}
+          onSaved={() => {
+            supabase.from('owner_bank_details').select('*').eq('owner_id', user.id).maybeSingle()
+              .then(({ data }) => setBankDetails(data))
+          }}
+        />
+      )}
       {showDeleteModal && (
         <DeleteAccountModal
           onClose={() => setShowDeleteModal(false)}

@@ -13,9 +13,6 @@ export function usePlaceOrder() {
     setLoading(true)
     setError(null)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const token = session?.access_token ?? ''
-
       // Upload receipts first (client side, requires auth session for storage policy)
       const groupsWithUrls = {}
       for (const [supplierId, group] of Object.entries(groups)) {
@@ -41,22 +38,26 @@ export function usePlaceOrder() {
         }
       }
 
-      // Create order via server (transactional)
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ groups: groupsWithUrls, totalAmount }),
+      // Convert to array format for RPC
+      const groupsForRpc = Object.entries(groupsWithUrls).map(([supplierId, group]) => ({
+        supplier_id: supplierId,
+        payment_method: group.paymentMethod,
+        receipt_url: group.receiptUrl,
+        subtotal: group.items.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0),
+        items: group.items.map(item => ({
+          product_id: item.productId,
+          quantity: item.quantity,
+          price: Number(item.product.price),
+          unit_type: item.product.unit_type,
+        })),
+      }))
+
+      const { data, error: rpcError } = await supabase.rpc('place_order', {
+        p_owner_id: user.id,
+        p_total_amount: totalAmount,
+        p_groups: groupsForRpc,
       })
-
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.error || 'Order failed')
-      }
-
-      const data = await res.json()
+      if (rpcError) throw rpcError
       clearCart()
       return data
     } catch (err) {

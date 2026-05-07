@@ -3,12 +3,12 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
-const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'shipped']
-const COMPLETED = ['delivered', 'cancelled']
+const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded']
+const COMPLETED = ['delivered', 'completed', 'cancelled']
 
 export default function OrdersPage() {
   const { user, profile } = useAuth()
@@ -40,30 +40,33 @@ export default function OrdersPage() {
   }
 
   async function markDelivered(splitId) {
-    const { data: { session } } = await supabase.auth.getSession()
-    await fetch(`/api/orders/splits/${splitId}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${session?.access_token ?? ''}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status: 'delivered' }),
+    const { error } = await supabase.rpc('update_order_split_status', {
+      p_split_id: splitId,
+      p_status: 'delivered',
     })
+    if (error) { toast.error(error.message); return }
     toast.success('Order marked as delivered!')
     fetchOrders()
   }
 
   async function cancelOrder(splitId) {
-    const { data: { session } } = await supabase.auth.getSession()
-    await fetch(`/api/orders/splits/${splitId}/status`, {
-      method: 'PATCH',
-      headers: {
-        'Authorization': `Bearer ${session?.access_token ?? ''}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ status: 'cancelled', cancellation_reason: 'Cancelled by restaurant owner' }),
+    const { error } = await supabase.rpc('update_order_split_status', {
+      p_split_id: splitId,
+      p_status: 'cancelled',
+      p_cancellation_reason: 'Cancelled by restaurant owner',
     })
+    if (error) { toast.error(error.message); return }
     toast.success('Order cancelled')
+    fetchOrders()
+  }
+
+  async function confirmRefund(splitId) {
+    const { error } = await supabase.rpc('update_order_split_status', {
+      p_split_id: splitId,
+      p_status: 'completed',
+    })
+    if (error) { toast.error(error.message); return }
+    toast.success('Refund confirmed! Order completed.')
     fetchOrders()
   }
 
@@ -75,14 +78,22 @@ export default function OrdersPage() {
   const displayed = tab === 'ongoing' ? ongoingSplits : completedSplits
 
   if (selectedOrder) {
-    return <OrderDetailView split={selectedOrder} profile={profile} onBack={() => setSelectedOrder(null)} onMarkDelivered={markDelivered} onCancel={cancelOrder} />
+    return (
+      <OrderDetailView
+        split={selectedOrder}
+        profile={profile}
+        onBack={() => { setSelectedOrder(null); fetchOrders() }}
+        onMarkDelivered={markDelivered}
+        onCancel={cancelOrder}
+        onConfirmRefund={confirmRefund}
+      />
+    )
   }
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">My Orders</h1>
 
-      {/* Tabs */}
       <div className="flex gap-4 border-b border-slate-200">
         {[
           { id: 'ongoing', label: 'Ongoing Orders', count: ongoingSplits.length },
@@ -128,6 +139,9 @@ export default function OrdersPage() {
                   </div>
                   <p className="text-sm text-slate-600 font-medium">{split.supplier?.business_name}</p>
                   <p className="text-xs text-slate-400 mt-0.5">{format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm')}</p>
+                  {split.cancellation_reason && (
+                    <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">{split.cancellation_reason}</p>
+                  )}
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="text-xl font-bold text-slate-900">€{Number(split.subtotal).toFixed(2)}</span>
@@ -138,12 +152,20 @@ export default function OrdersPage() {
                     >
                       View Details <ChevronRight className="w-4 h-4" />
                     </button>
-                    {split.status === 'shipped' && (
+                    {split.status === 'out_for_delivery' && (
                       <button
                         onClick={() => markDelivered(split.id)}
                         className="px-3 py-1.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors"
                       >
                         Mark Delivered
+                      </button>
+                    )}
+                    {split.status === 'refund_uploaded' && (
+                      <button
+                        onClick={() => confirmRefund(split.id)}
+                        className="px-3 py-1.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1 justify-center"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5" /> Confirm Refund
                       </button>
                     )}
                     {split.status === 'pending_confirmation' && (
@@ -165,7 +187,32 @@ export default function OrdersPage() {
   )
 }
 
-function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancel }) {
+function RefundReceiptDisplay({ path }) {
+  const [url, setUrl] = useState(null)
+
+  useEffect(() => {
+    if (!path) return
+    supabase.storage
+      .from('payment-receipts')
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => setUrl(data?.signedUrl || null))
+  }, [path])
+
+  if (!url) return null
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 text-sm text-emerald-600 font-semibold hover:underline"
+    >
+      <ExternalLink className="w-4 h-4" /> View Refund Receipt
+    </a>
+  )
+}
+
+function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancel, onConfirmRefund }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
@@ -202,7 +249,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancel }) 
           <div className="bg-slate-50 p-4 rounded-xl space-y-2">
             {split.order_items?.map(item => (
               <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-slate-700">{item.quantity}x {item.product?.name}</span>
+                <span className="text-slate-700">{item.quantity}× {item.product?.name}</span>
                 <span className="font-semibold text-slate-900">€{(item.price_at_time * item.quantity).toFixed(2)}</span>
               </div>
             ))}
@@ -222,6 +269,20 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancel }) 
         </div>
       )}
 
+      {split.status === 'refund_uploaded' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-bold text-amber-800">Refund Receipt Uploaded</p>
+          <p className="text-xs text-amber-700">The supplier has uploaded proof of refund. Please verify and confirm below.</p>
+          {split.refund_receipt_url && <RefundReceiptDisplay path={split.refund_receipt_url} />}
+          <button
+            onClick={() => { onConfirmRefund(split.id); onBack() }}
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md"
+          >
+            <CheckCircle className="w-4 h-4" /> Confirm Refund Received
+          </button>
+        </div>
+      )}
+
       <div className="flex gap-3">
         <button
           onClick={() => generateInvoice(split.order, [split], profile)}
@@ -229,7 +290,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancel }) 
         >
           <Download className="w-4 h-4" /> Download Invoice
         </button>
-        {split.status === 'shipped' && (
+        {split.status === 'out_for_delivery' && (
           <button
             onClick={() => { onMarkDelivered(split.id); onBack() }}
             className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"

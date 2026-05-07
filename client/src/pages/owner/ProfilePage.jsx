@@ -564,7 +564,7 @@ export default function ProfilePage() {
             </button>
           </div>
           <h2 className="font-bold text-slate-900 text-lg mt-3">{displayName || 'Restaurant Owner'}</h2>
-          {restaurantName && <p className="text-sm text-slate-400 mt-0.5">{restaurantName}</p>}
+          <p className="text-sm text-slate-400 mt-0.5">{restaurantName || 'Restaurant'}</p>
           {bio && <p className="text-sm text-slate-500 italic mt-1">"{bio}"</p>}
           <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-emerald-600 font-semibold hover:underline">
             Edit Profile

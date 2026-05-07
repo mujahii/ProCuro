@@ -251,8 +251,8 @@ export default function Navbar({ onMenuClick }) {
                         {profile?.full_name || 'User'}
                       </p>
                       <p className="text-xs text-slate-400 truncate max-w-[130px]">
-                        {role === 'restaurant_owner' && profile?.restaurant_name
-                          ? profile.restaurant_name
+                        {role === 'restaurant_owner'
+                          ? (profile?.restaurant_name || 'Restaurant')
                           : role?.replace('_', ' ')}
                       </p>
                     </div>

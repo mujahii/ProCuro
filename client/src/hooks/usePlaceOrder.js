@@ -38,17 +38,17 @@ export function usePlaceOrder() {
         }
       }
 
-      // Convert to array format for RPC
+      // Convert to array format for RPC (items are already mapped to flat {productId, quantity, price, unitType})
       const groupsForRpc = Object.entries(groupsWithUrls).map(([supplierId, group]) => ({
         supplier_id: supplierId,
         payment_method: group.paymentMethod,
         receipt_url: group.receiptUrl,
-        subtotal: group.items.reduce((sum, item) => sum + (Number(item.product.price) * item.quantity), 0),
+        subtotal: Number(group.subtotal) || 0,
         items: group.items.map(item => ({
           product_id: item.productId,
           quantity: item.quantity,
-          price: Number(item.product.price),
-          unit_type: item.product.unit_type,
+          price: Number(item.price),
+          unit_type: item.unitType,
         })),
       }))
 

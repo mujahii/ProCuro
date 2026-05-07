@@ -158,7 +158,7 @@ export default function SupplierLayout() {
             <button
               onClick={toggleCollapsed}
               title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className="w-full flex items-center justify-center p-2 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
+              className="w-full flex items-center justify-center p-2 rounded-lg text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
             >
               {collapsed
                 ? <ChevronRight className="w-4 h-4" />
@@ -179,6 +179,7 @@ export default function SupplierLayout() {
           </div>
         </main>
       </div>
+
     </div>
   )
 }

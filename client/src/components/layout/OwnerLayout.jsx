@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
 import { ShoppingBag, ShoppingCart, Package, BarChart3, User, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import Navbar from './Navbar'
-import ChatbotFAB from '../ai/ChatbotFAB'
 import CookieConsent from '../ui/CookieConsent'
 
 const navItems = [
@@ -124,7 +123,6 @@ export default function OwnerLayout() {
         </main>
       </div>
 
-      <ChatbotFAB />
       <CookieConsent />
     </div>
   )

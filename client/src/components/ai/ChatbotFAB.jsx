@@ -1,13 +1,9 @@
 import { useState } from 'react'
 import { MessageCircle, X } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
 import ChatbotDrawer from './ChatbotDrawer'
 
 export default function ChatbotFAB() {
-  const { role } = useAuth()
   const [open, setOpen] = useState(false)
-
-  if (role !== 'restaurant_owner') return null
 
   return (
     <>

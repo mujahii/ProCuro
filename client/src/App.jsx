@@ -43,6 +43,7 @@ import SupplierProfilePage from './pages/supplier/ProfilePage'
 import ProtectedRoute from './components/routing/ProtectedRoute'
 import PublicOnlyRoute from './components/routing/PublicOnlyRoute'
 import AdminLayout from './components/layout/AdminLayout'
+import ChatbotFAB from './components/ai/ChatbotFAB'
 
 export default function App() {
   return (
@@ -108,6 +109,7 @@ export default function App() {
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <ChatbotFAB />
         </AddressProvider>
       </CartProvider>
     </AuthProvider>

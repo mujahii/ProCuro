@@ -202,7 +202,7 @@ export default function StorePage() {
           <h2 className="text-lg font-bold text-slate-900">
             {selectedCategory !== 'All' ? selectedCategory : 'Recommended Orders'}
           </h2>
-          <button className="text-sm text-emerald-600 font-semibold hover:text-emerald-700">See All</button>
+          <button onClick={() => navigate('/suppliers')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">See All <ChevronRight className="w-4 h-4" /></button>
         </div>
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

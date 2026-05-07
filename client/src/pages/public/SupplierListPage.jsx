@@ -1,15 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, MapPin, CheckCircle, Filter } from 'lucide-react'
+import { Search, MapPin } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import HalalBadge from '../../components/ui/HalalBadge'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 
+const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Vegetables', 'Fruits', 'Bakery', 'Beverages', 'Spices', 'Other']
+
 export default function SupplierListPage() {
   const navigate = useNavigate()
   const [suppliers, setSuppliers] = useState([])
   const [search, setSearch] = useState('')
+  const [activeCategory, setActiveCategory] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -25,9 +28,19 @@ export default function SupplierListPage() {
     setLoading(false)
   }
 
-  const filtered = suppliers.filter(s =>
-    !search || s.business_name?.toLowerCase().includes(search.toLowerCase()) || s.city?.toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = suppliers.filter(s => {
+    const matchesSearch = !search ||
+      s.business_name?.toLowerCase().includes(search.toLowerCase()) ||
+      s.city?.toLowerCase().includes(search.toLowerCase())
+
+    const matchesCategory = !activeCategory || (
+      Array.isArray(s.category)
+        ? s.category.includes(activeCategory)
+        : s.category === activeCategory
+    )
+
+    return matchesSearch && matchesCategory
+  })
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
@@ -35,24 +48,36 @@ export default function SupplierListPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-slate-900">All Suppliers</h1>
-          <span className="text-sm text-slate-400">{filtered.length} suppliers</span>
+          <span className="text-sm text-slate-400">{filtered.length} supplier{filtered.length !== 1 ? 's' : ''}</span>
         </div>
 
-        {/* Search */}
-        <div className="flex gap-3 mb-6">
-          <div className="flex-1 flex items-center bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-100">
-            <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
-            <input
-              type="text"
-              placeholder="Search suppliers by name or city..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="bg-transparent border-none focus:outline-none w-full text-sm"
-            />
-          </div>
-          <button className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl shadow-sm border border-slate-100 text-sm text-slate-600 font-medium hover:border-slate-300 transition-colors">
-            <Filter className="w-4 h-4" /> Filter
-          </button>
+        {/* Search bar */}
+        <div className="flex-1 flex items-center bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-100 mb-4">
+          <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
+          <input
+            type="text"
+            placeholder="Search suppliers by name or city..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="bg-transparent border-none focus:outline-none w-full text-sm"
+          />
+        </div>
+
+        {/* Category filter chips */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          {CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+              className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                activeCategory === cat
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
 
         {loading ? (
@@ -61,7 +86,15 @@ export default function SupplierListPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-slate-400">No suppliers found{search ? ` for "${search}"` : ''}</p>
+            <p className="text-slate-400">No suppliers found{search ? ` for "${search}"` : ''}{activeCategory ? ` in ${activeCategory}` : ''}</p>
+            {(search || activeCategory) && (
+              <button
+                onClick={() => { setSearch(''); setActiveCategory(null) }}
+                className="mt-3 text-sm text-emerald-600 font-semibold hover:underline"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -69,6 +102,9 @@ export default function SupplierListPage() {
               const certs = supplier.halal_certificates || []
               const isVerified = supplier.is_verified || certs.some(c => c.status === 'approved')
               const isPending = !isVerified && certs.some(c => c.status === 'pending')
+              const categories = Array.isArray(supplier.category)
+                ? supplier.category
+                : supplier.category ? [supplier.category] : []
               return (
                 <div
                   key={supplier.id}
@@ -92,16 +128,20 @@ export default function SupplierListPage() {
                     {supplier.rating > 0 && (
                       <p className="text-xs text-amber-500 mt-1">★ {Number(supplier.rating).toFixed(1)}</p>
                     )}
-                    {supplier.description && (
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-1">{supplier.description}</p>
+                    {categories.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {categories.map(c => (
+                          <span key={c} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{c}</span>
+                        ))}
+                      </div>
                     )}
                     {isVerified ? (
                       <div className="mt-2 inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-medium border border-emerald-100">
-                        <HalalBadge status="approved" size={12} /> Halal
+                        <HalalBadge status="approved" size={12} /> Halal Certified
                       </div>
                     ) : isPending ? (
                       <div className="mt-2 inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full text-[10px] font-medium border border-amber-100">
-                        Pending
+                        Pending Review
                       </div>
                     ) : null}
                   </div>

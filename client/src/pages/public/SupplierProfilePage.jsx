@@ -8,6 +8,8 @@ import Footer from '../../components/layout/Footer'
 import AddToCartModal from '../../components/store/AddToCartModal'
 import toast from 'react-hot-toast'
 
+const INITIAL_LIMIT = 6
+
 function getProductImageUrl(path) {
   if (!path) return null
   if (path.startsWith('http')) return path
@@ -24,6 +26,7 @@ export default function SupplierProfilePage() {
   const [certificates, setCertificates] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [showAll, setShowAll] = useState(false)
 
   useEffect(() => {
     if (id) loadData()
@@ -32,7 +35,7 @@ export default function SupplierProfilePage() {
   async function loadData() {
     const [{ data: sp }, { data: prods }, { data: certs }] = await Promise.all([
       supabase.from('supplier_profiles').select('*').eq('id', id).single(),
-      supabase.from('products').select('*').eq('supplier_id', id).eq('is_active', true).limit(12),
+      supabase.from('products').select('*').eq('supplier_id', id).eq('is_active', true).order('created_at', { ascending: false }),
       supabase.from('halal_certificates').select('*').eq('supplier_id', id).eq('status', 'approved'),
     ])
     setSupplier(sp)
@@ -76,6 +79,8 @@ export default function SupplierProfilePage() {
   }
 
   const isHalalCertified = certificates.length > 0 || supplier.is_verified
+  const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))]
+  const visibleProducts = showAll ? products : products.slice(0, INITIAL_LIMIT)
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
@@ -85,7 +90,7 @@ export default function SupplierProfilePage() {
           <ArrowLeft className="w-4 h-4" /> Back
         </button>
 
-        {/* Banner — no avatar, image fills background */}
+        {/* Banner */}
         <div className="relative h-48 bg-slate-900 rounded-xl overflow-hidden mb-8">
           {supplier.avatar_url ? (
             <img src={supplier.avatar_url} alt={supplier.business_name} className="w-full h-full object-cover opacity-60" />
@@ -117,8 +122,34 @@ export default function SupplierProfilePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Products — 2/3 width */}
-          <div className="md:col-span-2 space-y-4">
-            <h2 className="text-xl font-bold text-slate-900">Products</h2>
+          <div className="md:col-span-2">
+            {/* Header + See All */}
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xl font-bold text-slate-900">Products</h2>
+              {products.length > INITIAL_LIMIT && (
+                <button
+                  onClick={() => setShowAll(v => !v)}
+                  className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
+                >
+                  {showAll ? 'Show Less' : `See All (${products.length})`}
+                </button>
+              )}
+            </div>
+
+            {/* Category chips — iOS style, text only */}
+            {uniqueCategories.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {uniqueCategories.map(cat => (
+                  <span
+                    key={cat}
+                    className="text-xs font-medium px-3 py-1 rounded-full bg-slate-100 text-slate-600"
+                  >
+                    {cat}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {products.length === 0 ? (
               <div className="bg-white rounded-xl border border-slate-100 p-12 text-center">
                 <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
@@ -126,7 +157,7 @@ export default function SupplierProfilePage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {products.map(product => {
+                {visibleProducts.map(product => {
                   const imgUrl = getProductImageUrl(product.image_url)
                   return (
                     <div
@@ -162,46 +193,61 @@ export default function SupplierProfilePage() {
                 })}
               </div>
             )}
+
+            {/* Inline expand link at bottom too */}
+            {products.length > INITIAL_LIMIT && (
+              <button
+                onClick={() => setShowAll(v => !v)}
+                className="mt-4 w-full py-2.5 text-sm text-emerald-600 font-semibold border border-emerald-200 rounded-xl hover:bg-emerald-50 transition-colors"
+              >
+                {showAll ? 'Show Less' : `See All ${products.length} Products`}
+              </button>
+            )}
           </div>
 
           {/* Sidebar — 1/3 width */}
           <div className="space-y-4">
-            {/* About */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-              <h3 className="font-bold text-slate-900 mb-3">About</h3>
-              {supplier.description ? (
-                <p className="text-sm text-slate-600 leading-relaxed">{supplier.description}</p>
-              ) : (
-                <p className="text-sm text-slate-400">No description provided</p>
-              )}
-              {supplier.category && (
-                <div className="mt-3">
-                  <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full font-medium">{supplier.category}</span>
-                </div>
-              )}
-            </div>
+            {/* About + Certifications in one card with dividers */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+              {/* About */}
+              <div className="p-5">
+                <h3 className="font-bold text-slate-900 mb-2">About</h3>
+                {supplier.description ? (
+                  <p className="text-sm text-slate-600 leading-relaxed">{supplier.description}</p>
+                ) : (
+                  <p className="text-sm text-slate-400 italic">No description provided</p>
+                )}
+                {supplier.category && (
+                  <span className="inline-block mt-3 text-xs font-medium px-3 py-1 rounded-full bg-slate-100 text-slate-600">
+                    {supplier.category}
+                  </span>
+                )}
+              </div>
 
-            {/* Certifications */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-              <h3 className="font-bold text-slate-900 mb-3">Certifications</h3>
-              {certificates.length === 0 ? (
-                <p className="text-sm text-slate-400">No certificates available</p>
-              ) : (
-                <div className="space-y-2">
-                  {certificates.map(cert => (
-                    <div key={cert.id} className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                      <FileText className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-emerald-900 truncate">{cert.file_name || 'Halal Certificate'}</p>
-                        <p className="text-xs text-emerald-700">Verified {new Date(cert.uploaded_at || cert.created_at).getFullYear()}</p>
+              <div className="border-t border-slate-100" />
+
+              {/* Certifications */}
+              <div className="p-5">
+                <h3 className="font-bold text-slate-900 mb-3">Certifications</h3>
+                {certificates.length === 0 ? (
+                  <p className="text-sm text-slate-400 italic">No certificates available</p>
+                ) : (
+                  <div className="space-y-2">
+                    {certificates.map(cert => (
+                      <div key={cert.id} className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
+                        <FileText className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-emerald-900 truncate">{cert.file_name || 'Halal Certificate'}</p>
+                          <p className="text-xs text-emerald-700">Verified {new Date(cert.uploaded_at || cert.created_at).getFullYear()}</p>
+                        </div>
+                        <button onClick={() => viewCert(cert)} className="text-emerald-600 hover:text-emerald-700 flex-shrink-0">
+                          <Eye className="w-4 h-4" />
+                        </button>
                       </div>
-                      <button onClick={() => viewCert(cert)} className="text-emerald-600 hover:text-emerald-700 flex-shrink-0">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* CTA */}

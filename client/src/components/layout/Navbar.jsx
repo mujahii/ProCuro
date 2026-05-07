@@ -168,7 +168,7 @@ export default function Navbar({ onMenuClick }) {
                             className="flex items-center gap-1 text-xs text-emerald-600 font-semibold hover:text-emerald-700"
                           >
                             {gpsLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Navigation className="w-3 h-3" />}
-                            {gpsLoading ? 'Detecting...' : 'Use GPS'}
+                            {gpsLoading ? 'Detecting...' : 'Use My Location'}
                           </button>
                         </div>
                         <input
@@ -192,14 +192,14 @@ export default function Navbar({ onMenuClick }) {
                             placeholder="Postal"
                             value={addrForm.postal_code}
                             onChange={e => setAddrForm(f => ({ ...f, postal_code: e.target.value }))}
-                            className="w-20 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                            className="w-[72px] min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
                           />
                           <input
                             type="text"
                             placeholder="City *"
                             value={addrForm.city}
                             onChange={e => setAddrForm(f => ({ ...f, city: e.target.value }))}
-                            className="flex-1 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                            className="w-[100px] min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
                             required
                           />
                         </div>

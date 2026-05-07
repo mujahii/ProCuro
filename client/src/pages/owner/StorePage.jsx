@@ -54,7 +54,7 @@ export default function StorePage() {
   useEffect(() => {
     supabase
       .from('supplier_profiles')
-      .select('*, halal_certificates(status)')
+      .select('*, halal_certificates(status), user:users!user_id(avatar_url)')
       .limit(8)
       .then(({ data }) => setSuppliers(data || []))
   }, [])
@@ -151,40 +151,46 @@ export default function StorePage() {
             See All <ChevronRight className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-          {suppliers.map(supplier => (
-            <div
-              key={supplier.id}
-              onClick={() => navigate(`/supplier/${supplier.id}`)}
-              className="min-w-[200px] cursor-pointer bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow"
-            >
-              <div className="w-16 h-16 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
-                {supplier.avatar_url ? (
-                  <img src={supplier.avatar_url} alt={supplier.business_name} className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-2xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
-                )}
-              </div>
-              <h3 className="font-bold text-slate-900 text-sm">{supplier.business_name}</h3>
-              <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{supplier.city}</p>
-              {supplier.rating > 0 && (
-                <div className="flex items-center gap-1 mt-1 text-xs text-amber-500">
-                  <span>★</span> {Number(supplier.rating).toFixed(1)}
+        <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+          {suppliers.length === 0 ? (
+            <p className="text-sm text-slate-400 py-2">No suppliers yet.</p>
+          ) : suppliers.map(supplier => {
+            const avatarUrl = supplier.avatar_url || supplier.user?.avatar_url
+            const certs = supplier.halal_certificates || []
+            const isVerified = supplier.is_verified || certs.some(c => c.status === 'approved')
+            const isPending = !isVerified && certs.some(c => c.status === 'pending')
+            return (
+              <div
+                key={supplier.id}
+                onClick={() => navigate(`/supplier/${supplier.id}`)}
+                className="min-w-[180px] cursor-pointer bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow"
+              >
+                <div className="w-16 h-16 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={supplier.business_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-2xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
+                  )}
                 </div>
-              )}
-              {(() => {
-                const certs = supplier.halal_certificates || []
-                const certStatus = certs.find(c => c.status === 'approved') ? 'approved'
-                  : certs.find(c => c.status === 'pending') ? 'pending' : null
-                return certStatus ? (
-                  <div className={`mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${certStatus === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                    <HalalBadge status={certStatus} size={12} />
-                    {certStatus === 'approved' ? 'Halal Certified' : 'Pending Review'}
+                <h3 className="font-bold text-slate-900 text-sm">{supplier.business_name}</h3>
+                {supplier.city && <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{supplier.city}</p>}
+                {supplier.rating > 0 && (
+                  <div className="flex items-center gap-1 mt-1 text-xs text-amber-500">
+                    <span>★</span> {Number(supplier.rating).toFixed(1)}
                   </div>
-                ) : null
-              })()}
-            </div>
-          ))}
+                )}
+                {isVerified ? (
+                  <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">
+                    <HalalBadge status="approved" size={12} /> Halal Certified
+                  </div>
+                ) : isPending ? (
+                  <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                    <HalalBadge status="pending" size={12} /> Pending Review
+                  </div>
+                ) : null}
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -197,13 +203,13 @@ export default function StorePage() {
           <button className="text-sm text-emerald-600 font-semibold hover:text-emerald-700">See All</button>
         </div>
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 gap-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-100 h-64 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 gap-4">
             {sortedProducts.map(product => (
               <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} />
             ))}
@@ -233,9 +239,9 @@ function ProductCard({ product, onAddToCart }) {
   return (
     <div
       onClick={onAddToCart}
-      className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
+      className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
     >
-      <div className="relative h-40 bg-slate-100">
+      <div className="relative h-44 bg-slate-100">
         {imgUrl ? (
           <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" />
         ) : (
@@ -244,9 +250,9 @@ function ProductCard({ product, onAddToCart }) {
           </div>
         )}
         {!product.is_active && (
-          <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500">Out of Stock</div>
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center font-bold text-slate-500 text-sm">Out of Stock</div>
         )}
-        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold shadow-sm">
+        <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold shadow-sm text-slate-700">
           {product.category}
         </div>
         {product.discount_percent > 0 && (
@@ -255,25 +261,21 @@ function ProductCard({ product, onAddToCart }) {
           </div>
         )}
       </div>
-      <div className="p-4">
-        <div className="flex justify-between items-start mb-1">
-          <h3 className="font-bold text-slate-900 text-base leading-tight">{product.name}</h3>
-        </div>
+      <div className="p-3">
+        <h3 className="font-bold text-slate-900 text-sm leading-tight mb-0.5">{product.name}</h3>
         {product.description && (
-          <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
+          <p className="text-xs text-slate-400 mb-1 line-clamp-1">{product.description}</p>
         )}
-        <p className="text-xs font-bold text-emerald-700 mb-3">{product.supplier?.business_name}</p>
+        <p className="text-xs font-bold text-emerald-600 mb-2">{product.supplier?.business_name}</p>
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
+            <span className="text-base font-black text-slate-900">€{Number(product.price).toFixed(2)}</span>
             <span className="text-xs text-slate-400 ml-1">/ {product.unit_type}</span>
           </div>
           <button
             onClick={e => { e.stopPropagation(); onAddToCart() }}
-            className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
-          >
-            <span className="text-lg leading-none">+</span>
-          </button>
+            className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors text-lg leading-none"
+          >+</button>
         </div>
       </div>
     </div>

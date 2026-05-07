@@ -882,6 +882,7 @@ export default function SupplierProfilePage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showBusinessInfoModal, setShowBusinessInfoModal] = useState(false)
   const [editingCert, setEditingCert] = useState(null)
+  const [confirmDeleteCert, setConfirmDeleteCert] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -908,7 +909,6 @@ export default function SupplierProfilePage() {
   }
 
   async function handleDeleteCert(cert) {
-    if (!confirm('Delete this certificate?')) return
     try {
       await supabase.storage.from('halal-certificates').remove([cert.file_url])
       await supabase.from('halal_certificates').delete().eq('id', cert.id)
@@ -1106,7 +1106,7 @@ export default function SupplierProfilePage() {
                       <button onClick={() => setEditingCert(cert)} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors" title="Edit">
                         <Pencil className="w-4 h-4" />
                       </button>
-                      <button onClick={() => handleDeleteCert(cert)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="Delete">
+                      <button onClick={() => setConfirmDeleteCert(cert)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="Delete">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -1194,6 +1194,32 @@ export default function SupplierProfilePage() {
             setEditingCert(null)
           }}
         />
+      )}
+      {confirmDeleteCert && (
+        <Modal title="Delete Certificate" onClose={() => setConfirmDeleteCert(null)}>
+          <div className="space-y-4">
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4">
+              <p className="text-sm font-semibold text-red-700 mb-1">Are you sure?</p>
+              <p className="text-sm text-red-600">
+                "<span className="font-semibold">{confirmDeleteCert.file_name || 'This certificate'}</span>" will be permanently deleted and cannot be recovered.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteCert(null)}
+                className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { handleDeleteCert(confirmDeleteCert); setConfirmDeleteCert(null) }}
+                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   )

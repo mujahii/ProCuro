@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X } from 'lucide-react'
+import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X, Navigation } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
@@ -371,10 +371,40 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
   const { addAddress } = useAddresses()
   const [showForm, setShowForm] = useState(addresses.length === 0)
   const [saving, setSaving] = useState(false)
+  const [gpsLoading, setGpsLoading] = useState(false)
   const [form, setForm] = useState({ label: '', street: '', house_number: '', postal_code: '', city: '', country: 'Germany' })
 
   function update(field, val) {
     setForm(f => ({ ...f, [field]: val }))
+  }
+
+  async function detectGPS() {
+    if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
+    setGpsLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lng } = pos.coords
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+          const data = await res.json()
+          const addr = data.address || {}
+          setForm(f => ({
+            ...f,
+            street: addr.road || '',
+            house_number: addr.house_number || '',
+            postal_code: addr.postcode || '',
+            city: addr.city || addr.town || addr.village || addr.suburb || '',
+          }))
+          toast.success('Location detected!')
+        } catch {
+          toast.error('Could not fetch address from GPS')
+        } finally {
+          setGpsLoading(false)
+        }
+      },
+      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
   }
 
   async function handleSave() {
@@ -445,6 +475,11 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
                   ← Back to saved addresses
                 </button>
               )}
+              <button type="button" onClick={detectGPS} disabled={gpsLoading}
+                className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700 disabled:opacity-50">
+                {gpsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
+                {gpsLoading ? 'Detecting...' : 'Use My Location'}
+              </button>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Label (optional)</label>

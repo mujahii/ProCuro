@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { LayoutDashboard, Package, ShoppingBag, User, BarChart3, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import Navbar from './Navbar'
 import { useAuth } from '../../context/AuthContext'
@@ -16,8 +16,10 @@ const navItems = [
 export default function SupplierLayout() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [certStatus, setCertStatus] = useState(null)
   const [profileIncomplete, setProfileIncomplete] = useState(false)
+  const [bannerLoading, setBannerLoading] = useState(true)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('supplierSidebarCollapsed') === 'true'
@@ -25,18 +27,18 @@ export default function SupplierLayout() {
 
   useEffect(() => {
     if (!user) return
+    setBannerLoading(true)
     supabase
       .from('supplier_profiles')
       .select('id, business_name, tax_id, is_verified')
       .eq('user_id', user.id)
       .single()
       .then(({ data: sp }) => {
-        if (!sp) return
-        if (!sp.business_name || !sp.tax_id) {
-          setProfileIncomplete(true)
-        }
+        if (!sp) { setBannerLoading(false); return }
+        setProfileIncomplete(!sp.business_name || !sp.tax_id)
         if (sp.is_verified) {
           setCertStatus('approved')
+          setBannerLoading(false)
         } else {
           supabase
             .from('halal_certificates')
@@ -44,16 +46,21 @@ export default function SupplierLayout() {
             .eq('supplier_id', sp.id)
             .order('created_at', { ascending: false })
             .limit(1)
-            .then(({ data }) => setCertStatus(data?.[0]?.status || 'none'))
+            .then(({ data }) => {
+              setCertStatus(data?.[0]?.status || 'none')
+              setBannerLoading(false)
+            })
         }
       })
-  }, [user])
+  }, [user, location.pathname])
 
   function toggleCollapsed() {
     const next = !collapsed
     setCollapsed(next)
     localStorage.setItem('supplierSidebarCollapsed', String(next))
   }
+
+  const showBanner = !bannerLoading && (profileIncomplete || certStatus !== 'approved')
 
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
@@ -64,24 +71,22 @@ export default function SupplierLayout() {
     <div className="min-h-screen bg-slate-50">
       <Navbar onMenuClick={() => setDrawerOpen(o => !o)} />
 
-      {/* Setup / verification banner — below fixed navbar */}
-      {(profileIncomplete || (certStatus && certStatus !== 'approved')) && (
+      {/* Setup / verification banner — disappears when profile complete + certificate uploaded */}
+      {!bannerLoading && (profileIncomplete || certStatus !== 'approved') && (
         <div className="fixed top-16 left-0 right-0 z-20 bg-amber-500 text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap">
           <span>
             {profileIncomplete
-              ? '⚠️ Complete your business details (name + tax ID) to start selling on ProCuro.'
+              ? '⚠️ Complete your business details (business name + tax ID) to start selling.'
               : certStatus === 'none'
                 ? '⚠️ Upload a Halal certificate to appear as verified to restaurant owners.'
-                : '🕐 Your Halal certificate is pending. Upload one to get verified instantly.'}
+                : '🕐 Upload a Halal certificate to get verified instantly.'}
           </span>
-          {(profileIncomplete || certStatus === 'none') && (
-            <button
-              onClick={() => navigate('/supplier/profile')}
-              className="bg-white text-amber-700 font-bold px-3 py-0.5 rounded-full text-xs hover:bg-amber-50 transition-colors whitespace-nowrap"
-            >
-              Complete Profile →
-            </button>
-          )}
+          <button
+            onClick={() => navigate('/supplier/profile')}
+            className="bg-white text-amber-700 font-bold px-3 py-0.5 rounded-full text-xs hover:bg-amber-50 transition-colors whitespace-nowrap"
+          >
+            Complete Profile →
+          </button>
         </div>
       )}
 
@@ -123,12 +128,12 @@ export default function SupplierLayout() {
         </nav>
       </aside>
 
-      <div className={`flex ${certStatus && certStatus !== 'approved' ? 'pt-[104px]' : 'pt-16'}`}>
+      <div className={`flex ${showBanner ? 'pt-[104px]' : 'pt-16'}`}>
         {/* Desktop collapsible sidebar */}
         <aside
           className={`hidden lg:flex flex-col bg-white border-r border-slate-100 fixed left-0 bottom-0 z-20 transition-all duration-200 ${
             collapsed ? 'w-14' : 'w-56'
-          } ${certStatus && certStatus !== 'approved' ? 'top-[104px]' : 'top-16'}`}
+          } ${showBanner ? 'top-[104px]' : 'top-16'}`}
         >
           <nav className="flex-1 px-2 py-4 space-y-1">
             {navItems.map(({ to, icon: Icon, label }) => (

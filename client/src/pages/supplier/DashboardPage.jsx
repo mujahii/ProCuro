@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
 import ProductForm from '../../components/supplier/ProductForm'
-import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, X, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const PAGE_SIZE = 4
@@ -26,6 +26,7 @@ export default function SupplierDashboardPage() {
   const [topProducts, setTopProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [editProduct, setEditProduct] = useState(null)
+  const [certStatus, setCertStatus] = useState({ hasBank: false, hasApprovedCert: false, certPending: false })
 
   useEffect(() => {
     if (user) init()
@@ -34,7 +35,19 @@ export default function SupplierDashboardPage() {
   async function init() {
     const { data: sp } = await supabase.from('supplier_profiles').select('*').eq('user_id', user.id).single()
     setSupplierProfile(sp)
-    if (sp) loadData(sp.id)
+    if (sp) {
+      loadData(sp.id)
+      const [bankRes, certRes] = await Promise.all([
+        supabase.from('supplier_bank_details').select('iban').eq('supplier_id', sp.id).maybeSingle(),
+        supabase.from('halal_certificates').select('status').eq('supplier_id', sp.id).order('uploaded_at', { ascending: false }),
+      ])
+      const certs = certRes.data || []
+      setCertStatus({
+        hasBank: !!(bankRes.data?.iban?.trim()),
+        hasApprovedCert: certs.some(c => c.status === 'approved'),
+        certPending: certs.some(c => c.status === 'pending'),
+      })
+    }
   }
 
   async function loadData(supplierId) {
@@ -88,6 +101,59 @@ export default function SupplierDashboardPage() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+
+      {/* Certification status banner */}
+      {!loading && !supplierProfile?.is_verified && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="flex items-start gap-3 mb-3">
+            <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-amber-800">Account not certified yet</p>
+              <p className="text-sm text-amber-700 mt-0.5">Your products are hidden from the store until you complete the steps below.</p>
+            </div>
+          </div>
+          <div className="space-y-2 ml-8">
+            <div className="flex items-center gap-2 text-sm">
+              {certStatus.hasApprovedCert
+                ? <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                : certStatus.certPending
+                  ? <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  : <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
+              <span className={certStatus.hasApprovedCert ? 'text-emerald-700 font-medium' : 'text-slate-700'}>
+                Halal Certificate {certStatus.hasApprovedCert ? '— Approved' : certStatus.certPending ? '— Pending review' : '— Upload required'}
+              </span>
+              {!certStatus.hasApprovedCert && (
+                <button onClick={() => navigate('/supplier/certificates')} className="text-xs text-emerald-600 font-semibold hover:underline ml-1">
+                  Go →
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              {certStatus.hasBank
+                ? <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                : <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
+              <span className={certStatus.hasBank ? 'text-emerald-700 font-medium' : 'text-slate-700'}>
+                Bank Details {certStatus.hasBank ? '— Added' : '— Required'}
+              </span>
+              {!certStatus.hasBank && (
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-emerald-600 font-semibold hover:underline ml-1">
+                  Go →
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!loading && supplierProfile?.is_verified && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+          <div>
+            <p className="font-bold text-emerald-800">Account certified</p>
+            <p className="text-sm text-emerald-700">Your products are visible in the store.</p>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

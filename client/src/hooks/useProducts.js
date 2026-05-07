@@ -26,7 +26,7 @@ export function useProducts({ category, search, sortBy, userLat, userLng, city }
     try {
       let query = supabase
         .from('products')
-        .select('*, supplier:supplier_profiles(id, business_name, city, latitude, longitude)')
+        .select('*, supplier:supplier_profiles(id, business_name, city, latitude, longitude, is_verified)')
         .eq('is_active', true)
 
       if (category && category !== 'All') query = query.eq('category', category)
@@ -38,7 +38,7 @@ export function useProducts({ category, search, sortBy, userLat, userLng, city }
       const { data, error: fetchError } = await query
       if (fetchError) throw fetchError
 
-      let result = data || []
+      let result = (data || []).filter(p => p.supplier?.is_verified === true)
 
       if (sortBy === 'nearest' && userLat && userLng) {
         result = result.sort((a, b) => {

@@ -7,6 +7,13 @@ import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, Edit
 
 const PAGE_SIZE = 4
 
+function getImageUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+  return data?.publicUrl || null
+}
+
 export default function SupplierDashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -161,7 +168,7 @@ export default function SupplierDashboardPage() {
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
                         {product.image_url ? (
                           <img
-                            src={product.image_url}
+                            src={getImageUrl(product.image_url)}
                             alt={product.name}
                             className={`w-full h-full object-cover ${!product.is_active ? 'grayscale opacity-60' : ''}`}
                           />

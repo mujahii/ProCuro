@@ -5,8 +5,8 @@ import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
 import {
   LogOut, Loader2, User, ChevronRight, X, Eye, EyeOff,
-  Package, TrendingUp, Star, Trash2, Pencil, Navigation, Banknote,
-  Building2, MapPin, Tag, Globe, CheckCircle, CreditCard
+  Package, TrendingUp, Star, Trash2, Pencil, Navigation,
+  Building2, MapPin, Tag, CheckCircle, CreditCard
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatIBAN, handleIBANInput } from '../../lib/formatIBAN'
@@ -844,76 +844,51 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Website */}
-          {(businessInfo.website || true) && (
-            <div className="flex items-center gap-3 px-4 py-3">
-              <Globe className="w-4 h-4 text-slate-300 flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Website</p>
-                {businessInfo.website ? (
-                  <a
-                    href={businessInfo.website.startsWith('http') ? businessInfo.website : `https://${businessInfo.website}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-emerald-600 font-semibold hover:underline mt-0.5 block truncate"
-                  >
-                    {businessInfo.website}
-                  </a>
-                ) : (
-                  <span className="text-sm text-slate-400">Not set</span>
+          {/* Bank Details — inside Business Details card, same as supplier */}
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-slate-300" />
+                <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Bank Details</p>
+              </div>
+              <button onClick={() => setShowBankModal(true)} className="text-xs text-emerald-600 font-semibold hover:underline">
+                {bankDetails ? 'Edit' : 'Add'}
+              </button>
+            </div>
+            {bankDetails ? (
+              <div className="bg-slate-50 rounded-xl p-3 space-y-2">
+                {bankDetails.bank_name && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-400">Bank</span>
+                    <span className="text-sm font-semibold text-slate-900 uppercase">{bankDetails.bank_name}</span>
+                  </div>
+                )}
+                {bankDetails.account_holder && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-400">Account Holder</span>
+                    <span className="text-sm font-semibold text-slate-900 uppercase">{bankDetails.account_holder}</span>
+                  </div>
+                )}
+                {bankDetails.iban && (
+                  <div className="flex justify-between items-center gap-4">
+                    <span className="text-xs text-slate-400 flex-shrink-0">IBAN</span>
+                    <span className="text-sm font-semibold text-slate-900 font-mono">{formatIBAN(bankDetails.iban)}</span>
+                  </div>
+                )}
+                {bankDetails.bic && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-400">BIC / SWIFT</span>
+                    <span className="text-sm font-semibold text-slate-900 uppercase font-mono">{bankDetails.bic}</span>
+                  </div>
                 )}
               </div>
-            </div>
-          )}
+            ) : (
+              <button onClick={() => setShowBankModal(true)} className="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-sm text-amber-500 font-semibold hover:border-amber-300 transition-colors">
+                + Add bank details
+              </button>
+            )}
+          </div>
         </div>
-      </div>
-
-      {/* Bank Details */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="flex items-center justify-between px-4 pt-5 pb-3">
-          <div className="flex items-center gap-2">
-            <Banknote className="w-4 h-4 text-emerald-600" />
-            <h3 className="font-bold text-slate-900 text-base">Bank Details</h3>
-          </div>
-          <button
-            onClick={() => setShowBankModal(true)}
-            className="text-xs text-emerald-600 font-semibold hover:underline"
-          >
-            {bankDetails ? 'Edit' : 'Add'}
-          </button>
-        </div>
-        {bankDetails ? (
-          <div className="px-4 pb-5 space-y-2 divide-y divide-slate-50">
-            {bankDetails.bank_name && (
-              <div className="py-2">
-                <p className="text-[10px] uppercase tracking-wide text-slate-400">Bank</p>
-                <p className="text-sm text-slate-800 uppercase mt-0.5">{bankDetails.bank_name}</p>
-              </div>
-            )}
-            {bankDetails.account_holder && (
-              <div className="py-2">
-                <p className="text-[10px] uppercase tracking-wide text-slate-400">Account Holder</p>
-                <p className="text-sm text-slate-800 uppercase mt-0.5">{bankDetails.account_holder}</p>
-              </div>
-            )}
-            {bankDetails.iban && (
-              <div className="py-2">
-                <p className="text-[10px] uppercase tracking-wide text-slate-400">IBAN</p>
-                <p className="text-sm text-slate-800 font-mono mt-0.5 break-all">{formatIBAN(bankDetails.iban)}</p>
-              </div>
-            )}
-            {bankDetails.bic && (
-              <div className="py-2">
-                <p className="text-[10px] uppercase tracking-wide text-slate-400">BIC</p>
-                <p className="text-sm text-slate-800 font-mono uppercase mt-0.5">{bankDetails.bic}</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="px-4 pb-5">
-            <p className="text-sm text-slate-400">Add your bank details so suppliers can refund you if needed.</p>
-          </div>
-        )}
       </div>
 
       {/* Account Settings */}

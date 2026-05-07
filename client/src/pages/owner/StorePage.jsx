@@ -119,7 +119,7 @@ export default function StorePage() {
       <div>
         <h2 className="text-lg font-bold text-slate-900 mb-4 px-1">Categories</h2>
         <div
-          className="flex overflow-x-auto gap-3 pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide"
+          className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {[{ name: 'All', icon: Package }, ...CATEGORIES].map(({ name, icon: Icon }) => (
@@ -128,12 +128,12 @@ export default function StorePage() {
               onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
               className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
             >
-              <div className={`w-16 h-16 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
+              <div className={`w-20 h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
                 selectedCategory === name
                   ? 'bg-emerald-50 border-emerald-500 shadow-md'
                   : 'bg-white border-slate-100 group-hover:border-emerald-300 group-hover:shadow-md'
               }`}>
-                <Icon className={`w-7 h-7 ${selectedCategory === name ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                <Icon className={`w-9 h-9 ${selectedCategory === name ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`} />
               </div>
               <span className={`text-xs font-medium whitespace-nowrap ${
                 selectedCategory === name ? 'text-emerald-700 font-bold' : 'text-slate-600 group-hover:text-slate-900'

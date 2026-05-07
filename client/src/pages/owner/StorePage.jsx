@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown } from 'lucide-react'
+import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat } from 'lucide-react'
 import HalalBadge from '../../components/ui/HalalBadge'
 import { useProducts } from '../../hooks/useProducts'
 import { useAddresses } from '../../context/AddressContext'
@@ -10,12 +10,16 @@ import { supabase } from '../../lib/supabase'
 import { useEffect } from 'react'
 
 const CATEGORIES = [
-  { name: 'Chicken', icon: Drumstick },
   { name: 'Meat', icon: Beef },
+  { name: 'Poultry', icon: Drumstick },
+  { name: 'Seafood', icon: Fish },
+  { name: 'Dairy', icon: Milk },
   { name: 'Vegetables', icon: Leaf },
-  { name: 'Bakery', icon: Coffee },
-  { name: 'Dairy', icon: Apple },
-  { name: 'Others', icon: Package },
+  { name: 'Fruits', icon: Apple },
+  { name: 'Bakery', icon: Wheat },
+  { name: 'Beverages', icon: Coffee },
+  { name: 'Spices', icon: Flame },
+  { name: 'Other', icon: Package },
 ]
 
 const SORT_OPTIONS = [

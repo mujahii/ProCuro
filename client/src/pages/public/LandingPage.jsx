@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple, Package, Truck, Shield } from 'lucide-react'
+import { CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple, Package, Truck, Shield, Fish, Milk, Flame, Wheat } from 'lucide-react'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 
 const CATEGORIES = [
-  { name: 'Chicken', icon: Drumstick },
   { name: 'Meat', icon: Beef },
+  { name: 'Poultry', icon: Drumstick },
+  { name: 'Seafood', icon: Fish },
+  { name: 'Dairy', icon: Milk },
   { name: 'Vegetables', icon: Leaf },
-  { name: 'Bakery', icon: Coffee },
-  { name: 'Dairy', icon: Apple },
-  { name: 'Others', icon: Package },
+  { name: 'Fruits', icon: Apple },
+  { name: 'Bakery', icon: Wheat },
+  { name: 'Beverages', icon: Coffee },
+  { name: 'Spices', icon: Flame },
+  { name: 'Other', icon: Package },
 ]
 
 const STATS = [
@@ -55,7 +59,6 @@ export default function LandingPage() {
       .from('products')
       .select('*, supplier:supplier_profiles(business_name, city, is_visible)')
       .eq('is_active', true)
-      .eq('in_stock', true)
       .limit(8)
     if (selectedCategory !== 'All') q = q.eq('category', selectedCategory)
     const { data } = await q

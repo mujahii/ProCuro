@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import ProductForm from '../../components/supplier/ProductForm'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff } from 'lucide-react'
+import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function SupplierProductsPage() {
@@ -62,23 +62,33 @@ export default function SupplierProductsPage() {
       </div>
 
       {showForm && (
-        <div className="card p-5 mb-6">
-          <h2 className="font-bold text-gray-900 mb-4">{editProduct ? 'Edit Product' : 'New Product'}</h2>
-          <ProductForm
-            product={editProduct}
-            supplierId={supplierProfile?.id}
-            onSave={(saved) => {
-              if (editProduct) {
-                setProducts(prev => prev.map(p => p.id === saved.id ? saved : p))
-              } else {
-                setProducts(prev => [saved, ...prev])
-              }
-              setShowForm(false)
-              setEditProduct(null)
-              toast.success(editProduct ? 'Product updated!' : 'Product added!')
-            }}
-            onCancel={() => { setShowForm(false); setEditProduct(null) }}
-          />
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl my-6 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">{editProduct ? 'Edit Product' : 'Add New Product'}</h2>
+              <button
+                onClick={() => { setShowForm(false); setEditProduct(null) }}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <ProductForm
+              product={editProduct}
+              supplierId={supplierProfile?.id}
+              onSave={(saved) => {
+                if (editProduct) {
+                  setProducts(prev => prev.map(p => p.id === saved.id ? saved : p))
+                } else {
+                  setProducts(prev => [saved, ...prev])
+                }
+                setShowForm(false)
+                setEditProduct(null)
+                toast.success(editProduct ? 'Product updated!' : 'Product added!')
+              }}
+              onCancel={() => { setShowForm(false); setEditProduct(null) }}
+            />
+          </div>
         </div>
       )}
 

@@ -78,7 +78,7 @@ export default function StorePage() {
   return (
     <div className="space-y-8">
       {/* Search bar with filter */}
-      <div className="flex gap-2 items-center">
+      <div className="flex gap-2 items-stretch">
         <div className="flex-1 flex items-center bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-100 focus-within:border-emerald-400 transition-colors">
           <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
           <input
@@ -119,14 +119,15 @@ export default function StorePage() {
       <div>
         <h2 className="text-lg font-bold text-slate-900 mb-4 px-1">Categories</h2>
         <div
-          className="flex overflow-x-auto gap-4 pb-2 scrollbar-hide"
+          className="flex overflow-x-auto pb-2 scrollbar-hide justify-between gap-2"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {[{ name: 'All', icon: Package }, ...CATEGORIES].map(({ name, icon: Icon }) => (
             <div
               key={name}
               onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
-              className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0"
+              className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0 outline-none select-none"
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               <div className={`w-20 h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
                 selectedCategory === name

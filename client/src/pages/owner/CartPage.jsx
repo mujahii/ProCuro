@@ -24,6 +24,7 @@ export default function CartPage() {
   const [receiptFiles, setReceiptFiles] = useState({})
   const [bankDetails, setBankDetails] = useState({})
   const [orderIds, setOrderIds] = useState([])
+  const [showAddressPicker, setShowAddressPicker] = useState(false)
 
   const groups = Object.entries(groupedBySupplier)
 
@@ -219,7 +220,6 @@ export default function CartPage() {
   }
 
   /* Step 1 — Cart */
-  const [showAddressPicker, setShowAddressPicker] = useState(false)
   const totalDelivery = groups.reduce((sum, [, group]) => {
     const fee = group.items[0]?.product?.delivery_fee || 0
     return sum + Number(fee)

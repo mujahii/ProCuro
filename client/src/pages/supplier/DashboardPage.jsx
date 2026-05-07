@@ -169,8 +169,7 @@ export default function SupplierDashboardPage() {
                   {pageProducts.map(product => (
                     <div
                       key={product.id}
-                      onClick={() => setEditProduct(product)}
-                      className="bg-white rounded-xl shadow-sm border border-slate-100 p-3 flex gap-4 items-center cursor-pointer hover:shadow-md transition-shadow"
+                      className="bg-white rounded-xl shadow-sm border border-slate-100 p-3 flex gap-4 items-center"
                     >
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
                         {product.image_url ? (
@@ -197,6 +196,12 @@ export default function SupplierDashboardPage() {
                         </span>
                         <p className="text-sm font-bold text-slate-900 mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">/ {product.unit_type}</span></p>
                       </div>
+                      <button
+                        onClick={() => setEditProduct(product)}
+                        className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                      </button>
                     </div>
                   ))}
                 </div>

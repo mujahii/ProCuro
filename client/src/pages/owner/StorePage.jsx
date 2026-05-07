@@ -55,7 +55,6 @@ export default function StorePage() {
     supabase
       .from('supplier_profiles')
       .select('*, halal_certificates(status)')
-      .eq('is_active', true)
       .limit(8)
       .then(({ data }) => setSuppliers(data || []))
   }, [])
@@ -222,21 +221,29 @@ export default function StorePage() {
   )
 }
 
+function getProductImageUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+  return data?.publicUrl || null
+}
+
 function ProductCard({ product, onAddToCart }) {
+  const imgUrl = getProductImageUrl(product.image_url)
   return (
     <div
       onClick={onAddToCart}
       className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
     >
       <div className="relative h-40 bg-slate-100">
-        {product.image_url ? (
-          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+        {imgUrl ? (
+          <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-300">
             <Package className="w-12 h-12" />
           </div>
         )}
-        {!product.in_stock && (
+        {!product.is_active && (
           <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500">Out of Stock</div>
         )}
         <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold shadow-sm">

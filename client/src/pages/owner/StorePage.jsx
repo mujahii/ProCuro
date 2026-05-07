@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat } from 'lucide-react'
+import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus } from 'lucide-react'
 import HalalBadge from '../../components/ui/HalalBadge'
 import { useProducts } from '../../hooks/useProducts'
 import { useAddresses } from '../../context/AddressContext'
@@ -200,18 +200,18 @@ export default function StorePage() {
       <div>
         <div className="flex justify-between items-end mb-4 px-1">
           <h2 className="text-lg font-bold text-slate-900">
-            {selectedCategory !== 'All' ? selectedCategory : 'Recommended Products'}
+            {selectedCategory !== 'All' ? selectedCategory : 'Recommended Orders'}
           </h2>
           <button className="text-sm text-emerald-600 font-semibold hover:text-emerald-700">See All</button>
         </div>
         {loading ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-100 h-64 animate-pulse" />
+              <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-100 h-72 animate-pulse" />
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedProducts.map(product => (
               <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} />
             ))}
@@ -241,9 +241,9 @@ function ProductCard({ product, onAddToCart }) {
   return (
     <div
       onClick={onAddToCart}
-      className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+      className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
     >
-      <div className="relative h-44 bg-slate-100">
+      <div className="relative h-40 bg-slate-100">
         {imgUrl ? (
           <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" />
         ) : (
@@ -252,9 +252,9 @@ function ProductCard({ product, onAddToCart }) {
           </div>
         )}
         {!product.is_active && (
-          <div className="absolute inset-0 bg-white/70 flex items-center justify-center font-bold text-slate-500 text-sm">Out of Stock</div>
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500">Out of Stock</div>
         )}
-        <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold shadow-sm text-slate-700">
+        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold shadow-sm text-slate-700">
           {product.category}
         </div>
         {product.discount_percent > 0 && (
@@ -263,21 +263,23 @@ function ProductCard({ product, onAddToCart }) {
           </div>
         )}
       </div>
-      <div className="p-3">
-        <h3 className="font-bold text-slate-900 text-sm leading-tight mb-0.5">{product.name}</h3>
+      <div className="p-4">
+        <h3 className="font-bold text-slate-900 text-base mb-1">{product.name}</h3>
         {product.description && (
-          <p className="text-xs text-slate-400 mb-1 line-clamp-1">{product.description}</p>
+          <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
         )}
-        <p className="text-xs font-bold text-emerald-600 mb-2">{product.supplier?.business_name}</p>
+        <p className="text-xs font-bold text-emerald-700 mb-3">{product.supplier?.business_name}</p>
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-base font-black text-slate-900">€{Number(product.price).toFixed(2)}</span>
+            <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
             <span className="text-xs text-slate-400 ml-1">/ {product.unit_type}</span>
           </div>
           <button
             onClick={e => { e.stopPropagation(); onAddToCart() }}
-            className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors text-lg leading-none"
-          >+</button>
+            className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </div>

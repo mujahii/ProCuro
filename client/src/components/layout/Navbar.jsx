@@ -250,7 +250,11 @@ export default function Navbar({ onMenuClick }) {
                       <p className="text-sm font-semibold text-slate-900 truncate max-w-[130px]">
                         {profile?.full_name || 'User'}
                       </p>
-                      <p className="text-xs text-slate-500 capitalize">{role?.replace('_', ' ')}</p>
+                      <p className="text-xs text-slate-400 truncate max-w-[130px]">
+                        {role === 'restaurant_owner' && profile?.restaurant_name
+                          ? profile.restaurant_name
+                          : role?.replace('_', ' ')}
+                      </p>
                     </div>
                     <div className="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center border-2 border-white shadow-sm overflow-hidden flex-shrink-0">
                       {profile?.avatar_url ? (

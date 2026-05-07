@@ -85,16 +85,18 @@ function AvatarModal({ userId, onClose, onSaved }) {
   )
 }
 
-function EditProfileModal({ userId, currentName, currentBio, onClose, onSaved }) {
+function EditProfileModal({ userId, currentName, currentRestaurantName, currentBio, onClose, onSaved }) {
   const [name, setName] = useState(currentName || '')
+  const [restaurantName, setRestaurantName] = useState(currentRestaurantName || '')
   const [bio, setBio] = useState(currentBio || '')
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
+    if (!name.trim()) { toast.error('Name is required'); return }
     setSaving(true)
     try {
-      await supabase.from('users').update({ full_name: name, bio }).eq('id', userId)
-      onSaved({ full_name: name, bio })
+      await supabase.from('users').update({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null }).eq('id', userId)
+      onSaved({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null })
       onClose()
       toast.success('Profile updated!')
     } catch {
@@ -108,16 +110,26 @@ function EditProfileModal({ userId, currentName, currentBio, onClose, onSaved })
     <Modal title="Edit Profile" onClose={onClose}>
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Restaurant Name</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Your Name</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            placeholder="Your restaurant name"
+            placeholder="e.g. Mohammed Ali"
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Bio</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Restaurant Name</label>
+          <input
+            value={restaurantName}
+            onChange={e => setRestaurantName(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. Al-Nour Kitchen"
+          />
+          <p className="text-xs text-slate-400 mt-1">Shown under your name in the app</p>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
           <textarea
             value={bio}
             onChange={e => setBio(e.target.value)}
@@ -125,6 +137,7 @@ function EditProfileModal({ userId, currentName, currentBio, onClose, onSaved })
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
             placeholder="A short description about your restaurant..."
           />
+          <p className="text-xs text-slate-400 mt-1">Optional — tell suppliers a bit about your business</p>
         </div>
         <div className="flex gap-3 pt-1">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
@@ -132,7 +145,7 @@ function EditProfileModal({ userId, currentName, currentBio, onClose, onSaved })
           </button>
           <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save
+            Save Changes
           </button>
         </div>
       </div>
@@ -500,6 +513,7 @@ export default function ProfilePage() {
   const { user, profile, signOut, updateProfileState } = useAuth()
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null)
   const [displayName, setDisplayName] = useState(profile?.full_name || '')
+  const [restaurantName, setRestaurantName] = useState(profile?.restaurant_name || '')
   const [bio, setBio] = useState(profile?.bio || '')
 
   const [showAvatarModal, setShowAvatarModal] = useState(false)
@@ -518,10 +532,11 @@ export default function ProfilePage() {
     updateProfileState({ avatar_url: url })
   }
 
-  function handleProfileSaved({ full_name, bio: newBio }) {
+  function handleProfileSaved({ full_name, restaurant_name: newRestaurantName, bio: newBio }) {
     setDisplayName(full_name)
+    setRestaurantName(newRestaurantName)
     setBio(newBio)
-    updateProfileState({ full_name, bio: newBio })
+    updateProfileState({ full_name, restaurant_name: newRestaurantName, bio: newBio })
   }
 
   return (
@@ -549,7 +564,7 @@ export default function ProfilePage() {
             </button>
           </div>
           <h2 className="font-bold text-slate-900 text-lg mt-3">{displayName || 'Restaurant Owner'}</h2>
-          <p className="text-sm text-slate-500">Restaurant</p>
+          {restaurantName && <p className="text-sm text-slate-400 mt-0.5">{restaurantName}</p>}
           {bio && <p className="text-sm text-slate-500 italic mt-1">"{bio}"</p>}
           <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-emerald-600 font-semibold hover:underline">
             Edit Profile
@@ -611,6 +626,7 @@ export default function ProfilePage() {
         <EditProfileModal
           userId={user.id}
           currentName={displayName}
+          currentRestaurantName={restaurantName}
           currentBio={bio}
           onClose={() => setShowEditModal(false)}
           onSaved={handleProfileSaved}

@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
-import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react'
+import ProductForm from '../../components/supplier/ProductForm'
+import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import toast from 'react-hot-toast'
 
 const PAGE_SIZE = 4
 
@@ -23,6 +25,7 @@ export default function SupplierDashboardPage() {
   const [page, setPage] = useState(0)
   const [topProducts, setTopProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [editProduct, setEditProduct] = useState(null)
 
   useEffect(() => {
     if (user) init()
@@ -164,7 +167,11 @@ export default function SupplierDashboardPage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {pageProducts.map(product => (
-                    <div key={product.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-3 flex gap-4 items-center">
+                    <div
+                      key={product.id}
+                      onClick={() => setEditProduct(product)}
+                      className="bg-white rounded-xl shadow-sm border border-slate-100 p-3 flex gap-4 items-center cursor-pointer hover:shadow-md transition-shadow"
+                    >
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
                         {product.image_url ? (
                           <img
@@ -190,12 +197,6 @@ export default function SupplierDashboardPage() {
                         </span>
                         <p className="text-sm font-bold text-slate-900 mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">/ {product.unit_type}</span></p>
                       </div>
-                      <button
-                        onClick={() => navigate(`/supplier/products?edit=${product.id}`)}
-                        className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
                     </div>
                   ))}
                 </div>
@@ -224,6 +225,31 @@ export default function SupplierDashboardPage() {
             )}
           </div>
         </>
+      )}
+      {editProduct && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl my-6 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-xl font-bold text-slate-900">Edit Product</h2>
+              <button
+                onClick={() => setEditProduct(null)}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-500"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <ProductForm
+              product={editProduct}
+              supplierId={supplierProfile?.id}
+              onSave={(saved) => {
+                setProducts(prev => prev.map(p => p.id === saved.id ? saved : p))
+                setEditProduct(null)
+                toast.success('Product updated!')
+              }}
+              onCancel={() => setEditProduct(null)}
+            />
+          </div>
+        </div>
       )}
     </div>
   )

@@ -34,12 +34,17 @@ export default function LoginPage() {
     try {
       const profile = await signIn(email, password)
       const role = profile?.role
-      navigate(
-        role === 'restaurant_owner' ? '/owner/store'
-        : role === 'supplier' ? '/supplier/dashboard'
-        : role === 'admin' ? '/admin/dashboard'
-        : '/'
-      )
+      if (!role) {
+        // Auth user exists but no profile yet
+        navigate('/select-role')
+      } else {
+        navigate(
+          role === 'restaurant_owner' ? '/owner/store'
+          : role === 'supplier' ? '/supplier/dashboard'
+          : role === 'admin' ? '/admin/dashboard'
+          : '/'
+        )
+      }
     } catch (err) {
       toast.error(err.message || 'Login failed')
     } finally {
@@ -50,7 +55,7 @@ export default function LoginPage() {
   async function handleOAuth(provider) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: window.location.origin + '/select-role' },
     })
     if (error) toast.error(error.message)
   }
@@ -66,30 +71,6 @@ export default function LoginPage() {
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
             <p className="text-slate-500 text-sm">The Halal Procurement Platform</p>
-          </div>
-
-          {/* OAuth buttons */}
-          <div className="space-y-3 mb-6">
-            <button
-              type="button"
-              onClick={() => handleOAuth('google')}
-              className="w-full flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-            >
-              <GoogleLogo /> Continue with Google
-            </button>
-            <button
-              type="button"
-              onClick={() => handleOAuth('apple')}
-              className="w-full flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-            >
-              <AppleLogo /> Continue with Apple
-            </button>
-          </div>
-
-          <div className="flex items-center mb-6">
-            <div className="flex-1 border-t border-slate-200" />
-            <span className="px-3 text-xs text-slate-400 font-medium">OR WITH EMAIL</span>
-            <div className="flex-1 border-t border-slate-200" />
           </div>
 
           {/* Email / password form */}
@@ -122,11 +103,36 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md mt-2 disabled:opacity-60"
+              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60"
             >
               {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
+
+          {/* OAuth — below the form */}
+          <div className="mt-6">
+            <div className="flex items-center mb-4">
+              <div className="flex-1 border-t border-slate-200" />
+              <span className="px-3 text-xs text-slate-400 font-medium">OR CONTINUE WITH</span>
+              <div className="flex-1 border-t border-slate-200" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => handleOAuth('google')}
+                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <GoogleLogo /> Google
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOAuth('apple')}
+                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                <AppleLogo /> Apple
+              </button>
+            </div>
+          </div>
 
           <p className="text-center mt-8 text-sm text-slate-500">
             Don't have an account?{' '}

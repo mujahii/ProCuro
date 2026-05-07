@@ -5,7 +5,8 @@ import toast from 'react-hot-toast'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [profile, setProfile] = useState(null)
+  const [authUser, setAuthUser] = useState(null)  // raw Supabase session user
+  const [profile, setProfile] = useState(null)    // public.users row
   const [loading, setLoading] = useState(true)
 
   async function fetchProfile(userId) {
@@ -21,10 +22,12 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
+        setAuthUser(session.user)
         const p = await fetchProfile(session.user.id)
         if (p?.is_banned) {
           await supabase.auth.signOut()
           toast.error('Your account has been suspended.')
+          setAuthUser(null)
           setProfile(null)
         } else {
           setProfile(p)
@@ -35,15 +38,18 @@ export function AuthProvider({ children }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
+        setAuthUser(session.user)
         const p = await fetchProfile(session.user.id)
         if (p?.is_banned) {
           await supabase.auth.signOut()
           toast.error('Your account has been suspended.')
+          setAuthUser(null)
           setProfile(null)
         } else {
           setProfile(p)
         }
       } else {
+        setAuthUser(null)
         setProfile(null)
       }
     })
@@ -54,6 +60,7 @@ export function AuthProvider({ children }) {
   async function signIn(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
+    setAuthUser(data.user)
     const p = await fetchProfile(data.user.id)
     if (p?.is_banned) {
       await supabase.auth.signOut()
@@ -61,26 +68,6 @@ export function AuthProvider({ children }) {
     }
     setProfile(p)
     return p
-  }
-
-  async function signUp(name, email, password, role = 'restaurant_owner') {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: name, role } },
-    })
-    if (error) throw error
-
-    // Insert into public.users
-    if (data.user) {
-      await supabase.from('users').insert({
-        id: data.user.id,
-        email,
-        full_name: name,
-        role,
-      })
-    }
-    return data
   }
 
   async function refreshProfile() {
@@ -98,6 +85,7 @@ export function AuthProvider({ children }) {
   async function signOut() {
     await supabase.auth.signOut({ scope: 'global' })
     localStorage.removeItem('procuro_cart')
+    setAuthUser(null)
     setProfile(null)
     window.location.href = '/'
   }
@@ -105,11 +93,11 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user: profile,
+      authUser,
       profile,
       role: profile?.role ?? null,
       loading,
       signIn,
-      signUp,
       signOut,
       refreshProfile,
       updateProfileState,

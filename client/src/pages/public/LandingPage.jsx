@@ -30,19 +30,22 @@ const HOW_IT_WORKS = [
 
 export default function LandingPage() {
   const navigate = useNavigate()
-  const { user, role, loading } = useAuth()
+  const { user, authUser, role, loading } = useAuth()
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [products, setProducts] = useState([])
   const [suppliers, setSuppliers] = useState([])
 
   useEffect(() => {
     if (loading) return
-    if (user) {
+    if (authUser && !user) {
+      // Signed in but no role chosen yet
+      navigate('/select-role', { replace: true })
+    } else if (user) {
       if (role === 'restaurant_owner') navigate('/owner/store', { replace: true })
       else if (role === 'supplier') navigate('/supplier/dashboard', { replace: true })
       else if (role === 'admin') navigate('/admin/dashboard', { replace: true })
     }
-  }, [user, role, loading])
+  }, [user, authUser, role, loading])
 
   useEffect(() => { fetchProducts() }, [selectedCategory])
   useEffect(() => { fetchSuppliers() }, [])

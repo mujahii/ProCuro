@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store } from 'lucide-react'
+import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store, X } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { formatIBAN } from '../../lib/formatIBAN'
@@ -12,12 +12,16 @@ const COMPLETED = ['delivered', 'cancelled', 'refund_uploaded', 'completed']
 
 function CancelModal({ split, onCancel, onClose }) {
   const [reason, setReason] = useState('')
+  const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
+  const inputRef = useRef(null)
+  const isBankTransfer = split.payment_method === 'bank_transfer'
 
   async function handleCancel() {
     if (!reason.trim()) return toast.error('Please provide a cancellation reason')
+    if (isBankTransfer && !file) return toast.error('Please upload a refund receipt before cancelling a bank transfer order')
     setLoading(true)
-    await onCancel(split.id, reason)
+    await onCancel(split.id, reason.trim(), isBankTransfer ? file : null)
     setLoading(false)
   }
 
@@ -25,15 +29,17 @@ function CancelModal({ split, onCancel, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
-          <AlertTriangle className="w-5 h-5 text-red-500" />
+          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
           <h3 className="font-bold text-slate-900 text-lg">Cancel Order</h3>
         </div>
-        {split.payment_method === 'bank_transfer' && split.receipt_url && (
+
+        {isBankTransfer && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
-            <p className="text-sm text-amber-800 font-medium">This order was paid via bank transfer.</p>
-            <p className="text-xs text-amber-700 mt-1">You must return the payment to the restaurant owner.</p>
+            <p className="text-sm font-semibold text-amber-800">Bank transfer order</p>
+            <p className="text-xs text-amber-700 mt-1">You must upload proof of the returned payment before this cancellation can be submitted.</p>
           </div>
         )}
+
         <div className="mb-4">
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Cancellation Reason *</label>
           <textarea
@@ -41,15 +47,34 @@ function CancelModal({ split, onCancel, onClose }) {
             onChange={e => setReason(e.target.value)}
             className="w-full px-4 py-3 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-red-400 h-24 resize-none"
             placeholder="Out of stock, delivery not possible, etc."
+            autoFocus
           />
         </div>
+
+        {isBankTransfer && (
+          <div className="mb-5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Refund Receipt *</label>
+            <input ref={inputRef} type="file" className="hidden" accept="image/*,.pdf" onChange={e => setFile(e.target.files[0])} />
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className={`w-full py-3 border-2 border-dashed rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+                file ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-300 text-slate-500 hover:border-amber-400 hover:text-amber-700'
+              }`}
+            >
+              {file ? <CheckCircle className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
+              {file ? file.name : 'Upload refund proof (image or PDF)'}
+            </button>
+          </div>
+        )}
+
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
             Keep Order
           </button>
           <button
             onClick={handleCancel}
-            disabled={loading}
+            disabled={loading || !reason.trim() || (isBankTransfer && !file)}
             className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
@@ -119,7 +144,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
       <p className="text-sm font-bold text-amber-800">Bank Transfer Refund Required</p>
-      <p className="text-xs text-amber-700">This order was paid via bank transfer. Please return the payment to the restaurant owner and upload your refund receipt.</p>
+      <p className="text-xs text-amber-700">Please return the payment to the restaurant owner and upload your refund receipt.</p>
       {ownerBank ? (
         <div className="bg-white rounded-lg p-3 border border-amber-100 space-y-2">
           <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Owner Bank Details</p>
@@ -176,8 +201,75 @@ function RefundSection({ split, supplierId, onUploaded }) {
   )
 }
 
+function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-emerald-600 px-6 py-8 text-center relative">
+          <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
+            <Store className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-xl font-bold text-white">
+            {ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant'}
+          </h2>
+          {ownerInfo?.restaurant_name && ownerInfo?.full_name && (
+            <p className="text-emerald-100 text-sm mt-1">{ownerInfo.full_name}</p>
+          )}
+        </div>
+
+        <div className="p-5 space-y-3">
+          {ownerInfo?.phone && (
+            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+              <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">Phone</p>
+                <a href={`tel:${ownerInfo.phone}`} className="text-sm font-medium text-slate-800 hover:underline">
+                  {ownerInfo.phone}
+                </a>
+              </div>
+            </div>
+          )}
+          {deliveryAddress && (
+            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl">
+              <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">
+                  Delivery Address{deliveryAddress.label ? ` · ${deliveryAddress.label}` : ''}
+                </p>
+                <p className="text-sm font-medium text-slate-800">
+                  {[
+                    deliveryAddress.street,
+                    [deliveryAddress.postal_code, deliveryAddress.city].filter(Boolean).join(' '),
+                  ].filter(Boolean).join(', ')}
+                </p>
+              </div>
+            </div>
+          )}
+          {!ownerInfo?.phone && !deliveryAddress && (
+            <p className="text-sm text-slate-400 text-center py-2">No additional contact details available.</p>
+          )}
+        </div>
+
+        <div className="px-5 pb-5">
+          <button
+            onClick={onClose}
+            className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload }) {
   const [ownerInfo, setOwnerInfo] = useState(null)
+  const [ownerDefaultAddress, setOwnerDefaultAddress] = useState(null)
+  const [showOwnerModal, setShowOwnerModal] = useState(false)
   const deliveryAddress = split.order?.delivery_address
 
   useEffect(() => {
@@ -185,7 +277,15 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
     if (!ownerId) return
     supabase.from('users').select('full_name, restaurant_name, phone').eq('id', ownerId).single()
       .then(({ data }) => setOwnerInfo(data))
+    // Fallback: if this order has no stored delivery address, fetch owner's default address
+    if (!deliveryAddress) {
+      supabase.from('addresses').select('label, street, postal_code, city')
+        .eq('user_id', ownerId).eq('is_default', true).maybeSingle()
+        .then(({ data }) => setOwnerDefaultAddress(data))
+    }
   }, [split.order?.restaurant_owner_id])
+
+  const displayAddress = deliveryAddress || ownerDefaultAddress
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -197,7 +297,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         <StatusBadge status={split.status} />
       </div>
 
-      {/* Restaurant owner info */}
+      {/* Restaurant owner card */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 space-y-3">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Delivery To</p>
         <div className="flex items-start gap-3">
@@ -205,7 +305,12 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
             <Store className="w-5 h-5 text-emerald-600" />
           </div>
           <div className="flex-1 space-y-1.5">
-            <p className="font-bold text-slate-900 text-base">{ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant Owner'}</p>
+            <button
+              onClick={() => setShowOwnerModal(true)}
+              className="font-bold text-slate-900 text-base hover:text-emerald-600 transition-colors text-left underline-offset-2 hover:underline"
+            >
+              {ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant Owner'}
+            </button>
             {ownerInfo?.full_name && ownerInfo?.restaurant_name && (
               <p className="text-sm text-slate-500">{ownerInfo.full_name}</p>
             )}
@@ -215,18 +320,21 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
                 <a href={`tel:${ownerInfo.phone}`} className="hover:underline">{ownerInfo.phone}</a>
               </div>
             )}
-            {deliveryAddress ? (
+            {displayAddress ? (
               <div className="flex items-start gap-1.5 text-sm text-slate-600">
                 <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
                 <span>
-                  {[deliveryAddress.street, [deliveryAddress.postal_code, deliveryAddress.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
-                  {deliveryAddress.label && <span className="text-xs text-slate-400 ml-1">({deliveryAddress.label})</span>}
+                  {[displayAddress.street, [displayAddress.postal_code, displayAddress.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
+                  {displayAddress.label && <span className="text-xs text-slate-400 ml-1">({displayAddress.label})</span>}
+                  {!deliveryAddress && ownerDefaultAddress && (
+                    <span className="text-xs text-amber-500 ml-1">(registered address)</span>
+                  )}
                 </span>
               </div>
             ) : (
               <div className="flex items-center gap-1.5 text-sm text-slate-400">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>No delivery address provided</span>
+                <span>No delivery address on file</span>
               </div>
             )}
           </div>
@@ -240,8 +348,8 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
             <p className="font-bold text-slate-900">#{split.id.slice(0, 8).toUpperCase()}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Date</p>
-            <p className="font-semibold text-slate-900">{split.order?.created_at ? format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm') : '—'}</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">Date Placed</p>
+            <p className="font-semibold text-slate-900">{format(new Date(split.created_at), 'dd MMM yyyy, HH:mm')}</p>
           </div>
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">Payment</p>
@@ -269,7 +377,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         </div>
       </div>
 
-      {/* Cancellation request from owner */}
+      {/* Owner cancellation request */}
       {split.status === 'cancellation_requested' && (
         <div className="bg-orange-50 border border-orange-300 rounded-xl p-4 space-y-3">
           <div className="flex items-start gap-2">
@@ -286,7 +394,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
             </div>
           )}
           {split.payment_method === 'bank_transfer' ? (
-            <p className="text-xs text-orange-700">This order was paid via bank transfer. To accept the cancellation, upload your proof of refund below.</p>
+            <p className="text-xs text-orange-700">Paid via bank transfer — upload the refund proof below to accept this cancellation.</p>
           ) : (
             <button
               onClick={() => { onUpdateStatus(split.id, 'cancelled'); onBack() }}
@@ -305,6 +413,8 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         </div>
       )}
 
+      {/* Refund upload: shown for owner-initiated (cancellation_requested + bank_transfer)
+          and as fallback for old cancelled bank transfer orders */}
       {(split.status === 'cancellation_requested' || split.status === 'cancelled') &&
         split.payment_method === 'bank_transfer' && !split.refund_receipt_url && (
         <RefundSection split={split} supplierId={supplierId} onUploaded={() => { onReload(); onBack() }} />
@@ -342,6 +452,14 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           </>
         )}
       </div>
+
+      {showOwnerModal && (
+        <OwnerProfileModal
+          ownerInfo={ownerInfo}
+          deliveryAddress={displayAddress}
+          onClose={() => setShowOwnerModal(false)}
+        />
+      )}
     </div>
   )
 }
@@ -385,19 +503,38 @@ export default function SupplierOrdersPage() {
     if (error) { toast.error(error.message); return }
     setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status } : s))
     if (selectedSplit?.id === splitId) setSelectedSplit(prev => ({ ...prev, status }))
-    const msgs = { confirmed: 'Order confirmed!', out_for_delivery: 'Marked as out for delivery!' }
+    const msgs = { confirmed: 'Order confirmed!', out_for_delivery: 'Marked as out for delivery!', cancelled: 'Cancellation accepted.' }
     toast.success(msgs[status] || 'Status updated')
   }
 
-  async function cancelOrder(splitId, reason) {
+  async function cancelOrder(splitId, reason, refundFile = null) {
+    let refundReceiptUrl = null
+
+    if (refundFile) {
+      const ext = refundFile.name.split('.').pop()
+      const path = `refunds/${supplierProfile.id}/${Date.now()}-${splitId}.${ext}`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('payment-receipts')
+        .upload(path, refundFile)
+      if (uploadError) { toast.error(uploadError.message); return }
+      refundReceiptUrl = uploadData.path
+    }
+
+    // Bank transfer: go straight to refund_uploaded (receipt already uploaded)
+    // COD: go to cancelled
+    const newStatus = refundFile ? 'refund_uploaded' : 'cancelled'
+
     const { error } = await supabase.rpc('update_order_split_status', {
       p_split_id: splitId,
-      p_status: 'cancelled',
+      p_status: newStatus,
       p_cancellation_reason: reason,
+      p_refund_receipt_url: refundReceiptUrl,
     })
     if (error) { toast.error(error.message); return }
-    setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status: 'cancelled', cancellation_reason: reason } : s))
-    toast.success('Order cancelled')
+
+    const patch = { status: newStatus, cancellation_reason: reason, refund_receipt_url: refundReceiptUrl }
+    setSplits(prev => prev.map(s => s.id === splitId ? { ...s, ...patch } : s))
+    toast.success(refundFile ? 'Order cancelled — refund receipt sent to owner.' : 'Order cancelled.')
     setCancelTarget(null)
     if (selectedSplit?.id === splitId) setSelectedSplit(null)
   }
@@ -470,7 +607,7 @@ export default function SupplierOrdersPage() {
                     <StatusBadge status={split.status} />
                   </div>
                   <p className="text-sm text-slate-600 font-medium">Restaurant Owner</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{split.order?.created_at ? format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm') : '—'}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{format(new Date(split.created_at), 'dd MMM yyyy, HH:mm')}</p>
                   {split.status === 'cancellation_requested' && split.cancellation_reason && (
                     <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
                       <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Owner wants to cancel: {split.cancellation_reason}

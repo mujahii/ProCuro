@@ -163,7 +163,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancelRequ
         </div>
       </div>
 
-      {split.cancellation_reason && split.status === 'cancelled' && (
+      {split.cancellation_reason && (split.status === 'cancelled' || split.status === 'refund_uploaded') && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
           <p className="font-semibold mb-1">Order Cancelled</p>
           <p>{split.cancellation_reason}</p>

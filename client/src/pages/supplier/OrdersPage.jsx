@@ -194,11 +194,11 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           </div>
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">Date</p>
-            <p className="font-semibold text-slate-900">{format(new Date(split.order?.created_at), 'dd MMM yyyy, HH:mm')}</p>
+            <p className="font-semibold text-slate-900">{split.order?.created_at ? format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm') : '—'}</p>
           </div>
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">Restaurant</p>
-            <p className="font-semibold text-slate-900">{split.order?.owner?.full_name || 'Restaurant Owner'}</p>
+            <p className="font-semibold text-slate-900">Restaurant Owner</p>
           </div>
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">Payment</p>
@@ -290,11 +290,12 @@ export default function SupplierOrdersPage() {
 
   async function loadOrders(supplierId) {
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('order_splits')
-      .select(`*, order:orders(created_at, restaurant_owner_id, owner:users(full_name)), order_items(*, product:products(name, unit_type))`)
+      .select(`*, order:orders(created_at, restaurant_owner_id), order_items(*, product:products(name, unit_type))`)
       .eq('supplier_id', supplierId)
       .order('created_at', { ascending: false })
+    if (error) console.error('loadOrders error:', error)
     setSplits(data || [])
     setLoading(false)
   }
@@ -391,8 +392,8 @@ export default function SupplierOrdersPage() {
                     <span className="font-bold text-lg text-slate-900">#{split.id.slice(0, 8).toUpperCase()}</span>
                     <StatusBadge status={split.status} />
                   </div>
-                  <p className="text-sm text-slate-600 font-medium">{split.order?.owner?.full_name || 'Restaurant Owner'}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{format(new Date(split.order?.created_at), 'dd MMM yyyy, HH:mm')}</p>
+                  <p className="text-sm text-slate-600 font-medium">Restaurant Owner</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{split.order?.created_at ? format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm') : '—'}</p>
                   {split.cancellation_reason && (
                     <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">Reason: {split.cancellation_reason}</p>
                   )}

@@ -78,22 +78,22 @@ export default function StorePage() {
   return (
     <div className="space-y-8">
       {/* Search bar with filter */}
-      <div className="flex gap-2 items-stretch">
-        <div className="flex-1 flex items-center bg-white rounded-xl px-4 py-3 shadow-sm border border-slate-100 focus-within:border-emerald-400 transition-colors">
+      <div className="flex gap-2">
+        <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-slate-100">
           <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
           <input
             type="text"
             placeholder="Search Halal products..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="bg-transparent border-none focus:outline-none w-full text-sm"
+            className="bg-transparent border-none outline-none focus:outline-none ring-0 focus:ring-0 w-full text-sm"
           />
         </div>
         {/* Filter dropdown */}
         <div className="relative" ref={filterRef}>
           <button
             onClick={() => setFilterOpen(o => !o)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
           >
             <Filter className="w-4 h-4" />
             <span className="hidden sm:inline">{sortBy ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Filter'}</span>

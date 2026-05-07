@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Outlet, NavLink } from 'react-router-dom'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { LayoutDashboard, Package, ShoppingBag, User, BarChart3, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import Navbar from './Navbar'
 import { useAuth } from '../../context/AuthContext'
@@ -15,7 +15,9 @@ const navItems = [
 
 export default function SupplierLayout() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [certStatus, setCertStatus] = useState(null)
+  const [profileIncomplete, setProfileIncomplete] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('supplierSidebarCollapsed') === 'true'
@@ -25,11 +27,15 @@ export default function SupplierLayout() {
     if (!user) return
     supabase
       .from('supplier_profiles')
-      .select('id')
+      .select('id, business_name')
       .eq('user_id', user.id)
       .single()
       .then(({ data: sp }) => {
         if (!sp) return
+        // business_name falls back to full_name on quick signup — treat as incomplete
+        if (!sp.business_name || sp.business_name === user.full_name) {
+          setProfileIncomplete(true)
+        }
         supabase
           .from('halal_certificates')
           .select('status')
@@ -55,18 +61,24 @@ export default function SupplierLayout() {
     <div className="min-h-screen bg-slate-50">
       <Navbar onMenuClick={() => setDrawerOpen(o => !o)} />
 
-      {/* Cert verification banner — below fixed navbar */}
-      {certStatus && certStatus !== 'approved' && (
-        <div
-          className={`fixed top-16 left-0 right-0 z-20 px-4 py-2.5 text-sm font-medium text-center ${
-            certStatus === 'none'
-              ? 'bg-amber-500 text-white'
-              : 'bg-amber-100 text-amber-800'
-          }`}
-        >
-          {certStatus === 'none'
-            ? '⚠️ Upload a Halal certificate to get verified and appear to restaurant owners.'
-            : '🕐 Your Halal certificate is under review. You\'ll be notified once approved.'}
+      {/* Setup / verification banner — below fixed navbar */}
+      {(profileIncomplete || (certStatus && certStatus !== 'approved')) && (
+        <div className="fixed top-16 left-0 right-0 z-20 bg-amber-500 text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap">
+          <span>
+            {profileIncomplete
+              ? '⚠️ Complete your supplier profile to start selling on ProCuro.'
+              : certStatus === 'none'
+                ? '⚠️ Upload a Halal certificate to get verified and appear to restaurant owners.'
+                : '🕐 Your Halal certificate is under review. You\'ll be notified once approved.'}
+          </span>
+          {(profileIncomplete || certStatus === 'none') && (
+            <button
+              onClick={() => navigate('/supplier/profile')}
+              className="bg-white text-amber-700 font-bold px-3 py-0.5 rounded-full text-xs hover:bg-amber-50 transition-colors whitespace-nowrap"
+            >
+              Complete Profile →
+            </button>
+          )}
         </div>
       )}
 

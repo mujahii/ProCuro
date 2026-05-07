@@ -23,13 +23,10 @@ const AppleLogo = () => (
 export default function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
-  const [tab, setTab] = useState('owner')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
-
-  const bgClass = tab === 'owner' ? 'bg-slate-900' : 'bg-emerald-900'
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -37,7 +34,12 @@ export default function LoginPage() {
     try {
       const profile = await signIn(email, password)
       const role = profile?.role
-      navigate(role === 'restaurant_owner' ? '/owner/store' : role === 'supplier' ? '/supplier/dashboard' : role === 'admin' ? '/admin/dashboard' : '/')
+      navigate(
+        role === 'restaurant_owner' ? '/owner/store'
+        : role === 'supplier' ? '/supplier/dashboard'
+        : role === 'admin' ? '/admin/dashboard'
+        : '/'
+      )
     } catch (err) {
       toast.error(err.message || 'Login failed')
     } finally {
@@ -54,7 +56,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-500 ${bgClass}`}>
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
           {/* Logo */}
@@ -66,23 +68,31 @@ export default function LoginPage() {
             <p className="text-slate-500 text-sm">The Halal Procurement Platform</p>
           </div>
 
-          {/* Role tabs */}
-          <div className="bg-slate-100 p-1.5 rounded-xl flex mb-8">
+          {/* OAuth buttons */}
+          <div className="space-y-3 mb-6">
             <button
-              onClick={() => setTab('owner')}
-              className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all duration-300 ${tab === 'owner' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+              type="button"
+              onClick={() => handleOAuth('google')}
+              className="w-full flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
             >
-              🍽️ Restaurant Owner
+              <GoogleLogo /> Continue with Google
             </button>
             <button
-              onClick={() => setTab('supplier')}
-              className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all duration-300 ${tab === 'supplier' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+              type="button"
+              onClick={() => handleOAuth('apple')}
+              className="w-full flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
             >
-              🏪 Supplier
+              <AppleLogo /> Continue with Apple
             </button>
           </div>
 
-          {/* Form */}
+          <div className="flex items-center mb-6">
+            <div className="flex-1 border-t border-slate-200" />
+            <span className="px-3 text-xs text-slate-400 font-medium">OR WITH EMAIL</span>
+            <div className="flex-1 border-t border-slate-200" />
+          </div>
+
+          {/* Email / password form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
@@ -118,44 +128,9 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* Social login */}
-          <div className="my-6">
-            <div className="flex items-center mb-4">
-              <div className="flex-1 border-t border-slate-200" />
-              <span className="px-3 text-xs text-slate-400 font-medium">OR CONTINUE WITH</span>
-              <div className="flex-1 border-t border-slate-200" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleOAuth('google')}
-                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <GoogleLogo />
-                Google
-              </button>
-              <button
-                type="button"
-                onClick={() => handleOAuth('apple')}
-                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <AppleLogo />
-                Apple
-              </button>
-            </div>
-          </div>
-
-          {/* Switch */}
           <p className="text-center mt-8 text-sm text-slate-500">
-            {tab === 'owner' ? (
-              <>Don't have an account?{' '}
-                <Link to="/register" className="text-emerald-600 font-semibold hover:underline">Sign Up as Owner</Link>
-              </>
-            ) : (
-              <>Not a supplier yet?{' '}
-                <Link to="/register/supplier" className="text-emerald-600 font-semibold hover:underline">Apply to Sell</Link>
-              </>
-            )}
+            Don't have an account?{' '}
+            <Link to="/register" className="text-emerald-600 font-semibold hover:underline">Sign Up</Link>
           </p>
         </div>
       </div>

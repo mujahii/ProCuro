@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, ShoppingCart, Check } from 'lucide-react'
+import { Eye, EyeOff, ShoppingCart, Check, ChevronRight } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -28,10 +28,12 @@ function getPasswordStrength(pass) {
   return score
 }
 
-export default function RegisterOwnerPage() {
+export default function RegisterPage() {
   const { signIn, refreshProfile } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' })
+  const [step, setStep] = useState(1)
+  const [role, setRole] = useState(null)
+  const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' })
   const [showPw, setShowPw] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -47,7 +49,8 @@ export default function RegisterOwnerPage() {
   // Handle return from OAuth flow
   useEffect(() => {
     async function checkOAuthReturn() {
-      if (localStorage.getItem('procuro_oauth_role') !== 'restaurant_owner') return
+      const pendingRole = localStorage.getItem('procuro_oauth_role')
+      if (!pendingRole || !['restaurant_owner', 'supplier'].includes(pendingRole)) return
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) return
       localStorage.removeItem('procuro_oauth_role')
@@ -55,13 +58,13 @@ export default function RegisterOwnerPage() {
       try {
         const oauthUser = session.user
         const fullName = oauthUser.user_metadata?.full_name || oauthUser.user_metadata?.name || ''
-        const { data, error } = await supabase.rpc('create_profile_from_oauth', {
-          p_role: 'restaurant_owner',
+        const { error } = await supabase.rpc('create_profile_from_oauth', {
+          p_role: pendingRole,
           p_full_name: fullName,
         })
         if (error) throw error
         await refreshProfile()
-        navigate('/owner/store', { replace: true })
+        navigate(pendingRole === 'restaurant_owner' ? '/owner/store' : '/supplier/dashboard', { replace: true })
       } catch (err) {
         toast.error(err.message || 'Could not complete sign up')
         setLoading(false)
@@ -74,8 +77,13 @@ export default function RegisterOwnerPage() {
     setForm(f => ({ ...f, [field]: val }))
   }
 
+  function handleSelectRole(r) {
+    setRole(r)
+    setStep(2)
+  }
+
   async function handleOAuth(provider) {
-    localStorage.setItem('procuro_oauth_role', 'restaurant_owner')
+    localStorage.setItem('procuro_oauth_role', role)
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: window.location.origin + '/register' },
@@ -93,16 +101,17 @@ export default function RegisterOwnerPage() {
     if (form.password.length < 6) return setError('Password must be at least 6 characters')
     setLoading(true)
     try {
-      const { data, error } = await supabase.rpc('register_user', {
+      const params = {
         p_email: form.email,
         p_password: form.password,
         p_full_name: form.fullName,
-        p_role: 'restaurant_owner',
-      })
-      if (error) throw new Error(error.message)
+        p_role: role,
+      }
+      const { error: regError } = await supabase.rpc('register_user', params)
+      if (regError) throw new Error(regError.message)
       await signIn(form.email, form.password)
       toast.success('Account created!')
-      navigate('/owner/store')
+      navigate(role === 'restaurant_owner' ? '/owner/store' : '/supplier/dashboard')
     } catch (err) {
       setError(err.message || 'Registration failed')
     } finally {
@@ -110,124 +119,154 @@ export default function RegisterOwnerPage() {
     }
   }
 
+  const bgClass = role === 'supplier' ? 'bg-emerald-900' : 'bg-slate-900'
+
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 py-10">
+    <div className={`min-h-screen flex items-center justify-center p-4 py-10 transition-colors duration-500 ${bgClass}`}>
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
+          {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-2">
               <ShoppingCart className="w-7 h-7 text-emerald-600" />
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
-            <p className="text-slate-500 text-sm">Create your restaurant owner account</p>
+            <p className="text-slate-500 text-sm">
+              {step === 1
+                ? 'Create your free account'
+                : role === 'restaurant_owner'
+                  ? 'Restaurant owner account'
+                  : 'Supplier account'}
+            </p>
           </div>
 
-          {/* OAuth buttons */}
-          <div className="space-y-3 mb-6">
-            <button
-              type="button"
-              onClick={() => handleOAuth('google')}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-60"
-            >
-              <GoogleLogo />
-              Continue with Google
-            </button>
-            <button
-              type="button"
-              onClick={() => handleOAuth('apple')}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-60"
-            >
-              <AppleLogo />
-              Continue with Apple
-            </button>
-          </div>
-
-          <div className="flex items-center mb-6">
-            <div className="flex-1 border-t border-slate-200" />
-            <span className="px-3 text-xs text-slate-400 font-medium">OR SIGN UP WITH EMAIL</span>
-            <div className="flex-1 border-t border-slate-200" />
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>
-            )}
-
+          {/* Step 1 — Role selection */}
+          {step === 1 && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Business / Full Name</label>
-              <input type="text" required value={form.fullName} onChange={e => update('fullName', e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                placeholder="Star Doner Kebab" />
+              <p className="text-center text-sm font-semibold text-slate-600 mb-5">I am a...</p>
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleSelectRole('restaurant_owner')}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left group"
+                >
+                  <span className="text-3xl">🍽️</span>
+                  <div className="flex-1">
+                    <p className="font-bold text-slate-900">Restaurant Owner</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Browse and order from verified Halal suppliers</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                </button>
+                <button
+                  onClick={() => handleSelectRole('supplier')}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left group"
+                >
+                  <span className="text-3xl">🏪</span>
+                  <div className="flex-1">
+                    <p className="font-bold text-slate-900">Supplier</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Sell your Halal products to restaurants across Germany</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                </button>
+              </div>
+              <p className="text-center mt-8 text-sm text-slate-500">
+                Already have an account?{' '}
+                <Link to="/login" className="text-emerald-600 font-semibold hover:underline">Log In</Link>
+              </p>
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
-              <input type="email" required value={form.email} onChange={e => update('email', e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                placeholder="you@restaurant.de" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Phone Number</label>
-              <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                placeholder="+49 123 456789" />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Password</label>
-              <div className="relative">
-                <input type={showPw ? 'text' : 'password'} required value={form.password} onChange={e => update('password', e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors pr-10"
-                  placeholder="••••••••" />
-                <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-3 top-3.5 text-slate-400">
-                  {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          )}
+
+          {/* Step 2 — Account info */}
+          {step === 2 && (
+            <>
+              {/* OAuth */}
+              <div className="space-y-3 mb-6">
+                <button type="button" onClick={() => handleOAuth('google')} disabled={loading}
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-60">
+                  <GoogleLogo /> Continue with Google
+                </button>
+                <button type="button" onClick={() => handleOAuth('apple')} disabled={loading}
+                  className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-60">
+                  <AppleLogo /> Continue with Apple
                 </button>
               </div>
 
-              {form.password.length > 0 && (
-                <div className="mt-2 space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Strength</span>
-                    <span className={`font-bold ${strength === 1 ? 'text-red-500' : strength === 2 ? 'text-yellow-500' : 'text-emerald-500'}`}>{strengthInfo.label}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full transition-all duration-300 ${strengthInfo.color}`} style={{ width: `${(strength / 3) * 100}%` }} />
-                  </div>
-                  <div className="space-y-1 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <div className={`flex items-center gap-2 text-xs ${form.password.length > 8 ? 'text-emerald-600 font-medium' : 'text-slate-400'}`}>
-                      <Check className="w-3 h-3" /> Over 8 characters
-                    </div>
-                    <div className={`flex items-center gap-2 text-xs ${/[A-Z]/.test(form.password) ? 'text-emerald-600 font-medium' : 'text-slate-400'}`}>
-                      <Check className="w-3 h-3" /> One uppercase letter
-                    </div>
-                    <div className={`flex items-center gap-2 text-xs ${/[@#$%^&+=!]/.test(form.password) ? 'text-emerald-600 font-medium' : 'text-slate-400'}`}>
-                      <Check className="w-3 h-3" /> Special character (@#$%...)
-                    </div>
-                  </div>
+              <div className="flex items-center mb-6">
+                <div className="flex-1 border-t border-slate-200" />
+                <span className="px-3 text-xs text-slate-400 font-medium">OR WITH EMAIL</span>
+                <div className="flex-1 border-t border-slate-200" />
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>
+                )}
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Full Name</label>
+                  <input type="text" required value={form.fullName} onChange={e => update('fullName', e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                    placeholder="Your name" />
                 </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Confirm Password</label>
-              <input type="password" required value={form.confirmPassword} onChange={e => update('confirmPassword', e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                placeholder="••••••••" />
-            </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
+                  <input type="email" required value={form.email} onChange={e => update('email', e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                    placeholder="you@example.com" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Password</label>
+                  <div className="relative">
+                    <input type={showPw ? 'text' : 'password'} required value={form.password} onChange={e => update('password', e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors pr-10"
+                      placeholder="••••••••" />
+                    <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-3 top-3.5 text-slate-400">
+                      {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  {form.password.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500">Strength</span>
+                        <span className={`font-bold ${strength === 1 ? 'text-red-500' : strength === 2 ? 'text-yellow-500' : 'text-emerald-500'}`}>{strengthInfo.label}</span>
+                      </div>
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div className={`h-full transition-all duration-300 ${strengthInfo.color}`} style={{ width: `${(strength / 3) * 100}%` }} />
+                      </div>
+                      <div className="space-y-1 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <div className={`flex items-center gap-2 text-xs ${form.password.length > 8 ? 'text-emerald-600 font-medium' : 'text-slate-400'}`}>
+                          <Check className="w-3 h-3" /> Over 8 characters
+                        </div>
+                        <div className={`flex items-center gap-2 text-xs ${/[A-Z]/.test(form.password) ? 'text-emerald-600 font-medium' : 'text-slate-400'}`}>
+                          <Check className="w-3 h-3" /> One uppercase letter
+                        </div>
+                        <div className={`flex items-center gap-2 text-xs ${/[@#$%^&+=!]/.test(form.password) ? 'text-emerald-600 font-medium' : 'text-slate-400'}`}>
+                          <Check className="w-3 h-3" /> Special character (@#$%...)
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Confirm Password</label>
+                  <input type="password" required value={form.confirmPassword} onChange={e => update('confirmPassword', e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                    placeholder="••••••••" />
+                </div>
+                <button type="submit" disabled={loading}
+                  className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md mt-2 disabled:opacity-60">
+                  {loading ? 'Creating Account...' : 'Create Account'}
+                </button>
+              </form>
 
-            <button type="submit" disabled={loading}
-              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md mt-2 disabled:opacity-60">
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
-
-          <p className="text-center mt-6 text-sm text-slate-500">
-            Already have an account?{' '}
-            <Link to="/login" className="text-emerald-600 font-semibold hover:underline">Log In</Link>
-          </p>
-          <p className="text-center mt-2 text-sm text-slate-500">
-            Want to sell?{' '}
-            <Link to="/register/supplier" className="text-emerald-600 font-semibold hover:underline">Register as Supplier</Link>
-          </p>
+              <div className="flex items-center justify-between mt-5">
+                <button onClick={() => setStep(1)} className="text-sm text-slate-500 hover:text-slate-700 transition-colors">
+                  ← Change role
+                </button>
+                <p className="text-sm text-slate-500">
+                  <Link to="/login" className="text-emerald-600 font-semibold hover:underline">Log In</Link>
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

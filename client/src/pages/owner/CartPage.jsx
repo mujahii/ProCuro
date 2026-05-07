@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X, Navigation } from 'lucide-react'
+import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X, Navigation, AlertTriangle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import { usePlaceOrder } from '../../hooks/usePlaceOrder'
+import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
 
@@ -17,6 +18,7 @@ function getProductImageUrl(path) {
 
 export default function CartPage() {
   const navigate = useNavigate()
+  const { profile } = useAuth()
   const { groupedBySupplier, total, updateQty, removeItem, clearCart } = useCart()
   const { selectedAddress, addresses, selectAddress } = useAddresses()
   const { placeOrder, loading } = usePlaceOrder()
@@ -53,6 +55,10 @@ export default function CartPage() {
   }
 
   async function handlePlaceOrder() {
+    if (profile?.is_banned) {
+      toast.error('Your account has been suspended. You cannot place orders.')
+      return
+    }
     if (selectedPayment === 'bank_transfer') {
       const missingReceipt = groups.find(([supplierId]) => !receiptFiles[supplierId])
       if (missingReceipt) {
@@ -218,6 +224,16 @@ export default function CartPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">My Cart</h1>
 
+      {profile?.is_banned && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-red-800">Account suspended</p>
+            <p className="text-sm text-red-700 mt-0.5">Your account has been suspended. You cannot place new orders. Contact <span className="font-semibold">procuro@admin.com</span> to appeal.</p>
+          </div>
+        </div>
+      )}
+
       {/* Delivery address */}
       <button
         onClick={() => setShowAddressPicker(true)}
@@ -347,7 +363,8 @@ export default function CartPage() {
 
       <button
         onClick={() => setStep(2)}
-        className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base"
+        disabled={!!profile?.is_banned}
+        className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Continue to Payment — €{grandTotal.toFixed(2)}
       </button>

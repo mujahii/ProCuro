@@ -131,7 +131,7 @@ export default function SupplierProfilePage() {
                   return (
                     <div
                       key={product.id}
-                      onClick={() => profile?.role === 'owner' && setSelectedProduct(product)}
+                      onClick={() => profile?.role === 'restaurant_owner' && setSelectedProduct(product)}
                       className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 cursor-pointer hover:border-emerald-500 transition-colors"
                     >
                       <div className="w-20 h-20 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
@@ -148,7 +148,7 @@ export default function SupplierProfilePage() {
                         <p className="text-sm font-semibold text-emerald-600 mt-0.5">
                           €{Number(product.price).toFixed(2)} / {product.unit_type}
                         </p>
-                        {profile?.role === 'owner' && (
+                        {profile?.role === 'restaurant_owner' && (
                           <button
                             onClick={e => { e.stopPropagation(); setSelectedProduct(product) }}
                             className="mt-2 text-xs bg-slate-900 text-white px-3 py-1 rounded-full hover:bg-emerald-600 transition-colors"
@@ -205,7 +205,7 @@ export default function SupplierProfilePage() {
             </div>
 
             {/* CTA */}
-            {profile?.role === 'owner' ? (
+            {profile?.role === 'restaurant_owner' ? (
               <button
                 onClick={() => navigate('/store')}
                 className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"

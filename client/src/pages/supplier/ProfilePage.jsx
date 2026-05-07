@@ -968,32 +968,32 @@ export default function SupplierProfilePage() {
   }
 
   return (
-    <div className="max-w-sm mx-auto space-y-4 py-4">
+    <div className="max-w-lg mx-auto space-y-4 py-4">
 
       {/* Profile Header */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="h-20 bg-gradient-to-r from-slate-900 to-slate-800" />
-        <div className="px-6 pb-6 text-center -mt-10">
+        <div className="h-28 bg-gradient-to-r from-slate-900 to-slate-800" />
+        <div className="px-8 pb-7 text-center -mt-14">
           <div className="relative inline-block">
-            <div className="w-20 h-20 rounded-full bg-white p-1 shadow-lg mx-auto">
+            <div className="w-28 h-28 rounded-full bg-white p-1.5 shadow-xl mx-auto">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
               ) : (
                 <div className="w-full h-full rounded-full bg-emerald-100 flex items-center justify-center">
-                  <User className="w-8 h-8 text-emerald-400" />
+                  <User className="w-10 h-10 text-emerald-400" />
                 </div>
               )}
             </div>
             <button
               onClick={() => setShowAvatarModal(true)}
-              className="absolute bottom-0 right-0 bg-slate-900 text-white p-1.5 rounded-full hover:bg-emerald-600 border-2 border-white transition-colors"
+              className="absolute bottom-1 right-1 bg-slate-900 text-white p-1.5 rounded-full hover:bg-emerald-600 border-2 border-white transition-colors"
             >
               <Pencil className="w-3 h-3" />
             </button>
           </div>
-          <h2 className="font-bold text-slate-900 text-lg mt-3">{profile?.full_name || 'Supplier'}</h2>
+          <h2 className="font-bold text-slate-900 text-xl mt-3">{profile?.full_name || 'Supplier'}</h2>
           <p className="text-sm text-slate-400 mt-0.5">{businessName || 'Supplier'}</p>
-          {bio && <p className="text-sm text-slate-500 italic mt-1">"{bio}"</p>}
+          {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
           <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-emerald-600 font-semibold hover:underline">
             Edit Profile
           </button>

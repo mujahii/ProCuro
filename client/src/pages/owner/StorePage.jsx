@@ -54,9 +54,11 @@ export default function StorePage() {
   useEffect(() => {
     supabase
       .from('supplier_profiles')
-      .select('*, halal_certificates(status), user:users!user_id(avatar_url)')
+      .select('*, halal_certificates(status)')
       .limit(8)
-      .then(({ data }) => setSuppliers(data || []))
+      .then(({ data, error }) => {
+        if (!error) setSuppliers(data || [])
+      })
   }, [])
 
   useEffect(() => {
@@ -155,7 +157,7 @@ export default function StorePage() {
           {suppliers.length === 0 ? (
             <p className="text-sm text-slate-400 py-2">No suppliers yet.</p>
           ) : suppliers.map(supplier => {
-            const avatarUrl = supplier.avatar_url || supplier.user?.avatar_url
+            const avatarUrl = supplier.avatar_url
             const certs = supplier.halal_certificates || []
             const isVerified = supplier.is_verified || certs.some(c => c.status === 'approved')
             const isPending = !isVerified && certs.some(c => c.status === 'pending')

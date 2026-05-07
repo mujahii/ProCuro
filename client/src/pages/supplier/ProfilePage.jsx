@@ -56,6 +56,7 @@ function AvatarModal({ userId, onClose, onSaved }) {
       if (uploadError) throw uploadError
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
       await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', userId)
+      await supabase.from('supplier_profiles').update({ avatar_url: publicUrl }).eq('user_id', userId)
       onSaved(publicUrl)
       onClose()
       toast.success('Profile photo updated!')

@@ -5,7 +5,8 @@ import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
 import {
   LogOut, Loader2, User, ChevronRight, X, Eye, EyeOff,
-  Package, TrendingUp, Star, Trash2, Pencil, Navigation, Banknote
+  Package, TrendingUp, Star, Trash2, Pencil, Navigation, Banknote,
+  Building2, MapPin, Tag, Globe, CheckCircle, CreditCard
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatIBAN, handleIBANInput } from '../../lib/formatIBAN'
@@ -89,24 +90,18 @@ function AvatarModal({ userId, onClose, onSaved }) {
   )
 }
 
-function EditProfileModal({ userId, currentName, currentRestaurantName, currentBio, currentTaxId, onClose, onSaved }) {
+function EditProfileModal({ userId, currentName, currentRestaurantName, currentBio, onClose, onSaved }) {
   const [name, setName] = useState(currentName || '')
   const [restaurantName, setRestaurantName] = useState(currentRestaurantName || '')
   const [bio, setBio] = useState(currentBio || '')
-  const [taxId, setTaxId] = useState(currentTaxId || '')
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
     if (!name.trim()) { toast.error('Name is required'); return }
     setSaving(true)
     try {
-      await supabase.from('users').update({
-        full_name: name.trim(),
-        restaurant_name: restaurantName.trim() || null,
-        bio: bio.trim() || null,
-        tax_id: taxId.trim() || null,
-      }).eq('id', userId)
-      onSaved({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null, tax_id: taxId.trim() || null })
+      await supabase.from('users').update({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null }).eq('id', userId)
+      onSaved({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null })
       onClose()
       toast.success('Profile updated!')
     } catch {
@@ -117,7 +112,7 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
   }
 
   return (
-    <Modal title="Edit Profile" onClose={onClose} maxW="max-w-md">
+    <Modal title="Edit Profile" onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Your Name</label>
@@ -139,18 +134,6 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
           <p className="text-xs text-slate-400 mt-1">Shown under your name in the app</p>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-            Tax / VAT Number
-          </label>
-          <input
-            value={taxId}
-            onChange={e => setTaxId(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
-            placeholder="e.g. DE123456789"
-          />
-          <p className="text-xs text-slate-400 mt-1">Used on invoices and delivery receipts</p>
-        </div>
-        <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
           <textarea
             value={bio}
@@ -168,6 +151,115 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
           <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Changes
+          </button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+function BusinessInfoModal({ userId, current, onClose, onSaved }) {
+  const normaliseCuisine = v => Array.isArray(v) ? v : (v ? [v] : [])
+  const [form, setForm] = useState({
+    tax_id: current.tax_id || '',
+    city: current.city || '',
+    cuisine: normaliseCuisine(current.cuisine),
+    website: current.website || '',
+  })
+  const [saving, setSaving] = useState(false)
+
+  function toggleCuisine(type) {
+    setForm(f => ({
+      ...f,
+      cuisine: f.cuisine.includes(type)
+        ? f.cuisine.filter(c => c !== type)
+        : [...f.cuisine, type],
+    }))
+  }
+
+  async function handleSave() {
+    if (!form.tax_id.trim()) { toast.error('Tax ID is required'); return }
+    setSaving(true)
+    try {
+      await supabase.from('users').update({
+        tax_id: form.tax_id.trim(),
+        city: form.city.trim() || null,
+        cuisine: form.cuisine.length > 0 ? form.cuisine : null,
+        website: form.website.trim() || null,
+      }).eq('id', userId)
+      onSaved({ tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null })
+      onClose()
+      toast.success('Business details saved!')
+    } catch {
+      toast.error('Failed to save business details')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const CUISINE_TYPES = ['Halal', 'Middle Eastern', 'Asian', 'Mediterranean', 'Fast Food', 'Fine Dining', 'Café', 'Bakery', 'Seafood', 'Other']
+
+  return (
+    <Modal title="Business Details" onClose={onClose} maxW="max-w-md">
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            Tax ID / VAT Number <span className="text-red-500">*</span>
+          </label>
+          <input
+            value={form.tax_id}
+            onChange={e => setForm(f => ({ ...f, tax_id: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. DE123456789"
+          />
+          <p className="text-xs text-slate-400 mt-1">Used on invoices and delivery receipts</p>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">City</label>
+          <input
+            value={form.city}
+            onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. Berlin"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            Cuisine / Restaurant Type <span className="text-slate-400 font-normal normal-case">(select all that apply)</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {CUISINE_TYPES.map(type => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => toggleCuisine(type)}
+                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                  form.cuisine.includes(type)
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Website (optional)</label>
+          <input
+            value={form.website}
+            onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="https://myrestaurant.com"
+          />
+        </div>
+        <div className="flex gap-3 pt-1">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+            Cancel
+          </button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+            Save
           </button>
         </div>
       </div>
@@ -602,7 +694,12 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState(profile?.full_name || '')
   const [restaurantName, setRestaurantName] = useState(profile?.restaurant_name || '')
   const [bio, setBio] = useState(profile?.bio || '')
-  const [taxId, setTaxId] = useState(profile?.tax_id || '')
+  const [businessInfo, setBusinessInfo] = useState({
+    tax_id: profile?.tax_id || '',
+    city: profile?.city || '',
+    cuisine: profile?.cuisine || [],
+    website: profile?.website || '',
+  })
   const [bankDetails, setBankDetails] = useState(null)
 
   const [showAvatarModal, setShowAvatarModal] = useState(false)
@@ -612,6 +709,7 @@ export default function ProfilePage() {
   const [showAddressModal, setShowAddressModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showBankModal, setShowBankModal] = useState(false)
+  const [showBusinessInfoModal, setShowBusinessInfoModal] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -629,12 +727,16 @@ export default function ProfilePage() {
     updateProfileState({ avatar_url: url })
   }
 
-  function handleProfileSaved({ full_name, restaurant_name: newRestaurantName, bio: newBio, tax_id: newTaxId }) {
+  function handleProfileSaved({ full_name, restaurant_name: newRestaurantName, bio: newBio }) {
     setDisplayName(full_name)
     setRestaurantName(newRestaurantName)
     setBio(newBio)
-    setTaxId(newTaxId || '')
-    updateProfileState({ full_name, restaurant_name: newRestaurantName, bio: newBio, tax_id: newTaxId })
+    updateProfileState({ full_name, restaurant_name: newRestaurantName, bio: newBio })
+  }
+
+  function handleBusinessInfoSaved(info) {
+    setBusinessInfo(info)
+    updateProfileState(info)
   }
 
   return (
@@ -663,16 +765,6 @@ export default function ProfilePage() {
           </div>
           <h2 className="font-bold text-slate-900 text-xl mt-3">{displayName || 'Restaurant Owner'}</h2>
           <p className="text-sm text-slate-400 mt-0.5">{restaurantName || 'Restaurant'}</p>
-          {taxId && (
-            <p className="text-xs text-slate-400 mt-1 font-mono">
-              Tax / VAT: <span className="text-slate-600 font-semibold">{taxId}</span>
-            </p>
-          )}
-          {!taxId && (
-            <button onClick={() => setShowEditModal(true)} className="mt-1 text-xs text-amber-500 font-semibold hover:underline">
-              + Add Tax / VAT Number
-            </button>
-          )}
           {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
           <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-emerald-600 font-semibold hover:underline">
             Edit Profile
@@ -696,6 +788,84 @@ export default function ProfilePage() {
           <TrendingUp className="w-6 h-6 text-emerald-600" />
           <span className="text-sm font-semibold text-slate-700">View Analysis</span>
         </button>
+      </div>
+
+      {/* Business Details */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="flex items-center justify-between px-4 pt-5 pb-2">
+          <h3 className="font-bold text-slate-900 text-base">Business Details</h3>
+          <button
+            onClick={() => setShowBusinessInfoModal(true)}
+            className="text-xs text-emerald-600 font-semibold hover:underline"
+          >
+            Edit
+          </button>
+        </div>
+        <div className="divide-y divide-slate-50">
+          {/* Tax ID */}
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Building2 className="w-4 h-4 text-slate-300 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Tax ID / VAT</p>
+              {businessInfo.tax_id ? (
+                <p className="text-sm font-semibold text-slate-900 mt-0.5">{businessInfo.tax_id}</p>
+              ) : (
+                <button onClick={() => setShowBusinessInfoModal(true)} className="text-sm text-amber-500 font-semibold hover:underline mt-0.5">
+                  Add Tax ID →
+                </button>
+              )}
+            </div>
+            {businessInfo.tax_id && <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
+          </div>
+
+          {/* City */}
+          <div className="flex items-center gap-3 px-4 py-3">
+            <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">City</p>
+              <p className="text-sm font-semibold text-slate-900 mt-0.5">{businessInfo.city || <span className="text-slate-400 font-normal">Not set</span>}</p>
+            </div>
+          </div>
+
+          {/* Cuisine / Type */}
+          <div className="flex items-start gap-3 px-4 py-3">
+            <Tag className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-2">Cuisine / Type</p>
+              {businessInfo.cuisine?.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {businessInfo.cuisine.map(c => (
+                    <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-900 text-white">{c}</span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-sm text-slate-400">Not set</span>
+              )}
+            </div>
+          </div>
+
+          {/* Website */}
+          {(businessInfo.website || true) && (
+            <div className="flex items-center gap-3 px-4 py-3">
+              <Globe className="w-4 h-4 text-slate-300 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Website</p>
+                {businessInfo.website ? (
+                  <a
+                    href={businessInfo.website.startsWith('http') ? businessInfo.website : `https://${businessInfo.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-emerald-600 font-semibold hover:underline mt-0.5 block truncate"
+                  >
+                    {businessInfo.website}
+                  </a>
+                ) : (
+                  <span className="text-sm text-slate-400">Not set</span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Bank Details */}
@@ -783,7 +953,6 @@ export default function ProfilePage() {
           currentName={displayName}
           currentRestaurantName={restaurantName}
           currentBio={bio}
-          currentTaxId={taxId}
           onClose={() => setShowEditModal(false)}
           onSaved={handleProfileSaved}
         />
@@ -798,6 +967,14 @@ export default function ProfilePage() {
         />
       )}
       {showAddressModal && <AddressModal onClose={() => setShowAddressModal(false)} />}
+      {showBusinessInfoModal && (
+        <BusinessInfoModal
+          userId={user.id}
+          current={businessInfo}
+          onClose={() => setShowBusinessInfoModal(false)}
+          onSaved={handleBusinessInfoSaved}
+        />
+      )}
       {showBankModal && (
         <BankModal
           userId={user.id}

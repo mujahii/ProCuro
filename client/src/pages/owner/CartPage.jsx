@@ -372,7 +372,7 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
   const [showForm, setShowForm] = useState(addresses.length === 0)
   const [saving, setSaving] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
-  const [form, setForm] = useState({ label: '', street: '', house_number: '', postal_code: '', city: '', country: 'Germany' })
+  const [form, setForm] = useState({ label: '', street: '', postal_code: '', city: '' })
 
   function update(field, val) {
     setForm(f => ({ ...f, [field]: val }))
@@ -390,8 +390,7 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
           const addr = data.address || {}
           setForm(f => ({
             ...f,
-            street: addr.road || '',
-            house_number: addr.house_number || '',
+            street: [addr.road, addr.house_number].filter(Boolean).join(' ') || '',
             postal_code: addr.postcode || '',
             city: addr.city || addr.town || addr.village || addr.suburb || '',
           }))
@@ -480,41 +479,20 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
                 {gpsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
                 {gpsLoading ? 'Detecting...' : 'Use My Location'}
               </button>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Label (optional)</label>
-                  <input value={form.label} onChange={e => update('label', e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="e.g. Restaurant, Office" />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Street <span className="text-red-500">*</span></label>
-                  <input value={form.street} onChange={e => update('street', e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="Street name" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">House No.</label>
-                  <input value={form.house_number} onChange={e => update('house_number', e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="e.g. 12A" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Postal Code</label>
+              <div className="space-y-2.5">
+                <input value={form.label} onChange={e => update('label', e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Label (e.g. Restaurant, Office)" />
+                <input value={form.street} onChange={e => update('street', e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Street *" />
+                <div className="flex gap-2">
                   <input value={form.postal_code} onChange={e => update('postal_code', e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="e.g. 10115" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">City <span className="text-red-500">*</span></label>
+                    className="w-28 px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Postal Code" />
                   <input value={form.city} onChange={e => update('city', e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                    placeholder="e.g. Berlin" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Country</label>
-                  <input value={form.country} onChange={e => update('country', e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                    className="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="City *" />
                 </div>
               </div>
               <button

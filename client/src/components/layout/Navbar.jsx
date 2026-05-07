@@ -17,7 +17,7 @@ export default function Navbar({ onMenuClick }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [addingAddr, setAddingAddr] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
-  const [addrForm, setAddrForm] = useState({ label: '', street: '', city: '', country: 'Germany' })
+  const [addrForm, setAddrForm] = useState({ label: '', street: '', postal_code: '', city: '' })
   const [savingAddr, setSavingAddr] = useState(false)
   const addrRef = useRef(null)
   const userRef = useRef(null)
@@ -27,7 +27,7 @@ export default function Navbar({ onMenuClick }) {
       if (addrRef.current && !addrRef.current.contains(e.target)) {
         setAddrOpen(false)
         setAddingAddr(false)
-        setAddrForm({ label: '', street: '', city: '', country: 'Germany' })
+        setAddrForm({ label: '', street: '', postal_code: '', city: '' })
       }
       if (userRef.current && !userRef.current.contains(e.target)) setUserMenuOpen(false)
     }
@@ -64,8 +64,8 @@ export default function Navbar({ onMenuClick }) {
           setAddrForm(f => ({
             ...f,
             street: [addr.road, addr.house_number].filter(Boolean).join(' ') || '',
+            postal_code: addr.postcode || '',
             city: addr.city || addr.town || addr.village || '',
-            country: addr.country || 'Germany',
           }))
         } catch {
           toast.error('Could not fetch address from GPS')
@@ -86,7 +86,7 @@ export default function Navbar({ onMenuClick }) {
       await addAddress(addrForm)
       toast.success('Address saved!')
       setAddingAddr(false)
-      setAddrForm({ label: '', street: '', city: '', country: 'Germany' })
+      setAddrForm({ label: '', street: '', postal_code: '', city: '' })
     } catch {
       toast.error('Failed to save address')
     } finally {
@@ -180,24 +180,33 @@ export default function Navbar({ onMenuClick }) {
                         />
                         <input
                           type="text"
-                          placeholder="Street & number *"
+                          placeholder="Street *"
                           value={addrForm.street}
                           onChange={e => setAddrForm(f => ({ ...f, street: e.target.value }))}
                           className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
                           required
                         />
-                        <input
-                          type="text"
-                          placeholder="City *"
-                          value={addrForm.city}
-                          onChange={e => setAddrForm(f => ({ ...f, city: e.target.value }))}
-                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
-                          required
-                        />
+                        <div className="flex gap-1.5">
+                          <input
+                            type="text"
+                            placeholder="Postal"
+                            value={addrForm.postal_code}
+                            onChange={e => setAddrForm(f => ({ ...f, postal_code: e.target.value }))}
+                            className="w-20 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                          />
+                          <input
+                            type="text"
+                            placeholder="City *"
+                            value={addrForm.city}
+                            onChange={e => setAddrForm(f => ({ ...f, city: e.target.value }))}
+                            className="flex-1 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                            required
+                          />
+                        </div>
                         <div className="flex gap-2 pt-1">
                           <button
                             type="button"
-                            onClick={() => { setAddingAddr(false); setAddrForm({ label: '', street: '', city: '', country: 'Germany' }) }}
+                            onClick={() => { setAddingAddr(false); setAddrForm({ label: '', street: '', postal_code: '', city: '' }) }}
                             className="flex-1 py-1.5 text-xs border border-slate-200 rounded-md text-slate-600 hover:bg-slate-100"
                           >
                             Cancel

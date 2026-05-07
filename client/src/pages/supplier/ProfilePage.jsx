@@ -299,7 +299,7 @@ function PhoneModal({ userId, currentPhone, onClose, onSaved }) {
 
 function AddressModal({ onClose }) {
   const { addresses, addAddress, deleteAddress, setDefault, reload } = useAddresses()
-  const [form, setForm] = useState({ label: '', street: '', house_number: '', postal_code: '', city: '' })
+  const [form, setForm] = useState({ label: '', street: '', postal_code: '', city: '' })
   const [saving, setSaving] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
 
@@ -315,8 +315,7 @@ function AddressModal({ onClose }) {
           const addr = data.address || {}
           setForm(f => ({
             ...f,
-            street: addr.road || '',
-            house_number: addr.house_number || '',
+            street: [addr.road, addr.house_number].filter(Boolean).join(' ') || '',
             postal_code: addr.postcode || '',
             city: addr.city || addr.town || addr.village || addr.suburb || '',
           }))
@@ -338,7 +337,7 @@ function AddressModal({ onClose }) {
     setSaving(true)
     try {
       await addAddress({ ...form, country: 'Germany' })
-      setForm({ label: '', street: '', house_number: '', postal_code: '', city: '' })
+      setForm({ label: '', street: '', postal_code: '', city: '' })
       toast.success('Address added!')
     } catch (err) {
       toast.error(err.message)
@@ -367,9 +366,8 @@ function AddressModal({ onClose }) {
   }
 
   function formatAddress(addr) {
-    const parts = [addr.street, addr.house_number].filter(Boolean).join(' ')
     const cityPart = [addr.postal_code, addr.city].filter(Boolean).join(' ')
-    return [parts, cityPart].filter(Boolean).join(', ')
+    return [addr.street, cityPart].filter(Boolean).join(', ')
   }
 
   return (

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2 } from 'lucide-react'
+import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { formatIBAN } from '../../lib/formatIBAN'
@@ -177,6 +177,21 @@ function RefundSection({ split, supplierId, onUploaded }) {
 }
 
 function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload }) {
+  const [ownerInfo, setOwnerInfo] = useState(null)
+  const [ownerAddress, setOwnerAddress] = useState(null)
+
+  useEffect(() => {
+    const ownerId = split.order?.restaurant_owner_id
+    if (!ownerId) return
+    Promise.all([
+      supabase.from('users').select('full_name, restaurant_name, phone').eq('id', ownerId).single(),
+      supabase.from('addresses').select('label, street, postal_code, city').eq('user_id', ownerId).eq('is_default', true).maybeSingle(),
+    ]).then(([userRes, addrRes]) => {
+      setOwnerInfo(userRes.data)
+      setOwnerAddress(addrRes.data)
+    })
+  }, [split.order?.restaurant_owner_id])
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
@@ -186,6 +201,43 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         <h2 className="text-2xl font-bold text-slate-900">Order Details</h2>
         <StatusBadge status={split.status} />
       </div>
+
+      {/* Restaurant owner info */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 space-y-3">
+        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Delivery To</p>
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+            <Store className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div className="flex-1 space-y-1.5">
+            <p className="font-bold text-slate-900 text-base">{ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant Owner'}</p>
+            {ownerInfo?.full_name && ownerInfo?.restaurant_name && (
+              <p className="text-sm text-slate-500">{ownerInfo.full_name}</p>
+            )}
+            {ownerInfo?.phone && (
+              <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                <Phone className="w-3.5 h-3.5 text-slate-400" />
+                <a href={`tel:${ownerInfo.phone}`} className="hover:underline">{ownerInfo.phone}</a>
+              </div>
+            )}
+            {ownerAddress ? (
+              <div className="flex items-start gap-1.5 text-sm text-slate-600">
+                <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+                <span>
+                  {[ownerAddress.street, [ownerAddress.postal_code, ownerAddress.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
+                  {ownerAddress.label && <span className="text-xs text-slate-400 ml-1">({ownerAddress.label})</span>}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-sm text-slate-400">
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                <span>No delivery address set</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
@@ -197,16 +249,16 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
             <p className="font-semibold text-slate-900">{split.order?.created_at ? format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm') : '—'}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Restaurant</p>
-            <p className="font-semibold text-slate-900">Restaurant Owner</p>
-          </div>
-          <div>
             <p className="text-xs text-slate-500 font-medium mb-1">Payment</p>
             <p className="font-semibold text-slate-900 capitalize">{split.payment_method?.replace(/_/g, ' ')}</p>
           </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium mb-1">Status</p>
+            <StatusBadge status={split.status} />
+          </div>
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-900 mb-3">Items</p>
+          <p className="text-sm font-bold text-slate-900 mb-3">Items Ordered</p>
           <div className="bg-slate-50 p-4 rounded-xl space-y-2">
             {split.order_items?.map(item => (
               <div key={item.id} className="flex justify-between text-sm">

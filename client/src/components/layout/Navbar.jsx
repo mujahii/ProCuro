@@ -176,7 +176,7 @@ export default function Navbar({ onMenuClick }) {
                           placeholder="Label (e.g. Restaurant)"
                           value={addrForm.label}
                           onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))}
-                          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                          className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
                         />
                         <input
                           type="text"

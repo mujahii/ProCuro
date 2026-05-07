@@ -1036,39 +1036,41 @@ export default function SupplierProfilePage() {
             Edit
           </button>
         </div>
-        <div className="px-4 pb-5 space-y-2.5">
+        <div className="divide-y divide-slate-50">
           {/* Tax ID */}
-          <div className="flex items-center gap-3">
-            <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Building2 className="w-4 h-4 text-slate-300 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-400">Tax ID / VAT Number</p>
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Tax ID / VAT</p>
               {supplierProfile?.tax_id ? (
-                <p className="text-sm font-semibold text-slate-800">{supplierProfile.tax_id}</p>
+                <p className="text-sm font-semibold text-slate-900 mt-0.5">{supplierProfile.tax_id}</p>
               ) : (
-                <button onClick={() => setShowBusinessInfoModal(true)} className="text-sm text-amber-600 font-semibold hover:underline">
+                <button onClick={() => setShowBusinessInfoModal(true)} className="text-sm text-amber-500 font-semibold hover:underline mt-0.5">
                   Add Tax ID →
                 </button>
               )}
             </div>
             {supplierProfile?.tax_id && <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
           </div>
+
           {/* City */}
-          <div className="flex items-center gap-3">
-            <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <div className="flex items-center gap-3 px-4 py-3">
+            <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-400">City</p>
-              <p className="text-sm font-semibold text-slate-800">{supplierProfile?.city || <span className="text-slate-400 font-normal">Not set</span>}</p>
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">City</p>
+              <p className="text-sm font-semibold text-slate-900 mt-0.5">{supplierProfile?.city || <span className="text-slate-400 font-normal">Not set</span>}</p>
             </div>
           </div>
-          {/* Category */}
-          <div className="flex items-start gap-3">
-            <Tag className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+
+          {/* Categories */}
+          <div className="flex items-start gap-3 px-4 py-3">
+            <Tag className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-400 mb-1">Business Categories</p>
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-2">Categories</p>
               {supplierProfile?.category?.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
                   {(Array.isArray(supplierProfile.category) ? supplierProfile.category : [supplierProfile.category]).map(c => (
-                    <span key={c} className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">{c}</span>
+                    <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-900 text-white">{c}</span>
                   ))}
                 </div>
               ) : (
@@ -1076,58 +1078,64 @@ export default function SupplierProfilePage() {
               )}
             </div>
           </div>
+
           {/* Bank Details */}
-          <div className="border-t border-slate-100 pt-3 mt-1">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide">Bank Details</p>
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-slate-300" />
+                <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Bank Details</p>
+              </div>
               <button onClick={() => setShowBankModal(true)} className="text-xs text-emerald-600 font-semibold hover:underline">
                 {bankDetails ? 'Edit' : 'Add'}
               </button>
             </div>
             {bankDetails ? (
-              <div className="space-y-1.5">
+              <div className="bg-slate-50 rounded-xl p-3 space-y-2">
                 {bankDetails.bank_name && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Bank</span>
-                    <span className="font-medium text-slate-800">{bankDetails.bank_name}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-400">Bank</span>
+                    <span className="text-sm font-semibold text-slate-900">{bankDetails.bank_name}</span>
                   </div>
                 )}
                 {bankDetails.account_holder && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">Account Holder</span>
-                    <span className="font-medium text-slate-800">{bankDetails.account_holder}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-400">Account Holder</span>
+                    <span className="text-sm font-semibold text-slate-900">{bankDetails.account_holder}</span>
                   </div>
                 )}
                 {bankDetails.iban && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">IBAN</span>
-                    <span className="font-mono font-semibold text-slate-800 text-xs">{bankDetails.iban}</span>
+                  <div className="flex justify-between items-center gap-4">
+                    <span className="text-xs text-slate-400 flex-shrink-0">IBAN</span>
+                    <span className="font-mono text-xs font-bold text-slate-900 tracking-wider">{bankDetails.iban}</span>
                   </div>
                 )}
                 {bankDetails.bic && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-400">BIC</span>
-                    <span className="font-medium text-slate-800">{bankDetails.bic}</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-slate-400">BIC / SWIFT</span>
+                    <span className="text-sm font-semibold text-slate-900">{bankDetails.bic}</span>
                   </div>
                 )}
               </div>
             ) : (
-              <button onClick={() => setShowBankModal(true)} className="text-sm text-amber-600 font-semibold hover:underline">
-                Add bank details →
+              <button onClick={() => setShowBankModal(true)} className="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-sm text-amber-500 font-semibold hover:border-amber-300 transition-colors">
+                + Add bank details
               </button>
             )}
           </div>
 
           {/* Verification status */}
-          <div className={`mt-3 p-3 rounded-xl border text-sm font-medium flex items-center gap-2 ${
-            supplierProfile?.is_verified
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-              : 'bg-amber-50 border-amber-200 text-amber-700'
-          }`}>
-            {supplierProfile?.is_verified
-              ? <><CheckCircle className="w-4 h-4" /> Verified — visible to restaurant owners as Halal Certified</>
-              : <><Clock className="w-4 h-4" /> Not verified — upload a certificate to get Halal Certified</>
-            }
+          <div className="px-4 pb-4 pt-3">
+            <div className={`p-3 rounded-xl border text-sm font-medium flex items-center gap-2 ${
+              supplierProfile?.is_verified
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                : 'bg-amber-50 border-amber-200 text-amber-700'
+            }`}>
+              {supplierProfile?.is_verified
+                ? <><CheckCircle className="w-4 h-4 flex-shrink-0" /> Verified — visible to restaurant owners as Halal Certified</>
+                : <><Clock className="w-4 h-4 flex-shrink-0" /> Not verified — complete your profile to get certified</>
+              }
+            </div>
           </div>
         </div>
       </div>

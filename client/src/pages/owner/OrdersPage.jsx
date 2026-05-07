@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag, ArrowUpRight } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -151,6 +152,7 @@ function RefundReceiptDisplay({ path }) {
 }
 
 function SupplierProfileModal({ supplierId, businessName, onClose }) {
+  const navigate = useNavigate()
   const [sp, setSp] = useState(null)
 
   useEffect(() => {
@@ -170,23 +172,23 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
 
   return (
     <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-slate-900 px-6 py-8 text-center relative">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-slate-900 px-6 py-10 text-center relative">
           <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
           {sp?.avatar_url ? (
-            <img src={avatarUrl(sp.avatar_url)} alt={sp.business_name} className="w-16 h-16 rounded-full object-cover mx-auto mb-3 border-2 border-white/20" />
+            <img src={avatarUrl(sp.avatar_url)} alt={sp.business_name} className="w-28 h-28 rounded-full object-cover mx-auto mb-4 border-4 border-white/20 shadow-xl" />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
-              <Store className="w-8 h-8 text-white" />
+            <div className="w-28 h-28 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4 shadow-xl">
+              <Store className="w-14 h-14 text-white" />
             </div>
           )}
-          <h2 className="text-xl font-bold text-white">{sp?.business_name || businessName || 'Supplier'}</h2>
-          <div className="flex items-center justify-center gap-2 mt-1.5 flex-wrap">
-            {sp?.category && <span className="text-xs text-slate-300 bg-white/10 px-2 py-0.5 rounded-full">{sp.category}</span>}
+          <h2 className="text-2xl font-bold text-white">{sp?.business_name || businessName || 'Supplier'}</h2>
+          <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
+            {sp?.category && <span className="text-xs text-slate-300 bg-white/10 px-2.5 py-1 rounded-full">{sp.category}</span>}
             {sp?.is_verified && (
-              <span className="flex items-center gap-1 text-xs text-emerald-400">
+              <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full">
                 <CheckCircle className="w-3 h-3" /> Verified
               </span>
             )}
@@ -214,8 +216,14 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
           )}
         </div>
 
-        <div className="px-5 pb-5">
-          <button onClick={onClose} className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors">
+        <div className="px-5 pb-5 space-y-3">
+          <button
+            onClick={() => { onClose(); navigate(`/supplier/${supplierId}`) }}
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            <ArrowUpRight className="w-4 h-4" /> View Products & Certificates
+          </button>
+          <button onClick={onClose} className="w-full py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors">
             Close
           </button>
         </div>

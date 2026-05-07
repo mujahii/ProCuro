@@ -230,19 +230,19 @@ function PaymentReceiptDisplay({ path }) {
 function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
   return (
     <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-emerald-600 px-6 py-8 text-center relative">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+        <div className="bg-emerald-600 px-6 py-10 text-center relative">
           <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
-          <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 overflow-hidden">
+          <div className="w-28 h-28 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-xl border-4 border-white/20">
             {ownerInfo?.avatar_url ? (
               <img src={ownerInfo.avatar_url} alt="avatar" className="w-full h-full object-cover" />
             ) : (
-              <Store className="w-10 h-10 text-white" />
+              <Store className="w-14 h-14 text-white" />
             )}
           </div>
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-2xl font-bold text-white">
             {ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant'}
           </h2>
           {ownerInfo?.restaurant_name && ownerInfo?.full_name && (

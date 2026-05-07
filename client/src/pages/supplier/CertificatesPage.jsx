@@ -61,8 +61,14 @@ export default function SupplierCertificatesPage() {
   }
 
   async function viewCert(cert) {
-    const { data } = await supabase.storage.from('halal-certificates').createSignedUrl(cert.file_url, 300)
-    if (data?.signedUrl) window.open(data.signedUrl, '_blank')
+    const win = window.open('about:blank', '_blank')
+    const { data, error } = await supabase.storage.from('halal-certificates').createSignedUrl(cert.file_url, 300)
+    if (data?.signedUrl) {
+      win.location.href = data.signedUrl
+    } else {
+      win?.close()
+      toast.error(error?.message || 'Could not open certificate')
+    }
   }
 
   return (

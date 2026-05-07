@@ -1107,7 +1107,7 @@ export default function SupplierProfilePage() {
                 {bankDetails.iban && (
                   <div className="flex justify-between items-center gap-4">
                     <span className="text-xs text-slate-400 flex-shrink-0">IBAN</span>
-                    <span className="font-mono text-xs font-bold text-slate-900 tracking-wider">{bankDetails.iban}</span>
+                    <span className="text-sm font-semibold text-slate-900">{bankDetails.iban}</span>
                   </div>
                 )}
                 {bankDetails.bic && (

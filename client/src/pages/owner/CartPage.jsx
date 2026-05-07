@@ -1,11 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package } from 'lucide-react'
+import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import { usePlaceOrder } from '../../hooks/usePlaceOrder'
 import toast from 'react-hot-toast'
+
+function getProductImageUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+  return data?.publicUrl || null
+}
 
 export default function CartPage() {
   const navigate = useNavigate()
@@ -205,13 +212,19 @@ export default function CartPage() {
           disabled={!selectedPayment || loading}
           className="w-full py-4 text-lg bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : `Place Order — €${total.toFixed(2)}`}
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : `Place Order — €${(total + groups.reduce((s, [, g]) => s + Number(g.items[0]?.product?.delivery_fee || 0), 0)).toFixed(2)}`}
         </button>
       </div>
     )
   }
 
   /* Step 1 — Cart */
+  const totalDelivery = groups.reduce((sum, [, group]) => {
+    const fee = group.items[0]?.product?.delivery_fee || 0
+    return sum + Number(fee)
+  }, 0)
+  const grandTotal = total + totalDelivery
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">My Cart</h1>
@@ -240,65 +253,97 @@ export default function CartPage() {
         )}
       </div>
 
-      {/* Cart items */}
+      {/* Cart items grouped by supplier */}
       <div className="space-y-3">
-        {groups.map(([supplierId, group]) => (
-          <div key={supplierId} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-            <div className="bg-slate-50 px-5 py-3 border-b border-slate-100">
-              <p className="font-bold text-slate-900 text-sm">{group.supplier?.business_name || 'Supplier'}</p>
-            </div>
-            <div className="divide-y divide-slate-50">
-              {group.items.map(item => (
-                <div key={item.productId} className="flex items-center gap-4 p-4">
-                  <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                    {item.product.image_url ? (
-                      <img src={item.product.image_url} alt={item.product.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-300">
-                        <Package className="w-7 h-7" />
+        {groups.map(([supplierId, group]) => {
+          const deliveryFee = Number(group.items[0]?.product?.delivery_fee || 0)
+          return (
+            <div key={supplierId} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+              <div className="bg-slate-50 px-5 py-3 border-b border-slate-100">
+                <p className="font-bold text-slate-900 text-sm">{group.supplier?.business_name || 'Supplier'}</p>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {group.items.map(item => {
+                  const imgUrl = getProductImageUrl(item.product.image_url)
+                  return (
+                    <div key={item.productId} className="flex items-center gap-4 p-4">
+                      <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                        {imgUrl ? (
+                          <img src={imgUrl} alt={item.product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-300">
+                            <Package className="w-7 h-7" />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-900 text-sm">{item.product.name}</p>
-                    <p className="text-xs text-slate-400">€{Number(item.product.price).toFixed(2)} / {item.product.unit_type}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => updateQty(item.productId, item.quantity - 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors">
-                      <Minus className="w-3 h-3 text-slate-600" />
-                    </button>
-                    <span className="w-6 text-center text-sm font-bold text-slate-900">{item.quantity}</span>
-                    <button onClick={() => updateQty(item.productId, item.quantity + 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors">
-                      <Plus className="w-3 h-3 text-slate-600" />
-                    </button>
-                  </div>
-                  <p className="text-sm font-bold text-slate-900 w-14 text-right">€{(item.product.price * item.quantity).toFixed(2)}</p>
-                  <button onClick={() => removeItem(item.productId)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-50 text-red-400 transition-colors">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-slate-900 text-sm">{item.product.name}</p>
+                        <p className="text-xs text-slate-400">€{Number(item.product.price).toFixed(2)} / {item.product.unit_type}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => updateQty(item.productId, item.quantity - 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors">
+                          <Minus className="w-3 h-3 text-slate-600" />
+                        </button>
+                        <span className="w-6 text-center text-sm font-bold text-slate-900">{item.quantity}</span>
+                        <button onClick={() => updateQty(item.productId, item.quantity + 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors">
+                          <Plus className="w-3 h-3 text-slate-600" />
+                        </button>
+                      </div>
+                      <p className="text-sm font-bold text-slate-900 w-14 text-right">€{(item.product.price * item.quantity).toFixed(2)}</p>
+                      <button onClick={() => removeItem(item.productId)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-50 text-red-400 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+              {/* Per-supplier subtotal + delivery */}
+              <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 space-y-1">
+                <div className="flex justify-between text-xs text-slate-500">
+                  <span>Items subtotal</span>
+                  <span>€{group.subtotal.toFixed(2)}</span>
                 </div>
-              ))}
+                <div className="flex justify-between text-xs text-slate-500">
+                  <span className="flex items-center gap-1"><Truck className="w-3 h-3" /> Delivery</span>
+                  <span>{deliveryFee > 0 ? `€${deliveryFee.toFixed(2)}` : <span className="text-emerald-600 font-medium">Free</span>}</span>
+                </div>
+                <div className="flex justify-between text-sm font-bold text-slate-800 pt-1 border-t border-slate-100">
+                  <span>Supplier total</span>
+                  <span>€{(group.subtotal + deliveryFee).toFixed(2)}</span>
+                </div>
+              </div>
             </div>
-            <div className="px-5 py-3 border-t border-slate-50 bg-slate-50/50 flex justify-end">
-              <p className="text-sm font-bold text-slate-700">Subtotal: €{group.subtotal.toFixed(2)}</p>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Order summary */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 space-y-2">
-        <div className="flex justify-between text-sm text-slate-500">
-          <span>Subtotal</span>
-          <span>€{total.toFixed(2)}</span>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+        <h3 className="font-bold text-slate-900 mb-4">Order Summary</h3>
+        <div className="space-y-2 mb-3">
+          {groups.map(([supplierId, group]) => {
+            const fee = Number(group.items[0]?.product?.delivery_fee || 0)
+            return (
+              <div key={supplierId} className="flex justify-between text-sm text-slate-500">
+                <span className="truncate mr-2">{group.supplier?.business_name || 'Supplier'}</span>
+                <span className="font-medium text-slate-700 flex-shrink-0">€{(group.subtotal + fee).toFixed(2)}</span>
+              </div>
+            )
+          })}
         </div>
-        <div className="flex justify-between text-sm text-slate-500">
-          <span>Delivery</span>
-          <span className="text-emerald-600 font-medium">Calculated at checkout</span>
-        </div>
-        <div className="border-t border-slate-100 pt-2 flex justify-between font-bold text-lg text-slate-900">
-          <span>Total</span>
-          <span>€{total.toFixed(2)}</span>
+        <div className="border-t border-slate-100 pt-3 space-y-2">
+          <div className="flex justify-between text-sm text-slate-500">
+            <span>Items subtotal</span>
+            <span>€{total.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm text-slate-500">
+            <span className="flex items-center gap-1"><Truck className="w-3.5 h-3.5" /> Total delivery</span>
+            <span>{totalDelivery > 0 ? `€${totalDelivery.toFixed(2)}` : <span className="text-emerald-600 font-medium">Free</span>}</span>
+          </div>
+          <div className="border-t border-slate-100 pt-2 flex justify-between font-bold text-lg text-slate-900">
+            <span>Grand Total</span>
+            <span>€{grandTotal.toFixed(2)}</span>
+          </div>
         </div>
       </div>
 
@@ -306,7 +351,7 @@ export default function CartPage() {
         onClick={() => setStep(2)}
         className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base"
       >
-        Continue to Payment
+        Continue to Payment — €{grandTotal.toFixed(2)}
       </button>
     </div>
   )

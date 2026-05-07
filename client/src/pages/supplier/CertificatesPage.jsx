@@ -42,11 +42,13 @@ export default function SupplierCertificatesPage() {
       const { data: cert } = await supabase.from('halal_certificates').insert({
         supplier_id: supplierProfile.id,
         file_url: upload.path,
-        status: 'pending',
+        file_name: certFile.name,
+        status: 'approved',
       }).select().single()
+      await supabase.from('supplier_profiles').update({ is_verified: true }).eq('id', supplierProfile.id)
       setCerts(prev => [cert, ...prev])
       setCertFile(null)
-      toast.success('Certificate uploaded for review!')
+      toast.success('Certificate uploaded — you are now Halal Certified!')
     } catch (err) {
       toast.error(err.message)
     } finally {

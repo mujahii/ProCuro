@@ -27,22 +27,25 @@ export default function SupplierLayout() {
     if (!user) return
     supabase
       .from('supplier_profiles')
-      .select('id, business_name')
+      .select('id, business_name, tax_id, is_verified')
       .eq('user_id', user.id)
       .single()
       .then(({ data: sp }) => {
         if (!sp) return
-        // business_name falls back to full_name on quick signup — treat as incomplete
-        if (!sp.business_name || sp.business_name === user.full_name) {
+        if (!sp.business_name || !sp.tax_id) {
           setProfileIncomplete(true)
         }
-        supabase
-          .from('halal_certificates')
-          .select('status')
-          .eq('supplier_id', sp.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .then(({ data }) => setCertStatus(data?.[0]?.status || 'none'))
+        if (sp.is_verified) {
+          setCertStatus('approved')
+        } else {
+          supabase
+            .from('halal_certificates')
+            .select('status')
+            .eq('supplier_id', sp.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .then(({ data }) => setCertStatus(data?.[0]?.status || 'none'))
+        }
       })
   }, [user])
 
@@ -66,10 +69,10 @@ export default function SupplierLayout() {
         <div className="fixed top-16 left-0 right-0 z-20 bg-amber-500 text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap">
           <span>
             {profileIncomplete
-              ? '⚠️ Complete your supplier profile to start selling on ProCuro.'
+              ? '⚠️ Complete your business details (name + tax ID) to start selling on ProCuro.'
               : certStatus === 'none'
-                ? '⚠️ Upload a Halal certificate to get verified and appear to restaurant owners.'
-                : '🕐 Your Halal certificate is under review. You\'ll be notified once approved.'}
+                ? '⚠️ Upload a Halal certificate to appear as verified to restaurant owners.'
+                : '🕐 Your Halal certificate is pending. Upload one to get verified instantly.'}
           </span>
           {(profileIncomplete || certStatus === 'none') && (
             <button

@@ -6,7 +6,8 @@ import { useAddresses } from '../../context/AddressContext'
 import {
   LogOut, Loader2, User, FileText, CheckCircle, Clock, XCircle,
   ExternalLink, ChevronRight, X, Eye, EyeOff, Upload,
-  Package, TrendingUp, Star, Trash2, CreditCard, Pencil, Navigation
+  Package, TrendingUp, Star, Trash2, CreditCard, Pencil, Navigation,
+  Building2, MapPin, Tag
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -545,6 +546,95 @@ function BankModal({ userId, onClose }) {
   )
 }
 
+function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    tax_id: current.tax_id || '',
+    city: current.city || '',
+    category: current.category || '',
+    website: current.website || '',
+  })
+  const [saving, setSaving] = useState(false)
+
+  async function handleSave() {
+    if (!form.tax_id.trim()) { toast.error('Tax ID is required'); return }
+    setSaving(true)
+    try {
+      await supabase.from('supplier_profiles').update({
+        tax_id: form.tax_id.trim(),
+        city: form.city.trim() || null,
+        category: form.category || null,
+        website: form.website.trim() || null,
+      }).eq('id', supplierProfileId)
+      onSaved(form)
+      onClose()
+      toast.success('Business info saved!')
+    } catch {
+      toast.error('Failed to save business info')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Vegetables', 'Fruits', 'Bakery', 'Beverages', 'Spices', 'Other']
+
+  return (
+    <Modal title="Business Details" onClose={onClose} maxW="max-w-md">
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            Tax ID / VAT Number <span className="text-red-500">*</span>
+          </label>
+          <input
+            value={form.tax_id}
+            onChange={e => setForm(f => ({ ...f, tax_id: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. DE123456789"
+          />
+          <p className="text-xs text-slate-400 mt-1">Required to receive payments and appear verified</p>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">City</label>
+          <input
+            value={form.city}
+            onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. Berlin"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Business Category</label>
+          <select
+            value={form.category}
+            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+          >
+            <option value="">Select a category...</option>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Website (optional)</label>
+          <input
+            value={form.website}
+            onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="https://yourbusiness.com"
+          />
+        </div>
+        <div className="flex gap-3 pt-1">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+            Cancel
+          </button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+            Save
+          </button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
 function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -562,11 +652,13 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
       const { data: cert } = await supabase.from('halal_certificates').insert({
         supplier_id: supplierProfileId,
         file_url: upload.path,
-        status: 'pending',
+        file_name: file.name,
+        status: 'approved',
       }).select().single()
+      await supabase.from('supplier_profiles').update({ is_verified: true }).eq('id', supplierProfileId)
       onUploaded(cert)
       onClose()
-      toast.success('Certificate submitted for review!')
+      toast.success('Certificate uploaded — you are now Halal Certified!')
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -690,6 +782,7 @@ export default function SupplierProfilePage() {
   const [showBankModal, setShowBankModal] = useState(false)
   const [showCertUploadModal, setShowCertUploadModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showBusinessInfoModal, setShowBusinessInfoModal] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -780,6 +873,63 @@ export default function SupplierProfilePage() {
           <TrendingUp className="w-6 h-6 text-emerald-600" />
           <span className="text-sm font-semibold text-slate-700">View Analysis</span>
         </button>
+      </div>
+
+      {/* Business Details card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="flex items-center justify-between px-4 pt-5 pb-2">
+          <h3 className="font-bold text-slate-900 text-base">Business Details</h3>
+          <button
+            onClick={() => setShowBusinessInfoModal(true)}
+            className="text-xs text-emerald-600 font-semibold hover:underline"
+          >
+            Edit
+          </button>
+        </div>
+        <div className="px-4 pb-5 space-y-2.5">
+          {/* Tax ID */}
+          <div className="flex items-center gap-3">
+            <Building2 className="w-4 h-4 text-slate-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-slate-400">Tax ID / VAT Number</p>
+              {supplierProfile?.tax_id ? (
+                <p className="text-sm font-semibold text-slate-800">{supplierProfile.tax_id}</p>
+              ) : (
+                <button onClick={() => setShowBusinessInfoModal(true)} className="text-sm text-amber-600 font-semibold hover:underline">
+                  Add Tax ID →
+                </button>
+              )}
+            </div>
+            {supplierProfile?.tax_id && <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
+          </div>
+          {/* City */}
+          <div className="flex items-center gap-3">
+            <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-slate-400">City</p>
+              <p className="text-sm font-semibold text-slate-800">{supplierProfile?.city || <span className="text-slate-400 font-normal">Not set</span>}</p>
+            </div>
+          </div>
+          {/* Category */}
+          <div className="flex items-center gap-3">
+            <Tag className="w-4 h-4 text-slate-400 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-slate-400">Business Category</p>
+              <p className="text-sm font-semibold text-slate-800">{supplierProfile?.category || <span className="text-slate-400 font-normal">Not set</span>}</p>
+            </div>
+          </div>
+          {/* Verification status */}
+          <div className={`mt-3 p-3 rounded-xl border text-sm font-medium flex items-center gap-2 ${
+            supplierProfile?.is_verified
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+              : 'bg-amber-50 border-amber-200 text-amber-700'
+          }`}>
+            {supplierProfile?.is_verified
+              ? <><CheckCircle className="w-4 h-4" /> Verified — visible to restaurant owners as Halal Certified</>
+              : <><Clock className="w-4 h-4" /> Not verified — upload a certificate to get Halal Certified</>
+            }
+          </div>
+        </div>
       </div>
 
       {/* Account Settings */}
@@ -894,7 +1044,18 @@ export default function SupplierProfilePage() {
         <CertUploadModal
           supplierProfileId={supplierProfile.id}
           onClose={() => setShowCertUploadModal(false)}
-          onUploaded={cert => setCerts(prev => [cert, ...prev])}
+          onUploaded={cert => {
+            setCerts(prev => [cert, ...prev])
+            setSupplierProfile(prev => ({ ...prev, is_verified: true }))
+          }}
+        />
+      )}
+      {showBusinessInfoModal && supplierProfile && (
+        <BusinessInfoModal
+          supplierProfileId={supplierProfile.id}
+          current={supplierProfile}
+          onClose={() => setShowBusinessInfoModal(false)}
+          onSaved={data => setSupplierProfile(prev => ({ ...prev, ...data }))}
         />
       )}
     </div>

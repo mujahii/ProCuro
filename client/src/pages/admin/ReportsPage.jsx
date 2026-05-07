@@ -67,10 +67,11 @@ function ActionModal({ report, onClose, onActionDone }) {
     setLoading(true)
     try {
       await supabase.from('users').update({ is_banned: true }).eq('id', targetInfo.user_id)
+      await supabase.from('supplier_profiles').update({ is_active: false }).eq('id', targetInfo.id)
       await supabase.from('notifications').insert({
         user_id: targetInfo.user_id,
         title: 'Your account has been suspended',
-        message: 'Your ProCuro account has been suspended following a report. If you believe this is a mistake, contact procuro@admin.com.',
+        message: 'Your ProCuro account has been suspended following a report. Your profile and products are no longer visible in the store. If you believe this is a mistake, contact procuro@admin.com.',
         type: 'warning',
       })
       await supabase.from('reports').update({ status: 'reviewed' }).eq('id', report.id)

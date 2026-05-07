@@ -103,8 +103,19 @@ export default function SupplierDashboardPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
 
+      {/* Suspended banner — highest priority */}
+      {!loading && user?.is_banned && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-bold text-red-800">Account suspended</p>
+            <p className="text-sm text-red-700 mt-0.5">Your account has been suspended by the admin. Your profile and products are no longer visible in the store. If you believe this is a mistake, contact us at <span className="font-semibold">procuro@admin.com</span>.</p>
+          </div>
+        </div>
+      )}
+
       {/* Certification status banner */}
-      {!loading && !supplierProfile?.is_verified && (
+      {!loading && !user?.is_banned && !supplierProfile?.is_verified && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <div className="flex items-start gap-3 mb-3">
             <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -146,7 +157,7 @@ export default function SupplierDashboardPage() {
         </div>
       )}
 
-      {!loading && supplierProfile?.is_verified && (
+      {!loading && !user?.is_banned && supplierProfile?.is_verified && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
           <div>

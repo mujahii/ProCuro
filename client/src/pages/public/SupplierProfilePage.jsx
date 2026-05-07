@@ -1,13 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, CheckCircle, Package, ArrowLeft } from 'lucide-react'
+import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
+
+function getProductImageUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+  return data?.publicUrl || null
+}
 
 export default function SupplierProfilePage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { profile } = useAuth()
   const [supplier, setSupplier] = useState(null)
   const [products, setProducts] = useState([])
   const [certificates, setCertificates] = useState([])
@@ -107,26 +116,29 @@ export default function SupplierProfilePage() {
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">
-                {products.map(product => (
-                  <div key={product.id} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/login')}>
-                    <div className="relative h-36 bg-slate-100">
-                      {product.image_url ? (
-                        <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-300">
-                          <Package className="w-10 h-10" />
-                        </div>
-                      )}
-                      {!product.in_stock && (
-                        <div className="absolute inset-0 bg-white/60 flex items-center justify-center text-slate-500 font-bold text-sm">Out of Stock</div>
-                      )}
+                {products.map(product => {
+                  const imgUrl = getProductImageUrl(product.image_url)
+                  return (
+                    <div key={product.id} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
+                      <div className="relative h-36 bg-slate-100">
+                        {imgUrl ? (
+                          <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-300">
+                            <Package className="w-10 h-10" />
+                          </div>
+                        )}
+                        {!product.is_active && (
+                          <div className="absolute inset-0 bg-white/60 flex items-center justify-center text-slate-500 font-bold text-sm">Out of Stock</div>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <p className="font-bold text-slate-900 text-sm">{product.name}</p>
+                        <p className="text-base font-bold text-slate-900 mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">/ {product.unit_type}</span></p>
+                      </div>
                     </div>
-                    <div className="p-3">
-                      <p className="font-bold text-slate-900 text-sm">{product.name}</p>
-                      <p className="text-base font-bold text-slate-900 mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">/ {product.unit_type}</span></p>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -150,15 +162,27 @@ export default function SupplierProfilePage() {
 
             {/* Halal Certificates */}
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-              <h3 className="font-bold text-slate-900 mb-3">Halal Certifications</h3>
+              <h3 className="font-bold text-slate-900 mb-3">Certifications</h3>
               {certificates.length === 0 ? (
                 <p className="text-sm text-slate-400">No certificates available</p>
               ) : (
                 <div className="space-y-2">
                   {certificates.map(cert => (
-                    <div key={cert.id} className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <a href={cert.file_url} target="_blank" rel="noopener noreferrer" className="text-sm text-emerald-600 hover:underline truncate">{cert.file_name}</a>
+                    <div key={cert.id} className="flex items-center justify-between gap-2 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <FileText className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm text-emerald-700 font-medium truncate">{cert.file_name || 'Halal Certificate'}</p>
+                          {cert.created_at && (
+                            <p className="text-xs text-slate-400">Verified {new Date(cert.created_at).getFullYear()}</p>
+                          )}
+                        </div>
+                      </div>
+                      {cert.file_url && (
+                        <a href={cert.file_url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 flex-shrink-0">
+                          <Eye className="w-4 h-4" />
+                        </a>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -166,12 +190,21 @@ export default function SupplierProfilePage() {
             </div>
 
             {/* CTA */}
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
-            >
-              Order from this Supplier
-            </button>
+            {profile?.role === 'owner' ? (
+              <button
+                onClick={() => navigate('/store')}
+                className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
+              >
+                Browse Products
+              </button>
+            ) : !profile ? (
+              <button
+                onClick={() => navigate('/login')}
+                className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
+              >
+                Order from this Supplier
+              </button>
+            ) : null}
           </div>
         </div>
       </main>

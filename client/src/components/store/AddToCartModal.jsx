@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { X, Truck, Package } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -13,6 +14,7 @@ function getProductImageUrl(path) {
 
 export default function AddToCartModal({ product, onClose }) {
   const { addItem } = useCart()
+  const navigate = useNavigate()
   const [qty, setQty] = useState(1)
   const [discountCode, setDiscountCode] = useState('')
   const [appliedDiscount, setAppliedDiscount] = useState(0)
@@ -66,7 +68,10 @@ export default function AddToCartModal({ product, onClose }) {
           <div className="flex justify-between items-start mb-2">
             <div>
               <h2 className="text-2xl font-bold text-slate-900">{product.name}</h2>
-              <p className="text-emerald-600 font-bold text-lg">{product.supplier?.business_name}</p>
+              <button
+                onClick={() => { onClose(); navigate(`/supplier/${product.supplier_id}`) }}
+                className="text-emerald-600 font-bold text-lg hover:underline text-left"
+              >{product.supplier?.business_name}</button>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-slate-900">€{price.toFixed(2)}</p>

@@ -224,11 +224,13 @@ export default function SupplierProfilePage() {
                 ) : (
                   <p className="text-sm text-slate-400 italic">No description provided</p>
                 )}
-                {supplier.category && (
-                  <span className="inline-block mt-3 text-xs font-medium px-3 py-1 rounded-full bg-slate-100 text-slate-600">
-                    {supplier.category}
-                  </span>
-                )}
+                {supplier.category?.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {(Array.isArray(supplier.category) ? supplier.category : [supplier.category]).map(c => (
+                    <span key={c} className="text-xs font-medium px-3 py-1 rounded-full bg-slate-100 text-slate-600">{c}</span>
+                  ))}
+                </div>
+              )}
               </div>
 
               <div className="border-t border-slate-100" />
@@ -258,14 +260,7 @@ export default function SupplierProfilePage() {
             </div>
 
             {/* CTA */}
-            {profile?.role === 'restaurant_owner' ? (
-              <button
-                onClick={() => navigate('/store')}
-                className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
-              >
-                Browse Products
-              </button>
-            ) : !profile ? (
+            {!profile ? (
               <button
                 onClick={() => navigate('/login')}
                 className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"

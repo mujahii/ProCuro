@@ -550,13 +550,23 @@ function BankModal({ userId, onClose }) {
 }
 
 function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
+  const normaliseCategories = v => Array.isArray(v) ? v : (v ? [v] : [])
   const [form, setForm] = useState({
     tax_id: current.tax_id || '',
     city: current.city || '',
-    category: current.category || '',
+    categories: normaliseCategories(current.category),
     website: current.website || '',
   })
   const [saving, setSaving] = useState(false)
+
+  function toggleCategory(cat) {
+    setForm(f => ({
+      ...f,
+      categories: f.categories.includes(cat)
+        ? f.categories.filter(c => c !== cat)
+        : [...f.categories, cat],
+    }))
+  }
 
   async function handleSave() {
     if (!form.tax_id.trim()) { toast.error('Tax ID is required'); return }
@@ -565,10 +575,10 @@ function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
       await supabase.from('supplier_profiles').update({
         tax_id: form.tax_id.trim(),
         city: form.city.trim() || null,
-        category: form.category || null,
+        category: form.categories.length > 0 ? form.categories : null,
         website: form.website.trim() || null,
       }).eq('id', supplierProfileId)
-      onSaved(form)
+      onSaved({ ...form, category: form.categories })
       onClose()
       toast.success('Business info saved!')
     } catch {
@@ -605,15 +615,25 @@ function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Business Category</label>
-          <select
-            value={form.category}
-            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
-          >
-            <option value="">Select a category...</option>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            Business Categories <span className="text-slate-400 font-normal normal-case">(select all that apply)</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map(cat => (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => toggleCategory(cat)}
+                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                  form.categories.includes(cat)
+                    ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Website (optional)</label>
@@ -1036,11 +1056,19 @@ export default function SupplierProfilePage() {
             </div>
           </div>
           {/* Category */}
-          <div className="flex items-center gap-3">
-            <Tag className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <div className="flex items-start gap-3">
+            <Tag className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-slate-400">Business Category</p>
-              <p className="text-sm font-semibold text-slate-800">{supplierProfile?.category || <span className="text-slate-400 font-normal">Not set</span>}</p>
+              <p className="text-xs text-slate-400 mb-1">Business Categories</p>
+              {supplierProfile?.category?.length > 0 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {(Array.isArray(supplierProfile.category) ? supplierProfile.category : [supplierProfile.category]).map(c => (
+                    <span key={c} className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">{c}</span>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-sm text-slate-400">Not set</span>
+              )}
             </div>
           </div>
           {/* Verification status */}

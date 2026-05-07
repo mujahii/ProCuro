@@ -24,6 +24,7 @@ import AdminOrdersPage from './pages/admin/OrdersPage'
 // Owner pages
 import OwnerLayout from './components/layout/OwnerLayout'
 import OwnerStorePage from './pages/owner/StorePage'
+import AllProductsPage from './pages/owner/AllProductsPage'
 import OwnerCartPage from './pages/owner/CartPage'
 import OwnerOrdersPage from './pages/owner/OrdersPage'
 import OwnerAnalyticsPage from './pages/owner/AnalyticsPage'
@@ -88,6 +89,7 @@ export default function App() {
             <Route path="/owner" element={<ProtectedRoute allowedRoles={['restaurant_owner']}><OwnerLayout /></ProtectedRoute>}>
               <Route index element={<Navigate to="/owner/store" replace />} />
               <Route path="store" element={<OwnerStorePage />} />
+              <Route path="products" element={<AllProductsPage />} />
               <Route path="cart" element={<OwnerCartPage />} />
               <Route path="orders" element={<OwnerOrdersPage />} />
               <Route path="analytics" element={<OwnerAnalyticsPage />} />

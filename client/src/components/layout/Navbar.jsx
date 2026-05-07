@@ -1,18 +1,17 @@
 import { useState, useRef, useEffect } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { ShoppingCart, User, ArrowLeft, MapPin, Star, Plus, LogOut, Package, BarChart3, Loader2, Navigation, Check } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ShoppingCart, User, MapPin, Star, Plus, LogOut, Loader2, Navigation, Check, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import NotificationBell from '../ui/NotificationBell'
 import toast from 'react-hot-toast'
 
-export default function Navbar() {
+export default function Navbar({ onMenuClick }) {
   const { user, role, profile, signOut } = useAuth()
   const { itemCount } = useCart()
   const { addresses, selectedAddress, selectAddress, addAddress } = useAddresses()
   const navigate = useNavigate()
-  const location = useLocation()
 
   const [addrOpen, setAddrOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -22,9 +21,6 @@ export default function Navbar() {
   const [savingAddr, setSavingAddr] = useState(false)
   const addrRef = useRef(null)
   const userRef = useRef(null)
-
-  const isHome = location.pathname === '/owner/store' || location.pathname === '/supplier/dashboard' || location.pathname === '/'
-  const isStoreView = location.pathname === '/owner/store'
 
   useEffect(() => {
     function handleClick(e) {
@@ -47,6 +43,12 @@ export default function Navbar() {
   function getHomeLink() {
     if (role === 'restaurant_owner') return '/owner/store'
     if (role === 'supplier') return '/supplier/dashboard'
+    return '/'
+  }
+
+  function getProfileLink() {
+    if (role === 'restaurant_owner') return '/owner/profile'
+    if (role === 'supplier') return '/supplier/profile'
     return '/'
   }
 
@@ -96,28 +98,31 @@ export default function Navbar() {
   const initials = profile?.full_name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
 
   return (
-    <nav className="bg-white border-b border-slate-200 sticky top-0 z-30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="bg-white border-b border-slate-200 fixed top-0 left-0 right-0 z-30 w-full">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
 
-          {/* Left side */}
-          <div className="flex items-center gap-3">
-            {/* Back arrow for non-home pages */}
-            {user && !isHome && (
-              <button onClick={() => navigate(-1)} className="p-2 hover:bg-slate-100 rounded-full mr-1">
-                <ArrowLeft className="w-5 h-5 text-slate-600" />
+          {/* Left */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Hamburger — mobile only, when a menu handler is provided */}
+            {onMenuClick && user && (role === 'restaurant_owner' || role === 'supplier') && (
+              <button
+                onClick={onMenuClick}
+                className="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors -ml-1"
+              >
+                <Menu className="w-5 h-5 text-slate-600" />
               </button>
             )}
 
             {/* Logo */}
-            <Link to={getHomeLink()} className="flex-shrink-0 flex items-center cursor-pointer gap-2">
+            <Link to={getHomeLink()} className="flex-shrink-0 flex items-center gap-2">
               <ShoppingCart className="w-8 h-8 text-slate-900" />
               <span className="font-bold text-xl text-slate-900 hidden sm:block">ProCuro</span>
             </Link>
 
             {/* Address selector — owner only, md+ */}
             {role === 'restaurant_owner' && (
-              <div className="relative ml-4 hidden md:block" ref={addrRef}>
+              <div className="relative ml-3 hidden md:block" ref={addrRef}>
                 <button
                   onClick={() => setAddrOpen(o => !o)}
                   className="flex flex-col items-start text-xs text-slate-500 hover:text-emerald-600"
@@ -125,7 +130,9 @@ export default function Navbar() {
                   <span>Delivered to</span>
                   <span className="font-bold text-slate-900 flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
-                    {selectedAddress ? `${selectedAddress.street || selectedAddress.label || selectedAddress.city}` : 'Select Address'}
+                    {selectedAddress
+                      ? `${selectedAddress.street || selectedAddress.label || selectedAddress.city}`
+                      : 'Select Address'}
                   </span>
                 </button>
                 {addrOpen && (
@@ -157,7 +164,7 @@ export default function Navbar() {
                           <span className="text-xs font-bold text-slate-600">New Address</span>
                           <button
                             type="button"
-                            onClick={() => { detectGPS() }}
+                            onClick={detectGPS}
                             disabled={gpsLoading}
                             className="flex items-center gap-1 text-xs text-emerald-600 font-semibold hover:text-emerald-700"
                           >
@@ -211,14 +218,12 @@ export default function Navbar() {
                 )}
               </div>
             )}
-
           </div>
 
-          {/* Right side */}
+          {/* Right */}
           <div className="flex items-center gap-2 sm:gap-4 relative">
             {user ? (
               <>
-                {/* Notification bell */}
                 <NotificationBell />
 
                 {/* Cart — owner only */}
@@ -236,14 +241,16 @@ export default function Navbar() {
                   </button>
                 )}
 
-                {/* User avatar + name */}
+                {/* User avatar — simplified dropdown: Profile + Sign Out only */}
                 <div className="relative" ref={userRef}>
                   <div
                     className="flex items-center gap-3 pl-3 sm:pl-4 border-l border-slate-200 cursor-pointer"
                     onClick={() => setUserMenuOpen(o => !o)}
                   >
                     <div className="text-right hidden sm:block">
-                      <p className="text-sm font-semibold text-slate-900">{profile?.full_name || 'User'}</p>
+                      <p className="text-sm font-semibold text-slate-900 truncate max-w-[130px]">
+                        {profile?.full_name || 'User'}
+                      </p>
                       <p className="text-xs text-slate-500 capitalize">{role?.replace('_', ' ')}</p>
                     </div>
                     <div className="w-9 h-9 bg-emerald-100 rounded-full flex items-center justify-center border-2 border-white shadow-sm overflow-hidden flex-shrink-0">
@@ -256,22 +263,14 @@ export default function Navbar() {
                   </div>
 
                   {userMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-1">
-                      {role === 'restaurant_owner' && (
-                        <>
-                          <Link to="/owner/store" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700" onClick={() => setUserMenuOpen(false)}><Package className="w-4 h-4 text-emerald-600" /> Store</Link>
-                          <Link to="/owner/orders" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700" onClick={() => setUserMenuOpen(false)}><Package className="w-4 h-4 text-emerald-600" /> My Orders</Link>
-                          <Link to="/owner/analytics" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700" onClick={() => setUserMenuOpen(false)}><BarChart3 className="w-4 h-4 text-emerald-600" /> Analytics</Link>
-                          <Link to="/owner/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700" onClick={() => setUserMenuOpen(false)}><User className="w-4 h-4 text-emerald-600" /> Profile</Link>
-                        </>
-                      )}
-                      {role === 'supplier' && (
-                        <>
-                          <Link to="/supplier/dashboard" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700" onClick={() => setUserMenuOpen(false)}><BarChart3 className="w-4 h-4 text-emerald-600" /> Dashboard</Link>
-                          <Link to="/supplier/products" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700" onClick={() => setUserMenuOpen(false)}><Package className="w-4 h-4 text-emerald-600" /> Products</Link>
-                          <Link to="/supplier/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700" onClick={() => setUserMenuOpen(false)}><User className="w-4 h-4 text-emerald-600" /> Profile</Link>
-                        </>
-                      )}
+                    <div className="absolute right-0 top-full mt-2 w-44 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-1">
+                      <Link
+                        to={getProfileLink()}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-slate-50 text-slate-700"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <User className="w-4 h-4 text-emerald-600" /> Profile
+                      </Link>
                       <div className="border-t border-slate-100 mt-1 pt-1">
                         <button
                           onClick={handleSignOut}
@@ -287,11 +286,11 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center gap-2">
                 <Link to="/login" className="border-2 border-slate-200 text-slate-700 hover:bg-slate-50 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
-                Log In
-              </Link>
-              <Link to="/register" className="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm">
-                Sign Up
-              </Link>
+                  Log In
+                </Link>
+                <Link to="/register" className="bg-emerald-600 text-white hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm">
+                  Sign Up
+                </Link>
               </div>
             )}
           </div>

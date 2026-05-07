@@ -309,7 +309,7 @@ function AddressModal({ onClose }) {
 
   async function handleAdd(e) {
     e.preventDefault()
-    if (!form.label || !form.street || !form.city) { toast.error('Please fill in Location Name, Street, and City'); return }
+    if (!form.street || !form.city) { toast.error('Please fill in Street and City'); return }
     setSaving(true)
     try {
       await addAddress({ ...form, country: 'Germany' })
@@ -357,7 +357,7 @@ function AddressModal({ onClose }) {
             <div key={addr.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${addr.is_default ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-bold text-slate-900 truncate">{addr.label}</p>
+                  <p className="text-sm font-bold text-slate-900 truncate">{addr.label || addr.city || 'Address'}</p>
                   {addr.is_default && <Star className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500 flex-shrink-0" />}
                 </div>
                 <p className="text-xs text-slate-500 truncate">{formatAddress(addr)}</p>
@@ -399,20 +399,12 @@ function AddressModal({ onClose }) {
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             placeholder="Location Name (e.g. Warehouse A)"
           />
-          <div className="flex gap-2">
-            <input
-              value={form.street}
-              onChange={e => setForm(f => ({ ...f, street: e.target.value }))}
-              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="Street"
-            />
-            <input
-              value={form.house_number}
-              onChange={e => setForm(f => ({ ...f, house_number: e.target.value }))}
-              className="w-20 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              placeholder="Nr."
-            />
-          </div>
+          <input
+            value={form.street}
+            onChange={e => setForm(f => ({ ...f, street: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="Street"
+          />
           <div className="flex gap-2">
             <input
               value={form.postal_code}

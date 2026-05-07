@@ -89,18 +89,24 @@ function AvatarModal({ userId, onClose, onSaved }) {
   )
 }
 
-function EditProfileModal({ userId, currentName, currentRestaurantName, currentBio, onClose, onSaved }) {
+function EditProfileModal({ userId, currentName, currentRestaurantName, currentBio, currentTaxId, onClose, onSaved }) {
   const [name, setName] = useState(currentName || '')
   const [restaurantName, setRestaurantName] = useState(currentRestaurantName || '')
   const [bio, setBio] = useState(currentBio || '')
+  const [taxId, setTaxId] = useState(currentTaxId || '')
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
     if (!name.trim()) { toast.error('Name is required'); return }
     setSaving(true)
     try {
-      await supabase.from('users').update({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null }).eq('id', userId)
-      onSaved({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null })
+      await supabase.from('users').update({
+        full_name: name.trim(),
+        restaurant_name: restaurantName.trim() || null,
+        bio: bio.trim() || null,
+        tax_id: taxId.trim() || null,
+      }).eq('id', userId)
+      onSaved({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null, tax_id: taxId.trim() || null })
       onClose()
       toast.success('Profile updated!')
     } catch {
@@ -111,7 +117,7 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
   }
 
   return (
-    <Modal title="Edit Profile" onClose={onClose}>
+    <Modal title="Edit Profile" onClose={onClose} maxW="max-w-md">
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Your Name</label>
@@ -131,6 +137,18 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
             placeholder="e.g. Al-Nour Kitchen"
           />
           <p className="text-xs text-slate-400 mt-1">Shown under your name in the app</p>
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            Tax / VAT Number
+          </label>
+          <input
+            value={taxId}
+            onChange={e => setTaxId(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+            placeholder="e.g. DE123456789"
+          />
+          <p className="text-xs text-slate-400 mt-1">Used on invoices and delivery receipts</p>
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
@@ -584,6 +602,7 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState(profile?.full_name || '')
   const [restaurantName, setRestaurantName] = useState(profile?.restaurant_name || '')
   const [bio, setBio] = useState(profile?.bio || '')
+  const [taxId, setTaxId] = useState(profile?.tax_id || '')
   const [bankDetails, setBankDetails] = useState(null)
 
   const [showAvatarModal, setShowAvatarModal] = useState(false)
@@ -610,11 +629,12 @@ export default function ProfilePage() {
     updateProfileState({ avatar_url: url })
   }
 
-  function handleProfileSaved({ full_name, restaurant_name: newRestaurantName, bio: newBio }) {
+  function handleProfileSaved({ full_name, restaurant_name: newRestaurantName, bio: newBio, tax_id: newTaxId }) {
     setDisplayName(full_name)
     setRestaurantName(newRestaurantName)
     setBio(newBio)
-    updateProfileState({ full_name, restaurant_name: newRestaurantName, bio: newBio })
+    setTaxId(newTaxId || '')
+    updateProfileState({ full_name, restaurant_name: newRestaurantName, bio: newBio, tax_id: newTaxId })
   }
 
   return (
@@ -643,6 +663,16 @@ export default function ProfilePage() {
           </div>
           <h2 className="font-bold text-slate-900 text-xl mt-3">{displayName || 'Restaurant Owner'}</h2>
           <p className="text-sm text-slate-400 mt-0.5">{restaurantName || 'Restaurant'}</p>
+          {taxId && (
+            <p className="text-xs text-slate-400 mt-1 font-mono">
+              Tax / VAT: <span className="text-slate-600 font-semibold">{taxId}</span>
+            </p>
+          )}
+          {!taxId && (
+            <button onClick={() => setShowEditModal(true)} className="mt-1 text-xs text-amber-500 font-semibold hover:underline">
+              + Add Tax / VAT Number
+            </button>
+          )}
           {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
           <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-emerald-600 font-semibold hover:underline">
             Edit Profile
@@ -753,6 +783,7 @@ export default function ProfilePage() {
           currentName={displayName}
           currentRestaurantName={restaurantName}
           currentBio={bio}
+          currentTaxId={taxId}
           onClose={() => setShowEditModal(false)}
           onSaved={handleProfileSaved}
         />

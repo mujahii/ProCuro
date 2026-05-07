@@ -32,10 +32,23 @@ export function generateInvoice(order, splits, ownerProfile) {
   doc.text('Bill To:', 20, 55)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
-  doc.text(ownerProfile?.full_name || 'Restaurant Owner', 20, 63)
+  let billY = 63
+  if (ownerProfile?.restaurant_name) {
+    doc.setFont('helvetica', 'bold')
+    doc.text(ownerProfile.restaurant_name, 20, billY)
+    billY += 7
+    doc.setFont('helvetica', 'normal')
+  }
+  doc.text(ownerProfile?.full_name || 'Restaurant Owner', 20, billY)
+  billY += 7
+  if (ownerProfile?.tax_id) {
+    doc.setTextColor(100, 100, 100)
+    doc.text(`Tax / VAT No: ${ownerProfile.tax_id}`, 20, billY)
+    doc.setTextColor(26, 26, 26)
+  }
   doc.text(`Date: ${new Date(order.created_at).toLocaleDateString('de-DE')}`, pageWidth - 20, 55, { align: 'right' })
 
-  let yPos = 80
+  let yPos = 88
 
   splits.forEach((split, splitIdx) => {
     // Supplier header

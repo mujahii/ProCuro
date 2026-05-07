@@ -192,14 +192,14 @@ export default function Navbar({ onMenuClick }) {
                             placeholder="Postal"
                             value={addrForm.postal_code}
                             onChange={e => setAddrForm(f => ({ ...f, postal_code: e.target.value }))}
-                            className="w-[72px] min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                            className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
                           />
                           <input
                             type="text"
                             placeholder="City *"
                             value={addrForm.city}
                             onChange={e => setAddrForm(f => ({ ...f, city: e.target.value }))}
-                            className="w-[100px] min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
+                            className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-emerald-500"
                             required
                           />
                         </div>

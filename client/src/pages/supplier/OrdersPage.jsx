@@ -7,7 +7,7 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { formatIBAN } from '../../lib/formatIBAN'
 
-const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery']
+const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'cancellation_requested']
 const COMPLETED = ['delivered', 'cancelled', 'refund_uploaded', 'completed']
 
 function CancelModal({ split, onCancel, onClose }) {
@@ -269,14 +269,44 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         </div>
       </div>
 
-      {split.cancellation_reason && (
+      {/* Cancellation request from owner */}
+      {split.status === 'cancellation_requested' && (
+        <div className="bg-orange-50 border border-orange-300 rounded-xl p-4 space-y-3">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-orange-800">Cancellation Requested by Owner</p>
+              <p className="text-xs text-orange-700 mt-0.5">The restaurant owner wants to cancel this order.</p>
+            </div>
+          </div>
+          {split.cancellation_reason && (
+            <div className="bg-white rounded-lg p-3 border border-orange-200">
+              <p className="text-[10px] uppercase tracking-wide font-semibold text-orange-400 mb-1">Owner's Reason</p>
+              <p className="text-sm text-slate-700 italic">"{split.cancellation_reason}"</p>
+            </div>
+          )}
+          {split.payment_method === 'bank_transfer' ? (
+            <p className="text-xs text-orange-700">This order was paid via bank transfer. To accept the cancellation, upload your proof of refund below.</p>
+          ) : (
+            <button
+              onClick={() => { onUpdateStatus(split.id, 'cancelled'); onBack() }}
+              className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+            >
+              <CheckCircle className="w-4 h-4" /> Accept Cancellation
+            </button>
+          )}
+        </div>
+      )}
+
+      {split.cancellation_reason && split.status === 'cancelled' && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
           <p className="font-semibold mb-1">Cancellation Reason</p>
           <p>{split.cancellation_reason}</p>
         </div>
       )}
 
-      {split.status === 'cancelled' && split.payment_method === 'bank_transfer' && (
+      {(split.status === 'cancellation_requested' || split.status === 'cancelled') &&
+        split.payment_method === 'bank_transfer' && !split.refund_receipt_url && (
         <RefundSection split={split} supplierId={supplierId} onUploaded={() => { onReload(); onBack() }} />
       )}
 
@@ -441,7 +471,12 @@ export default function SupplierOrdersPage() {
                   </div>
                   <p className="text-sm text-slate-600 font-medium">Restaurant Owner</p>
                   <p className="text-xs text-slate-400 mt-0.5">{split.order?.created_at ? format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm') : '—'}</p>
-                  {split.cancellation_reason && (
+                  {split.status === 'cancellation_requested' && split.cancellation_reason && (
+                    <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Owner wants to cancel: {split.cancellation_reason}
+                    </p>
+                  )}
+                  {split.status === 'cancelled' && split.cancellation_reason && (
                     <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">Reason: {split.cancellation_reason}</p>
                   )}
                 </div>

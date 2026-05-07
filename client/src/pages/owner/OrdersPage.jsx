@@ -3,12 +3,226 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
-const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded']
+const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded', 'cancellation_requested']
 const COMPLETED = ['delivered', 'completed', 'cancelled']
+const CANCELLABLE = ['pending_payment', 'pending_confirmation', 'confirmed']
+
+function CancelModal({ split, onCancel, onClose }) {
+  const [reason, setReason] = useState('')
+  const [loading, setLoading] = useState(false)
+  const isBankTransfer = split.payment_method === 'bank_transfer'
+
+  async function handleSubmit() {
+    if (!reason.trim()) return toast.error('Please provide a reason for cancellation')
+    setLoading(true)
+    await onCancel(split.id, reason.trim(), split.payment_method)
+    setLoading(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+          <h3 className="font-bold text-slate-900 text-lg">Cancel Order</h3>
+        </div>
+
+        {isBankTransfer && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+            <p className="text-sm font-semibold text-amber-800">Bank transfer order</p>
+            <p className="text-xs text-amber-700 mt-1">
+              Your cancellation will be sent to the supplier for review. Once they agree, they will upload proof of the returned payment.
+            </p>
+          </div>
+        )}
+
+        <div className="mb-5">
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            Reason for cancellation *
+          </label>
+          <textarea
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-red-400 h-24 resize-none"
+            placeholder="e.g. Changed my mind, ordered by mistake, found another supplier..."
+            autoFocus
+          />
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors"
+          >
+            Keep Order
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading || !reason.trim()}
+            className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+            {isBankTransfer ? 'Request Cancellation' : 'Cancel Order'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function RefundReceiptDisplay({ path }) {
+  const [url, setUrl] = useState(null)
+
+  useEffect(() => {
+    if (!path) return
+    supabase.storage
+      .from('payment-receipts')
+      .createSignedUrl(path, 3600)
+      .then(({ data }) => setUrl(data?.signedUrl || null))
+  }, [path])
+
+  if (!url) return null
+
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 text-sm text-emerald-600 font-semibold hover:underline"
+    >
+      <ExternalLink className="w-4 h-4" /> View Refund Receipt
+    </a>
+  )
+}
+
+function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancelRequest, onConfirmRefund }) {
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const canCancel = CANCELLABLE.includes(split.status)
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
+        <ArrowLeft className="w-4 h-4" /> Back to Orders
+      </button>
+
+      <div className="flex items-center gap-3">
+        <h2 className="text-2xl font-bold text-slate-900">Order Details</h2>
+        <StatusBadge status={split.status} />
+      </div>
+
+      {/* Cancellation requested banner */}
+      {split.status === 'cancellation_requested' && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+          <p className="text-sm font-bold text-orange-800">Cancellation Pending</p>
+          <p className="text-xs text-orange-700 mt-1">Your cancellation request has been sent to the supplier. They will review and process the refund.</p>
+          {split.cancellation_reason && (
+            <p className="text-xs text-orange-600 mt-2 italic">"{split.cancellation_reason}"</p>
+          )}
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <p className="text-xs text-slate-500 font-medium mb-1">Order ID</p>
+            <p className="font-bold text-slate-900">#{split.order.id.slice(0, 8).toUpperCase()}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium mb-1">Date</p>
+            <p className="font-semibold text-slate-900">{format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm')}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium mb-1">Supplier</p>
+            <p className="font-semibold text-slate-900">{split.supplier?.business_name}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 font-medium mb-1">Payment</p>
+            <p className="font-semibold text-slate-900 capitalize">{split.payment_method?.replace(/_/g, ' ')}</p>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm font-bold text-slate-900 mb-3">Items Ordered</p>
+          <div className="bg-slate-50 p-4 rounded-xl space-y-2">
+            {split.order_items?.map(item => (
+              <div key={item.id} className="flex justify-between text-sm">
+                <span className="text-slate-700">{item.quantity}× {item.product?.name}</span>
+                <span className="font-semibold text-slate-900">€{(item.price_at_time * item.quantity).toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
+          <span className="text-xl font-bold text-slate-900">Total</span>
+          <span className="text-2xl font-bold text-emerald-600">€{Number(split.subtotal).toFixed(2)}</span>
+        </div>
+      </div>
+
+      {split.cancellation_reason && split.status === 'cancelled' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
+          <p className="font-semibold mb-1">Order Cancelled</p>
+          <p>{split.cancellation_reason}</p>
+        </div>
+      )}
+
+      {split.status === 'refund_uploaded' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
+          <p className="text-sm font-bold text-amber-800">Refund Receipt Uploaded</p>
+          <p className="text-xs text-amber-700">The supplier has uploaded proof of refund. Please verify and confirm below.</p>
+          {split.refund_receipt_url && <RefundReceiptDisplay path={split.refund_receipt_url} />}
+          <button
+            onClick={() => { onConfirmRefund(split.id); onBack() }}
+            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md"
+          >
+            <CheckCircle className="w-4 h-4" /> Confirm Refund Received
+          </button>
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => generateInvoice(split.order, [split], profile)}
+          className="flex items-center gap-2 px-4 py-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors"
+        >
+          <Download className="w-4 h-4" /> Download Invoice
+        </button>
+        {split.status === 'out_for_delivery' && (
+          <button
+            onClick={() => { onMarkDelivered(split.id); onBack() }}
+            className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
+          >
+            Mark as Delivered
+          </button>
+        )}
+        {canCancel && (
+          <button
+            onClick={() => setShowCancelModal(true)}
+            className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors"
+          >
+            Cancel Order
+          </button>
+        )}
+      </div>
+
+      {showCancelModal && (
+        <CancelModal
+          split={split}
+          onCancel={async (id, reason, paymentMethod) => {
+            await onCancelRequest(id, reason, paymentMethod)
+            setShowCancelModal(false)
+            onBack()
+          }}
+          onClose={() => setShowCancelModal(false)}
+        />
+      )}
+    </div>
+  )
+}
 
 export default function OrdersPage() {
   const { user, profile } = useAuth()
@@ -16,6 +230,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [cancelTarget, setCancelTarget] = useState(null)
 
   useEffect(() => {
     if (user) fetchOrders()
@@ -49,15 +264,21 @@ export default function OrdersPage() {
     fetchOrders()
   }
 
-  async function cancelOrder(splitId) {
+  async function cancelOrder(splitId, reason, paymentMethod) {
+    const newStatus = paymentMethod === 'bank_transfer' ? 'cancellation_requested' : 'cancelled'
     const { error } = await supabase.rpc('update_order_split_status', {
       p_split_id: splitId,
-      p_status: 'cancelled',
-      p_cancellation_reason: 'Cancelled by restaurant owner',
+      p_status: newStatus,
+      p_cancellation_reason: reason,
     })
     if (error) { toast.error(error.message); return }
-    toast.success('Order cancelled')
+    if (newStatus === 'cancellation_requested') {
+      toast.success('Cancellation request sent to supplier.')
+    } else {
+      toast.success('Order cancelled.')
+    }
     fetchOrders()
+    setCancelTarget(null)
   }
 
   async function confirmRefund(splitId) {
@@ -84,7 +305,7 @@ export default function OrdersPage() {
         profile={profile}
         onBack={() => { setSelectedOrder(null); fetchOrders() }}
         onMarkDelivered={markDelivered}
-        onCancel={cancelOrder}
+        onCancelRequest={cancelOrder}
         onConfirmRefund={confirmRefund}
       />
     )
@@ -140,7 +361,10 @@ export default function OrdersPage() {
                   <p className="text-sm text-slate-600 font-medium">{split.supplier?.business_name}</p>
                   <p className="text-xs text-slate-400 mt-0.5">{format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm')}</p>
                   {split.cancellation_reason && (
-                    <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">{split.cancellation_reason}</p>
+                    <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg">
+                      {split.status === 'cancellation_requested' ? 'Pending: ' : 'Reason: '}
+                      {split.cancellation_reason}
+                    </p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
@@ -168,9 +392,9 @@ export default function OrdersPage() {
                         <CheckCircle className="w-3.5 h-3.5" /> Confirm Refund
                       </button>
                     )}
-                    {split.status === 'pending_confirmation' && (
+                    {CANCELLABLE.includes(split.status) && (
                       <button
-                        onClick={() => cancelOrder(split.id)}
+                        onClick={() => setCancelTarget(split)}
                         className="px-3 py-1.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors"
                       >
                         Cancel Order
@@ -183,130 +407,14 @@ export default function OrdersPage() {
           ))}
         </div>
       )}
-    </div>
-  )
-}
 
-function RefundReceiptDisplay({ path }) {
-  const [url, setUrl] = useState(null)
-
-  useEffect(() => {
-    if (!path) return
-    supabase.storage
-      .from('payment-receipts')
-      .createSignedUrl(path, 3600)
-      .then(({ data }) => setUrl(data?.signedUrl || null))
-  }, [path])
-
-  if (!url) return null
-
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-2 text-sm text-emerald-600 font-semibold hover:underline"
-    >
-      <ExternalLink className="w-4 h-4" /> View Refund Receipt
-    </a>
-  )
-}
-
-function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancel, onConfirmRefund }) {
-  return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Orders
-      </button>
-
-      <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-bold text-slate-900">Order Details</h2>
-        <StatusBadge status={split.status} />
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Order ID</p>
-            <p className="font-bold text-slate-900">#{split.order.id.slice(0, 8).toUpperCase()}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Date</p>
-            <p className="font-semibold text-slate-900">{format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm')}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Supplier</p>
-            <p className="font-semibold text-slate-900">{split.supplier?.business_name}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Payment</p>
-            <p className="font-semibold text-slate-900 capitalize">{split.payment_method?.replace(/_/g, ' ')}</p>
-          </div>
-        </div>
-
-        <div>
-          <p className="text-sm font-bold text-slate-900 mb-3">Items Ordered</p>
-          <div className="bg-slate-50 p-4 rounded-xl space-y-2">
-            {split.order_items?.map(item => (
-              <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-slate-700">{item.quantity}× {item.product?.name}</span>
-                <span className="font-semibold text-slate-900">€{(item.price_at_time * item.quantity).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
-          <span className="text-xl font-bold text-slate-900">Total</span>
-          <span className="text-2xl font-bold text-emerald-600">€{Number(split.subtotal).toFixed(2)}</span>
-        </div>
-      </div>
-
-      {split.cancellation_reason && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
-          <p className="font-semibold mb-1">Order Cancelled</p>
-          <p>{split.cancellation_reason}</p>
-        </div>
+      {cancelTarget && (
+        <CancelModal
+          split={cancelTarget}
+          onCancel={cancelOrder}
+          onClose={() => setCancelTarget(null)}
+        />
       )}
-
-      {split.status === 'refund_uploaded' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-bold text-amber-800">Refund Receipt Uploaded</p>
-          <p className="text-xs text-amber-700">The supplier has uploaded proof of refund. Please verify and confirm below.</p>
-          {split.refund_receipt_url && <RefundReceiptDisplay path={split.refund_receipt_url} />}
-          <button
-            onClick={() => { onConfirmRefund(split.id); onBack() }}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md"
-          >
-            <CheckCircle className="w-4 h-4" /> Confirm Refund Received
-          </button>
-        </div>
-      )}
-
-      <div className="flex gap-3">
-        <button
-          onClick={() => generateInvoice(split.order, [split], profile)}
-          className="flex items-center gap-2 px-4 py-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors"
-        >
-          <Download className="w-4 h-4" /> Download Invoice
-        </button>
-        {split.status === 'out_for_delivery' && (
-          <button
-            onClick={() => { onMarkDelivered(split.id); onBack() }}
-            className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
-          >
-            Mark as Delivered
-          </button>
-        )}
-        {split.status === 'pending_confirmation' && (
-          <button
-            onClick={() => { onCancel(split.id); onBack() }}
-            className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors"
-          >
-            Cancel Order
-          </button>
-        )}
-      </div>
     </div>
   )
 }

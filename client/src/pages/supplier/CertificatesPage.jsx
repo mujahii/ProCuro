@@ -204,11 +204,11 @@ function UploadModal({ supplierProfile, onClose, onUploaded }) {
         supplier_id: supplierProfile.id,
         file_url: upload.path,
         file_name: label.trim(),
-        status: 'approved',
+        status: 'pending',
       }).select().single()
-      await supabase.from('supplier_profiles').update({ is_verified: true }).eq('id', supplierProfile.id)
+      await supabase.from('supplier_profiles').update({ is_verified: false }).eq('id', supplierProfile.id)
       onUploaded(cert)
-      toast.success('Certificate uploaded — you are now Halal Certified!')
+      toast.success('Certificate uploaded! Our team will review it shortly.')
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -272,22 +272,48 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
     if (!label.trim()) { toast.error('Certificate name is required'); return }
     setSaving(true)
     try {
-      let fileUrl = cert.file_url
       if (newFile) {
         if (newFile.size > 5 * 1024 * 1024) throw new Error('File must be under 5MB')
-        await supabase.storage.from('halal-certificates').remove([cert.file_url])
+        // Upload new file
         const ext = newFile.name.split('.').pop()
         const path = `${supplierProfileId}/${Date.now()}.${ext}`
         const { data: upload, error: uploadErr } = await supabase.storage.from('halal-certificates').upload(path, newFile)
         if (uploadErr) throw uploadErr
-        fileUrl = upload.path
+
+        if (cert.status === 'approved') {
+          // Delete old cert + insert new one (RLS prevents updating approved→pending)
+          await supabase.storage.from('halal-certificates').remove([cert.file_url])
+          await supabase.from('halal_certificates').delete().eq('id', cert.id)
+          const { data: newCert, error: insertErr } = await supabase.from('halal_certificates').insert({
+            supplier_id: supplierProfileId,
+            file_url: upload.path,
+            file_name: label.trim(),
+            status: 'pending',
+          }).select().single()
+          if (insertErr) throw insertErr
+          await supabase.from('supplier_profiles').update({ is_verified: false }).eq('id', supplierProfileId)
+          onSaved(newCert)
+        } else {
+          // Cert is already pending — update in place
+          await supabase.storage.from('halal-certificates').remove([cert.file_url])
+          const { data: updated, error: updateErr } = await supabase.from('halal_certificates')
+            .update({ file_name: label.trim(), file_url: upload.path, status: 'pending' })
+            .eq('id', cert.id)
+            .select().single()
+          if (updateErr) throw updateErr
+          onSaved(updated)
+        }
+        toast.success('File replaced — pending review by admin.')
+      } else {
+        // Name-only change — keep existing status
+        const { data: updated, error: updateErr } = await supabase.from('halal_certificates')
+          .update({ file_name: label.trim() })
+          .eq('id', cert.id)
+          .select().single()
+        if (updateErr) throw updateErr
+        onSaved(updated)
+        toast.success('Certificate updated!')
       }
-      const { data: updated } = await supabase.from('halal_certificates')
-        .update({ file_name: label.trim(), file_url: fileUrl })
-        .eq('id', cert.id)
-        .select().single()
-      onSaved(updated)
-      toast.success('Certificate updated!')
     } catch (err) {
       toast.error(err.message)
     } finally {

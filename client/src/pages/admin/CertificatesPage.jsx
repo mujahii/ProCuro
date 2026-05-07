@@ -95,40 +95,73 @@ export default function AdminCertificatesPage() {
   async function loadCerts() {
     const { data } = await supabase
       .from('halal_certificates')
-      .select('*, supplier:supplier_profiles(business_name, city)')
+      .select('*, supplier:supplier_profiles(business_name, city, user_id)')
       .order('uploaded_at', { ascending: false })
     setCerts(data || [])
     setLoading(false)
   }
 
   async function handleApprove(certId) {
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch(`/api/admin/certificates/${certId}/approve`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
-    })
-    if (res.ok) {
+    const cert = certs.find(c => c.id === certId)
+    try {
+      const { error: certErr } = await supabase
+        .from('halal_certificates')
+        .update({ status: 'approved' })
+        .eq('id', certId)
+      if (certErr) throw certErr
+
+      const { error: spErr } = await supabase
+        .from('supplier_profiles')
+        .update({ is_verified: true, is_active: true })
+        .eq('id', cert.supplier_id)
+      if (spErr) throw spErr
+
+      if (cert.supplier?.user_id) {
+        await supabase.from('notifications').insert({
+          user_id: cert.supplier.user_id,
+          title: 'Halal Certificate Approved',
+          message: 'Your Halal certificate has been approved. Your profile and products are now visible to restaurant owners.',
+          type: 'certificate_reviewed',
+        })
+      }
+
       setCerts(prev => prev.map(c => c.id === certId ? { ...c, status: 'approved' } : c))
       toast.success('Certificate approved! Supplier is now active.')
       setSelected(null)
-    } else {
-      toast.error('Failed to approve certificate')
+    } catch (err) {
+      toast.error(err.message || 'Failed to approve certificate')
     }
   }
 
   async function handleReject(certId, reason) {
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch(`/api/admin/certificates/${certId}/reject`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason }),
-    })
-    if (res.ok) {
+    const cert = certs.find(c => c.id === certId)
+    try {
+      const { error: certErr } = await supabase
+        .from('halal_certificates')
+        .update({ status: 'rejected', rejection_reason: reason })
+        .eq('id', certId)
+      if (certErr) throw certErr
+
+      const { error: spErr } = await supabase
+        .from('supplier_profiles')
+        .update({ is_verified: false, is_active: false })
+        .eq('id', cert.supplier_id)
+      if (spErr) throw spErr
+
+      if (cert.supplier?.user_id) {
+        await supabase.from('notifications').insert({
+          user_id: cert.supplier.user_id,
+          title: 'Halal Certificate Rejected',
+          message: `Your Halal certificate has been rejected. Reason: ${reason}. Please upload a new valid certificate to restore your profile visibility.`,
+          type: 'certificate_reviewed',
+        })
+      }
+
       setCerts(prev => prev.map(c => c.id === certId ? { ...c, status: 'rejected', rejection_reason: reason } : c))
-      toast.success('Certificate rejected')
+      toast.success('Certificate rejected. Supplier has been notified.')
       setSelected(null)
-    } else {
-      toast.error('Failed to reject certificate')
+    } catch (err) {
+      toast.error(err.message || 'Failed to reject certificate')
     }
   }
 

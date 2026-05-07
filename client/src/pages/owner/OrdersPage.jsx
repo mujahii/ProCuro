@@ -3,9 +3,59 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+
+function getProductImageUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+  return data?.publicUrl || null
+}
+
+function ProductCardModal({ item, onClose }) {
+  const img = getProductImageUrl(item.product?.image_url)
+  const unitPrice = item.price_at_time
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+        {img ? (
+          <img src={img} alt={item.product?.name} className="w-full h-52 object-cover" />
+        ) : (
+          <div className="w-full h-52 bg-slate-100 flex items-center justify-center">
+            <ShoppingBag className="w-12 h-12 text-slate-300" />
+          </div>
+        )}
+        <div className="p-5 space-y-3">
+          <h3 className="text-lg font-bold text-slate-900">{item.product?.name}</h3>
+          {item.product?.description && (
+            <p className="text-sm text-slate-500 leading-relaxed">{item.product.description}</p>
+          )}
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Unit Price</p>
+              <p className="text-base font-bold text-slate-900">€{Number(unitPrice).toFixed(2)} / {item.product?.unit_type || 'unit'}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Qty Ordered</p>
+              <p className="text-base font-bold text-emerald-600">{item.quantity}×</p>
+            </div>
+          </div>
+          <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+            <p className="text-sm font-semibold text-slate-500">Subtotal</p>
+            <p className="text-lg font-bold text-slate-900">€{(unitPrice * item.quantity).toFixed(2)}</p>
+          </div>
+        </div>
+        <div className="px-5 pb-5">
+          <button onClick={onClose} className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded', 'cancellation_requested']
 const COMPLETED = ['delivered', 'completed', 'cancelled']
@@ -63,10 +113,10 @@ function CancelModal({ split, onCancel, onClose }) {
           <button
             onClick={handleSubmit}
             disabled={loading || !reason.trim()}
-            className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
+            className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50 min-w-0"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-            {isBankTransfer ? 'Request Cancellation' : 'Cancel Order'}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : <XCircle className="w-4 h-4 flex-shrink-0" />}
+            <span className="truncate">{isBankTransfer ? 'Request Cancellation' : 'Cancel Order'}</span>
           </button>
         </div>
       </div>
@@ -176,6 +226,7 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
 function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancelRequest, onConfirmRefund }) {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showSupplierModal, setShowSupplierModal] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
   const canCancel = CANCELLABLE.includes(split.status)
 
   return (
@@ -227,13 +278,33 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancelRequ
 
         <div>
           <p className="text-sm font-bold text-slate-900 mb-3">Items Ordered</p>
-          <div className="bg-slate-50 p-4 rounded-xl space-y-2">
-            {split.order_items?.map(item => (
-              <div key={item.id} className="flex justify-between text-sm">
-                <span className="text-slate-700">{item.quantity}× {item.product?.name}</span>
-                <span className="font-semibold text-slate-900">€{(item.price_at_time * item.quantity).toFixed(2)}</span>
-              </div>
-            ))}
+          <div className="bg-slate-50 rounded-xl divide-y divide-slate-100 overflow-hidden">
+            {split.order_items?.map(item => {
+              const img = getProductImageUrl(item.product?.image_url)
+              return (
+                <div key={item.id} className="flex items-center gap-3 p-3">
+                  <div className="w-12 h-12 rounded-lg bg-slate-200 overflow-hidden flex-shrink-0">
+                    {img ? (
+                      <img src={img} alt={item.product?.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ShoppingBag className="w-5 h-5 text-slate-400" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <button
+                      onClick={() => setSelectedProduct(item)}
+                      className="text-sm font-semibold text-slate-900 hover:text-emerald-600 transition-colors text-left underline-offset-2 hover:underline truncate block max-w-full"
+                    >
+                      {item.product?.name}
+                    </button>
+                    <p className="text-xs text-slate-400">{item.quantity}× · €{Number(item.price_at_time).toFixed(2)} each</p>
+                  </div>
+                  <span className="font-bold text-slate-900 text-sm flex-shrink-0">€{(item.price_at_time * item.quantity).toFixed(2)}</span>
+                </div>
+              )
+            })}
           </div>
         </div>
 
@@ -308,6 +379,10 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancelRequ
           onClose={() => setShowSupplierModal(false)}
         />
       )}
+
+      {selectedProduct && (
+        <ProductCardModal item={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      )}
     </div>
   )
 }
@@ -333,7 +408,7 @@ export default function OrdersPage() {
         order_splits(
           *,
           supplier:supplier_profiles(business_name),
-          order_items(*, product:products(name, unit_type))
+          order_items(*, product:products(name, unit_type, image_url, description))
         )
       `)
       .eq('restaurant_owner_id', user.id)

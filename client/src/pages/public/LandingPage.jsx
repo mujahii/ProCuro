@@ -4,6 +4,7 @@ import { CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 
 const CATEGORIES = [
   { name: 'Chicken', icon: Drumstick },
@@ -29,9 +30,19 @@ const HOW_IT_WORKS = [
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const { user, role, loading } = useAuth()
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [products, setProducts] = useState([])
   const [suppliers, setSuppliers] = useState([])
+
+  useEffect(() => {
+    if (loading) return
+    if (user) {
+      if (role === 'restaurant_owner') navigate('/owner/store', { replace: true })
+      else if (role === 'supplier') navigate('/supplier/dashboard', { replace: true })
+      else if (role === 'admin') navigate('/admin/dashboard', { replace: true })
+    }
+  }, [user, role, loading])
 
   useEffect(() => { fetchProducts() }, [selectedCategory])
   useEffect(() => { fetchSuppliers() }, [])

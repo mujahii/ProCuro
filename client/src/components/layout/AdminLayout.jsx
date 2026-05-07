@@ -1,20 +1,42 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, Award, Package, ShoppingBag, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, Award, Package, ShoppingBag, LogOut, Store, Flag } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { supabase } from '../../lib/supabase'
 import NotificationBell from '../ui/NotificationBell'
 
 const navItems = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/admin/users', icon: Users, label: 'Users' },
+  { to: '/admin/suppliers', icon: Store, label: 'Suppliers' },
   { to: '/admin/certificates', icon: Award, label: 'Certificates' },
   { to: '/admin/products', icon: Package, label: 'Products' },
   { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
+  { to: '/admin/reports', icon: Flag, label: 'Reports', badge: true },
 ]
 
 export default function AdminLayout() {
   const { signOut } = useAuth()
   const navigate = useNavigate()
+  const [pendingReports, setPendingReports] = useState(0)
+
+  useEffect(() => {
+    fetchPendingReports()
+    const channel = supabase
+      .channel('admin-reports-badge')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, fetchPendingReports)
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [])
+
+  async function fetchPendingReports() {
+    const { count } = await supabase
+      .from('reports')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+    setPendingReports(count || 0)
+  }
 
   async function handleSignOut() {
     await signOut()
@@ -38,7 +60,7 @@ export default function AdminLayout() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map(({ to, icon: Icon, label }) => (
+          {navItems.map(({ to, icon: Icon, label, badge }) => (
             <NavLink
               key={to}
               to={to}
@@ -47,7 +69,12 @@ export default function AdminLayout() {
               }
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
-              {label}
+              <span className="flex-1">{label}</span>
+              {badge && pendingReports > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                  {pendingReports}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>

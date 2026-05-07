@@ -17,7 +17,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
     price: product?.price || '',
     unit_type: product?.unit_type || 'kg',
     stock_quantity: product?.stock_quantity || 0,
-    discount_percentage: product?.discount_percentage || '',
+    discount_percent: product?.discount_percent || '',
     delivery_fee: product?.delivery_fee || '',
     is_active: product?.is_active ?? true,
   })
@@ -60,7 +60,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
         ...form,
         price: parseFloat(form.price),
         stock_quantity: parseInt(form.stock_quantity) || 0,
-        discount_percentage: form.discount_percentage ? parseFloat(form.discount_percentage) : null,
+        discount_percent: form.discount_percent ? parseFloat(form.discount_percent) : null,
         delivery_fee: form.delivery_fee ? parseFloat(form.delivery_fee) : null,
         supplier_id: supplierId,
         image_url: imageUrl,
@@ -186,8 +186,8 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
               min="0"
               max="100"
               step="0.1"
-              value={form.discount_percentage}
-              onChange={e => update('discount_percentage', e.target.value)}
+              value={form.discount_percent}
+              onChange={e => update('discount_percent', e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
               placeholder="Optional"
             />

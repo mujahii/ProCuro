@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck } from 'lucide-react'
+import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
@@ -219,6 +219,7 @@ export default function CartPage() {
   }
 
   /* Step 1 — Cart */
+  const [showAddressPicker, setShowAddressPicker] = useState(false)
   const totalDelivery = groups.reduce((sum, [, group]) => {
     const fee = group.items[0]?.product?.delivery_fee || 0
     return sum + Number(fee)
@@ -230,28 +231,37 @@ export default function CartPage() {
       <h1 className="text-2xl font-bold text-slate-900">My Cart</h1>
 
       {/* Delivery address */}
-      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-start gap-3">
-        <MapPin className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+      <button
+        onClick={() => setShowAddressPicker(true)}
+        className="w-full bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center gap-3 hover:border-emerald-300 transition-colors text-left"
+      >
+        <MapPin className="w-5 h-5 text-emerald-600 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-xs text-slate-500 font-medium mb-0.5">Delivering To</p>
+          <p className="text-xs text-slate-500 font-medium">Delivering To</p>
           {selectedAddress ? (
-            <p className="text-sm font-semibold text-slate-900 truncate">{selectedAddress.street || selectedAddress.label || selectedAddress.city}</p>
+            <>
+              <p className="text-sm font-semibold text-slate-900 truncate">
+                {[selectedAddress.street, selectedAddress.house_number].filter(Boolean).join(' ') || selectedAddress.label}
+              </p>
+              <p className="text-xs text-slate-400 truncate">
+                {[selectedAddress.postal_code, selectedAddress.city, selectedAddress.country].filter(Boolean).join(', ')}
+              </p>
+            </>
           ) : (
-            <p className="text-sm text-slate-400">No address selected</p>
+            <p className="text-sm font-semibold text-emerald-600">+ Add delivery address</p>
           )}
         </div>
-        {addresses.length > 1 && (
-          <select
-            value={selectedAddress?.id || ''}
-            onChange={e => selectAddress(e.target.value)}
-            className="text-xs text-emerald-600 font-semibold bg-transparent border-none outline-none cursor-pointer"
-          >
-            {addresses.map(a => (
-              <option key={a.id} value={a.id}>{a.label || a.city}</option>
-            ))}
-          </select>
-        )}
-      </div>
+        <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
+      </button>
+
+      {showAddressPicker && (
+        <AddressPickerModal
+          addresses={addresses}
+          selectedAddress={selectedAddress}
+          onSelect={id => { selectAddress(id); setShowAddressPicker(false) }}
+          onClose={() => setShowAddressPicker(false)}
+        />
+      )}
 
       {/* Cart items grouped by supplier */}
       <div className="space-y-3">
@@ -353,6 +363,137 @@ export default function CartPage() {
       >
         Continue to Payment — €{grandTotal.toFixed(2)}
       </button>
+    </div>
+  )
+}
+
+function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
+  const { addAddress } = useAddresses()
+  const [showForm, setShowForm] = useState(addresses.length === 0)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ label: '', street: '', house_number: '', postal_code: '', city: '', country: 'Germany' })
+
+  function update(field, val) {
+    setForm(f => ({ ...f, [field]: val }))
+  }
+
+  async function handleSave() {
+    if (!form.street.trim() || !form.city.trim()) { toast.error('Street and city are required'); return }
+    setSaving(true)
+    try {
+      const data = await addAddress(form)
+      onSelect(data.id)
+    } catch (err) {
+      toast.error(err.message || 'Failed to save address')
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-0 sm:pb-4">
+      <div className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 flex-shrink-0">
+          <h3 className="font-bold text-slate-900">
+            {showForm ? 'Add New Address' : 'Delivery Address'}
+          </h3>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-5 space-y-3">
+          {!showForm ? (
+            <>
+              {addresses.map(addr => (
+                <button
+                  key={addr.id}
+                  onClick={() => onSelect(addr.id)}
+                  className={`w-full text-left p-4 rounded-xl border-2 flex items-start gap-3 transition-colors ${
+                    selectedAddress?.id === addr.id
+                      ? 'border-emerald-500 bg-emerald-50'
+                      : 'border-slate-100 hover:border-slate-300'
+                  }`}
+                >
+                  <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${selectedAddress?.id === addr.id ? 'text-emerald-600' : 'text-slate-400'}`} />
+                  <div className="min-w-0">
+                    {addr.label && <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">{addr.label}</p>}
+                    <p className="text-sm font-semibold text-slate-900">
+                      {[addr.street, addr.house_number].filter(Boolean).join(' ')}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {[addr.postal_code, addr.city, addr.country].filter(Boolean).join(', ')}
+                    </p>
+                  </div>
+                  {selectedAddress?.id === addr.id && (
+                    <CheckCircle className="w-4 h-4 text-emerald-500 ml-auto flex-shrink-0 mt-0.5" />
+                  )}
+                </button>
+              ))}
+
+              <button
+                onClick={() => setShowForm(true)}
+                className="w-full p-4 rounded-xl border-2 border-dashed border-slate-200 text-slate-500 font-semibold text-sm hover:border-emerald-400 hover:text-emerald-600 transition-colors flex items-center justify-center gap-2"
+              >
+                <MapPin className="w-4 h-4" /> Add New Address
+              </button>
+            </>
+          ) : (
+            <div className="space-y-3">
+              {addresses.length > 0 && (
+                <button onClick={() => setShowForm(false)} className="text-sm text-emerald-600 font-semibold hover:underline flex items-center gap-1">
+                  ← Back to saved addresses
+                </button>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Label (optional)</label>
+                  <input value={form.label} onChange={e => update('label', e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="e.g. Restaurant, Office" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Street <span className="text-red-500">*</span></label>
+                  <input value={form.street} onChange={e => update('street', e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Street name" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">House No.</label>
+                  <input value={form.house_number} onChange={e => update('house_number', e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="e.g. 12A" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Postal Code</label>
+                  <input value={form.postal_code} onChange={e => update('postal_code', e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="e.g. 10115" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">City <span className="text-red-500">*</span></label>
+                  <input value={form.city} onChange={e => update('city', e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="e.g. Berlin" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Country</label>
+                  <input value={form.country} onChange={e => update('country', e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+                </div>
+              </div>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 mt-2"
+              >
+                {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                Save Address
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

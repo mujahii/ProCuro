@@ -637,10 +637,12 @@ function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
 
 function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
   const [file, setFile] = useState(null)
+  const [label, setLabel] = useState('')
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef(null)
 
   async function handleUpload() {
+    if (!label.trim()) { toast.error('Please enter a certificate name'); return }
     if (!file) { toast.error('Please select a file'); return }
     if (file.size > 5 * 1024 * 1024) { toast.error('File must be under 5MB'); return }
     setUploading(true)
@@ -652,7 +654,7 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
       const { data: cert } = await supabase.from('halal_certificates').insert({
         supplier_id: supplierProfileId,
         file_url: upload.path,
-        file_name: file.name,
+        file_name: label.trim(),
         status: 'approved',
       }).select().single()
       await supabase.from('supplier_profiles').update({ is_verified: true }).eq('id', supplierProfileId)
@@ -668,31 +670,127 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
 
   return (
     <Modal title="Upload Certificate" onClose={onClose}>
-      <div
-        onClick={() => inputRef.current?.click()}
-        className="border-2 border-dashed border-emerald-300 rounded-xl bg-emerald-50 p-8 flex flex-col items-center gap-2 cursor-pointer hover:bg-emerald-100 transition-colors mb-4"
-      >
-        <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={e => setFile(e.target.files[0])} />
-        {file ? (
-          <>
-            <CheckCircle className="w-8 h-8 text-emerald-500" />
-            <p className="text-sm font-semibold text-emerald-700 text-center truncate max-w-full px-2">{file.name}</p>
-          </>
-        ) : (
-          <>
-            <Upload className="w-8 h-8 text-emerald-400" />
-            <p className="text-sm text-slate-500">PDF, JPG, PNG · Max 5MB</p>
-          </>
-        )}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            Certificate Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            value={label}
+            onChange={e => setLabel(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. Chicken Halal Certificate"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">File</label>
+          <div
+            onClick={() => inputRef.current?.click()}
+            className="border-2 border-dashed border-emerald-300 rounded-xl bg-emerald-50 p-6 flex flex-col items-center gap-2 cursor-pointer hover:bg-emerald-100 transition-colors"
+          >
+            <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={e => setFile(e.target.files[0])} />
+            {file ? (
+              <>
+                <CheckCircle className="w-7 h-7 text-emerald-500" />
+                <p className="text-sm font-semibold text-emerald-700 text-center truncate max-w-full px-2">{file.name}</p>
+              </>
+            ) : (
+              <>
+                <Upload className="w-7 h-7 text-emerald-400" />
+                <p className="text-sm text-slate-500">PDF, JPG, PNG · Max 5MB</p>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+            Cancel
+          </button>
+          <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+            {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
+            Upload
+          </button>
+        </div>
       </div>
-      <div className="flex gap-3">
-        <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
-          Cancel
-        </button>
-        <button onClick={handleUpload} disabled={uploading || !file} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
-          {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
-          Submit
-        </button>
+    </Modal>
+  )
+}
+
+function CertEditModal({ cert, supplierProfileId, onClose, onSaved }) {
+  const [label, setLabel] = useState(cert.file_name || '')
+  const [newFile, setNewFile] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const inputRef = useRef(null)
+
+  async function handleSave() {
+    if (!label.trim()) { toast.error('Certificate name is required'); return }
+    setSaving(true)
+    try {
+      let fileUrl = cert.file_url
+      if (newFile) {
+        if (newFile.size > 5 * 1024 * 1024) throw new Error('File must be under 5MB')
+        await supabase.storage.from('halal-certificates').remove([cert.file_url])
+        const ext = newFile.name.split('.').pop()
+        const path = `${supplierProfileId}/${Date.now()}.${ext}`
+        const { data: upload, error: uploadErr } = await supabase.storage.from('halal-certificates').upload(path, newFile)
+        if (uploadErr) throw uploadErr
+        fileUrl = upload.path
+      }
+      const { data: updated } = await supabase.from('halal_certificates')
+        .update({ file_name: label.trim(), file_url: fileUrl })
+        .eq('id', cert.id)
+        .select().single()
+      onSaved(updated)
+      onClose()
+      toast.success('Certificate updated!')
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Modal title="Edit Certificate" onClose={onClose}>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Certificate Name</label>
+          <input
+            value={label}
+            onChange={e => setLabel(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            placeholder="e.g. Meat Halal Certificate"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Replace File (optional)</label>
+          <div
+            onClick={() => inputRef.current?.click()}
+            className="border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 p-5 flex flex-col items-center gap-2 cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
+          >
+            <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={e => setNewFile(e.target.files[0])} />
+            {newFile ? (
+              <>
+                <CheckCircle className="w-6 h-6 text-emerald-500" />
+                <p className="text-sm font-semibold text-emerald-700 text-center truncate max-w-full px-2">{newFile.name}</p>
+              </>
+            ) : (
+              <>
+                <Upload className="w-6 h-6 text-slate-400" />
+                <p className="text-xs text-slate-400">Click to choose a new file</p>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="flex gap-3 pt-1">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+            Cancel
+          </button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+            Save Changes
+          </button>
+        </div>
       </div>
     </Modal>
   )
@@ -783,6 +881,7 @@ export default function SupplierProfilePage() {
   const [showCertUploadModal, setShowCertUploadModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showBusinessInfoModal, setShowBusinessInfoModal] = useState(false)
+  const [editingCert, setEditingCert] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -806,6 +905,23 @@ export default function SupplierProfilePage() {
 
   function handleSignOut() {
     signOut()
+  }
+
+  async function handleDeleteCert(cert) {
+    if (!confirm('Delete this certificate?')) return
+    try {
+      await supabase.storage.from('halal-certificates').remove([cert.file_url])
+      await supabase.from('halal_certificates').delete().eq('id', cert.id)
+      const remaining = certs.filter(c => c.id !== cert.id)
+      setCerts(remaining)
+      if (remaining.filter(c => c.status === 'approved').length === 0) {
+        await supabase.from('supplier_profiles').update({ is_verified: false }).eq('id', supplierProfile.id)
+        setSupplierProfile(prev => ({ ...prev, is_verified: false }))
+      }
+      toast.success('Certificate deleted')
+    } catch (err) {
+      toast.error(err.message)
+    }
   }
 
   async function viewCert(cert) {
@@ -967,23 +1083,33 @@ export default function SupplierProfilePage() {
             {certs.map(cert => {
               const status = CERT_STATUS[cert.status] || CERT_STATUS.pending
               const Icon = status.icon
-              const fileName = cert.file_url?.split('/').pop() || 'Certificate'
+              const displayName = cert.file_name || cert.file_url?.split('/').pop() || 'Certificate'
               return (
-                <div key={cert.id} className="flex items-center justify-between gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <FileText className="w-7 h-7 text-slate-400 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-800 truncate">{fileName}</p>
-                      <p className="text-xs text-slate-400">{new Date(cert.uploaded_at).toLocaleDateString()}</p>
+                <div key={cert.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <FileText className="w-7 h-7 text-slate-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-800 truncate">{displayName}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${status.color}`}>
+                            <Icon className="w-2.5 h-2.5" /> {status.label}
+                          </span>
+                          <p className="text-xs text-slate-400">{new Date(cert.uploaded_at).toLocaleDateString()}</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold border ${status.color}`}>
-                      <Icon className="w-3 h-3" /> {status.label}
-                    </span>
-                    <button onClick={() => viewCert(cert)} className="p-1 text-slate-400 hover:text-emerald-600 transition-colors">
-                      <ExternalLink className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <button onClick={() => viewCert(cert)} className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors" title="View">
+                        <ExternalLink className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => setEditingCert(cert)} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors" title="Edit">
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => handleDeleteCert(cert)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="Delete">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               )
@@ -1056,6 +1182,17 @@ export default function SupplierProfilePage() {
           current={supplierProfile}
           onClose={() => setShowBusinessInfoModal(false)}
           onSaved={data => setSupplierProfile(prev => ({ ...prev, ...data }))}
+        />
+      )}
+      {editingCert && supplierProfile && (
+        <CertEditModal
+          cert={editingCert}
+          supplierProfileId={supplierProfile.id}
+          onClose={() => setEditingCert(null)}
+          onSaved={updated => {
+            setCerts(prev => prev.map(c => c.id === updated.id ? updated : c))
+            setEditingCert(null)
+          }}
         />
       )}
     </div>

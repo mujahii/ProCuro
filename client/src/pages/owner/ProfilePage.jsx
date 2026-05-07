@@ -474,8 +474,8 @@ export default function ProfilePage() {
   const [showAddressModal, setShowAddressModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
 
-  async function handleSignOut() {
-    await signOut()
+  function handleSignOut() {
+    signOut()
     navigate('/')
   }
 

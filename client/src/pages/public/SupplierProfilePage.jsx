@@ -31,7 +31,7 @@ export default function SupplierProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
           <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
@@ -42,7 +42,7 @@ export default function SupplierProfilePage() {
 
   if (!supplier) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
           <p className="text-slate-400 mb-4">Supplier not found</p>
@@ -53,7 +53,7 @@ export default function SupplierProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium mb-6 transition-colors">

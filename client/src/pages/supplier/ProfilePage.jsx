@@ -660,8 +660,8 @@ export default function SupplierProfilePage() {
       })
   }, [user])
 
-  async function handleSignOut() {
-    await signOut()
+  function handleSignOut() {
+    signOut()
     navigate('/')
   }
 

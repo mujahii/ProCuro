@@ -149,4 +149,49 @@ router.get('/stats', verifySupabaseJWT, requireAdmin, async (req, res) => {
   }
 })
 
+// POST /api/admin/users/:userId/notify — send in-app notification to a user
+router.post('/users/:userId/notify', verifySupabaseJWT, requireAdmin, async (req, res) => {
+  const { userId } = req.params
+  const { title, message } = req.body
+  if (!title?.trim() || !message?.trim()) {
+    return res.status(400).json({ error: 'Title and message are required' })
+  }
+  try {
+    const { error } = await supabaseAdmin.from('notifications').insert({
+      user_id: userId,
+      title: title.trim(),
+      message: message.trim(),
+      type: 'admin_message',
+    })
+    if (error) throw error
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// PUT /api/admin/users/:userId/ban — toggle ban
+router.put('/users/:userId/ban', verifySupabaseJWT, requireAdmin, async (req, res) => {
+  const { userId } = req.params
+  const { is_banned } = req.body
+  try {
+    await supabaseAdmin.from('users').update({ is_banned }).eq('id', userId)
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// PUT /api/admin/suppliers/:supplierId/toggle — toggle supplier active/verified
+router.put('/suppliers/:supplierId/toggle', verifySupabaseJWT, requireAdmin, async (req, res) => {
+  const { supplierId } = req.params
+  const { is_active } = req.body
+  try {
+    await supabaseAdmin.from('supplier_profiles').update({ is_active }).eq('id', supplierId)
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 module.exports = router

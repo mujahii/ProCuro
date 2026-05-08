@@ -11,15 +11,23 @@ export function AuthProvider({ children }) {
   async function fetchProfile(userId) {
     const { data, error } = await supabase
       .from('users')
-      .select('*, supplier_profiles(business_name)')
+      .select('*, supplier_profiles(business_name), owner_profiles(*)')
       .eq('id', userId)
       .single()
     if (error) return null
-    const sp = Array.isArray(data?.supplier_profiles)
-      ? data.supplier_profiles[0]
-      : data?.supplier_profiles
-    const { supplier_profiles: _, ...rest } = data
-    return { ...rest, business_name: sp?.business_name || null }
+    const sp = Array.isArray(data?.supplier_profiles) ? data.supplier_profiles[0] : data?.supplier_profiles
+    const op = Array.isArray(data?.owner_profiles) ? data.owner_profiles[0] : data?.owner_profiles
+    const { supplier_profiles: _sp, owner_profiles: _op, ...rest } = data
+    return {
+      ...rest,
+      business_name: sp?.business_name || null,
+      restaurant_name: op?.restaurant_name || null,
+      bio: op?.bio || null,
+      tax_id: op?.tax_id || null,
+      city: op?.city || null,
+      website: op?.website || null,
+      cuisine: op?.cuisine || null,
+    }
   }
 
   useEffect(() => {

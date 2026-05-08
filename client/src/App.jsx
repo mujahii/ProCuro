@@ -12,14 +12,17 @@ import RegisterSupplierPage from './pages/public/RegisterSupplierPage'
 import SelectRolePage from './pages/public/SelectRolePage'
 import PublicSupplierProfilePage from './pages/public/SupplierProfilePage'
 import SupplierListPage from './pages/public/SupplierListPage'
+import ProductsListPage from './pages/public/ProductsListPage'
 
 // Admin pages
 import AdminLoginPage from './pages/admin/AdminLoginPage'
 import AdminDashboardPage from './pages/admin/DashboardPage'
 import AdminUsersPage from './pages/admin/UsersPage'
+import AdminSuppliersPage from './pages/admin/SuppliersPage'
 import AdminCertificatesPage from './pages/admin/CertificatesPage'
 import AdminProductsPage from './pages/admin/ProductsPage'
 import AdminOrdersPage from './pages/admin/OrdersPage'
+import AdminReportsPage from './pages/admin/ReportsPage'
 
 // Owner pages
 import OwnerLayout from './components/layout/OwnerLayout'
@@ -73,6 +76,7 @@ export default function App() {
             <Route path="/select-role" element={<SelectRolePage />} />
             <Route path="/suppliers" element={<SupplierListPage />} />
             <Route path="/supplier/:id" element={<PublicSupplierProfilePage />} />
+            <Route path="/products" element={<ProductsListPage />} />
 
             {/* Admin (separate, not linked from public login) */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -80,9 +84,11 @@ export default function App() {
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboardPage />} />
               <Route path="users" element={<AdminUsersPage />} />
+              <Route path="suppliers" element={<AdminSuppliersPage />} />
               <Route path="certificates" element={<AdminCertificatesPage />} />
               <Route path="products" element={<AdminProductsPage />} />
               <Route path="orders" element={<AdminOrdersPage />} />
+              <Route path="reports" element={<AdminReportsPage />} />
             </Route>
 
             {/* Restaurant Owner */}

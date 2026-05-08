@@ -25,7 +25,7 @@ export default function AdminUsersPage() {
   async function loadUsers() {
     const { data } = await supabase
       .from('users')
-      .select('*, supplier_profile:supplier_profiles(business_name, is_verified, city)')
+      .select('*, supplier_profile:supplier_profiles(business_name, is_verified, city), owner_profile:owner_profiles(restaurant_name, city)')
       .order('created_at', { ascending: false })
     setUsers(data || [])
     setLoading(false)
@@ -150,7 +150,7 @@ export default function AdminUsersPage() {
                     <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{u.role?.replace('_', ' ')}</span>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">
-                    {u.supplier_profile?.business_name || '—'}
+                    {u.supplier_profile?.business_name || u.owner_profile?.restaurant_name || '—'}
                   </td>
                   <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-500">
                     {u.created_at ? format(new Date(u.created_at), 'dd MMM yyyy') : '—'}
@@ -197,8 +197,8 @@ export default function AdminUsersPage() {
                 ['Full Name', viewTarget.full_name],
                 ['Email', viewTarget.email],
                 ['Role', viewTarget.role?.replace('_', ' ')],
-                ['Business', viewTarget.supplier_profile?.business_name],
-                ['City', viewTarget.supplier_profile?.city],
+                ['Business', viewTarget.supplier_profile?.business_name || viewTarget.owner_profile?.restaurant_name],
+                ['City', viewTarget.supplier_profile?.city || viewTarget.owner_profile?.city],
                 ['Status', viewTarget.is_banned ? 'Banned' : 'Active'],
                 ['Joined', viewTarget.created_at ? format(new Date(viewTarget.created_at), 'dd MMM yyyy') : '—'],
               ].map(([label, val]) => (

@@ -100,7 +100,11 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
     if (!name.trim()) { toast.error('Name is required'); return }
     setSaving(true)
     try {
-      await supabase.from('users').update({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null }).eq('id', userId)
+      await supabase.from('users').update({ full_name: name.trim() }).eq('id', userId)
+      await supabase.from('owner_profiles').upsert(
+        { user_id: userId, restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null },
+        { onConflict: 'user_id' }
+      )
       onSaved({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null })
       onClose()
       toast.success('Profile updated!')
@@ -181,12 +185,16 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
     if (!form.tax_id.trim()) { toast.error('Tax ID is required'); return }
     setSaving(true)
     try {
-      await supabase.from('users').update({
-        tax_id: form.tax_id.trim(),
-        city: form.city.trim() || null,
-        cuisine: form.cuisine.length > 0 ? form.cuisine : null,
-        website: form.website.trim() || null,
-      }).eq('id', userId)
+      await supabase.from('owner_profiles').upsert(
+        {
+          user_id: userId,
+          tax_id: form.tax_id.trim(),
+          city: form.city.trim() || null,
+          cuisine: form.cuisine.length > 0 ? form.cuisine : null,
+          website: form.website.trim() || null,
+        },
+        { onConflict: 'user_id' }
+      )
       onSaved({ tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null })
       onClose()
       toast.success('Business details saved!')

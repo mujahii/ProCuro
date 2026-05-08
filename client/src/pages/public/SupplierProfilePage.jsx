@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye } from 'lucide-react'
+import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import AddToCartModal from '../../components/store/AddToCartModal'
+import ReportModal from '../../components/ui/ReportModal'
 import toast from 'react-hot-toast'
 
 const INITIAL_LIMIT = 6
@@ -26,6 +27,7 @@ export default function SupplierProfilePage() {
   const [certificates, setCertificates] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [showReportModal, setShowReportModal] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [activeCategory, setActiveCategory] = useState(null)
 
@@ -88,9 +90,19 @@ export default function SupplierProfilePage() {
     <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium mb-6 transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
+        <div className="flex items-center justify-between mb-6">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back
+          </button>
+          {profile?.role === 'restaurant_owner' && (
+            <button
+              onClick={() => setShowReportModal(true)}
+              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
+            >
+              <Flag className="w-4 h-4" /> Report Supplier
+            </button>
+          )}
+        </div>
 
         {/* Banner */}
         <div className="relative h-48 bg-slate-900 rounded-xl overflow-hidden mb-8">
@@ -274,6 +286,9 @@ export default function SupplierProfilePage() {
 
       {selectedProduct && (
         <AddToCartModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      )}
+      {showReportModal && supplier && (
+        <ReportModal type="supplier" targetId={supplier.id} targetName={supplier.business_name} onClose={() => setShowReportModal(false)} />
       )}
 
       <Footer />

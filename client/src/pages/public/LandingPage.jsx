@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple, Package, Truck, Shield, Fish, Milk, Flame, Wheat } from 'lucide-react'
+import { CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple, Package, Truck, Shield, Fish, Milk, Flame, Wheat, Plus } from 'lucide-react'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+
+function getProductImageUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+  return data?.publicUrl || null
+}
 
 const CATEGORIES = [
   { name: 'Meat', icon: Beef },
@@ -57,7 +64,7 @@ export default function LandingPage() {
   async function fetchProducts() {
     let q = supabase
       .from('products')
-      .select('*, supplier:supplier_profiles(business_name, city, is_visible)')
+      .select('*, supplier:supplier_profiles(business_name, city)')
       .eq('is_active', true)
       .limit(8)
     if (selectedCategory !== 'All') q = q.eq('category', selectedCategory)
@@ -69,7 +76,8 @@ export default function LandingPage() {
     const { data } = await supabase
       .from('supplier_profiles')
       .select('*')
-      .eq('is_visible', true)
+      .eq('is_verified', true)
+      .eq('is_active', true)
       .limit(8)
     setSuppliers(data || [])
   }
@@ -88,7 +96,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/80 to-slate-900/80" />
         <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto">
           <span className="inline-flex items-center gap-2 bg-emerald-600/30 border border-emerald-400/40 text-emerald-200 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-            🥩 Halal Certified Suppliers Only
+            <CheckCircle className="w-4 h-4" /> Halal Certified Suppliers Only
           </span>
           <h1 className="text-4xl sm:text-5xl font-black mb-4 leading-tight">
             The Smarter Way to Stock Your Halal Kitchen
@@ -150,55 +158,71 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Products Grid */}
+        {/* Featured Products */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900">
               {selectedCategory !== 'All' ? selectedCategory : 'Featured Products'}
             </h2>
-            <button onClick={() => navigate('/login')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">
-              See All <ChevronRight className="w-4 h-4" />
+            <button onClick={() => navigate('/products')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">
+              All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {products.map(product => (
-              <div
-                key={product.id}
-                onClick={() => navigate('/login')}
-                className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
-              >
-                <div className="relative h-36 bg-slate-100">
-                  {product.image_url ? (
-                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-300">
-                      <Package className="w-10 h-10" />
+          <div className="flex overflow-x-auto gap-6 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+            {products.slice(0, 8).map(product => {
+              const imgUrl = getProductImageUrl(product.image_url)
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => navigate('/login')}
+                  className="flex-shrink-0 w-[260px] bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
+                >
+                  <div className="relative h-40 bg-slate-100">
+                    {imgUrl ? (
+                      <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <Package className="w-12 h-12" />
+                      </div>
+                    )}
+                    {!product.is_active && (
+                      <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500">Out of Stock</div>
+                    )}
+                    <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold shadow-sm text-slate-700">
+                      {product.category}
                     </div>
-                  )}
-                  {!product.in_stock && (
-                    <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500 text-sm">Out of Stock</div>
-                  )}
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold shadow-sm">
-                    {product.category}
+                    {product.discount_percent > 0 && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white px-1.5 py-0.5 rounded text-[10px] font-bold">
+                        -{product.discount_percent}%
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-slate-900 text-base mb-1">{product.name}</h3>
+                    {product.description && (
+                      <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
+                    )}
+                    <p className="text-xs font-bold text-emerald-700 mb-3">{product.supplier?.business_name}</p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
+                        <span className="text-xs text-slate-400 ml-1">/ {product.unit_type}</span>
+                      </div>
+                      <button
+                        onClick={e => { e.stopPropagation(); navigate('/login') }}
+                        className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
+                      >
+                        <Plus className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="p-3">
-                  <h3 className="font-bold text-slate-900 text-sm leading-tight mb-0.5">{product.name}</h3>
-                  <p className="text-xs font-bold text-emerald-700 mb-2">{product.supplier?.business_name}</p>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-base font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
-                      <span className="text-xs text-slate-400 ml-1">/ {product.unit_type}</span>
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors text-lg leading-none">+</div>
-                  </div>
-                </div>
-              </div>
-            ))}
+              )
+            })}
+            {products.length === 0 && (
+              <p className="text-slate-400 text-sm py-4">No products found. Be the first supplier to list products!</p>
+            )}
           </div>
-          {products.length === 0 && (
-            <div className="text-center py-12 text-slate-400">No products found. Be the first supplier to list products!</div>
-          )}
         </section>
 
         {/* Verified Suppliers */}
@@ -206,25 +230,25 @@ export default function LandingPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900">Our Verified Halal Suppliers</h2>
             <button onClick={() => navigate('/suppliers')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">
-              See All <ChevronRight className="w-4 h-4" />
+              All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
           <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
-            {suppliers.map(supplier => (
+            {suppliers.slice(0, 8).map(supplier => (
               <div
                 key={supplier.id}
                 onClick={() => navigate(`/supplier/${supplier.id}`)}
-                className="min-w-[200px] cursor-pointer bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow"
+                className="flex-shrink-0 min-w-[180px] max-w-[180px] cursor-pointer bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow"
               >
-                <div className="w-16 h-16 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
+                <div className="w-14 h-14 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
                   {supplier.avatar_url ? (
                     <img src={supplier.avatar_url} alt={supplier.business_name} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-2xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
+                    <span className="text-xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
                   )}
                 </div>
-                <h3 className="font-bold text-slate-900 text-sm">{supplier.business_name}</h3>
-                <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{supplier.city}</p>
+                <h3 className="font-bold text-slate-900 text-sm truncate w-full">{supplier.business_name}</h3>
+                <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate w-full justify-center"><MapPin className="w-3 h-3 flex-shrink-0" />{supplier.city}</p>
                 {supplier.rating > 0 && (
                   <div className="flex items-center gap-1 mt-1 text-xs text-amber-500">
                     <span>★</span> {Number(supplier.rating).toFixed(1)}

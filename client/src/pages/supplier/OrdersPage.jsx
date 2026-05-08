@@ -311,8 +311,12 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
   useEffect(() => {
     const ownerId = split.restaurant_owner_id
     if (!ownerId) return
-    supabase.from('users').select('full_name, restaurant_name, phone, bio, avatar_url').eq('id', ownerId).single()
-      .then(({ data }) => setOwnerInfo(data))
+    Promise.all([
+      supabase.from('users').select('full_name, phone, avatar_url').eq('id', ownerId).single(),
+      supabase.from('owner_profiles').select('restaurant_name, bio').eq('user_id', ownerId).maybeSingle(),
+    ]).then(([{ data: u }, { data: op }]) => {
+      if (u) setOwnerInfo({ ...u, restaurant_name: op?.restaurant_name ?? null, bio: op?.bio ?? null })
+    })
     // Fallback: if this order has no stored delivery address, fetch owner's default address
     if (!deliveryAddress) {
       supabase.from('addresses').select('label, street, postal_code, city')

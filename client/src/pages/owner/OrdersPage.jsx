@@ -167,7 +167,7 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
   function avatarUrl(path) {
     if (!path) return null
     if (path.startsWith('http')) return path
-    return supabase.storage.from('supplier-avatars').getPublicUrl(path).data?.publicUrl || null
+    return supabase.storage.from('avatars').getPublicUrl(path).data?.publicUrl || null
   }
 
   return (

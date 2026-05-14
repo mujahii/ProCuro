@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import RevenueChart from '../../components/charts/RevenueChart'
-import OrdersByStatusChart from '../../components/charts/OrdersByStatusChart'
+import TopProductsChart from '../../components/charts/TopProductsChart'
 import CategorySalesChart from '../../components/charts/CategorySalesChart'
 import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
 import { TrendingUp, ShoppingBag, Euro, Package } from 'lucide-react'
@@ -12,7 +12,7 @@ export default function AnalyticsPage() {
   const { user } = useAuth()
   const [stats, setStats] = useState(null)
   const [monthlySpend, setMonthlySpend] = useState([])
-  const [statusBreakdown, setStatusBreakdown] = useState([])
+  const [topProducts, setTopProducts] = useState([])
   const [categoryBreakdown, setCategoryBreakdown] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -24,7 +24,7 @@ export default function AnalyticsPage() {
     const [ordersRes, splitsRes, itemsRes] = await Promise.all([
       supabase.from('orders').select('*, order_splits(*)').eq('restaurant_owner_id', user.id),
       supabase.from('order_splits').select('*, order:orders!inner(restaurant_owner_id)').eq('order.restaurant_owner_id', user.id),
-      supabase.from('order_items').select('*, product:products(category), order_split:order_splits(*, order:orders!inner(restaurant_owner_id))'),
+      supabase.from('order_items').select('*, product:products(name, category), order_split:order_splits(*, order:orders!inner(restaurant_owner_id))'),
     ])
 
     const orders = ordersRes.data || []
@@ -50,11 +50,6 @@ export default function AnalyticsPage() {
     })
     setMonthlySpend(Object.entries(monthMap).slice(-12).map(([month, revenue]) => ({ month, revenue })))
 
-    // Status breakdown
-    const statusMap = {}
-    splits.forEach(sp => { statusMap[sp.status] = (statusMap[sp.status] || 0) + 1 })
-    setStatusBreakdown(Object.entries(statusMap).map(([name, value]) => ({ name, value })))
-
     // Category breakdown
     const catMap = {}
     const allItems = itemsRes.data || []
@@ -64,6 +59,19 @@ export default function AnalyticsPage() {
     })
     setCategoryBreakdown(Object.entries(catMap).map(([name, revenue]) => ({ name, revenue })).sort((a, b) => b.revenue - a.revenue))
 
+    // Top products by quantity ordered
+    const productMap = {}
+    allItems.forEach(item => {
+      const name = item.product?.name || 'Unknown'
+      productMap[name] = (productMap[name] || 0) + item.quantity
+    })
+    setTopProducts(
+      Object.entries(productMap)
+        .map(([name, quantity]) => ({ name, quantity }))
+        .sort((a, b) => b.quantity - a.quantity)
+        .slice(0, 6)
+    )
+
     setLoading(false)
   }
 
@@ -72,7 +80,7 @@ export default function AnalyticsPage() {
     totalOrdersThisMonth: stats.thisMonthOrders,
     totalSpendAllTime: stats.totalSpend?.toFixed(2),
     topCategory: categoryBreakdown[0]?.name,
-    orderStatusBreakdown: statusBreakdown,
+    topProducts: topProducts.slice(0, 3).map(p => p.name),
   } : null
 
   return (
@@ -105,7 +113,7 @@ export default function AnalyticsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <RevenueChart data={monthlySpend} title="Monthly Spending" />
-            <OrdersByStatusChart data={statusBreakdown} title="Orders by Status" />
+            <TopProductsChart data={topProducts} title="Top Products Ordered" />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <CategorySalesChart data={categoryBreakdown} title="Spending by Category" />

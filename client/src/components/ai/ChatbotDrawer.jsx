@@ -127,11 +127,16 @@ export default function ChatbotDrawer({ open, onClose }) {
   }
 
   return (
+    <>
+      {/* Mobile backdrop */}
+      {open && (
+        <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={onClose} />
+      )}
     <div
-      className={`fixed bottom-36 lg:bottom-24 right-4 lg:right-6 z-40 w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 flex flex-col overflow-hidden transition-all duration-200 ${
-        open ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
-      }`}
-      style={{ height: 440 }}
+      className={`fixed z-50 bg-white flex flex-col overflow-hidden shadow-2xl transition-transform duration-300
+        inset-y-0 right-0 w-full sm:w-96
+        lg:inset-auto lg:bottom-24 lg:right-6 lg:w-80 lg:h-[440px] lg:rounded-2xl lg:border lg:border-slate-100
+        ${open ? 'translate-x-0' : 'translate-x-full'}`}
     >
       {/* Header */}
       <div className="bg-gradient-to-r from-emerald-700 to-emerald-600 p-4 flex justify-between items-center text-white flex-shrink-0">
@@ -218,5 +223,6 @@ export default function ChatbotDrawer({ open, onClose }) {
         </button>
       </div>
     </div>
+    </>
   )
 }

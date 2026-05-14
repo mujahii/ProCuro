@@ -94,7 +94,7 @@ export default function LandingPage() {
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/80 to-slate-900/80" />
-        <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto">
+        <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto pt-8 sm:pt-0">
           <span className="inline-flex items-center gap-2 bg-emerald-600/30 border border-emerald-400/40 text-emerald-200 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <CheckCircle className="w-4 h-4" /> Halal Certified Suppliers Only
           </span>

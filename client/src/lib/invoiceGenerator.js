@@ -15,14 +15,14 @@ export function generateInvoice(order, splits, ownerProfile) {
   doc.setFont('helvetica', 'normal')
   doc.text('Halal Supply Chain, Simplified', 20, 32)
 
-  // Invoice details
-  doc.setTextColor(26, 26, 26)
+  // Invoice details (white text on dark green header)
+  doc.setTextColor(255, 255, 255)
   doc.setFontSize(20)
   doc.setFont('helvetica', 'bold')
   doc.text('INVOICE', pageWidth - 20, 22, { align: 'right' })
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
-  doc.setTextColor(100, 100, 100)
+  doc.setTextColor(220, 240, 220)
   doc.text(`#${order.id.slice(0, 8).toUpperCase()}`, pageWidth - 20, 32, { align: 'right' })
 
   // Bill To

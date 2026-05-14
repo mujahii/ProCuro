@@ -280,33 +280,39 @@ export default function CartPage() {
                 {group.items.map(item => {
                   const imgUrl = getProductImageUrl(item.product.image_url)
                   return (
-                    <div key={item.productId} className="flex items-center gap-4 p-4">
-                      <div className="w-16 h-16 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
-                        {imgUrl ? (
-                          <img src={imgUrl} alt={item.product.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-300">
-                            <Package className="w-7 h-7" />
-                          </div>
-                        )}
+                    <div key={item.productId} className="p-4">
+                      {/* Row 1: image + name + total */}
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-14 h-14 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
+                          {imgUrl ? (
+                            <img src={imgUrl} alt={item.product.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-300">
+                              <Package className="w-6 h-6" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-slate-900 text-sm leading-tight">{item.product.name}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">€{Number(item.product.price).toFixed(2)} / {item.product.unit_type}</p>
+                        </div>
+                        <p className="text-sm font-bold text-slate-900 flex-shrink-0">€{(item.product.price * item.quantity).toFixed(2)}</p>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-slate-900 text-sm">{item.product.name}</p>
-                        <p className="text-xs text-slate-400">€{Number(item.product.price).toFixed(2)} / {item.product.unit_type}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => updateQty(item.productId, item.quantity - 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors">
-                          <Minus className="w-3 h-3 text-slate-600" />
+                      {/* Row 2: qty controls + delete */}
+                      <div className="flex items-center justify-between pl-[68px]">
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => updateQty(item.productId, item.quantity - 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors">
+                            <Minus className="w-3 h-3 text-slate-600" />
+                          </button>
+                          <span className="w-6 text-center text-sm font-bold text-slate-900">{item.quantity}</span>
+                          <button onClick={() => updateQty(item.productId, item.quantity + 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors">
+                            <Plus className="w-3 h-3 text-slate-600" />
+                          </button>
+                        </div>
+                        <button onClick={() => removeItem(item.productId)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-50 text-red-400 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
-                        <span className="w-6 text-center text-sm font-bold text-slate-900">{item.quantity}</span>
-                        <button onClick={() => updateQty(item.productId, item.quantity + 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors">
-                          <Plus className="w-3 h-3 text-slate-600" />
-                        </button>
                       </div>
-                      <p className="text-sm font-bold text-slate-900 w-14 text-right">€{(item.product.price * item.quantity).toFixed(2)}</p>
-                      <button onClick={() => removeItem(item.productId)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-50 text-red-400 transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
                     </div>
                   )
                 })}

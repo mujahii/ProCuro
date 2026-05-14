@@ -7,6 +7,10 @@
     "build": "npm run build --prefix client",
     "install:all": "npm install && npm install --prefix client && npm install --prefix server"
   },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@supabase/supabase-js": "^2.45.0"
+  },
   "devDependencies": {
     "concurrently": "^8.2.0"
   }

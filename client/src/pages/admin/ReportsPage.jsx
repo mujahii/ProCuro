@@ -149,7 +149,7 @@ function ActionModal({ report, onClose, onActionDone }) {
             </div>
           )}
           <button
-            onClick={() => { onClose(); navigate(report.type === 'supplier' ? '/admin/suppliers' : '/admin/products') }}
+            onClick={() => { onClose(); navigate(`${report.type === 'supplier' ? '/admin/suppliers' : '/admin/products'}?id=${report.target_id}`) }}
             className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700 transition-colors mt-1"
           >
             <ExternalLink className="w-3.5 h-3.5" />

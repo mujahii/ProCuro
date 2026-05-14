@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import { Search, ToggleLeft, ToggleRight, Eye, Send, X } from 'lucide-react'
@@ -6,6 +7,9 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
 export default function AdminSuppliersPage() {
+  const [searchParams] = useSearchParams()
+  const highlightId = searchParams.get('id')
+  const highlightRef = useRef(null)
   const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -14,8 +18,15 @@ export default function AdminSuppliersPage() {
   const [notifyMsg, setNotifyMsg] = useState('')
   const [sending, setSending] = useState(false)
   const [viewTarget, setViewTarget] = useState(null)
+  const [toggleTarget, setToggleTarget] = useState(null)
 
   useEffect(() => { loadSuppliers() }, [])
+
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [highlightId, suppliers])
 
   async function loadSuppliers() {
     const { data } = await supabase
@@ -32,6 +43,14 @@ export default function AdminSuppliersPage() {
     if (!error) {
       setSuppliers(prev => prev.map(s => s.id === supplier.id ? { ...s, is_active: next } : s))
       toast.success(next ? 'Supplier activated' : 'Supplier deactivated')
+    }
+  }
+
+  function handleToggleClick(s) {
+    if (s.is_active) {
+      setToggleTarget(s)
+    } else {
+      toggleActive(s)
     }
   }
 
@@ -91,7 +110,11 @@ export default function AdminSuppliersPage() {
                 const certs = s.halal_certificates || []
                 const certStatus = certs[0]?.status || 'none'
                 return (
-                  <tr key={s.id} className="hover:bg-gray-50">
+                  <tr
+                    key={s.id}
+                    ref={s.id === highlightId ? highlightRef : null}
+                    className={`hover:bg-gray-50 transition-colors ${s.id === highlightId ? 'bg-emerald-50 outline outline-2 outline-emerald-400' : ''}`}
+                  >
                     <td className="px-4 py-3">
                       <p className="text-sm font-medium text-gray-900">{s.business_name || '—'}</p>
                       <p className="text-xs text-gray-400">{s.user?.email}</p>
@@ -123,7 +146,7 @@ export default function AdminSuppliersPage() {
                         <button onClick={() => setNotifyTarget(s)} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-400" title="Send notification">
                           <Send className="w-4 h-4" />
                         </button>
-                        <button onClick={() => toggleActive(s)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400" title={s.is_active ? 'Deactivate' : 'Activate'}>
+                        <button onClick={() => handleToggleClick(s)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400" title={s.is_active ? 'Deactivate' : 'Activate'}>
                           {s.is_active ? <ToggleRight className="w-4 h-4 text-emerald-500" /> : <ToggleLeft className="w-4 h-4" />}
                         </button>
                       </div>
@@ -169,6 +192,48 @@ export default function AdminSuppliersPage() {
             >
               <Send className="w-4 h-4" /> Send Notification
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Deactivate Confirmation Modal */}
+      {toggleTarget && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Deactivate Supplier</h2>
+              <button onClick={() => setToggleTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-5">
+              <p className="text-sm font-semibold text-orange-700 mb-1">
+                This supplier will be deactivated and will receive a notification.
+              </p>
+              <p className="text-xs text-orange-500">
+                <span className="font-bold">{toggleTarget.business_name}</span>'s profile and products will no longer be visible in the store.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  await toggleActive(toggleTarget)
+                  if (toggleTarget.user?.id) {
+                    await supabase.from('notifications').insert({
+                      user_id: toggleTarget.user.id,
+                      title: 'Your supplier account has been deactivated',
+                      message: 'Your ProCuro supplier profile has been deactivated by the admin. Your products are no longer visible in the store. Contact procuro@admin.com to appeal.',
+                      type: 'warning',
+                    })
+                  }
+                  setToggleTarget(null)
+                }}
+                className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600"
+              >
+                Yes, Deactivate
+              </button>
+            </div>
           </div>
         </div>
       )}

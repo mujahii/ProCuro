@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
-import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import { Search, Ban, Trash2, CheckCircle, Eye, Send, X, History } from 'lucide-react'
 import { format } from 'date-fns'
@@ -23,6 +22,7 @@ export default function AdminUsersPage() {
   const [notifyTitle, setNotifyTitle] = useState('')
   const [notifyMsg, setNotifyMsg] = useState('')
   const [sending, setSending] = useState(false)
+  const [banTarget, setBanTarget] = useState(null)
 
   useEffect(() => { loadUsers(); loadDeletedAccounts() }, [])
 
@@ -128,7 +128,7 @@ export default function AdminUsersPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-black text-gray-900">Restaurant Owners</h1>
+        <h1 className="text-2xl font-black text-gray-900">Users</h1>
         <div className="flex gap-2">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -215,7 +215,9 @@ export default function AdminUsersPage() {
                     {u.created_at ? format(new Date(u.created_at), 'dd MMM yyyy') : '—'}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge status={u.is_banned ? 'cancelled' : 'active'} />
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${u.is_banned ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                      {u.is_banned ? 'Inactive' : 'Active'}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1 justify-end">
@@ -225,7 +227,11 @@ export default function AdminUsersPage() {
                       <button onClick={() => { setNotifyTarget(u); setNotifyTitle(''); setNotifyMsg('') }} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-400" title="Send notification">
                         <Send className="w-4 h-4" />
                       </button>
-                      <button onClick={() => toggleBan(u)} className={`p-1.5 rounded-lg transition-colors ${u.is_banned ? 'text-green-500 hover:bg-green-50' : 'text-orange-500 hover:bg-orange-50'}`} title={u.is_banned ? 'Unban' : 'Ban'}>
+                      <button
+                        onClick={() => u.is_banned ? toggleBan(u) : setBanTarget(u)}
+                        className={`p-1.5 rounded-lg transition-colors ${u.is_banned ? 'text-green-500 hover:bg-green-50' : 'text-orange-500 hover:bg-orange-50'}`}
+                        title={u.is_banned ? 'Unban' : 'Ban'}
+                      >
                         {u.is_banned ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
                       </button>
                       {u.role !== 'admin' && (
@@ -308,6 +314,37 @@ export default function AdminUsersPage() {
                 className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {deleting ? 'Deleting...' : 'Delete User'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ban Confirmation Modal */}
+      {banTarget && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Ban User</h2>
+              <button onClick={() => setBanTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-5">
+              <p className="text-sm font-semibold text-orange-700 mb-1">
+                This user will be banned and will receive a notification.
+              </p>
+              <p className="text-xs text-orange-500">
+                <span className="font-bold">{banTarget.full_name || banTarget.email}</span> will no longer be able to use the platform and their profile will be hidden.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setBanTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
+                Cancel
+              </button>
+              <button
+                onClick={() => { toggleBan(banTarget); setBanTarget(null) }}
+                className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600"
+              >
+                Yes, Ban User
               </button>
             </div>
           </div>

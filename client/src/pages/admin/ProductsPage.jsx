@@ -1,19 +1,30 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Search, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Search, Trash2, ToggleLeft, ToggleRight, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function AdminProductsPage() {
+  const [searchParams] = useSearchParams()
+  const highlightId = searchParams.get('id')
+  const highlightRef = useRef(null)
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [supplierFilter, setSupplierFilter] = useState('')
   const [suppliers, setSuppliers] = useState([])
+  const [toggleTarget, setToggleTarget] = useState(null)
 
   useEffect(() => { loadProducts(); loadSuppliers() }, [])
+
+  useEffect(() => {
+    if (highlightId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [highlightId, products])
 
   async function loadProducts() {
     const { data } = await supabase
@@ -39,6 +50,14 @@ export default function AdminProductsPage() {
   async function toggleActive(product) {
     const { data } = await supabase.from('products').update({ is_active: !product.is_active }).eq('id', product.id).select().single()
     setProducts(prev => prev.map(p => p.id === product.id ? data : p))
+  }
+
+  function handleToggleClick(product) {
+    if (product.is_active) {
+      setToggleTarget(product)
+    } else {
+      toggleActive(product)
+    }
   }
 
   const categories = [...new Set(products.map(p => p.category))].filter(Boolean)
@@ -84,7 +103,11 @@ export default function AdminProductsPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(product => (
-                <tr key={product.id} className="hover:bg-gray-50">
+                <tr
+                  key={product.id}
+                  ref={product.id === highlightId ? highlightRef : null}
+                  className={`hover:bg-gray-50 transition-colors ${product.id === highlightId ? 'bg-emerald-50 outline outline-2 outline-emerald-400' : ''}`}
+                >
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">{product.name}</td>
                   <td className="px-4 py-3 hidden sm:table-cell text-xs text-gray-500">{product.supplier?.business_name || '—'}</td>
                   <td className="px-4 py-3 hidden md:table-cell">
@@ -94,7 +117,7 @@ export default function AdminProductsPage() {
                   <td className="px-4 py-3"><Badge status={product.is_active ? 'active' : 'inactive'} /></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1 justify-end">
-                      <button onClick={() => toggleActive(product)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
+                      <button onClick={() => handleToggleClick(product)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
                         {product.is_active ? <ToggleRight className="w-4 h-4 text-primary" /> : <ToggleLeft className="w-4 h-4" />}
                       </button>
                       <button onClick={() => deleteProduct(product.id)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
@@ -107,6 +130,37 @@ export default function AdminProductsPage() {
             </tbody>
           </table>
           {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No products found</p>}
+        </div>
+      )}
+
+      {/* Deactivate Confirmation Modal */}
+      {toggleTarget && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Deactivate Product</h2>
+              <button onClick={() => setToggleTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-5">
+              <p className="text-sm font-semibold text-orange-700 mb-1">
+                This product will be hidden from the marketplace.
+              </p>
+              <p className="text-xs text-orange-500">
+                "<span className="font-bold">{toggleTarget.name}</span>" by {toggleTarget.supplier?.business_name || 'this supplier'} will no longer be visible to restaurant owners.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
+                Cancel
+              </button>
+              <button
+                onClick={() => { toggleActive(toggleTarget); setToggleTarget(null) }}
+                className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600"
+              >
+                Yes, Deactivate
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

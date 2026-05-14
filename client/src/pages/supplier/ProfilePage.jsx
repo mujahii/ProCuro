@@ -301,7 +301,7 @@ function PhoneModal({ userId, currentPhone, onClose, onSaved }) {
   )
 }
 
-function AddressModal({ onClose }) {
+function AddressModal({ onClose, supplierProfileId }) {
   const { addresses, addAddress, deleteAddress, setDefault, reload } = useAddresses()
   const [form, setForm] = useState({ label: '', street: '', postal_code: '', city: '' })
   const [saving, setSaving] = useState(false)
@@ -363,6 +363,16 @@ function AddressModal({ onClose }) {
     try {
       await setDefault(id)
       await reload()
+      if (supplierProfileId) {
+        const addr = addresses.find(a => a.id === id)
+        if (addr) {
+          await supabase.from('supplier_profiles').update({
+            city: addr.city || null,
+            latitude: addr.latitude || null,
+            longitude: addr.longitude || null,
+          }).eq('id', supplierProfileId)
+        }
+      }
       toast.success('Default address updated')
     } catch {
       toast.error('Failed to update default')
@@ -551,7 +561,7 @@ function BankModal({ userId, onClose }) {
   )
 }
 
-function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
+function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSaved }) {
   const normaliseCategories = v => Array.isArray(v) ? v : (v ? [v] : [])
   const [form, setForm] = useState({
     tax_id: current.tax_id || '',
@@ -613,6 +623,32 @@ function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
         category: form.categories.length > 0 ? form.categories : null,
         website: form.website.trim() || null,
       }).eq('id', supplierProfileId)
+
+      if (userId && form.city.trim()) {
+        const { data: existing } = await supabase
+          .from('addresses')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('label', 'Business Location')
+          .maybeSingle()
+
+        const addressPayload = {
+          user_id: userId,
+          label: 'Business Location',
+          city: form.city.trim(),
+          street: '',
+          country: 'Germany',
+          latitude: form.latitude || null,
+          longitude: form.longitude || null,
+        }
+        if (existing) {
+          await supabase.from('addresses').update(addressPayload).eq('id', existing.id)
+        } else {
+          const { count } = await supabase.from('addresses').select('*', { count: 'exact', head: true }).eq('user_id', userId)
+          await supabase.from('addresses').insert({ ...addressPayload, is_default: count === 0 })
+        }
+      }
+
       onSaved({ ...form, category: form.categories })
       onClose()
       toast.success('Business info saved!')
@@ -1301,7 +1337,7 @@ export default function SupplierProfilePage() {
           onSaved={phone => updateProfileState({ phone })}
         />
       )}
-      {showAddressModal && <AddressModal onClose={() => setShowAddressModal(false)} />}
+      {showAddressModal && <AddressModal onClose={() => setShowAddressModal(false)} supplierProfileId={supplierProfile?.id} />}
       {showBankModal && <BankModal userId={user.id} onClose={() => {
         setShowBankModal(false)
         if (supplierProfile) {
@@ -1328,6 +1364,7 @@ export default function SupplierProfilePage() {
       {showBusinessInfoModal && supplierProfile && (
         <BusinessInfoModal
           supplierProfileId={supplierProfile.id}
+          userId={user.id}
           current={supplierProfile}
           onClose={() => setShowBusinessInfoModal(false)}
           onSaved={data => setSupplierProfile(prev => ({ ...prev, ...data }))}

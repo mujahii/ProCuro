@@ -15,7 +15,11 @@ export async function askGemini(prompt, context, accessToken) {
     },
     body: JSON.stringify({ prompt, context }),
   })
-  if (!res.ok) throw new Error('AI service unavailable')
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}))
+    console.error(`AI chat error [${res.status}]:`, errBody)
+    throw new Error(errBody.error || `AI service error (${res.status})`)
+  }
   const data = await res.json()
   return data.response
 }
@@ -29,7 +33,11 @@ export async function getAnalyticsSummary(context, accessToken) {
     },
     body: JSON.stringify({ context }),
   })
-  if (!res.ok) throw new Error('AI service unavailable')
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}))
+    console.error(`AI analytics error [${res.status}]:`, errBody)
+    throw new Error(errBody.error || `AI service error (${res.status})`)
+  }
   const data = await res.json()
   return data.summary
 }

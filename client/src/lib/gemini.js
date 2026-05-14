@@ -1,5 +1,13 @@
+const CHAT_URL = import.meta.env.DEV
+  ? '/api/ai/chat'
+  : '/.netlify/functions/ai-chat'
+
+const ANALYTICS_URL = import.meta.env.DEV
+  ? '/api/ai/analytics-summary'
+  : '/.netlify/functions/ai-analytics-summary'
+
 export async function askGemini(prompt, context, accessToken) {
-  const res = await fetch('/api/ai/chat', {
+  const res = await fetch(CHAT_URL, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
@@ -13,7 +21,7 @@ export async function askGemini(prompt, context, accessToken) {
 }
 
 export async function getAnalyticsSummary(context, accessToken) {
-  const res = await fetch('/api/ai/analytics-summary', {
+  const res = await fetch(ANALYTICS_URL, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,

@@ -50,7 +50,11 @@ export default function SupplierAnalyticsPage() {
   async function init() {
     const { data: sp } = await supabase.from('supplier_profiles').select('*').eq('user_id', user.id).single()
     setSupplierProfile(sp)
-    if (sp) loadData(sp.id)
+    if (sp) {
+      loadData(sp.id)
+    } else {
+      setLoading(false)
+    }
   }
 
   function getRangeStart() {

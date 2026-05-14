@@ -33,7 +33,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
   function handleImageChange(e) {
     const file = e.target.files[0]
     if (!file) return
-    if (file.size > 10 * 1024 * 1024) { setError('Image must be under 10MB'); return }
+    if (file.size > 5 * 1024 * 1024) { setError('Image must be under 5MB'); return }
     setImageFile(file)
     setImagePreview(URL.createObjectURL(file))
   }
@@ -51,7 +51,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
         const path = `${supplierId}/${Date.now()}.${ext}`
         const { data: upload, error: uploadErr } = await supabase.storage
           .from('product-images')
-          .upload(path, imageFile, { upsert: true })
+          .upload(path, imageFile)
         if (uploadErr) throw uploadErr
         imageUrl = upload.path
       }

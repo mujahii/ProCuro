@@ -39,7 +39,11 @@ export default function SupplierCertificatesPage() {
   async function init() {
     const { data: sp } = await supabase.from('supplier_profiles').select('*').eq('user_id', user.id).single()
     setSupplierProfile(sp)
-    if (sp) loadCerts(sp.id)
+    if (sp) {
+      loadCerts(sp.id)
+    } else {
+      setLoading(false)
+    }
   }
 
   async function loadCerts(supplierId) {

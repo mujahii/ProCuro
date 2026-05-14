@@ -23,7 +23,11 @@ export default function SupplierProductsPage() {
   async function init() {
     const { data: sp } = await supabase.from('supplier_profiles').select('*').eq('user_id', user.id).single()
     setSupplierProfile(sp)
-    if (sp) loadProducts(sp.id)
+    if (sp) {
+      loadProducts(sp.id)
+    } else {
+      setLoading(false)
+    }
   }
 
   async function loadProducts(supplierId) {

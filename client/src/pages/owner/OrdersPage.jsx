@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag, ArrowUpRight } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag, ArrowUpRight, Star } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -232,6 +232,72 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
   )
 }
 
+function RatingModal({ split, onSubmit, onSkip }) {
+  const [hovered, setHovered] = useState(0)
+  const [selected, setSelected] = useState(0)
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit() {
+    if (!selected) return
+    setLoading(true)
+    await onSubmit(split, selected)
+    setLoading(false)
+  }
+
+  return (
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
+        <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <CheckCircle className="w-7 h-7 text-emerald-500" />
+        </div>
+        <h3 className="text-lg font-bold text-slate-900 mb-1">Order Delivered!</h3>
+        <p className="text-sm text-slate-500 mb-5">
+          How would you rate <span className="font-semibold text-slate-700">{split.supplier?.business_name}</span>?
+        </p>
+
+        <div className="flex items-center justify-center gap-2 mb-6">
+          {[1, 2, 3, 4, 5].map(star => (
+            <button
+              key={star}
+              onMouseEnter={() => setHovered(star)}
+              onMouseLeave={() => setHovered(0)}
+              onClick={() => setSelected(star)}
+              className="transition-transform hover:scale-110"
+            >
+              <Star
+                className="w-10 h-10 transition-colors"
+                fill={(hovered || selected) >= star ? '#f59e0b' : 'none'}
+                stroke={(hovered || selected) >= star ? '#f59e0b' : '#cbd5e1'}
+                strokeWidth={1.5}
+              />
+            </button>
+          ))}
+        </div>
+
+        {selected > 0 && (
+          <p className="text-sm font-semibold text-amber-600 mb-4">
+            {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][selected]}
+          </p>
+        )}
+
+        <div className="flex gap-3">
+          <button onClick={onSkip} className="flex-1 py-2.5 border-2 border-slate-200 text-slate-600 font-semibold rounded-xl text-sm hover:bg-slate-50 transition-colors">
+            Skip
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!selected || loading}
+            className="flex-1 py-2.5 bg-slate-900 text-white font-bold rounded-xl text-sm hover:bg-slate-800 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            Submit Rating
+          </button>
+        </div>
+      </div>
+    </div></ModalPortal>
+  )
+}
+
 function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDelivered, onCancelRequest, onConfirmRefund }) {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showSupplierModal, setShowSupplierModal] = useState(false)
@@ -428,6 +494,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
+  const [ratingTarget, setRatingTarget] = useState(null)
 
   useEffect(() => {
     if (user) fetchOrders()
@@ -452,6 +519,7 @@ export default function OrdersPage() {
   }
 
   async function markDelivered(splitId) {
+    const splitForRating = orders.flatMap(o => (o.order_splits || []).map(s => ({ ...s, order: o }))).find(s => s.id === splitId)
     const { error } = await supabase.rpc('update_order_split_status', {
       p_split_id: splitId,
       p_status: 'delivered',
@@ -459,6 +527,18 @@ export default function OrdersPage() {
     if (error) { toast.error(error.message); return }
     toast.success('Order marked as delivered!')
     fetchOrders()
+    if (splitForRating) setRatingTarget(splitForRating)
+  }
+
+  async function submitRating(split, rating) {
+    await supabase.from('supplier_ratings').insert({
+      supplier_id: split.supplier_id,
+      owner_id: user.id,
+      order_split_id: split.id,
+      rating,
+    })
+    toast.success('Thank you for your rating!')
+    setRatingTarget(null)
   }
 
   async function markNotDelivered(splitId) {
@@ -627,6 +707,14 @@ export default function OrdersPage() {
           split={cancelTarget}
           onCancel={cancelOrder}
           onClose={() => setCancelTarget(null)}
+        />
+      )}
+
+      {ratingTarget && (
+        <RatingModal
+          split={ratingTarget}
+          onSubmit={submitRating}
+          onSkip={() => setRatingTarget(null)}
         />
       )}
     </div>

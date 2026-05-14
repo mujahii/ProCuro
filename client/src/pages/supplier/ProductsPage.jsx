@@ -4,9 +4,58 @@ import { useAuth } from '../../context/AuthContext'
 import ProductForm from '../../components/supplier/ProductForm'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff, X } from 'lucide-react'
+import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff, X, Truck, ChevronDown, ChevronUp } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
+
+const DELIVERY_TIERS = [
+  { range: '0 – 5 km',    fee: '€2.00' },
+  { range: '5 – 15 km',   fee: '€4.50' },
+  { range: '15 – 30 km',  fee: '€7.50' },
+  { range: '30 – 75 km',  fee: '€13.00' },
+  { range: '75 – 150 km', fee: '€20.00' },
+  { range: '150+ km',     fee: '€28.00' },
+]
+
+function DeliveryFeeTable() {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="mb-6 border border-emerald-200 rounded-xl overflow-hidden">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-emerald-50 hover:bg-emerald-100 transition-colors text-left"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
+          <Truck className="w-4 h-4" /> Delivery Fee Structure
+        </span>
+        {open ? <ChevronUp className="w-4 h-4 text-emerald-600" /> : <ChevronDown className="w-4 h-4 text-emerald-600" />}
+      </button>
+      {open && (
+        <div className="bg-white">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-gray-50 border-b border-gray-100">
+                <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Distance</th>
+                <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Delivery Fee</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {DELIVERY_TIERS.map(t => (
+                <tr key={t.range}>
+                  <td className="px-4 py-2 text-gray-700">{t.range}</td>
+                  <td className="px-4 py-2 text-right font-semibold text-emerald-700">{t.fee}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="px-4 py-2 text-xs text-gray-400 border-t border-gray-50">
+            Fees are automatically applied at checkout based on the distance between your business and the restaurant.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function SupplierProductsPage() {
   const { user } = useAuth()
@@ -96,6 +145,8 @@ export default function SupplierProductsPage() {
           </div>
         </div></ModalPortal>
       )}
+
+      <DeliveryFeeTable />
 
       {products.length === 0 ? (
         <div className="text-center py-16">

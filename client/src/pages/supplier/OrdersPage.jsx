@@ -441,12 +441,20 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           {split.payment_method === 'bank_transfer' ? (
             <p className="text-xs text-orange-700">Paid via bank transfer — upload the refund proof below to accept this cancellation.</p>
           ) : (
-            <button
-              onClick={() => { onUpdateStatus(split.id, 'cancelled'); onBack() }}
-              className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
-            >
-              <CheckCircle className="w-4 h-4" /> Accept Cancellation
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { onUpdateStatus(split.id, 'cancelled'); onBack() }}
+                className="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" /> Accept
+              </button>
+              <button
+                onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                <XCircle className="w-4 h-4" /> Reject
+              </button>
+            </div>
           )}
         </div>
       )}

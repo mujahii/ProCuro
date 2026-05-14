@@ -8,7 +8,7 @@ import NotificationBell from '../ui/NotificationBell'
 
 const navItems = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/admin/users', icon: Users, label: 'Users' },
+  { to: '/admin/users', icon: Users, label: 'Restaurant Owners' },
   { to: '/admin/suppliers', icon: Store, label: 'Suppliers' },
   { to: '/admin/certificates', icon: Award, label: 'Certificates' },
   { to: '/admin/products', icon: Package, label: 'Products' },

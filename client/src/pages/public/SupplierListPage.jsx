@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, MapPin, Filter, ChevronDown } from 'lucide-react'
+import { Search, MapPin, Filter, ChevronDown, Navigation } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { haversineKm } from '../../lib/haversine'
 import HalalBadge from '../../components/ui/HalalBadge'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 
 const SORT_OPTIONS = [
   { value: '', label: 'Recommended' },
+  { value: 'nearest', label: 'Near Me' },
   { value: 'name_asc', label: 'Name A–Z' },
   { value: 'rating_desc', label: 'Top Rated' },
 ]
@@ -22,6 +24,9 @@ export default function SupplierListPage() {
   const [sortBy, setSortBy] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [userLat, setUserLat] = useState(null)
+  const [userLng, setUserLng] = useState(null)
+  const [gpsLoading, setGpsLoading] = useState(false)
   const filterRef = useRef(null)
 
   useEffect(() => {
@@ -47,6 +52,19 @@ export default function SupplierListPage() {
     setLoading(false)
   }
 
+  function handleSortSelect(value) {
+    setSortBy(value)
+    setFilterOpen(false)
+    if (value === 'nearest' && !userLat) {
+      setGpsLoading(true)
+      navigator.geolocation.getCurrentPosition(
+        pos => { setUserLat(pos.coords.latitude); setUserLng(pos.coords.longitude); setGpsLoading(false) },
+        () => { setSortBy(''); setGpsLoading(false); alert('GPS permission denied') },
+        { enableHighAccuracy: true, timeout: 10000 }
+      )
+    }
+  }
+
   const filtered = suppliers
     .filter(s => {
       const matchesSearch = !search ||
@@ -58,6 +76,11 @@ export default function SupplierListPage() {
       return matchesSearch && matchesCategory
     })
     .sort((a, b) => {
+      if (sortBy === 'nearest' && userLat && userLng) {
+        const da = a.latitude ? haversineKm(userLat, userLng, a.latitude, a.longitude) : Infinity
+        const db = b.latitude ? haversineKm(userLat, userLng, b.latitude, b.longitude) : Infinity
+        return da - db
+      }
       if (sortBy === 'name_asc') return (a.business_name || '').localeCompare(b.business_name || '')
       if (sortBy === 'rating_desc') return (b.rating || 0) - (a.rating || 0)
       return 0
@@ -98,10 +121,12 @@ export default function SupplierListPage() {
                 {SORT_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
-                    onClick={() => { setSortBy(opt.value); setFilterOpen(false) }}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-slate-700 hover:bg-slate-50'}`}
+                    onClick={() => handleSortSelect(opt.value)}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2 ${sortBy === opt.value ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
+                    {opt.value === 'nearest' && <Navigation className="w-3.5 h-3.5 flex-shrink-0" />}
                     {opt.label}
+                    {opt.value === 'nearest' && gpsLoading && <span className="text-xs text-slate-400 ml-auto">detecting...</span>}
                   </button>
                 ))}
               </div>
@@ -151,6 +176,9 @@ export default function SupplierListPage() {
               const categories = Array.isArray(supplier.category)
                 ? supplier.category
                 : supplier.category ? [supplier.category] : []
+              const distKm = sortBy === 'nearest' && userLat && supplier.latitude
+                ? haversineKm(userLat, userLng, supplier.latitude, supplier.longitude)
+                : null
               return (
                 <div
                   key={supplier.id}
@@ -169,6 +197,9 @@ export default function SupplierListPage() {
                     {supplier.city && (
                       <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                         <MapPin className="w-3 h-3" />{supplier.city}
+                        {distKm !== null && (
+                          <span className="ml-1 text-emerald-600 font-semibold">· {distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`} away</span>
+                        )}
                       </p>
                     )}
                     {supplier.rating > 0 && (

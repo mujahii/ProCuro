@@ -274,7 +274,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancelRequ
             <p className="text-xs text-slate-500 font-medium mb-1">Supplier</p>
             <button
               onClick={() => setShowSupplierModal(true)}
-              className="font-semibold text-slate-900 hover:text-emerald-600 transition-colors text-left underline-offset-2 hover:underline"
+              className="font-semibold text-emerald-700 hover:text-emerald-800 transition-colors text-left underline-offset-2 hover:underline"
             >
               {split.supplier?.business_name}
             </button>

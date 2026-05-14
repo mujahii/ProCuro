@@ -54,6 +54,20 @@ export function useProducts({ category, search, sortBy, userLat, userLng, city }
         result = result.sort((a, b) => a.price - b.price)
       } else if (sortBy === 'price_desc') {
         result = result.sort((a, b) => b.price - a.price)
+      } else {
+        // Default recommended: sort by top sales
+        const ids = result.map(p => p.id)
+        if (ids.length > 0) {
+          const { data: salesData } = await supabase
+            .from('order_items')
+            .select('product_id, quantity')
+            .in('product_id', ids)
+          const salesMap = {}
+          ;(salesData || []).forEach(row => {
+            salesMap[row.product_id] = (salesMap[row.product_id] || 0) + row.quantity
+          })
+          result = result.sort((a, b) => (salesMap[b.id] || 0) - (salesMap[a.id] || 0))
+        }
       }
 
       setProducts(prev => page === 0 ? result : [...prev, ...result])

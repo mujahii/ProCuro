@@ -10,16 +10,23 @@ export default function AdminProductsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
+  const [supplierFilter, setSupplierFilter] = useState('')
+  const [suppliers, setSuppliers] = useState([])
 
-  useEffect(() => { loadProducts() }, [])
+  useEffect(() => { loadProducts(); loadSuppliers() }, [])
 
   async function loadProducts() {
     const { data } = await supabase
       .from('products')
-      .select('*, supplier:supplier_profiles(business_name)')
+      .select('*, supplier:supplier_profiles(id, business_name)')
       .order('created_at', { ascending: false })
     setProducts(data || [])
     setLoading(false)
+  }
+
+  async function loadSuppliers() {
+    const { data } = await supabase.from('supplier_profiles').select('id, business_name').order('business_name')
+    setSuppliers(data || [])
   }
 
   async function deleteProduct(id) {
@@ -38,7 +45,8 @@ export default function AdminProductsPage() {
   const filtered = products.filter(p => {
     const matchSearch = !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.supplier?.business_name?.toLowerCase().includes(search.toLowerCase())
     const matchCat = !categoryFilter || p.category === categoryFilter
-    return matchSearch && matchCat
+    const matchSupplier = !supplierFilter || p.supplier?.id === supplierFilter
+    return matchSearch && matchCat && matchSupplier
   })
 
   return (
@@ -53,6 +61,10 @@ export default function AdminProductsPage() {
           <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="input text-sm py-2 w-36">
             <option value="">All categories</option>
             {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select value={supplierFilter} onChange={e => setSupplierFilter(e.target.value)} className="input text-sm py-2 w-44">
+            <option value="">All suppliers</option>
+            {suppliers.map(s => <option key={s.id} value={s.id}>{s.business_name}</option>)}
           </select>
         </div>
       </div>

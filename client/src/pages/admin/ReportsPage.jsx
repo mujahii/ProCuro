@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Search, CheckCircle, XCircle, Flag, X, AlertTriangle, Ban, PackageX, Send } from 'lucide-react'
+import { Search, CheckCircle, XCircle, Flag, X, AlertTriangle, Ban, PackageX, Send, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -12,6 +13,7 @@ const STATUS_STYLES = {
 }
 
 function ActionModal({ report, onClose, onActionDone }) {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [warnMsg, setWarnMsg] = useState('')
   const [showWarnInput, setShowWarnInput] = useState(false)
@@ -146,6 +148,13 @@ function ActionModal({ report, onClose, onActionDone }) {
               {report.details}
             </div>
           )}
+          <button
+            onClick={() => { onClose(); navigate(report.type === 'supplier' ? '/admin/suppliers' : '/admin/products') }}
+            className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700 transition-colors mt-1"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            View {report.type === 'supplier' ? 'Supplier' : 'Product'} in Admin Panel
+          </button>
         </div>
 
         {/* Actions */}
@@ -242,7 +251,7 @@ export default function AdminReportsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-  const [statusFilter, setStatusFilter] = useState('pending')
+  const [statusFilter, setStatusFilter] = useState('')
   const [selected, setSelected] = useState(null)
 
   useEffect(() => { loadReports() }, [])

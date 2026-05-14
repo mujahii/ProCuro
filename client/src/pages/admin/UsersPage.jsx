@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react'
+import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Search, Ban, Trash2, CheckCircle, Eye, Send, X } from 'lucide-react'
+import { Search, Ban, Trash2, CheckCircle, Eye, Send, X, History } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
 export default function AdminUsersPage() {
+  const { user: adminUser } = useAuth()
+  const [tab, setTab] = useState('active')
   const [users, setUsers] = useState([])
+  const [deletedAccounts, setDeletedAccounts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState('')
@@ -20,7 +24,7 @@ export default function AdminUsersPage() {
   const [notifyMsg, setNotifyMsg] = useState('')
   const [sending, setSending] = useState(false)
 
-  useEffect(() => { loadUsers() }, [])
+  useEffect(() => { loadUsers(); loadDeletedAccounts() }, [])
 
   async function loadUsers() {
     const { data } = await supabase
@@ -65,13 +69,26 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function loadDeletedAccounts() {
+    const { data } = await supabase.from('deleted_accounts').select('*').order('deleted_at', { ascending: false })
+    setDeletedAccounts(data || [])
+  }
+
   async function confirmDelete() {
     if (deleteConfirmText !== 'delete') return
     setDeleting(true)
     try {
+      await supabase.from('deleted_accounts').insert({
+        user_id: deleteTarget.id,
+        email: deleteTarget.email,
+        role: deleteTarget.role,
+        business_name: deleteTarget.supplier_profile?.business_name || deleteTarget.owner_profile?.restaurant_name || null,
+        deleted_by_admin_id: adminUser?.id,
+      })
       const { error } = await supabase.rpc('admin_delete_user', { target_user_id: deleteTarget.id })
       if (error) throw error
       setUsers(prev => prev.filter(u => u.id !== deleteTarget.id))
+      loadDeletedAccounts()
       toast.success('User deleted')
       setDeleteTarget(null)
       setDeleteConfirmText('')
@@ -110,8 +127,8 @@ export default function AdminUsersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black text-gray-900">Users ({users.length})</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-black text-gray-900">Restaurant Owners</h1>
         <div className="flex gap-2">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -126,7 +143,49 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {loading ? <SkeletonTable rows={6} /> : (
+      {/* Tabs */}
+      <div className="flex gap-1 mb-4 border-b border-gray-200">
+        <button
+          onClick={() => setTab('active')}
+          className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px ${tab === 'active' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          Active Users ({users.length})
+        </button>
+        <button
+          onClick={() => setTab('deleted')}
+          className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-1.5 ${tab === 'deleted' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          <History className="w-3.5 h-3.5" /> Deleted ({deletedAccounts.length})
+        </button>
+      </div>
+
+      {tab === 'deleted' ? (
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Email</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Role</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Business</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Deleted At</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {deletedAccounts.map(d => (
+                <tr key={d.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 text-sm text-gray-700">{d.email || '—'}</td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{d.role?.replace('_', ' ') || '—'}</span>
+                  </td>
+                  <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">{d.business_name || '—'}</td>
+                  <td className="px-4 py-3 text-xs text-gray-400">{d.deleted_at ? format(new Date(d.deleted_at), 'dd MMM yyyy, HH:mm') : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {deletedAccounts.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted accounts</p>}
+        </div>
+      ) : loading ? <SkeletonTable rows={6} /> : (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-100">

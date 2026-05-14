@@ -556,10 +556,41 @@ function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
   const [form, setForm] = useState({
     tax_id: current.tax_id || '',
     city: current.city || '',
+    latitude: current.latitude || null,
+    longitude: current.longitude || null,
     categories: normaliseCategories(current.category),
     website: current.website || '',
   })
   const [saving, setSaving] = useState(false)
+  const [gpsLoading, setGpsLoading] = useState(false)
+
+  async function detectGPS() {
+    if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
+    setGpsLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lng } = pos.coords
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+          const data = await res.json()
+          const addr = data.address || {}
+          setForm(f => ({
+            ...f,
+            city: addr.city || addr.town || addr.village || addr.suburb || f.city,
+            latitude: lat,
+            longitude: lng,
+          }))
+          toast.success('Location detected!')
+        } catch {
+          toast.error('Could not fetch location from GPS')
+        } finally {
+          setGpsLoading(false)
+        }
+      },
+      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
 
   function toggleCategory(cat) {
     setForm(f => ({
@@ -577,6 +608,8 @@ function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
       await supabase.from('supplier_profiles').update({
         tax_id: form.tax_id.trim(),
         city: form.city.trim() || null,
+        latitude: form.latitude || null,
+        longitude: form.longitude || null,
         category: form.categories.length > 0 ? form.categories : null,
         website: form.website.trim() || null,
       }).eq('id', supplierProfileId)
@@ -608,13 +641,29 @@ function BusinessInfoModal({ supplierProfileId, current, onClose, onSaved }) {
           <p className="text-xs text-slate-400 mt-1">Required to receive payments and appear verified</p>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">City</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide">City / Location</label>
+            <button
+              type="button"
+              onClick={detectGPS}
+              disabled={gpsLoading}
+              className="flex items-center gap-1 text-xs text-emerald-600 font-semibold hover:text-emerald-700 disabled:opacity-50 transition-colors"
+            >
+              {gpsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
+              Detect My Location
+            </button>
+          </div>
           <input
             value={form.city}
-            onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+            onChange={e => setForm(f => ({ ...f, city: e.target.value, latitude: null, longitude: null }))}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             placeholder="e.g. Berlin"
           />
+          {form.latitude && form.longitude && (
+            <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+              <MapPin className="w-3 h-3" /> GPS coordinates saved
+            </p>
+          )}
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
@@ -680,12 +729,11 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
         supplier_id: supplierProfileId,
         file_url: upload.path,
         file_name: label.trim(),
-        status: 'approved',
+        status: 'pending',
       }).select().single()
-      await supabase.from('supplier_profiles').update({ is_verified: true }).eq('id', supplierProfileId)
       onUploaded(cert)
       onClose()
-      toast.success('Certificate uploaded — you are now Halal Certified!')
+      toast.success('Certificate uploaded — awaiting admin review')
     } catch (err) {
       toast.error(err.message)
     } finally {

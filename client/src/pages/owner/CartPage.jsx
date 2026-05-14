@@ -361,9 +361,12 @@ export default function CartPage() {
         </div>
       </div>
 
+      {!selectedAddress && (
+        <p className="text-xs text-amber-600 font-medium text-center -mb-2">Please select a delivery address to continue</p>
+      )}
       <button
         onClick={() => setStep(2)}
-        disabled={!!profile?.is_banned}
+        disabled={!!profile?.is_banned || !selectedAddress}
         className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Continue to Payment — €{grandTotal.toFixed(2)}
@@ -398,6 +401,8 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
             street: [addr.road, addr.house_number].filter(Boolean).join(' ') || '',
             postal_code: addr.postcode || '',
             city: addr.city || addr.town || addr.village || addr.suburb || '',
+            latitude: lat,
+            longitude: lng,
           }))
           toast.success('Location detected!')
         } catch {

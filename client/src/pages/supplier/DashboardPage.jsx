@@ -48,6 +48,8 @@ export default function SupplierDashboardPage() {
         hasApprovedCert: certs.some(c => c.status === 'approved'),
         certPending: certs.some(c => c.status === 'pending'),
       })
+    } else {
+      setLoading(false)
     }
   }
 

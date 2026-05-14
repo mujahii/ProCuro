@@ -59,7 +59,7 @@ function ProductCardModal({ item, onClose }) {
   )
 }
 
-const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded', 'cancellation_requested']
+const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded', 'cancellation_requested', 'delivery_dispute']
 const COMPLETED = ['delivered', 'completed', 'cancelled']
 const CANCELLABLE = ['pending_payment', 'pending_confirmation', 'confirmed']
 
@@ -232,7 +232,7 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
   )
 }
 
-function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancelRequest, onConfirmRefund }) {
+function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDelivered, onCancelRequest, onConfirmRefund }) {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showSupplierModal, setShowSupplierModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -344,6 +344,23 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancelRequ
         </div>
       )}
 
+      {split.status === 'delivery_dispute' && split.dispute_message && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-2">
+          <p className="text-sm font-bold text-orange-800 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4" /> Supplier Response
+          </p>
+          <p className="text-sm text-orange-700 italic">"{split.dispute_message}"</p>
+          <p className="text-xs text-orange-500">The supplier is reviewing your dispute and will re-send or cancel the order.</p>
+        </div>
+      )}
+
+      {split.status === 'delivery_dispute' && !split.dispute_message && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+          <p className="text-sm font-bold text-orange-800">Dispute Pending</p>
+          <p className="text-xs text-orange-700 mt-1">Your report has been sent to the supplier. They will respond shortly.</p>
+        </div>
+      )}
+
       <div className="flex gap-3">
         <button
           onClick={() => generateInvoice(split.order, [split], profile)}
@@ -357,6 +374,14 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onCancelRequ
             className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
           >
             Mark as Delivered
+          </button>
+        )}
+        {split.status === 'out_for_delivery' && (
+          <button
+            onClick={() => { onMarkNotDelivered(split.id); onBack() }}
+            className="flex-1 py-3 bg-orange-50 text-orange-600 font-bold rounded-xl hover:bg-orange-100 transition-colors border border-orange-200"
+          >
+            I Didn't Receive It
           </button>
         )}
         {canCancel && (
@@ -436,6 +461,16 @@ export default function OrdersPage() {
     fetchOrders()
   }
 
+  async function markNotDelivered(splitId) {
+    const { error } = await supabase.rpc('update_order_split_status', {
+      p_split_id: splitId,
+      p_status: 'delivery_dispute',
+    })
+    if (error) { toast.error(error.message); return }
+    toast.success('Report sent to supplier. They will respond shortly.')
+    fetchOrders()
+  }
+
   async function cancelOrder(splitId, reason, paymentMethod) {
     const newStatus = paymentMethod === 'bank_transfer' ? 'cancellation_requested' : 'cancelled'
     const { error } = await supabase.rpc('update_order_split_status', {
@@ -477,6 +512,7 @@ export default function OrdersPage() {
         profile={profile}
         onBack={() => { setSelectedOrder(null); fetchOrders() }}
         onMarkDelivered={markDelivered}
+        onMarkNotDelivered={markNotDelivered}
         onCancelRequest={cancelOrder}
         onConfirmRefund={confirmRefund}
       />
@@ -536,6 +572,12 @@ export default function OrdersPage() {
                     <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg">
                       {split.status === 'cancellation_requested' ? 'Pending: ' : 'Reason: '}
                       {split.cancellation_reason}
+                    </p>
+                  )}
+                  {split.status === 'delivery_dispute' && (
+                    <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                      {split.dispute_message ? `Supplier: ${split.dispute_message}` : 'Delivery dispute — awaiting supplier response'}
                     </p>
                   )}
                 </div>

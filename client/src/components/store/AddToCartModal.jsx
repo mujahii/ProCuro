@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { X, Truck, Package } from 'lucide-react'
+import { X, Truck, Package, Flag } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { supabase } from '../../lib/supabase'
 import ModalPortal from '../ui/ModalPortal'
+import ReportModal from '../ui/ReportModal'
 import toast from 'react-hot-toast'
 
 function getProductImageUrl(path) {
@@ -20,6 +21,7 @@ export default function AddToCartModal({ product, onClose }) {
   const [discountCode, setDiscountCode] = useState('')
   const [appliedDiscount, setAppliedDiscount] = useState(0)
   const [discountMessage, setDiscountMessage] = useState('')
+  const [showReport, setShowReport] = useState(false)
 
   const price = Number(product.price)
   const deliveryFee = Number(product.delivery_fee) || 0
@@ -44,6 +46,7 @@ export default function AddToCartModal({ product, onClose }) {
   }
 
   return (
+    <>
     <ModalPortal><div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div className="bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
         {/* Image */}
@@ -152,8 +155,25 @@ export default function AddToCartModal({ product, onClose }) {
               {inStock ? `Add to Cart - €${total.toFixed(2)}` : 'Unavailable'}
             </button>
           </div>
+
+          {/* Report button */}
+          <button
+            onClick={() => setShowReport(true)}
+            className="mt-3 flex items-center gap-1.5 text-xs text-slate-400 hover:text-red-500 transition-colors mx-auto"
+          >
+            <Flag className="w-3.5 h-3.5" /> Report this product
+          </button>
         </div>
       </div>
     </div></ModalPortal>
+    {showReport && (
+      <ReportModal
+        type="product"
+        targetId={product.id}
+        targetName={product.name}
+        onClose={() => setShowReport(false)}
+      />
+    )}
+  </>
   )
 }

@@ -8,7 +8,7 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { formatIBAN } from '../../lib/formatIBAN'
 
-const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'cancellation_requested']
+const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'cancellation_requested', 'delivery_dispute']
 const COMPLETED = ['delivered', 'cancelled', 'refund_uploaded', 'completed']
 
 function CancelModal({ split, onCancel, onClose }) {
@@ -227,6 +227,113 @@ function PaymentReceiptDisplay({ path }) {
   )
 }
 
+function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
+  const [message, setMessage] = useState('')
+  const [action, setAction] = useState(null)
+  const [file, setFile] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const inputRef = useRef(null)
+  const isBankTransfer = split.payment_method === 'bank_transfer'
+
+  async function handleSubmit() {
+    if (!message.trim()) return toast.error('Please write a message explaining the situation')
+    if (action === 'cancel' && isBankTransfer && !file) return toast.error('Please upload a refund receipt for bank transfer orders')
+    setLoading(true)
+    if (action === 'resend') {
+      await onResend(split.id, message.trim())
+    } else {
+      await onCancel(split.id, message.trim(), isBankTransfer ? file : null)
+    }
+    setLoading(false)
+  }
+
+  return (
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+          <h3 className="font-bold text-slate-900 text-lg">Respond to Delivery Dispute</h3>
+        </div>
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4">
+          <p className="text-sm text-orange-800">The restaurant owner reported they did not receive this order. Write a message and choose a resolution.</p>
+        </div>
+        <div className="mb-4">
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Your Message *</label>
+          <textarea
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-orange-400 h-24 resize-none"
+            placeholder="Explain what happened (e.g. driver was at the address but no one answered...)"
+            autoFocus
+          />
+        </div>
+        {action === null && (
+          <div className="space-y-2 mb-4">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Choose Resolution</p>
+            <button
+              onClick={() => setAction('resend')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 transition-colors text-left"
+            >
+              <Truck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-800">Re-send Order</p>
+                <p className="text-xs text-emerald-600">Mark out for delivery again — owner will be notified</p>
+              </div>
+            </button>
+            <button
+              onClick={() => setAction('cancel')}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 transition-colors text-left"
+            >
+              <XCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-red-700">Cancel Order</p>
+                <p className="text-xs text-red-500">{isBankTransfer ? 'You must upload a refund receipt' : 'Order will be cancelled and owner notified'}</p>
+              </div>
+            </button>
+          </div>
+        )}
+        {action === 'cancel' && isBankTransfer && (
+          <div className="mb-4">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Refund Receipt *</label>
+            <input ref={inputRef} type="file" className="hidden" accept="image/*,.pdf" onChange={e => setFile(e.target.files[0])} />
+            <button
+              type="button"
+              onClick={() => inputRef.current?.click()}
+              className={`w-full py-3 border-2 border-dashed rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+                file ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-300 text-slate-500 hover:border-amber-400'
+              }`}
+            >
+              {file ? <CheckCircle className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
+              {file ? file.name : 'Upload refund proof (image or PDF)'}
+            </button>
+          </div>
+        )}
+        {action !== null ? (
+          <div className="flex gap-3">
+            <button onClick={() => { setAction(null); setFile(null) }} className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
+              Back
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={loading || !message.trim() || (action === 'cancel' && isBankTransfer && !file)}
+              className={`flex-1 flex items-center justify-center gap-2 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50 ${
+                action === 'resend' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'
+              }`}
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : action === 'resend' ? <Truck className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+              {action === 'resend' ? 'Re-send Order' : 'Cancel Order'}
+            </button>
+          </div>
+        ) : (
+          <button onClick={onClose} className="w-full py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
+            Close
+          </button>
+        )}
+      </div>
+    </div></ModalPortal>
+  )
+}
+
 function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
   return (
     <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
@@ -302,7 +409,7 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
   )
 }
 
-function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload }) {
+function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload, onDispute }) {
   const [ownerInfo, setOwnerInfo] = useState(null)
   const [ownerDefaultAddress, setOwnerDefaultAddress] = useState(null)
   const [showOwnerModal, setShowOwnerModal] = useState(false)
@@ -483,8 +590,31 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         </div>
       )}
 
+      {split.status === 'delivery_dispute' && (
+        <div className="bg-orange-50 border border-orange-300 rounded-xl p-4 space-y-3">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-bold text-orange-800">Delivery Not Received</p>
+              <p className="text-xs text-orange-700 mt-0.5">The restaurant owner reported they did not receive this order. You must respond.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => onDispute(split)}
+            className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+          >
+            <AlertTriangle className="w-4 h-4" /> Respond to Dispute
+          </button>
+        </div>
+      )}
+
       <div className="flex gap-3">
-        {split.status === 'pending_confirmation' && (
+        {split.status === 'pending_payment' && !split.receipt_url && (
+          <div className="flex-1 py-3 bg-amber-50 rounded-xl text-amber-700 text-sm text-center font-medium border border-amber-200">
+            Waiting for restaurant owner to upload payment receipt
+          </div>
+        )}
+        {(split.status === 'pending_confirmation' || (split.status === 'pending_payment' && split.receipt_url)) && (
           <>
             <button onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }} className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
               <CheckCircle className="w-4 h-4" /> Confirm Order
@@ -525,6 +655,7 @@ export default function SupplierOrdersPage() {
   const [loading, setLoading] = useState(true)
   const [cancelTarget, setCancelTarget] = useState(null)
   const [selectedSplit, setSelectedSplit] = useState(null)
+  const [disputeTarget, setDisputeTarget] = useState(null)
 
   useEffect(() => {
     if (user) init()
@@ -558,6 +689,45 @@ export default function SupplierOrdersPage() {
     if (selectedSplit?.id === splitId) setSelectedSplit(prev => ({ ...prev, status }))
     const msgs = { confirmed: 'Order confirmed!', out_for_delivery: 'Marked as out for delivery!', cancelled: 'Cancellation accepted.' }
     toast.success(msgs[status] || 'Status updated')
+  }
+
+  async function resendOrder(splitId, disputeMsg) {
+    const { error } = await supabase.rpc('update_order_split_status', {
+      p_split_id: splitId,
+      p_status: 'out_for_delivery',
+      p_dispute_message: disputeMsg,
+    })
+    if (error) { toast.error(error.message); return }
+    setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status: 'out_for_delivery', dispute_message: disputeMsg } : s))
+    toast.success('Order re-sent for delivery — restaurant owner notified!')
+    setDisputeTarget(null)
+    setSelectedSplit(null)
+  }
+
+  async function cancelFromDispute(splitId, message, refundFile = null) {
+    let refundReceiptUrl = null
+    if (refundFile) {
+      const ext = refundFile.name.split('.').pop()
+      const path = `refunds/${supplierProfile.id}/${Date.now()}-${splitId}.${ext}`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('payment-receipts').upload(path, refundFile)
+      if (uploadError) { toast.error(uploadError.message); return }
+      refundReceiptUrl = uploadData.path
+    }
+    const newStatus = refundFile ? 'refund_uploaded' : 'cancelled'
+    const { error } = await supabase.rpc('update_order_split_status', {
+      p_split_id: splitId,
+      p_status: newStatus,
+      p_cancellation_reason: message,
+      p_dispute_message: message,
+      p_refund_receipt_url: refundReceiptUrl,
+    })
+    if (error) { toast.error(error.message); return }
+    const patch = { status: newStatus, cancellation_reason: message, dispute_message: message, refund_receipt_url: refundReceiptUrl }
+    setSplits(prev => prev.map(s => s.id === splitId ? { ...s, ...patch } : s))
+    toast.success(refundFile ? 'Order cancelled — refund receipt uploaded.' : 'Order cancelled.')
+    setDisputeTarget(null)
+    setSelectedSplit(null)
   }
 
   async function cancelOrder(splitId, reason, refundFile = null) {
@@ -606,9 +776,18 @@ export default function SupplierOrdersPage() {
           onUpdateStatus={updateStatus}
           onCancel={s => setCancelTarget(s)}
           onReload={() => supplierProfile && loadOrders(supplierProfile.id)}
+          onDispute={s => setDisputeTarget(s)}
         />
         {cancelTarget && (
           <CancelModal split={cancelTarget} onCancel={cancelOrder} onClose={() => setCancelTarget(null)} />
+        )}
+        {disputeTarget && (
+          <DisputeResponseModal
+            split={disputeTarget}
+            onResend={resendOrder}
+            onCancel={cancelFromDispute}
+            onClose={() => setDisputeTarget(null)}
+          />
         )}
       </>
     )
@@ -673,6 +852,11 @@ export default function SupplierOrdersPage() {
                   {split.status === 'cancelled' && split.cancellation_reason && (
                     <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">Reason: {split.cancellation_reason}</p>
                   )}
+                  {split.status === 'delivery_dispute' && (
+                    <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Owner reported delivery not received
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
                   <span className="text-xl font-bold text-slate-900">€{Number(split.subtotal).toFixed(2)}</span>
@@ -683,12 +867,20 @@ export default function SupplierOrdersPage() {
                     >
                       View Details <ChevronRight className="w-4 h-4" />
                     </button>
-                    {split.status === 'pending_confirmation' && (
+                    {(split.status === 'pending_confirmation' || (split.status === 'pending_payment' && split.receipt_url)) && (
                       <button
                         onClick={() => updateStatus(split.id, 'confirmed')}
                         className="px-3 py-1.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
                       >
                         <CheckCircle className="w-3.5 h-3.5" /> Confirm
+                      </button>
+                    )}
+                    {split.status === 'delivery_dispute' && (
+                      <button
+                        onClick={() => { setDisputeTarget(split) }}
+                        className="px-3 py-1.5 bg-orange-500 text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-1 justify-center"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5" /> Respond
                       </button>
                     )}
                     {split.status === 'confirmed' && (

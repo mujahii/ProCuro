@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag } from 'lucide-react'
+import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/layout/Navbar'
@@ -278,6 +278,13 @@ export default function SupplierProfilePage() {
                 className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
               >
                 Order from this Supplier
+              </button>
+            ) : profile.role === 'restaurant_owner' ? (
+              <button
+                onClick={() => navigate(`/owner/chat?supplier_id=${supplier.id}`)}
+                className="w-full py-3 bg-white border-2 border-slate-200 text-slate-900 font-bold rounded-xl hover:border-emerald-400 hover:text-emerald-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <MessageSquare className="w-5 h-5" /> Message Supplier
               </button>
             ) : null}
           </div>

@@ -137,7 +137,7 @@ export default function SupplierDashboardPage() {
                 Halal Certificate {certStatus.hasApprovedCert ? '— Approved' : certStatus.certPending ? '— Pending review' : '— Upload required'}
               </span>
               {!certStatus.hasApprovedCert && (
-                <button onClick={() => navigate('/supplier/certificates')} className="text-xs text-emerald-600 font-semibold hover:underline ml-1">
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-emerald-600 font-semibold hover:underline ml-1">
                   Go →
                 </button>
               )}

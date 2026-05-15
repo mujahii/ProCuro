@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Package, ShoppingBag, User, BarChart3, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, User, BarChart3, MessageSquare, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import Navbar from './Navbar'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/supplier/products', icon: Package, label: 'Products' },
   { to: '/supplier/orders', icon: ShoppingBag, label: 'Orders' },
   { to: '/supplier/analytics', icon: BarChart3, label: 'Analytics' },
+  { to: '/supplier/chat', icon: MessageSquare, label: 'Messages' },
   { to: '/supplier/profile', icon: User, label: 'Profile' },
 ]
 

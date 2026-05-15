@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import NotificationBell from '../ui/NotificationBell'
+import ChatIcon from '../ui/ChatIcon'
 import toast from 'react-hot-toast'
 
 export default function Navbar({ onMenuClick }) {
@@ -232,6 +233,7 @@ export default function Navbar({ onMenuClick }) {
           <div className="flex items-center gap-2 sm:gap-4 relative">
             {user ? (
               <>
+                <ChatIcon />
                 <NotificationBell />
 
                 {/* Cart — owner only */}

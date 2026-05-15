@@ -122,6 +122,7 @@ export default function AdminCertificatesPage() {
           title: 'Halal Certificate Approved',
           message: 'Your Halal certificate has been approved. Your profile and products are now visible to restaurant owners.',
           type: 'certificate_reviewed',
+          link: '/supplier/profile',
         })
       }
 
@@ -154,6 +155,7 @@ export default function AdminCertificatesPage() {
           title: 'Halal Certificate Rejected',
           message: `Your Halal certificate has been rejected. Reason: ${reason}. Please upload a new valid certificate to restore your profile visibility.`,
           type: 'certificate_reviewed',
+          link: '/supplier/profile',
         })
       }
 

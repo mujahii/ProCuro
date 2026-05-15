@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet, NavLink } from 'react-router-dom'
-import { ShoppingBag, ShoppingCart, Package, BarChart3, User, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { ShoppingBag, ShoppingCart, Package, BarChart3, User, MessageSquare, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import Navbar from './Navbar'
 import CookieConsent from '../ui/CookieConsent'
 
@@ -9,6 +9,7 @@ const navItems = [
   { to: '/owner/cart', icon: ShoppingCart, label: 'Cart' },
   { to: '/owner/orders', icon: Package, label: 'Orders' },
   { to: '/owner/analytics', icon: BarChart3, label: 'Analytics' },
+  { to: '/owner/chat', icon: MessageSquare, label: 'Messages' },
   { to: '/owner/profile', icon: User, label: 'Profile' },
 ]
 

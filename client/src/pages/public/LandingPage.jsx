@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple, Package, Truck, Shield, Fish, Milk, Flame, Wheat, Plus } from 'lucide-react'
 import Navbar from '../../components/layout/Navbar'
@@ -38,6 +38,65 @@ const HOW_IT_WORKS = [
   { icon: Package, title: 'Browse & Order', desc: 'Browse verified Halal suppliers and place orders with a single click.' },
   { icon: Truck, title: 'Track Delivery', desc: 'Track your delivery in real-time and manage all orders from one place.' },
 ]
+
+const STAT_TARGETS = [
+  { target: 500, suffix: '+', label: 'Restaurants' },
+  { target: 120, suffix: '+', label: 'Verified Suppliers' },
+  { target: 50000, suffix: '+', label: 'Orders Placed' },
+  { target: 4.9, suffix: '★', label: 'Average Rating', decimal: true },
+]
+
+function useCountUp(target, duration = 1800, start = false, decimal = false) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    if (!start) return
+    let startTime = null
+    const step = (ts) => {
+      if (!startTime) startTime = ts
+      const progress = Math.min((ts - startTime) / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setCount(decimal ? parseFloat((eased * target).toFixed(1)) : Math.floor(eased * target))
+      if (progress < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [start, target, duration, decimal])
+  return count
+}
+
+function StatItem({ target, suffix, label, decimal, started }) {
+  const count = useCountUp(target, 1800, started, decimal)
+  return (
+    <div>
+      <p className="text-3xl font-black text-emerald-600">
+        {decimal ? count.toFixed(1) : count.toLocaleString()}{suffix}
+      </p>
+      <p className="text-sm text-slate-500 mt-1">{label}</p>
+    </div>
+  )
+}
+
+function StatsBar() {
+  const ref = useRef(null)
+  const [started, setStarted] = useState(false)
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setStarted(true); observer.disconnect() }
+    }, { threshold: 0.3 })
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+  return (
+    <section ref={ref} className="bg-white border-b border-slate-100 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          {STAT_TARGETS.map((s) => (
+            <StatItem key={s.label} {...s} started={started} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
 
 export default function LandingPage() {
   const navigate = useNavigate()
@@ -87,14 +146,14 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Banner */}
-      <section className="relative min-h-[500px] flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-[560px] flex items-center justify-center overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&q=80&w=2000"
           alt="Restaurant kitchen"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/80 to-slate-900/80" />
-        <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto pt-8 sm:pt-0">
+        <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto pt-8 sm:pt-0 pb-10 sm:pb-0">
           <span className="inline-flex items-center gap-2 bg-emerald-600/30 border border-emerald-400/40 text-emerald-200 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <CheckCircle className="w-4 h-4" /> Halal Certified Suppliers Only
           </span>
@@ -126,19 +185,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Bar */}
-      <section className="bg-white border-b border-slate-100 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {STATS.map(({ number, label }) => (
-              <div key={label}>
-                <p className="text-3xl font-black text-emerald-600">{number}</p>
-                <p className="text-sm text-slate-500 mt-1">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Stats Bar — animated counters */}
+      <StatsBar />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow w-full space-y-12">
 

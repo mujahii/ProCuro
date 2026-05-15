@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -6,6 +7,7 @@ import { Bell, CheckCheck } from 'lucide-react'
 
 export default function NotificationDropdown({ onClose }) {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -55,7 +57,10 @@ export default function NotificationDropdown({ onClose }) {
           notifications.map(n => (
             <button
               key={n.id}
-              onClick={() => markRead(n.id)}
+              onClick={async () => {
+                await markRead(n.id)
+                if (n.link) { onClose(); navigate(n.link) }
+              }}
               className={`w-full text-left p-3 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${!n.is_read ? 'bg-emerald-50/50' : ''}`}
             >
               <div className="flex items-start gap-2">

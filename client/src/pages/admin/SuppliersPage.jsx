@@ -13,6 +13,7 @@ export default function AdminSuppliersPage() {
   const [suppliers, setSuppliers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
   const [notifyTarget, setNotifyTarget] = useState(null)
   const [notifyTitle, setNotifyTitle] = useState('')
   const [notifyMsg, setNotifyMsg] = useState('')
@@ -74,20 +75,32 @@ export default function AdminSuppliersPage() {
     }
   }
 
-  const filtered = suppliers.filter(s =>
-    !search ||
-    s.business_name?.toLowerCase().includes(search.toLowerCase()) ||
-    s.city?.toLowerCase().includes(search.toLowerCase()) ||
-    s.user?.email?.toLowerCase().includes(search.toLowerCase())
-  )
+  const categories = [...new Set(suppliers.map(s => s.category).filter(Boolean))].sort()
+
+  const filtered = suppliers.filter(s => {
+    const matchSearch = !search ||
+      s.business_name?.toLowerCase().includes(search.toLowerCase()) ||
+      s.city?.toLowerCase().includes(search.toLowerCase()) ||
+      s.user?.email?.toLowerCase().includes(search.toLowerCase())
+    const matchCat = !categoryFilter || s.category === categoryFilter
+    return matchSearch && matchCat
+  })
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-black text-gray-900">Suppliers ({suppliers.length})</h1>
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search suppliers..." className="pl-9 input text-sm py-2 w-56" />
+        <div className="flex gap-2 flex-wrap">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search suppliers..." className="pl-9 input text-sm py-2 w-48" />
+          </div>
+          {categories.length > 0 && (
+            <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="input text-sm py-2 w-40">
+              <option value="">All categories</option>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          )}
         </div>
       </div>
 

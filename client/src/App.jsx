@@ -43,6 +43,9 @@ import SupplierCertificatesPage from './pages/supplier/CertificatesPage'
 import SupplierBankDetailsPage from './pages/supplier/BankDetailsPage'
 import SupplierProfilePage from './pages/supplier/ProfilePage'
 
+// Shared pages
+import ChatPage from './pages/shared/ChatPage'
+
 // Routing
 import ProtectedRoute from './components/routing/ProtectedRoute'
 import PublicOnlyRoute from './components/routing/PublicOnlyRoute'
@@ -99,6 +102,7 @@ export default function App() {
               <Route path="cart" element={<OwnerCartPage />} />
               <Route path="orders" element={<OwnerOrdersPage />} />
               <Route path="analytics" element={<OwnerAnalyticsPage />} />
+              <Route path="chat" element={<ChatPage />} />
               <Route path="profile" element={<OwnerProfilePage />} />
             </Route>
 
@@ -111,6 +115,7 @@ export default function App() {
               <Route path="analytics" element={<SupplierAnalyticsPage />} />
               <Route path="certificates" element={<SupplierCertificatesPage />} />
               <Route path="bank-details" element={<SupplierBankDetailsPage />} />
+              <Route path="chat" element={<ChatPage />} />
               <Route path="profile" element={<SupplierProfilePage />} />
             </Route>
 

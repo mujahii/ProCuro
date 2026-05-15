@@ -3,7 +3,14 @@ import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Search, Trash2, ToggleLeft, ToggleRight, X } from 'lucide-react'
+import { Search, Trash2, ToggleLeft, ToggleRight, X, Eye, Package } from 'lucide-react'
+
+function getProductImageUrl(path) {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  const { data } = supabase.storage.from('product-images').getPublicUrl(path)
+  return data?.publicUrl || null
+}
 import toast from 'react-hot-toast'
 
 export default function AdminProductsPage() {
@@ -17,6 +24,7 @@ export default function AdminProductsPage() {
   const [supplierFilter, setSupplierFilter] = useState('')
   const [suppliers, setSuppliers] = useState([])
   const [toggleTarget, setToggleTarget] = useState(null)
+  const [viewProduct, setViewProduct] = useState(null)
 
   useEffect(() => { loadProducts(); loadSuppliers() }, [])
 
@@ -117,6 +125,9 @@ export default function AdminProductsPage() {
                   <td className="px-4 py-3"><Badge status={product.is_active ? 'active' : 'inactive'} /></td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1 justify-end">
+                      <button onClick={() => setViewProduct(product)} className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-400" title="View details">
+                        <Eye className="w-4 h-4" />
+                      </button>
                       <button onClick={() => handleToggleClick(product)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
                         {product.is_active ? <ToggleRight className="w-4 h-4 text-primary" /> : <ToggleLeft className="w-4 h-4" />}
                       </button>
@@ -130,6 +141,48 @@ export default function AdminProductsPage() {
             </tbody>
           </table>
           {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No products found</p>}
+        </div>
+      )}
+
+      {/* Product Detail Modal */}
+      {viewProduct && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Product Details</h2>
+              <button onClick={() => setViewProduct(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+            {(() => {
+              const imgUrl = getProductImageUrl(viewProduct.image_url)
+              return (
+                <>
+                  <div className="w-full h-48 bg-slate-100 rounded-xl overflow-hidden mb-4 flex items-center justify-center">
+                    {imgUrl ? (
+                      <img src={imgUrl} alt={viewProduct.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <Package className="w-12 h-12 text-slate-300" />
+                    )}
+                  </div>
+                  <div className="space-y-3 text-sm">
+                    {[
+                      ['Name', viewProduct.name],
+                      ['Supplier', viewProduct.supplier?.business_name],
+                      ['Category', viewProduct.category],
+                      ['Price', `€${Number(viewProduct.price).toFixed(2)} / ${viewProduct.unit_type}`],
+                      ['Stock', viewProduct.stock_quantity != null ? `${viewProduct.stock_quantity} units` : '—'],
+                      ['Status', viewProduct.is_active ? 'Active' : 'Inactive'],
+                      ['Description', viewProduct.description || '—'],
+                    ].map(([label, val]) => (
+                      <div key={label} className="flex justify-between border-b border-gray-50 pb-2 gap-2">
+                        <span className="text-gray-500 flex-shrink-0">{label}</span>
+                        <span className="font-medium text-gray-900 text-right">{val || '—'}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )
+            })()}
+          </div>
         </div>
       )}
 

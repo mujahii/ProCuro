@@ -133,10 +133,13 @@ export default function ChatbotDrawer({ open, onClose }) {
         <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={onClose} />
       )}
     <div
-      className={`fixed z-50 bg-white flex flex-col overflow-hidden shadow-2xl transition-transform duration-300
+      className={`fixed z-50 bg-white flex flex-col overflow-hidden shadow-2xl transition-all duration-200
         inset-y-0 right-0 w-full sm:w-96
         lg:inset-auto lg:bottom-24 lg:right-6 lg:w-80 lg:h-[440px] lg:rounded-2xl lg:border lg:border-slate-100
-        ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        ${open
+          ? 'translate-x-0 lg:opacity-100 lg:scale-100'
+          : 'translate-x-full lg:translate-x-0 lg:opacity-0 lg:scale-95 lg:pointer-events-none'
+        }`}
     >
       {/* Header */}
       <div className="bg-gradient-to-r from-emerald-700 to-emerald-600 p-4 flex justify-between items-center text-white flex-shrink-0">

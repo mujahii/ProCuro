@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store, X, ExternalLink } from 'lucide-react'
+import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store, X, ExternalLink, MessageSquare } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -410,19 +411,27 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
 }
 
 function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload, onDispute }) {
+  const navigate = useNavigate()
   const [ownerInfo, setOwnerInfo] = useState(null)
   const [ownerDefaultAddress, setOwnerDefaultAddress] = useState(null)
   const [showOwnerModal, setShowOwnerModal] = useState(false)
   const deliveryAddress = split.delivery_address
+
+  async function handleChatWithOwner() {
+    const orderId = split.id.slice(0, 8).toUpperCase()
+    const productNames = (split.order_items || []).map(i => i.product?.name).filter(Boolean).join(', ')
+    const autoMsg = encodeURIComponent(`RE: Order #${orderId} — ${productNames} — Total €${Number(split.subtotal).toFixed(2)}`)
+    navigate(`/supplier/chat?owner_id=${split.restaurant_owner_id}&order_ref=${split.id}&auto_message=${autoMsg}`)
+  }
 
   useEffect(() => {
     const ownerId = split.restaurant_owner_id
     if (!ownerId) return
     Promise.all([
       supabase.from('users').select('full_name, phone, avatar_url').eq('id', ownerId).single(),
-      supabase.from('owner_profiles').select('restaurant_name, bio').eq('user_id', ownerId).maybeSingle(),
+      supabase.from('owner_profiles').select('restaurant_name, bio, city').eq('user_id', ownerId).maybeSingle(),
     ]).then(([{ data: u }, { data: op }]) => {
-      if (u) setOwnerInfo({ ...u, restaurant_name: op?.restaurant_name ?? null, bio: op?.bio ?? null })
+      if (u) setOwnerInfo({ ...u, restaurant_name: op?.restaurant_name ?? null, bio: op?.bio ?? null, city: op?.city ?? null })
     })
     // Fallback: if this order has no stored delivery address, fetch owner's default address
     if (!deliveryAddress) {
@@ -446,11 +455,27 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
 
       {/* Restaurant owner card */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 space-y-3">
-        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Delivery To</p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Delivery To</p>
+          <button
+            onClick={handleChatWithOwner}
+            className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
+          >
+            <MessageSquare className="w-3.5 h-3.5" /> Chat with Owner
+          </button>
+        </div>
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-            <Store className="w-5 h-5 text-emerald-600" />
-          </div>
+          <button onClick={() => setShowOwnerModal(true)} className="flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden border-2 border-emerald-100">
+              {ownerInfo?.avatar_url ? (
+                <img src={ownerInfo.avatar_url} alt="owner" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-sm font-bold text-emerald-700">
+                  {(ownerInfo?.restaurant_name || ownerInfo?.full_name || '?')[0].toUpperCase()}
+                </span>
+              )}
+            </div>
+          </button>
           <div className="flex-1 space-y-1.5">
             <button
               onClick={() => setShowOwnerModal(true)}

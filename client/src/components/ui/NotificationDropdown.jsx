@@ -37,46 +37,57 @@ export default function NotificationDropdown({ onClose }) {
     onClose()
   }
 
+  const typeColor = (type) => {
+    if (type === 'warning') return 'bg-amber-50 border-l-2 border-amber-400'
+    if (type === 'certificate_reviewed') return 'bg-blue-50 border-l-2 border-blue-400'
+    return ''
+  }
+
   return (
-    <div className="fixed left-2 right-2 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
-      <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-        <h3 className="font-bold text-slate-900">Notifications</h3>
-        <button onClick={markAllRead} className="text-xs text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-medium">
-          <CheckCheck className="w-3.5 h-3.5" /> Mark all read
-        </button>
-      </div>
-      <div className="max-h-64 overflow-y-auto">
-        {loading ? (
-          <div className="p-6 text-center text-slate-400 text-sm">Loading...</div>
-        ) : notifications.length === 0 ? (
-          <div className="p-6 text-center">
-            <Bell className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-            <p className="text-sm text-slate-400">No notifications yet</p>
-          </div>
-        ) : (
-          notifications.map(n => (
-            <button
-              key={n.id}
-              onClick={async () => {
-                await markRead(n.id)
-                if (n.link) { onClose(); navigate(n.link) }
-              }}
-              className={`w-full text-left p-3 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors ${!n.is_read ? 'bg-emerald-50/50' : ''}`}
-            >
-              <div className="flex items-start gap-2">
-                {!n.is_read && <div className="w-2 h-2 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0" />}
-                <div className={!n.is_read ? '' : 'pl-4'}>
-                  <p className="text-sm font-semibold text-slate-900">{n.title}</p>
-                  <p className="text-xs text-slate-600 mt-0.5">{n.message}</p>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                  </p>
+    <>
+      {/* Mobile backdrop */}
+      <div className="sm:hidden fixed inset-0 bg-black/20 z-40" onClick={onClose} />
+      <div className="fixed left-3 right-3 top-[68px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+        <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+          <h3 className="font-bold text-slate-900 text-sm">Notifications</h3>
+          <button onClick={markAllRead} className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 font-medium">
+            <CheckCheck className="w-3.5 h-3.5" /> Mark all read
+          </button>
+        </div>
+        <div className="max-h-[60vh] sm:max-h-72 overflow-y-auto divide-y divide-slate-50">
+          {loading ? (
+            <div className="p-6 text-center text-slate-400 text-sm">Loading...</div>
+          ) : notifications.length === 0 ? (
+            <div className="p-8 text-center">
+              <Bell className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+              <p className="text-sm text-slate-400">No notifications yet</p>
+            </div>
+          ) : (
+            notifications.map(n => (
+              <button
+                key={n.id}
+                onClick={async () => {
+                  await markRead(n.id)
+                  if (n.link) { onClose(); navigate(n.link) }
+                  else onClose()
+                }}
+                className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors ${!n.is_read ? typeColor(n.type) || 'bg-slate-50/80' : ''}`}
+              >
+                <div className="flex items-start gap-3">
+                  {!n.is_read && <div className="w-2 h-2 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0" />}
+                  <div className={`flex-1 min-w-0 ${n.is_read ? 'pl-5' : ''}`}>
+                    <p className="text-sm font-semibold text-slate-900 leading-tight">{n.title}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed line-clamp-2">{n.message}</p>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </button>
-          ))
-        )}
+              </button>
+            ))
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

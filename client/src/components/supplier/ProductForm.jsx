@@ -199,7 +199,22 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
           </div>
         </div>
 
-        {/* In Stock */}
+        {/* Stock Quantity */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Stock Quantity</label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={form.stock_quantity}
+            onChange={e => update('stock_quantity', e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+            placeholder="0"
+          />
+          <p className="text-xs text-slate-400 mt-1">You'll be notified when stock reaches 3 or runs out</p>
+        </div>
+
+        {/* In Stock toggle */}
         <button
           type="button"
           onClick={() => update('is_active', !form.is_active)}
@@ -212,7 +227,10 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
           }`}>
             {form.is_active && <Check className="w-3.5 h-3.5 text-white" />}
           </div>
-          <span className="font-semibold text-slate-900 text-sm">Product In Stock</span>
+          <div className="text-left">
+            <span className="font-semibold text-slate-900 text-sm">Product Available</span>
+            <p className="text-xs text-slate-400 mt-0.5">{form.is_active ? 'Visible and orderable' : 'Hidden from store'}</p>
+          </div>
         </button>
 
         {/* Submit */}

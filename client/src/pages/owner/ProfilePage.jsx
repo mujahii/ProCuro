@@ -514,7 +514,7 @@ function AddressModal({ onClose, userId }) {
 
   async function handleAdd(e) {
     e.preventDefault()
-    if (!form.street || !form.city) { toast.error('Please fill in Street and City'); return }
+    if (!form.city) { toast.error('City is required'); return }
     setSaving(true)
     try {
       await addAddress({ ...form, country: 'Germany' })

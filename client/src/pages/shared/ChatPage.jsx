@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Send, MessageSquare, ArrowLeft } from 'lucide-react'
+import { Send, MessageSquare, ArrowLeft, Package } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -10,6 +10,9 @@ export default function ChatPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initSupplierId = searchParams.get('supplier_id')
+  const initOwnerId = searchParams.get('owner_id')
+  const autoMessage = searchParams.get('auto_message') ? decodeURIComponent(searchParams.get('auto_message')) : ''
+  const orderRef = searchParams.get('order_ref')
 
   const [supplierId, setSupplierId] = useState(null)
   const [conversations, setConversations] = useState([])
@@ -18,6 +21,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const autoSentRef = useRef(false)
   const bottomRef = useRef(null)
 
   useEffect(() => {
@@ -36,10 +40,17 @@ export default function ChatPage() {
     loadConversations()
   }, [user, role, supplierId])
 
+  // Owner: open conv with supplier from order link
   useEffect(() => {
     if (!initSupplierId || role !== 'restaurant_owner' || !user) return
     startOrOpen(initSupplierId)
   }, [initSupplierId, user, role])
+
+  // Supplier: open conv with owner from order link
+  useEffect(() => {
+    if (!initOwnerId || role !== 'supplier' || !supplierId) return
+    startOrOpenForSupplier(initOwnerId)
+  }, [initOwnerId, supplierId, role])
 
   async function loadConversations() {
     if (role === 'restaurant_owner') {
@@ -60,7 +71,7 @@ export default function ChatPage() {
       if (ownerIds.length > 0) {
         const { data: owners } = await supabase
           .from('users')
-          .select('id, full_name, email')
+          .select('id, full_name, email, avatar_url')
           .in('id', ownerIds)
         ;(owners || []).forEach(o => { ownerMap[o.id] = o })
       }
@@ -92,6 +103,48 @@ export default function ChatPage() {
       }
     }
   }
+
+  async function startOrOpenForSupplier(targetOwnerId) {
+    const { data: existing } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('supplier_id', supplierId)
+      .eq('owner_id', targetOwnerId)
+      .maybeSingle()
+
+    let conv = existing
+    if (!conv) {
+      const { data: newConv } = await supabase
+        .from('conversations')
+        .insert({ supplier_id: supplierId, owner_id: targetOwnerId })
+        .select()
+        .single()
+      conv = newConv
+    }
+    if (conv) {
+      const { data: ownerData } = await supabase.from('users').select('id, full_name, email, avatar_url').eq('id', targetOwnerId).single()
+      const enriched = { ...conv, owner: ownerData || null }
+      setConversations(prev => prev.find(c => c.id === enriched.id) ? prev : [enriched, ...prev])
+      setSelectedConv(enriched)
+    }
+  }
+
+  // Auto-send message when opening from order link
+  useEffect(() => {
+    if (!selectedConv || !autoMessage || autoSentRef.current) return
+    autoSentRef.current = true
+    setTimeout(() => {
+      supabase.from('messages').insert({
+        conversation_id: selectedConv.id,
+        sender_id: user.id,
+        content: autoMessage,
+        order_id: orderRef || null,
+        is_system: false,
+      }).select().single().then(({ data }) => {
+        if (data) setMessages(prev => [...prev, data])
+      })
+    }, 500)
+  }, [selectedConv])
 
   useEffect(() => {
     if (!selectedConv) return
@@ -170,7 +223,7 @@ export default function ChatPage() {
   function getConvAvatar(conv) {
     if (!conv) return null
     if (role === 'restaurant_owner') return conv.supplier?.avatar_url || null
-    return null
+    return conv.owner?.avatar_url || null
   }
 
   return (
@@ -260,20 +313,40 @@ export default function ChatPage() {
               {messages.length === 0 && (
                 <div className="text-center text-slate-400 text-sm py-8">No messages yet. Say hello!</div>
               )}
-              {messages.map(msg => (
-                <div key={msg.id} className={`flex ${msg.sender_id === user.id ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                    msg.sender_id === user.id
-                      ? 'bg-slate-900 text-white rounded-br-none'
-                      : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
-                  }`}>
-                    <p>{msg.content}</p>
-                    <p className="text-[10px] mt-1 opacity-60">
-                      {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
-                    </p>
+              {messages.map(msg => {
+                const isMine = msg.sender_id === user.id
+                const orderLink = msg.order_id
+                  ? (role === 'restaurant_owner' ? `/owner/orders` : `/supplier/orders`)
+                  : null
+                return (
+                  <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] space-y-1`}>
+                      {orderLink && (
+                        <button
+                          onClick={() => navigate(orderLink)}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors w-full ${
+                            isMine
+                              ? 'bg-slate-800 text-emerald-300 border-slate-700 hover:bg-slate-700'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                          }`}
+                        >
+                          <Package className="w-3.5 h-3.5 flex-shrink-0" /> View Order Details →
+                        </button>
+                      )}
+                      <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                        isMine
+                          ? 'bg-slate-900 text-white rounded-br-none'
+                          : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
+                      }`}>
+                        <p>{msg.content}</p>
+                        <p className="text-[10px] mt-1 opacity-60">
+                          {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
               <div ref={bottomRef} />
             </div>
 

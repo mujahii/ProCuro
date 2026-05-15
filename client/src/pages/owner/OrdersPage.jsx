@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag, ArrowUpRight, Star } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag, ArrowUpRight, Star, MessageSquare } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
@@ -314,10 +314,18 @@ function RatingModal({ split, onSubmit, onSkip }) {
 }
 
 function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDelivered, onCancelRequest, onConfirmRefund }) {
+  const navigate = useNavigate()
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showSupplierModal, setShowSupplierModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const canCancel = CANCELLABLE.includes(split.status)
+
+  async function handleChatWithSupplier() {
+    const orderId = split.order.id.slice(0, 8).toUpperCase()
+    const productNames = (split.order_items || []).map(i => i.product?.name).filter(Boolean).join(', ')
+    const autoMsg = encodeURIComponent(`RE: Order #${orderId} — ${productNames} — Total €${Number(split.subtotal).toFixed(2)}`)
+    navigate(`/owner/chat?supplier_id=${split.supplier_id}&order_ref=${split.order.id}&auto_message=${autoMsg}`)
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -474,6 +482,12 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
             Cancel Order
           </button>
         )}
+        <button
+          onClick={handleChatWithSupplier}
+          className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
+        >
+          <MessageSquare className="w-4 h-4 text-emerald-600" /> Chat with Supplier
+        </button>
         <button
           onClick={() => generateInvoice(split.order, [split], profile)}
           className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"

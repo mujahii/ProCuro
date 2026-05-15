@@ -3,7 +3,10 @@ const { createClient } = require('@supabase/supabase-js')
 const WebSocket = require('ws')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+const model = genAI.getGenerativeModel({
+  model: 'gemini-2.5-flash',
+  generationConfig: { thinkingConfig: { thinkingBudget: 0 } },
+})
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -63,29 +66,51 @@ exports.handler = async (event) => {
 
   const { context } = body
 
+  // Upcoming Islamic and German events (relative to current date)
+  const now = new Date()
+  const month = now.getMonth() + 1 // 1-12
+  const islamicEventHints = []
+  // Approximate month hints for recurring events
+  if (month >= 2 && month <= 3) islamicEventHints.push('Ramadan is approaching — demand for halal meats, dates, and specialty foods spikes significantly.')
+  if (month === 4) islamicEventHints.push('Eid al-Fitr is near — major orders for lamb, sweets, and festive ingredients are expected.')
+  if (month >= 5 && month <= 6) islamicEventHints.push('Eid al-Adha is coming — very high demand for lamb, goat, and beef. Suppliers should restock heavily.')
+  const germanEventHints = []
+  if (month === 12) germanEventHints.push('Christmas and year-end season — restaurant orders typically surge for catering and events.')
+  if (month === 10) germanEventHints.push('Oktoberfest season — high food service demand in Germany.')
+  if (month >= 3 && month <= 4) germanEventHints.push('Spring/Easter season — increased restaurant traffic and catering orders.')
+  const eventContext = [...islamicEventHints, ...germanEventHints].join(' ')
+
   const prompts = {
-    restaurant_owner: `You are an expert food procurement analyst. Analyze this restaurant owner's procurement data from the ProCuro Halal platform.
+    restaurant_owner: `You are an expert food procurement analyst for a Halal restaurant in Germany. Analyze this restaurant owner's procurement data from ProCuro.
 Data: ${JSON.stringify(context)}
-Provide:
-1. A 2-3 sentence summary of their spending and order patterns
-2. One key insight (e.g. top supplier, most ordered category)
-3. One actionable recommendation to optimize their procurement
+${eventContext ? `Seasonal context: ${eventContext}` : ''}
+Provide exactly 3 numbered points:
+1. **Spending Summary** — 2 sentences on spending and order patterns
+2. **Key Insight** — top supplier, most ordered category, or notable trend
+3. **Recommendation** — one actionable tip to optimize procurement or prepare for upcoming demand
 Keep it concise and practical.`,
 
-    supplier: `You are an expert business analyst for Halal food suppliers. Analyze this supplier's business data from ProCuro.
+    supplier: `You are an expert business analyst for a Halal food supplier in Germany. Analyze this supplier's data from ProCuro.
 Data: ${JSON.stringify(context)}
-Provide:
-1. A 2-3 sentence summary of their sales performance
-2. One key insight about their top products or order trends
-3. One actionable recommendation to grow their business
-Keep it concise and practical.`,
+${eventContext ? `Seasonal context: ${eventContext}` : ''}
+Pay special attention to:
+- Products with low or zero stock_quantity (flag them as needing restocking)
+- Products that are best-sellers (high order volume) — these need buffer stock
+- Upcoming Islamic events (Ramadan, Eid) or German events that will spike demand for specific products
+Provide exactly 4 numbered points:
+1. **Sales Performance** — summary of revenue, orders, and top products
+2. **Stock Alert** — which products need restocking urgently (if any have stock ≤ 3 or 0)
+3. **Upcoming Demand** — based on season/events, which products to prepare more of
+4. **Growth Tip** — one actionable recommendation to grow sales
+Keep it concise and data-driven.`,
 
     admin: `You are a platform analytics expert for ProCuro, a Halal food procurement marketplace in Germany. Analyze this platform data.
 Data: ${JSON.stringify(context)}
-Provide:
-1. A 3-4 sentence executive summary of platform health
-2. Any concerns or anomalies worth flagging
-3. One strategic recommendation
+${eventContext ? `Seasonal context: ${eventContext}` : ''}
+Provide exactly 3 numbered points:
+1. **Platform Health** — 2-3 sentence executive summary of activity and health
+2. **Flag** — any concerns, anomalies, or urgent items worth the admin's attention
+3. **Strategic Recommendation** — one platform-level action to improve performance or address risks
 Keep it professional and data-driven.`,
   }
 

@@ -35,24 +35,28 @@ exports.handler = async (event) => {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) }
   }
 
+  // Authentication is optional - allow unauthenticated users with generic responses
+  let profile = { role: 'default', full_name: null, is_banned: false }
+
   const authHeader = event.headers.authorization || event.headers.Authorization
-  if (!authHeader?.startsWith('Bearer ')) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Missing authorization token' }) }
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1]
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (!authError && user) {
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('role, full_name, is_banned')
+        .eq('id', user.id)
+        .single()
+      
+      if (userProfile) {
+        profile = userProfile
+      }
+    }
   }
 
-  const token = authHeader.split(' ')[1]
-  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-  if (authError || !user) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Invalid or expired token' }) }
-  }
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('role, full_name, is_banned')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.is_banned) {
+  if (profile.is_banned) {
     return { statusCode: 403, headers, body: JSON.stringify({ error: 'Account is banned' }) }
   }
 

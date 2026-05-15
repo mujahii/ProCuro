@@ -442,20 +442,23 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
         </div>
       )}
 
-      {split.status === 'delivery_dispute' && split.dispute_message && (
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-2">
+      {split.status === 'delivery_dispute' && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
           <p className="text-sm font-bold text-orange-800 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" /> Supplier Response
+            <AlertTriangle className="w-4 h-4" /> Dispute Pending
           </p>
-          <p className="text-sm text-orange-700 italic">"{split.dispute_message}"</p>
-          <p className="text-xs text-orange-500">The supplier is reviewing your dispute and will re-send or cancel the order.</p>
+          <p className="text-xs text-orange-700 mt-1">Your report has been sent to the supplier. They will respond shortly.</p>
         </div>
       )}
 
-      {split.status === 'delivery_dispute' && !split.dispute_message && (
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-          <p className="text-sm font-bold text-orange-800">Dispute Pending</p>
-          <p className="text-xs text-orange-700 mt-1">Your report has been sent to the supplier. They will respond shortly.</p>
+      {/* Supplier's dispute response — shown after status moves past delivery_dispute */}
+      {split.dispute_message && split.status !== 'delivery_dispute' && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-1.5">
+          <p className="text-sm font-bold text-orange-800 flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" /> Dispute Resolution
+          </p>
+          <p className="text-xs text-orange-500 font-medium uppercase tracking-wide">Supplier's response:</p>
+          <p className="text-sm text-orange-700 italic">"{split.dispute_message}"</p>
         </div>
       )}
 
@@ -721,7 +724,13 @@ export default function OrdersPage() {
               {split.status === 'delivery_dispute' && (
                 <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-                  {split.dispute_message ? `Supplier: ${split.dispute_message}` : 'Dispute pending — awaiting supplier response'}
+                  Dispute pending — awaiting supplier response
+                </p>
+              )}
+              {split.dispute_message && split.status !== 'delivery_dispute' && (
+                <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                  Dispute resolved: "{split.dispute_message}"
                 </p>
               )}
 

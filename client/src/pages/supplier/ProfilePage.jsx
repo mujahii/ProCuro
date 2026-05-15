@@ -999,6 +999,7 @@ function SettingRow({ label, onClick }) {
 export default function SupplierProfilePage() {
   const navigate = useNavigate()
   const { user, profile, signOut, updateProfileState } = useAuth()
+  const { addresses } = useAddresses()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null)
   const [bio, setBio] = useState(profile?.bio || '')
@@ -1166,12 +1167,17 @@ export default function SupplierProfilePage() {
             {supplierProfile?.tax_id && <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
           </div>
 
-          {/* City */}
+          {/* City — derived from saved addresses only */}
           <div className="flex items-center gap-3 px-4 py-3">
             <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">City</p>
-              <p className="text-sm font-semibold text-slate-900 mt-0.5">{supplierProfile?.city || <span className="text-slate-400 font-normal">Not set</span>}</p>
+              {(() => {
+                const city = addresses.find(a => a.is_default)?.city || addresses[0]?.city
+                return city
+                  ? <p className="text-sm font-semibold text-slate-900 mt-0.5">{city}</p>
+                  : <button onClick={() => setShowAddressModal(true)} className="text-sm text-amber-500 font-semibold hover:underline mt-0.5">Add address →</button>
+              })()}
             </div>
           </div>
 
@@ -1239,16 +1245,24 @@ export default function SupplierProfilePage() {
 
           {/* Verification status */}
           <div className="px-4 pb-4 pt-3">
-            <div className={`p-3 rounded-xl border text-sm font-medium flex items-center gap-2 ${
-              supplierProfile?.is_verified
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                : 'bg-amber-50 border-amber-200 text-amber-700'
-            }`}>
-              {supplierProfile?.is_verified
-                ? <><CheckCircle className="w-4 h-4 flex-shrink-0" /> Verified — visible to restaurant owners as Halal Certified</>
-                : <><Clock className="w-4 h-4 flex-shrink-0" /> Not verified — complete your profile to get certified</>
-              }
-            </div>
+            {(() => {
+              const hasAddress = addresses.length > 0
+              const isVerified = supplierProfile?.is_verified && hasAddress
+              return (
+                <div className={`p-3 rounded-xl border text-sm font-medium flex items-center gap-2 ${
+                  isVerified ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  : !hasAddress ? 'bg-red-50 border-red-200 text-red-700'
+                  : 'bg-amber-50 border-amber-200 text-amber-700'
+                }`}>
+                  {isVerified
+                    ? <><CheckCircle className="w-4 h-4 flex-shrink-0" /> Verified — visible to restaurant owners as Halal Certified</>
+                    : !hasAddress
+                      ? <><XCircle className="w-4 h-4 flex-shrink-0" /> Add a business address to complete your profile</>
+                      : <><Clock className="w-4 h-4 flex-shrink-0" /> Not verified — upload your Halal certificate to get certified</>
+                  }
+                </div>
+              )
+            })()}
           </div>
         </div>
       </div>

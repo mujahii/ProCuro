@@ -256,8 +256,16 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
           <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
           <h3 className="font-bold text-slate-900 text-lg">Respond to Delivery Dispute</h3>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4">
-          <p className="text-sm text-orange-800">The restaurant owner reported they did not receive this order. Write a message and choose a resolution.</p>
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 space-y-1.5">
+          <p className="text-sm font-semibold text-orange-800">The restaurant owner reported they did not receive this order.</p>
+          {split.dispute_message ? (
+            <>
+              <p className="text-xs text-orange-600 font-semibold uppercase tracking-wide">Owner's message:</p>
+              <p className="text-sm text-orange-700 italic">"{split.dispute_message}"</p>
+            </>
+          ) : (
+            <p className="text-xs text-orange-600">No additional note from the owner. Write your response and choose a resolution below.</p>
+          )}
         </div>
         <div className="mb-4">
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Your Message *</label>
@@ -652,9 +660,14 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         <div className="bg-orange-50 border border-orange-300 rounded-xl p-4 space-y-3">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-bold text-orange-800">Delivery Not Received</p>
-              <p className="text-xs text-orange-700 mt-0.5">The restaurant owner reported they did not receive this order. You must respond.</p>
+              {split.dispute_message && (
+                <p className="text-xs text-orange-700 mt-1 italic">Owner's note: "{split.dispute_message}"</p>
+              )}
+              {!split.dispute_message && (
+                <p className="text-xs text-orange-700 mt-0.5">The restaurant owner reported they did not receive this order. You must respond.</p>
+              )}
             </div>
           </div>
           <button

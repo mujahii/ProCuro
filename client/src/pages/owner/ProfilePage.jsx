@@ -800,6 +800,7 @@ function SettingRow({ label, onClick }) {
 export default function ProfilePage() {
   const navigate = useNavigate()
   const { user, profile, signOut, updateProfileState } = useAuth()
+  const { addresses } = useAddresses()
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null)
   const [displayName, setDisplayName] = useState(profile?.full_name || '')
   const [restaurantName, setRestaurantName] = useState(profile?.restaurant_name || '')
@@ -928,12 +929,17 @@ export default function ProfilePage() {
             {businessInfo.tax_id && <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
           </div>
 
-          {/* City */}
+          {/* City — derived from saved addresses only */}
           <div className="flex items-center gap-3 px-4 py-3">
             <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">City</p>
-              <p className="text-sm font-semibold text-slate-900 mt-0.5">{businessInfo.city || <span className="text-slate-400 font-normal">Not set</span>}</p>
+              {(() => {
+                const city = addresses.find(a => a.is_default)?.city || addresses[0]?.city
+                return city
+                  ? <p className="text-sm font-semibold text-slate-900 mt-0.5">{city}</p>
+                  : <button onClick={() => setShowAddressModal(true)} className="text-sm text-amber-500 font-semibold hover:underline mt-0.5">Add address →</button>
+              })()}
             </div>
           </div>
 

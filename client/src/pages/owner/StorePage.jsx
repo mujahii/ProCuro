@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, Flag, AlertCircle } from 'lucide-react'
+import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, Flag, AlertCircle, Navigation, X, Loader2 } from 'lucide-react'
 import HalalBadge from '../../components/ui/HalalBadge'
 import { useProducts } from '../../hooks/useProducts'
 import { useAddresses } from '../../context/AddressContext'
@@ -42,8 +42,10 @@ export default function StorePage() {
   const [suppliers, setSuppliers] = useState([])
   const [profileComplete, setProfileComplete] = useState(true)
   const [missingFields, setMissingFields] = useState([])
+  const [locationBanner, setLocationBanner] = useState(null) // 'prompt' | 'denied' | null
+  const [locationSaving, setLocationSaving] = useState(false)
   const filterRef = useRef(null)
-  const { selectedAddress } = useAddresses()
+  const { addresses, addAddress, selectedAddress, reload: reloadAddresses } = useAddresses()
   const { lat: geoLat, lng: geoLng } = useGeolocation()
 
   const userLat = selectedAddress?.latitude || geoLat
@@ -91,6 +93,48 @@ export default function StorePage() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  // Show GPS prompt if owner has no saved location
+  useEffect(() => {
+    if (!user || addresses === undefined) return
+    const hasLocation = addresses.some(a => a.latitude && a.longitude)
+    if (!hasLocation && sessionStorage.getItem('gps_banner_dismissed') !== '1') {
+      setLocationBanner('prompt')
+    }
+  }, [user, addresses])
+
+  async function handleAllowGPS() {
+    if (!navigator.geolocation) { setLocationBanner('denied'); return }
+    setLocationSaving(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lng } = pos.coords
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+          const geoData = await res.json()
+          const addr = geoData.address || {}
+          const city = addr.city || addr.town || addr.village || addr.suburb || ''
+          // Save to addresses and owner_profiles
+          await addAddress({ label: 'Business Location', city, street: null, postal_code: addr.postcode || null, country: 'Germany', latitude: lat, longitude: lng })
+          await supabase.from('owner_profiles').upsert({ user_id: user.id, city, latitude: lat, longitude: lng }, { onConflict: 'user_id' })
+          await reloadAddresses()
+          setLocationBanner(null)
+          sessionStorage.setItem('gps_banner_dismissed', '1')
+        } catch {
+          setLocationBanner('denied')
+        } finally {
+          setLocationSaving(false)
+        }
+      },
+      () => { setLocationBanner('denied'); setLocationSaving(false) },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+
+  function dismissLocationBanner() {
+    setLocationBanner(null)
+    sessionStorage.setItem('gps_banner_dismissed', '1')
+  }
+
   const sortedProducts = [...(products || [])].sort((a, b) => {
     if (sortBy === 'price_asc') return a.price - b.price
     if (sortBy === 'price_desc') return b.price - a.price
@@ -116,6 +160,47 @@ export default function StorePage() {
           >
             Complete Profile
           </button>
+        </div>
+      )}
+
+      {/* GPS location prompt banner */}
+      {locationBanner === 'prompt' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+          <Navigation className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-blue-900">Allow location for accurate delivery fees</p>
+            <p className="text-xs text-blue-700 mt-0.5">We use your location to calculate the delivery fee from each supplier.</p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={handleAllowGPS}
+              disabled={locationSaving}
+              className="text-xs bg-blue-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
+            >
+              {locationSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Navigation className="w-3 h-3" />}
+              Allow
+            </button>
+            <button onClick={dismissLocationBanner} className="text-blue-400 hover:text-blue-600 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+      {locationBanner === 'denied' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <MapPin className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-amber-800">Location access denied</p>
+            <p className="text-xs text-amber-700 mt-0.5">Delivery fees can't be shown without your location. Add one in your profile.</p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button onClick={() => navigate('/owner/profile')} className="text-xs bg-amber-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors">
+              Add Location
+            </button>
+            <button onClick={dismissLocationBanner} className="text-amber-400 hover:text-amber-600 transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 

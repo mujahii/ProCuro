@@ -170,6 +170,9 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
     cuisine: normaliseCuisine(current.cuisine),
     website: current.website || '',
   })
+  const [gpsCoords, setGpsCoords] = useState(
+    current.latitude && current.longitude ? { lat: current.latitude, lng: current.longitude } : null
+  )
   const [saving, setSaving] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
 
@@ -184,7 +187,8 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
           const data = await res.json()
           const addr = data.address || {}
           setForm(f => ({ ...f, city: addr.city || addr.town || addr.village || addr.suburb || f.city }))
-          toast.success('Location detected!')
+          setGpsCoords({ lat, lng })
+          toast.success('GPS location saved!')
         } catch {
           toast.error('Could not fetch location from GPS')
         } finally {
@@ -216,10 +220,37 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
           city: form.city.trim() || null,
           cuisine: form.cuisine.length > 0 ? form.cuisine : null,
           website: form.website.trim() || null,
+          latitude: gpsCoords?.lat ?? null,
+          longitude: gpsCoords?.lng ?? null,
         },
         { onConflict: 'user_id' }
       )
-      onSaved({ tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null })
+      // Sync GPS location to addresses table as 'Business Location'
+      if (gpsCoords) {
+        const { data: existing } = await supabase
+          .from('addresses')
+          .select('id, is_default')
+          .eq('user_id', userId)
+          .eq('label', 'Business Location')
+          .maybeSingle()
+        const addrPayload = {
+          user_id: userId,
+          label: 'Business Location',
+          city: form.city.trim() || null,
+          street: null,
+          postal_code: null,
+          country: 'Germany',
+          latitude: gpsCoords.lat,
+          longitude: gpsCoords.lng,
+        }
+        if (existing) {
+          await supabase.from('addresses').update(addrPayload).eq('id', existing.id)
+        } else {
+          const noAddresses = (await supabase.from('addresses').select('id', { count: 'exact', head: true }).eq('user_id', userId)).count === 0
+          await supabase.from('addresses').insert({ ...addrPayload, is_default: noAddresses })
+        }
+      }
+      onSaved({ tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null, latitude: gpsCoords?.lat ?? null, longitude: gpsCoords?.lng ?? null })
       onClose()
       toast.success('Business details saved!')
     } catch {
@@ -265,6 +296,11 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             placeholder="e.g. Berlin"
           />
+          {gpsCoords && (
+            <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+              <CheckCircle className="w-3.5 h-3.5" /> GPS coordinates saved
+            </p>
+          )}
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
@@ -442,7 +478,7 @@ function PhoneModal({ userId, currentPhone, onClose, onSaved }) {
   )
 }
 
-function AddressModal({ onClose }) {
+function AddressModal({ onClose, userId }) {
   const { addresses, addAddress, deleteAddress, setDefault, reload } = useAddresses()
   const [form, setForm] = useState({ label: '', street: '', postal_code: '', city: '' })
   const [saving, setSaving] = useState(false)
@@ -493,7 +529,12 @@ function AddressModal({ onClose }) {
 
   async function handleDelete(id) {
     try {
+      const addr = addresses.find(a => a.id === id)
       await deleteAddress(id)
+      // If deleting Business Location, clear lat/lng/city from owner_profiles too
+      if (addr?.label === 'Business Location' && userId) {
+        await supabase.from('owner_profiles').update({ latitude: null, longitude: null, city: null }).eq('user_id', userId)
+      }
       toast.success('Address removed')
     } catch {
       toast.error('Failed to remove address')
@@ -984,7 +1025,7 @@ export default function ProfilePage() {
           onSaved={phone => updateProfileState({ phone })}
         />
       )}
-      {showAddressModal && <AddressModal onClose={() => setShowAddressModal(false)} />}
+      {showAddressModal && <AddressModal onClose={() => setShowAddressModal(false)} userId={user?.id} />}
       {showBusinessInfoModal && (
         <BusinessInfoModal
           userId={user.id}

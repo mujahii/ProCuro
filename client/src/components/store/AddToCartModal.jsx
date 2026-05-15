@@ -1,7 +1,9 @@
-import { useState } from 'react'
-import { X, Truck, Package, Flag } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Truck, Package, Flag, MapPin, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
+import { useAuth } from '../../context/AuthContext'
+import { useAddresses } from '../../context/AddressContext'
 import { supabase } from '../../lib/supabase'
 import ModalPortal from '../ui/ModalPortal'
 import ReportModal from '../ui/ReportModal'
@@ -14,20 +16,90 @@ function getProductImageUrl(path) {
   return data?.publicUrl || null
 }
 
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLng = (lng2 - lng1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 export default function AddToCartModal({ product, onClose }) {
   const { addItem } = useCart()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { selectedAddress } = useAddresses()
   const [qty, setQty] = useState(1)
   const [discountCode, setDiscountCode] = useState('')
   const [appliedDiscount, setAppliedDiscount] = useState(0)
   const [discountMessage, setDiscountMessage] = useState('')
   const [showReport, setShowReport] = useState(false)
+  const [deliveryFee, setDeliveryFee] = useState(null)
+  const [deliveryLoading, setDeliveryLoading] = useState(false)
+  const [ownerHasLocation, setOwnerHasLocation] = useState(true)
 
   const price = Number(product.price)
-  const deliveryFee = Number(product.delivery_fee) || 0
   const inStock = product.is_active
   const total = price * qty * (1 - appliedDiscount)
   const imgUrl = getProductImageUrl(product.image_url)
+
+  useEffect(() => {
+    calcDeliveryFee()
+  }, [selectedAddress])
+
+  async function calcDeliveryFee() {
+    setDeliveryLoading(true)
+    try {
+      // Get owner location: from selected address, or from owner_profiles
+      let ownerLat = selectedAddress?.latitude
+      let ownerLng = selectedAddress?.longitude
+
+      if ((!ownerLat || !ownerLng) && user) {
+        const { data: op } = await supabase
+          .from('owner_profiles')
+          .select('latitude, longitude')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        ownerLat = op?.latitude
+        ownerLng = op?.longitude
+      }
+
+      if (!ownerLat || !ownerLng) {
+        setOwnerHasLocation(false)
+        setDeliveryFee(null)
+        return
+      }
+      setOwnerHasLocation(true)
+
+      // Get supplier location
+      const { data: sp } = await supabase
+        .from('supplier_profiles')
+        .select('latitude, longitude')
+        .eq('id', product.supplier_id)
+        .maybeSingle()
+
+      if (!sp?.latitude || !sp?.longitude) {
+        setDeliveryFee(0)
+        return
+      }
+
+      const km = haversineKm(ownerLat, ownerLng, sp.latitude, sp.longitude)
+
+      // Look up fee from rules table
+      const { data: rules } = await supabase
+        .from('delivery_fee_rules')
+        .select('*')
+        .order('min_km', { ascending: true })
+
+      const rule = rules?.find(r => km >= r.min_km && (r.max_km === null || km < r.max_km))
+      setDeliveryFee(rule ? Number(rule.fee) : 0)
+    } catch {
+      setDeliveryFee(null)
+    } finally {
+      setDeliveryLoading(false)
+    }
+  }
 
   function handleApplyDiscount() {
     if (discountCode.toUpperCase() === 'HALAL10') {
@@ -40,7 +112,7 @@ export default function AddToCartModal({ product, onClose }) {
   }
 
   function handleAdd() {
-    addItem(product, qty)
+    addItem({ ...product, delivery_fee: deliveryFee ?? 0 }, qty)
     toast.success(`${product.name} added to cart`)
     onClose()
   }
@@ -84,16 +156,29 @@ export default function AddToCartModal({ product, onClose }) {
           </div>
 
           {product.description && (
-            <p className="text-slate-600 mb-6 leading-relaxed">{product.description}</p>
+            <p className="text-slate-600 mb-4 leading-relaxed">{product.description}</p>
           )}
 
-          {deliveryFee > 0 && (
-            <div className="flex items-center gap-4 text-sm text-slate-500 mb-6">
-              <span className="flex items-center gap-1">
-                <Truck className="w-4 h-4" /> Delivery: €{deliveryFee.toFixed(2)}
-              </span>
-            </div>
-          )}
+          {/* Delivery fee row */}
+          <div className="flex items-center gap-2 text-sm mb-6">
+            <Truck className="w-4 h-4 text-slate-400 flex-shrink-0" />
+            {deliveryLoading ? (
+              <span className="text-slate-400 flex items-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Calculating delivery fee…</span>
+            ) : !ownerHasLocation ? (
+              <button
+                onClick={() => { onClose(); navigate('/owner/profile') }}
+                className="text-amber-600 font-semibold hover:underline flex items-center gap-1"
+              >
+                <MapPin className="w-3.5 h-3.5" /> Add your location to see delivery fee
+              </button>
+            ) : deliveryFee === null ? (
+              <span className="text-slate-400">Delivery fee unavailable</span>
+            ) : deliveryFee === 0 ? (
+              <span className="text-emerald-600 font-semibold">Free delivery</span>
+            ) : (
+              <span className="text-slate-600">Delivery: <span className="font-semibold text-slate-800">€{deliveryFee.toFixed(2)}</span></span>
+            )}
+          </div>
 
           {inStock ? (
             <div className="space-y-4 mb-6">

@@ -18,7 +18,6 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
     unit_type: product?.unit_type || 'kg',
     stock_quantity: product?.stock_quantity || 0,
     discount_percent: product?.discount_percent || '',
-    delivery_fee: product?.delivery_fee || '',
     is_active: product?.is_active ?? true,
   })
   const [imageFile, setImageFile] = useState(null)
@@ -61,7 +60,6 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
         price: parseFloat(form.price),
         stock_quantity: parseInt(form.stock_quantity) || 0,
         discount_percent: form.discount_percent ? parseFloat(form.discount_percent) : null,
-        delivery_fee: form.delivery_fee ? parseFloat(form.delivery_fee) : null,
         supplier_id: supplierId,
         image_url: imageUrl,
       }
@@ -137,33 +135,19 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
           />
         </div>
 
-        {/* Price + Delivery Fee */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Price (€)</label>
-            <input
-              type="number"
-              required
-              min="0.01"
-              step="0.01"
-              value={form.price}
-              onChange={e => update('price', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-              placeholder="0.00"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Delivery Fee (€)</label>
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              value={form.delivery_fee}
-              onChange={e => update('delivery_fee', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-              placeholder="Optional"
-            />
-          </div>
+        {/* Price */}
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Price (€)</label>
+          <input
+            type="number"
+            required
+            min="0.01"
+            step="0.01"
+            value={form.price}
+            onChange={e => update('price', e.target.value)}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+            placeholder="0.00"
+          />
         </div>
 
         {/* Unit + Discount */}

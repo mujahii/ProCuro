@@ -236,8 +236,9 @@ export default function AdminSuppliersPage() {
                     await supabase.from('notifications').insert({
                       user_id: toggleTarget.user.id,
                       title: 'Your supplier account has been deactivated',
-                      message: 'Your ProCuro supplier profile has been deactivated by the admin. Your products are no longer visible in the store. Contact procuro@admin.com to appeal.',
+                      message: 'Your ProCuro supplier profile has been deactivated by the admin. Your products are no longer visible in the store. To appeal, please chat with the admin through the ProCuro Chat Centre.',
                       type: 'warning',
+                      link: '/supplier/chat',
                     })
                   }
                   setToggleTarget(null)

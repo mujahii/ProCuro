@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { Send, MessageSquare, ArrowLeft } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { supabase } from '../../lib/supabase'
@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext'
 
 export default function ChatPage() {
   const { user, role } = useAuth()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initSupplierId = searchParams.get('supplier_id')
 
@@ -137,11 +138,26 @@ export default function ChatPage() {
     const text = input.trim()
     setInput('')
     setSending(true)
-    await supabase.from('messages').insert({
+    // Optimistic update — show message immediately
+    const tempId = `temp-${Date.now()}`
+    const optimistic = {
+      id: tempId,
       conversation_id: selectedConv.id,
       sender_id: user.id,
       content: text,
-    })
+      is_read: false,
+      created_at: new Date().toISOString(),
+    }
+    setMessages(prev => [...prev, optimistic])
+    const { data: inserted } = await supabase.from('messages').insert({
+      conversation_id: selectedConv.id,
+      sender_id: user.id,
+      content: text,
+    }).select().single()
+    // Replace temp with real row
+    if (inserted) {
+      setMessages(prev => prev.map(m => m.id === tempId ? inserted : m))
+    }
     setSending(false)
   }
 
@@ -217,15 +233,23 @@ export default function ChatPage() {
               >
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
               </button>
-              <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
+              <button
+                onClick={() => role === 'restaurant_owner' && selectedConv.supplier?.id && navigate(`/supplier/${selectedConv.supplier.id}`)}
+                className={`w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 ${role === 'restaurant_owner' && selectedConv.supplier?.id ? 'cursor-pointer hover:ring-2 hover:ring-emerald-400 transition-all' : 'cursor-default'}`}
+              >
                 {getConvAvatar(selectedConv) ? (
                   <img src={getConvAvatar(selectedConv)} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-sm font-bold text-slate-500">{getConvName(selectedConv)?.[0]?.toUpperCase()}</span>
                 )}
-              </div>
+              </button>
               <div>
-                <p className="font-bold text-slate-900 text-sm">{getConvName(selectedConv)}</p>
+                <button
+                  onClick={() => role === 'restaurant_owner' && selectedConv.supplier?.id && navigate(`/supplier/${selectedConv.supplier.id}`)}
+                  className={`font-bold text-slate-900 text-sm ${role === 'restaurant_owner' && selectedConv.supplier?.id ? 'hover:text-emerald-600 transition-colors' : ''}`}
+                >
+                  {getConvName(selectedConv)}
+                </button>
                 {role === 'restaurant_owner' && selectedConv.supplier?.city && (
                   <p className="text-xs text-slate-400">{selectedConv.supplier.city}</p>
                 )}

@@ -171,6 +171,30 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
     website: current.website || '',
   })
   const [saving, setSaving] = useState(false)
+  const [gpsLoading, setGpsLoading] = useState(false)
+
+  async function detectGPS() {
+    if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
+    setGpsLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lng } = pos.coords
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+          const data = await res.json()
+          const addr = data.address || {}
+          setForm(f => ({ ...f, city: addr.city || addr.town || addr.village || addr.suburb || f.city }))
+          toast.success('Location detected!')
+        } catch {
+          toast.error('Could not fetch location from GPS')
+        } finally {
+          setGpsLoading(false)
+        }
+      },
+      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
 
   function toggleCuisine(type) {
     setForm(f => ({
@@ -223,7 +247,18 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
           <p className="text-xs text-slate-400 mt-1">Used on invoices and delivery receipts</p>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">City</label>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide">City / Location</label>
+            <button
+              type="button"
+              onClick={detectGPS}
+              disabled={gpsLoading}
+              className="flex items-center gap-1 text-xs text-emerald-600 font-semibold hover:text-emerald-700 disabled:opacity-50 transition-colors"
+            >
+              {gpsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
+              Detect My Location
+            </button>
+          </div>
           <input
             value={form.city}
             onChange={e => setForm(f => ({ ...f, city: e.target.value }))}

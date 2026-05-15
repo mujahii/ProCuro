@@ -721,9 +721,10 @@ export default function SupplierOrdersPage() {
       p_cancellation_reason: message,
       p_dispute_message: message,
       p_refund_receipt_url: refundReceiptUrl,
+      p_cancelled_by: 'supplier',
     })
     if (error) { toast.error(error.message); return }
-    const patch = { status: newStatus, cancellation_reason: message, dispute_message: message, refund_receipt_url: refundReceiptUrl }
+    const patch = { status: newStatus, cancellation_reason: message, dispute_message: message, refund_receipt_url: refundReceiptUrl, cancelled_by: 'supplier' }
     setSplits(prev => prev.map(s => s.id === splitId ? { ...s, ...patch } : s))
     toast.success(refundFile ? 'Order cancelled — refund receipt uploaded.' : 'Order cancelled.')
     setDisputeTarget(null)
@@ -743,8 +744,6 @@ export default function SupplierOrdersPage() {
       refundReceiptUrl = uploadData.path
     }
 
-    // Bank transfer: go straight to refund_uploaded (receipt already uploaded)
-    // COD: go to cancelled
     const newStatus = refundFile ? 'refund_uploaded' : 'cancelled'
 
     const { error } = await supabase.rpc('update_order_split_status', {
@@ -752,10 +751,11 @@ export default function SupplierOrdersPage() {
       p_status: newStatus,
       p_cancellation_reason: reason,
       p_refund_receipt_url: refundReceiptUrl,
+      p_cancelled_by: 'supplier',
     })
     if (error) { toast.error(error.message); return }
 
-    const patch = { status: newStatus, cancellation_reason: reason, refund_receipt_url: refundReceiptUrl }
+    const patch = { status: newStatus, cancellation_reason: reason, refund_receipt_url: refundReceiptUrl, cancelled_by: 'supplier' }
     setSplits(prev => prev.map(s => s.id === splitId ? { ...s, ...patch } : s))
     toast.success(refundFile ? 'Order cancelled — refund receipt sent to owner.' : 'Order cancelled.')
     setCancelTarget(null)

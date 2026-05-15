@@ -237,6 +237,12 @@ function RatingModal({ split, onSubmit, onSkip }) {
   const [selected, setSelected] = useState(0)
   const [loading, setLoading] = useState(false)
 
+  const avatarUrl = split.supplier?.avatar_url
+    ? (split.supplier.avatar_url.startsWith('http')
+        ? split.supplier.avatar_url
+        : supabase.storage.from('avatars').getPublicUrl(split.supplier.avatar_url).data?.publicUrl)
+    : null
+
   async function handleSubmit() {
     if (!selected) return
     setLoading(true)
@@ -247,8 +253,17 @@ function RatingModal({ split, onSubmit, onSkip }) {
   return (
     <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
-        <div className="w-14 h-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-          <CheckCircle className="w-7 h-7 text-emerald-500" />
+        <div className="relative inline-block mb-4">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={split.supplier?.business_name} className="w-16 h-16 rounded-full object-cover mx-auto border-2 border-emerald-100 shadow-sm" />
+          ) : (
+            <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-100">
+              <span className="text-xl font-bold text-emerald-600">{split.supplier?.business_name?.[0]?.toUpperCase() || '?'}</span>
+            </div>
+          )}
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+            <CheckCircle className="w-4 h-4 text-white" />
+          </div>
         </div>
         <h3 className="text-lg font-bold text-slate-900 mb-1">Order Delivered!</h3>
         <p className="text-sm text-slate-500 mb-5">
@@ -391,7 +406,14 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
 
       {split.cancellation_reason && (split.status === 'cancelled' || split.status === 'refund_uploaded') && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
-          <p className="font-semibold mb-1">Order Cancelled</p>
+          <p className="font-semibold mb-1">
+            Order Cancelled
+            {split.cancelled_by && (
+              <span className="font-normal text-red-400 ml-2">
+                — by {split.cancelled_by === 'supplier' ? 'Supplier' : 'You'}
+              </span>
+            )}
+          </p>
           <p>{split.cancellation_reason}</p>
         </div>
       )}
@@ -427,37 +449,37 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
         </div>
       )}
 
-      <div className="flex gap-3">
-        <button
-          onClick={() => generateInvoice(split.order, [split], profile)}
-          className="flex items-center gap-2 px-4 py-3 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-colors"
-        >
-          <Download className="w-4 h-4" /> Download Invoice
-        </button>
+      <div className="space-y-3">
         {split.status === 'out_for_delivery' && (
-          <button
-            onClick={() => { onMarkDelivered(split.id); onBack() }}
-            className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
-          >
-            Mark as Delivered
-          </button>
-        )}
-        {split.status === 'out_for_delivery' && (
-          <button
-            onClick={() => { onMarkNotDelivered(split.id); onBack() }}
-            className="flex-1 py-3 bg-orange-50 text-orange-600 font-bold rounded-xl hover:bg-orange-100 transition-colors border border-orange-200"
-          >
-            I Didn't Receive It
-          </button>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              onClick={() => { onMarkDelivered(split.id); onBack() }}
+              className="py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-sm"
+            >
+              Mark as Delivered
+            </button>
+            <button
+              onClick={() => { onMarkNotDelivered(split.id); onBack() }}
+              className="py-3.5 bg-orange-50 text-orange-600 font-bold rounded-xl hover:bg-orange-100 transition-colors border border-orange-200 text-sm"
+            >
+              I Didn't Receive It
+            </button>
+          </div>
         )}
         {canCancel && (
           <button
             onClick={() => setShowCancelModal(true)}
-            className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors"
+            className="w-full py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors"
           >
             Cancel Order
           </button>
         )}
+        <button
+          onClick={() => generateInvoice(split.order, [split], profile)}
+          className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
+        >
+          <Download className="w-4 h-4" /> Download Invoice
+        </button>
       </div>
 
       {showCancelModal && (
@@ -508,7 +530,7 @@ export default function OrdersPage() {
         *,
         order_splits(
           *,
-          supplier:supplier_profiles(business_name),
+          supplier:supplier_profiles(business_name, avatar_url),
           order_items(*, product:products(name, unit_type, image_url, description))
         )
       `)
@@ -557,6 +579,7 @@ export default function OrdersPage() {
       p_split_id: splitId,
       p_status: newStatus,
       p_cancellation_reason: reason,
+      p_cancelled_by: 'owner',
     })
     if (error) { toast.error(error.message); return }
     if (newStatus === 'cancellation_requested') {
@@ -639,62 +662,72 @@ export default function OrdersPage() {
       ) : (
         <div className="space-y-4">
           {displayed.map(split => (
-            <div key={split.id} onClick={() => setSelectedOrder(split)} className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 hover:shadow-md transition-shadow cursor-pointer">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className="font-bold text-lg text-slate-900">#{split.order.id.slice(0, 8).toUpperCase()}</span>
-                    <StatusBadge status={split.status} />
-                  </div>
-                  <p className="text-sm text-slate-600 font-medium">{split.supplier?.business_name}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm')}</p>
-                  {split.cancellation_reason && (
-                    <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg">
-                      {split.status === 'cancellation_requested' ? 'Pending: ' : 'Reason: '}
-                      {split.cancellation_reason}
-                    </p>
-                  )}
-                  {split.status === 'delivery_dispute' && (
-                    <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-                      {split.dispute_message ? `Supplier: ${split.dispute_message}` : 'Delivery dispute — awaiting supplier response'}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
-                  <span className="text-xl font-bold text-slate-900">€{Number(split.subtotal).toFixed(2)}</span>
-                  <div className="flex flex-col gap-2">
+            <div
+              key={split.id}
+              onClick={() => setSelectedOrder(split)}
+              className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 hover:shadow-md transition-shadow cursor-pointer"
+            >
+              {/* Header row */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-bold text-slate-900">#{split.order.id.slice(0, 8).toUpperCase()}</span>
+                <StatusBadge status={split.status} />
+              </div>
+
+              {/* Supplier + date */}
+              <p className="text-sm font-medium text-slate-700">{split.supplier?.business_name}</p>
+              <p className="text-xs text-slate-400 mt-0.5">{format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm')}</p>
+
+              {/* Status notes */}
+              {split.cancellation_reason && (
+                <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded-lg">
+                  {split.status === 'cancellation_requested' ? 'Cancellation pending: ' : `Cancelled by ${split.cancelled_by === 'supplier' ? 'supplier' : 'you'}: `}
+                  {split.cancellation_reason}
+                </p>
+              )}
+              {split.status === 'delivery_dispute' && (
+                <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+                  {split.dispute_message ? `Supplier: ${split.dispute_message}` : 'Dispute pending — awaiting supplier response'}
+                </p>
+              )}
+
+              {/* Footer: price + actions */}
+              <div
+                className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100"
+                onClick={e => e.stopPropagation()}
+              >
+                <span className="text-lg font-bold text-slate-900">€{Number(split.subtotal).toFixed(2)}</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSelectedOrder(split)}
+                    className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+                  >
+                    View Details <ChevronRight className="w-4 h-4" />
+                  </button>
+                  {split.status === 'out_for_delivery' && (
                     <button
-                      onClick={() => setSelectedOrder(split)}
-                      className="flex items-center gap-1 px-3 py-1.5 border-2 border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+                      onClick={e => { e.stopPropagation(); markDelivered(split.id) }}
+                      className="px-3 py-1.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors"
                     >
-                      View Details <ChevronRight className="w-4 h-4" />
+                      Mark Delivered
                     </button>
-                    {split.status === 'out_for_delivery' && (
-                      <button
-                        onClick={() => markDelivered(split.id)}
-                        className="px-3 py-1.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors"
-                      >
-                        Mark Delivered
-                      </button>
-                    )}
-                    {split.status === 'refund_uploaded' && (
-                      <button
-                        onClick={() => confirmRefund(split.id)}
-                        className="px-3 py-1.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1 justify-center"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5" /> Confirm Refund
-                      </button>
-                    )}
-                    {CANCELLABLE.includes(split.status) && (
-                      <button
-                        onClick={() => setCancelTarget(split)}
-                        className="px-3 py-1.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors"
-                      >
-                        Cancel Order
-                      </button>
-                    )}
-                  </div>
+                  )}
+                  {split.status === 'refund_uploaded' && (
+                    <button
+                      onClick={e => { e.stopPropagation(); confirmRefund(split.id) }}
+                      className="px-3 py-1.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"
+                    >
+                      <CheckCircle className="w-3.5 h-3.5" /> Confirm Refund
+                    </button>
+                  )}
+                  {CANCELLABLE.includes(split.status) && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setCancelTarget(split) }}
+                      className="px-3 py-1.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

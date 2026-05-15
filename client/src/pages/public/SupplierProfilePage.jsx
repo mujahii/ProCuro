@@ -134,6 +134,18 @@ export default function SupplierProfilePage() {
           </div>
         </div>
 
+        {!supplier.is_active && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Flag className="w-4 h-4 text-red-500" />
+            </div>
+            <div>
+              <p className="font-bold text-red-700 text-sm">This supplier account is currently inactive</p>
+              <p className="text-xs text-red-500 mt-0.5">Products from this supplier cannot be added to your cart. Please browse other verified suppliers.</p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Products — 2/3 width */}
           <div className="md:col-span-2">
@@ -181,8 +193,8 @@ export default function SupplierProfilePage() {
                   return (
                     <div
                       key={product.id}
-                      onClick={() => profile?.role === 'restaurant_owner' && setSelectedProduct(product)}
-                      className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 cursor-pointer hover:border-emerald-500 transition-colors"
+                      onClick={() => profile?.role === 'restaurant_owner' && supplier.is_active && setSelectedProduct(product)}
+                      className={`bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 transition-colors ${profile?.role === 'restaurant_owner' && supplier.is_active ? 'cursor-pointer hover:border-emerald-500' : 'opacity-60'}`}
                     >
                       <div className="w-20 h-20 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
                         {imgUrl ? (
@@ -198,7 +210,7 @@ export default function SupplierProfilePage() {
                         <p className="text-sm font-semibold text-emerald-600 mt-0.5">
                           €{Number(product.price).toFixed(2)} / {product.unit_type}
                         </p>
-                        {profile?.role === 'restaurant_owner' && (
+                        {profile?.role === 'restaurant_owner' && supplier.is_active && (
                           <button
                             onClick={e => { e.stopPropagation(); setSelectedProduct(product) }}
                             className="mt-2 text-xs bg-slate-900 text-white px-3 py-1 rounded-full hover:bg-emerald-600 transition-colors"

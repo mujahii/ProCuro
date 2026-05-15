@@ -57,8 +57,9 @@ export default function AdminUsersPage() {
         await supabase.from('notifications').insert({
           user_id: user.id,
           title: 'Your account has been suspended',
-          message: 'Your ProCuro account has been suspended by the admin. Your profile and products are no longer visible in the store. If you believe this is a mistake, please contact us at procuro@admin.com to appeal.',
+          message: 'Your ProCuro account has been suspended by the admin. To appeal, please chat with the admin through the ProCuro Chat Centre.',
           type: 'warning',
+          link: '/owner/chat',
         })
       }
 

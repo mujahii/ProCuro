@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Send, MessageSquare, ArrowLeft, Package, Shield, Paperclip, FileText, Trash2, Loader2 } from 'lucide-react'
+import { Send, MessageSquare, ArrowLeft, Package, Shield, Paperclip, FileText, Trash2, Loader2, X, MapPin, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -28,6 +28,8 @@ export default function ChatPage() {
   const [uploading, setUploading] = useState(false)
   const [unreadMap, setUnreadMap] = useState({})
   const [confirmDeleteConv, setConfirmDeleteConv] = useState(false)
+  const [deleteListConvId, setDeleteListConvId] = useState(null)
+  const [ownerProfileModal, setOwnerProfileModal] = useState(null)
   const [adminConv, setAdminConv] = useState(null)
   const [adminMessages, setAdminMessages] = useState([])
   const [showingAdmin, setShowingAdmin] = useState(false)
@@ -377,17 +379,15 @@ export default function ChatPage() {
     setUploading(false)
   }
 
-  async function deleteConversation() {
-    if (!selectedConv) return
-    const { error } = await supabase
-      .from('conversations')
-      .delete()
-      .eq('id', selectedConv.id)
+  async function deleteConversation(convId) {
+    const id = convId || selectedConv?.id
+    if (!id) return
+    const { error } = await supabase.from('conversations').delete().eq('id', id)
     if (error) { toast.error('Failed to delete chat'); return }
-    setConversations(prev => prev.filter(c => c.id !== selectedConv.id))
-    setSelectedConv(null)
-    setMessages([])
+    setConversations(prev => prev.filter(c => c.id !== id))
+    if (selectedConv?.id === id) { setSelectedConv(null); setMessages([]) }
     setConfirmDeleteConv(false)
+    setDeleteListConvId(null)
     toast.success('Chat deleted')
   }
 
@@ -476,33 +476,53 @@ export default function ChatPage() {
               </div>
             ) : conversations.map(conv => {
               const unread = unreadMap[conv.id] || 0
+              const isDeleting = deleteListConvId === conv.id
               return (
-                <button
+                <div
                   key={conv.id}
-                  onClick={() => handleSelectConv(conv)}
-                  className={`w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-50 ${selectedConv?.id === conv.id && !showingAdmin ? 'bg-emerald-50' : ''}`}
+                  className={`group flex items-center border-b border-slate-50 ${selectedConv?.id === conv.id && !showingAdmin ? 'bg-emerald-50' : 'hover:bg-slate-50'} transition-colors`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                    {getConvAvatar(conv)
-                      ? <img src={getConvAvatar(conv)} alt="" className="w-full h-full object-cover" />
-                      : <span className="text-sm font-bold text-slate-500">{getConvName(conv)?.[0]?.toUpperCase()}</span>
-                    }
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm truncate ${unread > 0 ? 'font-black text-slate-900' : 'font-semibold text-slate-900'}`}>{getConvName(conv)}</p>
-                    {role === 'restaurant_owner' && conv.supplier?.city && (
-                      <p className="text-xs text-slate-400 truncate">{conv.supplier.city}</p>
+                  <button
+                    onClick={() => handleSelectConv(conv)}
+                    className="flex-1 p-4 flex items-center gap-3 text-left min-w-0"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                      {getConvAvatar(conv)
+                        ? <img src={getConvAvatar(conv)} alt="" className="w-full h-full object-cover" />
+                        : <span className="text-sm font-bold text-slate-500">{getConvName(conv)?.[0]?.toUpperCase()}</span>
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm truncate ${unread > 0 ? 'font-black text-slate-900' : 'font-semibold text-slate-900'}`}>{getConvName(conv)}</p>
+                      {role === 'restaurant_owner' && conv.supplier?.city && (
+                        <p className="text-xs text-slate-400 truncate">{conv.supplier.city}</p>
+                      )}
+                      {conv.last_message_at && (
+                        <p className="text-xs text-slate-400">{formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })}</p>
+                      )}
+                    </div>
+                    {unread > 0 && (
+                      <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
+                        {unread > 9 ? '9+' : unread}
+                      </span>
                     )}
-                    {conv.last_message_at && (
-                      <p className="text-xs text-slate-400">{formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })}</p>
-                    )}
-                  </div>
-                  {unread > 0 && (
-                    <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
-                      {unread > 9 ? '9+' : unread}
-                    </span>
+                  </button>
+                  {/* Delete from list */}
+                  {isDeleting ? (
+                    <div className="flex items-center gap-1 pr-2 flex-shrink-0">
+                      <button onClick={() => deleteConversation(conv.id)} className="px-2 py-1 text-[10px] bg-red-600 text-white rounded font-semibold hover:bg-red-700">Del</button>
+                      <button onClick={() => setDeleteListConvId(null)} className="px-2 py-1 text-[10px] bg-slate-100 text-slate-700 rounded font-semibold">✕</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={e => { e.stopPropagation(); setDeleteListConvId(conv.id) }}
+                      className="opacity-0 group-hover:opacity-100 p-2 mr-1 hover:bg-red-50 rounded-lg flex-shrink-0 transition-all"
+                      title="Delete conversation"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-slate-400 hover:text-red-500" />
+                    </button>
                   )}
-                </button>
+                </div>
               )
             })}
           </div>
@@ -588,8 +608,11 @@ export default function ChatPage() {
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
               </button>
               <button
-                onClick={() => role === 'restaurant_owner' && selectedConv.supplier?.id && navigate(`/supplier/${selectedConv.supplier.id}`)}
-                className={`w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 ${role === 'restaurant_owner' && selectedConv.supplier?.id ? 'cursor-pointer hover:ring-2 hover:ring-emerald-400 transition-all' : 'cursor-default'}`}
+                onClick={() => {
+                  if (role === 'restaurant_owner' && selectedConv.supplier?.id) navigate(`/supplier/${selectedConv.supplier.id}`)
+                  else if (role === 'supplier' && selectedConv.owner) setOwnerProfileModal(selectedConv.owner)
+                }}
+                className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-emerald-400 transition-all"
               >
                 {getConvAvatar(selectedConv)
                   ? <img src={getConvAvatar(selectedConv)} alt="" className="w-full h-full object-cover" />
@@ -598,20 +621,26 @@ export default function ChatPage() {
               </button>
               <div className="flex-1 min-w-0">
                 <button
-                  onClick={() => role === 'restaurant_owner' && selectedConv.supplier?.id && navigate(`/supplier/${selectedConv.supplier.id}`)}
-                  className={`font-bold text-slate-900 text-sm ${role === 'restaurant_owner' && selectedConv.supplier?.id ? 'hover:text-emerald-600 transition-colors' : ''}`}
+                  onClick={() => {
+                    if (role === 'restaurant_owner' && selectedConv.supplier?.id) navigate(`/supplier/${selectedConv.supplier.id}`)
+                    else if (role === 'supplier' && selectedConv.owner) setOwnerProfileModal(selectedConv.owner)
+                  }}
+                  className="font-bold text-slate-900 text-sm hover:text-emerald-600 transition-colors"
                 >
                   {getConvName(selectedConv)}
                 </button>
                 {role === 'restaurant_owner' && selectedConv.supplier?.city && (
                   <p className="text-xs text-slate-400">{selectedConv.supplier.city}</p>
                 )}
+                {role === 'supplier' && selectedConv.owner?.city && (
+                  <p className="text-xs text-slate-400">{selectedConv.owner.city}</p>
+                )}
               </div>
 
               {confirmDeleteConv ? (
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-xs text-slate-500 hidden sm:block">Delete?</span>
-                  <button onClick={deleteConversation} className="px-2.5 py-1 text-xs bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Delete</button>
+                  <button onClick={() => deleteConversation()} className="px-2.5 py-1 text-xs bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Delete</button>
                   <button onClick={() => setConfirmDeleteConv(false)} className="px-2.5 py-1 text-xs bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200">Cancel</button>
                 </div>
               ) : (
@@ -701,6 +730,37 @@ export default function ChatPage() {
           </div>
         )}
       </div>
+
+      {/* Owner profile modal (for supplier view) */}
+      {ownerProfileModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setOwnerProfileModal(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+              <h2 className="text-base font-bold text-slate-900">Restaurant Owner</h2>
+              <button onClick={() => setOwnerProfileModal(null)} className="p-1.5 rounded-lg hover:bg-slate-100"><X className="w-4 h-4 text-slate-500" /></button>
+            </div>
+            <div className="p-5 flex flex-col items-center gap-4">
+              <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
+                {ownerProfileModal.avatar_url
+                  ? <img src={ownerProfileModal.avatar_url} alt="" className="w-full h-full object-cover" />
+                  : <User className="w-10 h-10 text-slate-400" />
+                }
+              </div>
+              <div className="text-center">
+                <p className="font-bold text-slate-900 text-lg">{ownerProfileModal.restaurant_name || ownerProfileModal.full_name || 'Restaurant Owner'}</p>
+                {ownerProfileModal.full_name && ownerProfileModal.restaurant_name && (
+                  <p className="text-sm text-slate-500 mt-0.5">{ownerProfileModal.full_name}</p>
+                )}
+                {ownerProfileModal.city && (
+                  <p className="text-sm text-slate-500 flex items-center gap-1 justify-center mt-1">
+                    <MapPin className="w-3.5 h-3.5" />{ownerProfileModal.city}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

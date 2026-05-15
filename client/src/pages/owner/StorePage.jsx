@@ -242,111 +242,151 @@ export default function StorePage() {
         </div>
       </div>
 
-      {/* Categories */}
-      <div>
-        <h2 className="text-lg font-bold text-slate-900 mb-4 px-1">Categories</h2>
-        <div
-          className="flex overflow-x-auto pb-2 scrollbar-hide justify-between gap-2"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          {[{ name: 'All', icon: Package }, ...CATEGORIES].map(({ name, icon: Icon }) => (
-            <div
-              key={name}
-              onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
-              className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0 outline-none select-none"
-              style={{ WebkitTapHighlightColor: 'transparent' }}
-            >
-              <div className={`w-20 h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
-                selectedCategory === name
-                  ? 'bg-emerald-50 border-emerald-500 shadow-md'
-                  : 'bg-white border-slate-100 group-hover:border-emerald-300 group-hover:shadow-md'
-              }`}>
-                <Icon className={`w-9 h-9 ${selectedCategory === name ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`} />
-              </div>
-              <span className={`text-xs font-medium whitespace-nowrap ${
-                selectedCategory === name ? 'text-emerald-700 font-bold' : 'text-slate-600 group-hover:text-slate-900'
-              }`}>{name}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recommended Suppliers */}
-      <div>
-        <div className="flex justify-between items-end mb-4 px-1">
-          <h2 className="text-lg font-bold text-slate-900">Recommended Suppliers</h2>
-          <button onClick={() => navigate('/suppliers')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">
-            See All <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-        <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
-          {suppliers.length === 0 ? (
-            <p className="text-sm text-slate-400 py-2">No suppliers yet.</p>
-          ) : suppliers.map(supplier => {
-            const avatarUrl = supplier.avatar_url
-            const certs = supplier.halal_certificates || []
-            const isVerified = supplier.is_verified || certs.some(c => c.status === 'approved')
-            const isPending = !isVerified && certs.some(c => c.status === 'pending')
-            return (
-              <div
-                key={supplier.id}
-                onClick={() => navigate(`/supplier/${supplier.id}`)}
-                className="min-w-[180px] cursor-pointer bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow"
+      {search.trim() ? (
+        /* ── Search mode: category chips + results only ── */
+        <div>
+          {/* Category filter chips */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            {CATEGORIES.map(({ name }) => (
+              <button
+                key={name}
+                onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
+                className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                  selectedCategory === name
+                    ? 'bg-slate-900 text-white'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
+                }`}
               >
-                <div className="w-16 h-16 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt={supplier.business_name} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-2xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
-                  )}
+                {name}
+              </button>
+            ))}
+          </div>
+          {loading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-100 h-72 animate-pulse" />
+              ))}
+            </div>
+          ) : sortedProducts.length === 0 ? (
+            <div className="text-center py-16 text-slate-400">No products found for "{search}"</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {sortedProducts.map(product => (
+                <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} onReport={() => setReportProduct(product)} />
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* ── Browse mode: categories + suppliers + recommended products ── */
+        <>
+          {/* Categories */}
+          <div>
+            <h2 className="text-lg font-bold text-slate-900 mb-4 px-1">Categories</h2>
+            <div
+              className="flex overflow-x-auto pb-2 scrollbar-hide justify-between gap-2"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
+              {[{ name: 'All', icon: Package }, ...CATEGORIES].map(({ name, icon: Icon }) => (
+                <div
+                  key={name}
+                  onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
+                  className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0 outline-none select-none"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <div className={`w-20 h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
+                    selectedCategory === name
+                      ? 'bg-emerald-50 border-emerald-500 shadow-md'
+                      : 'bg-white border-slate-100 group-hover:border-emerald-300 group-hover:shadow-md'
+                  }`}>
+                    <Icon className={`w-9 h-9 ${selectedCategory === name ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                  </div>
+                  <span className={`text-xs font-medium whitespace-nowrap ${
+                    selectedCategory === name ? 'text-emerald-700 font-bold' : 'text-slate-600 group-hover:text-slate-900'
+                  }`}>{name}</span>
                 </div>
-                <h3 className="font-bold text-slate-900 text-sm">{supplier.business_name}</h3>
-                {supplier.city && <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{supplier.city}</p>}
-                {supplier.rating > 0 && (
-                  <div className="flex items-center gap-1 mt-1 text-xs text-amber-500">
-                    <span>★</span> {Number(supplier.rating).toFixed(1)}
-                  </div>
-                )}
-                {isVerified ? (
-                  <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">
-                    <HalalBadge status="approved" size={12} /> Halal Certified
-                  </div>
-                ) : isPending ? (
-                  <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
-                    <HalalBadge status="pending" size={12} /> Pending Review
-                  </div>
-                ) : null}
-              </div>
-            )
-          })}
-        </div>
-      </div>
+              ))}
+            </div>
+          </div>
 
-      {/* Products */}
-      <div>
-        <div className="flex justify-between items-end mb-4 px-1">
-          <h2 className="text-lg font-bold text-slate-900">
-            {selectedCategory !== 'All' ? selectedCategory : 'Recommended Orders'}
-          </h2>
-          <button onClick={() => navigate('/owner/products')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">See All <ChevronRight className="w-4 h-4" /></button>
-        </div>
-        {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-100 h-72 animate-pulse" />
-            ))}
+          {/* Recommended Suppliers */}
+          <div>
+            <div className="flex justify-between items-end mb-4 px-1">
+              <h2 className="text-lg font-bold text-slate-900">Recommended Suppliers</h2>
+              <button onClick={() => navigate('/suppliers')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">
+                See All <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+              {suppliers.length === 0 ? (
+                <p className="text-sm text-slate-400 py-2">No suppliers yet.</p>
+              ) : suppliers.map(supplier => {
+                const avatarUrl = supplier.avatar_url
+                const certs = supplier.halal_certificates || []
+                const isVerified = supplier.is_verified || certs.some(c => c.status === 'approved')
+                const isPending = !isVerified && certs.some(c => c.status === 'pending')
+                return (
+                  <div
+                    key={supplier.id}
+                    onClick={() => navigate(`/supplier/${supplier.id}`)}
+                    className="min-w-[180px] cursor-pointer bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={supplier.business_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-2xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
+                      )}
+                    </div>
+                    <h3 className="font-bold text-slate-900 text-sm">{supplier.business_name}</h3>
+                    {supplier.city && <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{supplier.city}</p>}
+                    {supplier.rating > 0 && (
+                      <div className="flex items-center gap-1 mt-1 text-xs text-amber-500">
+                        <span>★</span> {Number(supplier.rating).toFixed(1)}
+                      </div>
+                    )}
+                    {isVerified ? (
+                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">
+                        <HalalBadge status="approved" size={12} /> Halal Certified
+                      </div>
+                    ) : isPending ? (
+                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                        <HalalBadge status="pending" size={12} /> Pending Review
+                      </div>
+                    ) : null}
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sortedProducts.map(product => (
-              <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} onReport={() => setReportProduct(product)} />
-            ))}
+
+          {/* Recommended Products */}
+          <div>
+            <div className="flex justify-between items-end mb-4 px-1">
+              <h2 className="text-lg font-bold text-slate-900">
+                {selectedCategory !== 'All' ? selectedCategory : 'Recommended Orders'}
+              </h2>
+              <button onClick={() => navigate('/owner/products')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">See All <ChevronRight className="w-4 h-4" /></button>
+            </div>
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-100 h-72 animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {sortedProducts.map(product => (
+                  <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} onReport={() => setReportProduct(product)} />
+                ))}
+              </div>
+            )}
+            {!loading && sortedProducts.length === 0 && (
+              <div className="text-center py-12 text-slate-400">No products found</div>
+            )}
           </div>
-        )}
-        {!loading && sortedProducts.length === 0 && (
-          <div className="text-center py-12 text-slate-400">No products found</div>
-        )}
-      </div>
+        </>
+      )}
 
       {selectedProduct && (
         <AddToCartModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />

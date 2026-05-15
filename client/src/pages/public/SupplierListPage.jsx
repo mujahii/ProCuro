@@ -9,7 +9,6 @@ import Footer from '../../components/layout/Footer'
 
 const SORT_OPTIONS = [
   { value: '', label: 'Recommended' },
-  { value: 'nearest', label: 'Near Me' },
   { value: 'name_asc', label: 'Name A–Z' },
   { value: 'rating_desc', label: 'Top Rated' },
 ]
@@ -55,14 +54,17 @@ export default function SupplierListPage() {
   function handleSortSelect(value) {
     setSortBy(value)
     setFilterOpen(false)
-    if (value === 'nearest' && !userLat) {
-      setGpsLoading(true)
-      navigator.geolocation.getCurrentPosition(
-        pos => { setUserLat(pos.coords.latitude); setUserLng(pos.coords.longitude); setGpsLoading(false) },
-        () => { setSortBy(''); setGpsLoading(false); alert('GPS permission denied') },
-        { enableHighAccuracy: true, timeout: 10000 }
-      )
-    }
+  }
+
+  function handleNearMe() {
+    if (sortBy === 'nearest') { setSortBy(''); return }
+    if (userLat) { setSortBy('nearest'); return }
+    setGpsLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      pos => { setUserLat(pos.coords.latitude); setUserLng(pos.coords.longitude); setSortBy('nearest'); setGpsLoading(false) },
+      () => { setGpsLoading(false); alert('Location permission denied') },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
   }
 
   const filtered = suppliers
@@ -95,7 +97,7 @@ export default function SupplierListPage() {
           <span className="text-sm text-slate-400">{filtered.length} supplier{filtered.length !== 1 ? 's' : ''}</span>
         </div>
 
-        {/* Search + Sort */}
+        {/* Search + Near Me + Sort */}
         <div className="flex gap-2 mb-4">
           <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-slate-100">
             <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
@@ -107,13 +109,26 @@ export default function SupplierListPage() {
               className="bg-transparent border-none outline-none focus:outline-none ring-0 focus:ring-0 w-full text-sm"
             />
           </div>
+          {/* Standalone Near Me button */}
+          <button
+            onClick={handleNearMe}
+            disabled={gpsLoading}
+            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors flex-shrink-0 ${sortBy === 'nearest' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+          >
+            {gpsLoading ? (
+              <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Navigation className="w-4 h-4" />
+            )}
+            <span className="hidden sm:inline">Near Me</span>
+          </button>
           <div className="relative" ref={filterRef}>
             <button
               onClick={() => setFilterOpen(o => !o)}
-              className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+              className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy && sortBy !== 'nearest' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
             >
               <Filter className="w-4 h-4" />
-              <span className="hidden sm:inline">{sortBy ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Sort'}</span>
+              <span className="hidden sm:inline">{sortBy && sortBy !== 'nearest' ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Sort'}</span>
               <ChevronDown className="w-3 h-3" />
             </button>
             {filterOpen && (
@@ -124,9 +139,7 @@ export default function SupplierListPage() {
                     onClick={() => handleSortSelect(opt.value)}
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2 ${sortBy === opt.value ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-slate-700 hover:bg-slate-50'}`}
                   >
-                    {opt.value === 'nearest' && <Navigation className="w-3.5 h-3.5 flex-shrink-0" />}
                     {opt.label}
-                    {opt.value === 'nearest' && gpsLoading && <span className="text-xs text-slate-400 ml-auto">detecting...</span>}
                   </button>
                 ))}
               </div>

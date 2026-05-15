@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ShoppingCart, ImageOff, Plus } from 'lucide-react'
+import { ImageOff, Plus, Flag } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
@@ -15,7 +15,7 @@ function getImageUrl(imagePath) {
   return data?.publicUrl
 }
 
-export default function ProductCard({ product, onAddToCart }) {
+export default function ProductCard({ product, onAddToCart, onReport }) {
   const { user, role } = useAuth()
   const { addItem } = useCart()
   const navigate = useNavigate()
@@ -102,16 +102,27 @@ export default function ProductCard({ product, onAddToCart }) {
             )}
           </div>
 
-          {role !== 'supplier' && role !== 'admin' && (
-            <button
-              onClick={handleAdd}
-              disabled={outOfStock}
-              className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/25 disabled:opacity-30 disabled:cursor-not-allowed active:scale-90 transition-transform"
-              aria-label="Add to cart"
-            >
-              <Plus className="w-4 h-4" strokeWidth={3} />
-            </button>
-          )}
+          <div className="flex items-center gap-1.5">
+            {onReport && role === 'restaurant_owner' && (
+              <button
+                onClick={e => { e.stopPropagation(); onReport(product) }}
+                className="w-8 h-8 rounded-xl bg-red-50 flex items-center justify-center text-red-400 hover:bg-red-100 transition-colors"
+                aria-label="Report product"
+              >
+                <Flag className="w-3.5 h-3.5" />
+              </button>
+            )}
+            {role !== 'supplier' && role !== 'admin' && (
+              <button
+                onClick={handleAdd}
+                disabled={outOfStock}
+                className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white shadow-md shadow-primary/25 disabled:opacity-30 disabled:cursor-not-allowed active:scale-90 transition-transform"
+                aria-label="Add to cart"
+              >
+                <Plus className="w-4 h-4" strokeWidth={3} />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

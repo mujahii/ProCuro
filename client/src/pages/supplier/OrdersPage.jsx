@@ -352,6 +352,7 @@ function fmtPhone(p) {
 
 function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
   const [showReport, setShowReport] = useState(false)
+  const navigate = useNavigate()
   return (
     <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
@@ -422,6 +423,14 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
         </div>
 
         <div className="px-5 pb-5 space-y-2">
+          {ownerId && (
+            <button
+              onClick={() => { onClose(); navigate(`/supplier/chat?owner_id=${ownerId}`) }}
+              className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <MessageSquare className="w-4 h-4" /> Message Owner
+            </button>
+          )}
           <button
             onClick={onClose}
             className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors"
@@ -534,8 +543,13 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
               </div>
             )}
             {displayAddress ? (
-              <div className="flex items-start gap-1.5 text-sm text-slate-600">
-                <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+              <a
+                href={`https://maps.google.com/?q=${displayAddress.latitude ? `${displayAddress.latitude},${displayAddress.longitude}` : encodeURIComponent([displayAddress.street, displayAddress.city].filter(Boolean).join(', '))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-1.5 text-sm text-emerald-600 hover:text-emerald-700 hover:underline transition-colors"
+              >
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                 <span>
                   {[displayAddress.street, [displayAddress.postal_code, displayAddress.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
                   {displayAddress.label && <span className="text-xs text-slate-400 ml-1">({displayAddress.label})</span>}
@@ -543,7 +557,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
                     <span className="text-xs text-amber-500 ml-1">(registered address)</span>
                   )}
                 </span>
-              </div>
+              </a>
             ) : (
               <div className="flex items-center gap-1.5 text-sm text-slate-400">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />

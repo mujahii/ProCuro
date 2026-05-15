@@ -4,23 +4,46 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 
-const PRODUCT_REASONS = [
-  'Incorrectly labeled as Halal',
-  'Misleading product information',
-  'Product not available despite listed as in stock',
-  'Inappropriate content or images',
-  'Suspected fraudulent listing',
-  'Other',
-]
+const REASONS = {
+  product: [
+    'Incorrectly labeled as Halal',
+    'Misleading product information',
+    'Product not available despite listed as in stock',
+    'Inappropriate content or images',
+    'Suspected fraudulent listing',
+    'Other',
+  ],
+  supplier: [
+    'Fake Halal certification',
+    'Fraudulent business',
+    'Poor hygiene or safety standards',
+    'Abusive or unprofessional behavior',
+    'Selling prohibited products',
+    'Other',
+  ],
+  order: [
+    'Order never arrived',
+    'Wrong items delivered',
+    'Items were damaged or spoiled',
+    'Supplier unresponsive',
+    'Product did not match description',
+    'Other',
+  ],
+  user: [
+    'Fraudulent activity',
+    'Abusive or unprofessional behavior',
+    'Fake or misleading account',
+    'Harassment',
+    'Other',
+  ],
+}
 
-const SUPPLIER_REASONS = [
-  'Fake Halal certification',
-  'Fraudulent business',
-  'Poor hygiene or safety standards',
-  'Abusive or unprofessional behavior',
-  'Selling prohibited products',
-  'Other',
-]
+const LABEL = {
+  product: 'Product',
+  supplier: 'Supplier',
+  order: 'Order',
+  user: 'User',
+}
 
 export default function ReportModal({ type, targetId, targetName, onClose }) {
   const { user } = useAuth()
@@ -28,7 +51,7 @@ export default function ReportModal({ type, targetId, targetName, onClose }) {
   const [details, setDetails] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  const reasons = type === 'product' ? PRODUCT_REASONS : SUPPLIER_REASONS
+  const reasons = REASONS[type] || REASONS.supplier
 
   async function handleSubmit() {
     if (!reason) return toast.error('Please select a reason')
@@ -55,7 +78,7 @@ export default function ReportModal({ type, targetId, targetName, onClose }) {
       if (adminUser) {
         await supabase.from('notifications').insert({
           user_id: adminUser.id,
-          title: `New ${type === 'product' ? 'Product' : 'Supplier'} Report`,
+          title: `New ${LABEL[type] || 'Issue'} Report`,
           message: `"${targetName}" was reported for: ${reason}.`,
           type: 'warning',
         })
@@ -63,7 +86,8 @@ export default function ReportModal({ type, targetId, targetName, onClose }) {
 
       toast.success('Report submitted. Thank you.')
       onClose()
-    } catch {
+    } catch (err) {
+      console.error('Report error:', err)
       toast.error('Failed to submit report')
     } finally {
       setSubmitting(false)
@@ -80,7 +104,7 @@ export default function ReportModal({ type, targetId, targetName, onClose }) {
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-900">
-                Report {type === 'product' ? 'Product' : 'Supplier'}
+                Report {LABEL[type] || 'Issue'}
               </h2>
               {targetName && <p className="text-xs text-slate-500 truncate max-w-[220px]">{targetName}</p>}
             </div>

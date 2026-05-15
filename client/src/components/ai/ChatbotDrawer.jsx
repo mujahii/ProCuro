@@ -78,8 +78,8 @@ async function fetchContext(user) {
     ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
       supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('certificates').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-      supabase.from('reports').select('id, type, status, created_at, target_type').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
+      supabase.from('halal_certificates').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+      supabase.from('reports').select('id, type, status, created_at').eq('status', 'pending').order('created_at', { ascending: false }).limit(5),
     ])
     return { totalUsers, pendingReports, pendingCerts, recentReports: recentReports || [] }
   }

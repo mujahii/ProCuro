@@ -6,7 +6,12 @@ const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    realtime: {
+      enabled: false
+    }
+  }
 )
 
 function buildSystemPrompt(role, name, contextData) {

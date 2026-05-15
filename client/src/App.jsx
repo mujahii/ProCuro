@@ -13,6 +13,7 @@ import SelectRolePage from './pages/public/SelectRolePage'
 import PublicSupplierProfilePage from './pages/public/SupplierProfilePage'
 import SupplierListPage from './pages/public/SupplierListPage'
 import ProductsListPage from './pages/public/ProductsListPage'
+import ResetPasswordPage from './pages/public/ResetPasswordPage'
 
 // Admin pages
 import AdminLoginPage from './pages/admin/AdminLoginPage'
@@ -80,6 +81,7 @@ export default function App() {
             <Route path="/suppliers" element={<SupplierListPage />} />
             <Route path="/supplier/:id" element={<PublicSupplierProfilePage />} />
             <Route path="/products" element={<ProductsListPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
 
             {/* Admin (separate, not linked from public login) */}
             <Route path="/admin/login" element={<AdminLoginPage />} />

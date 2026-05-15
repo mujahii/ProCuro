@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Search, Ban, Trash2, CheckCircle, Eye, Send, X, History, ToggleLeft, ToggleRight, MessageSquare } from 'lucide-react'
+import { Search, Ban, Trash2, CheckCircle, Eye, Send, X, History, ToggleLeft, ToggleRight, MessageSquare, KeyRound } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -32,13 +32,16 @@ export default function AdminUsersPage() {
   const [notifyMsg, setNotifyMsg] = useState('')
   const [sending, setSending] = useState(false)
   const [banTarget, setBanTarget] = useState(null)
+  const [ownerToggleTarget, setOwnerToggleTarget] = useState(null)
+  const [resetTarget, setResetTarget] = useState(null)
+  const [sendingReset, setSendingReset] = useState(false)
 
   useEffect(() => { loadUsers(); loadDeletedAccounts() }, [])
 
   async function loadUsers() {
     const { data } = await supabase
       .from('users')
-      .select('*, supplier_profile:supplier_profiles(id, business_name, is_verified, is_active, city, phone, description, rating, category, website, avatar_url), owner_profile:owner_profiles(restaurant_name, city, tax_id, cuisine, website)')
+      .select('*, supplier_profile:supplier_profiles(id, business_name, is_verified, is_active, city, phone, description, rating, category, website, avatar_url), owner_profile:owner_profiles(restaurant_name, city, tax_id, cuisine, website, is_active)')
       .order('created_at', { ascending: false })
     setUsers(data || [])
     setLoading(false)
@@ -75,6 +78,44 @@ export default function AdminUsersPage() {
       toast.success(next ? 'User banned' : 'User unbanned')
     } catch (err) {
       toast.error(err.message || 'Failed to update user')
+    }
+  }
+
+  async function toggleOwnerActive(user) {
+    const op = user.owner_profile
+    if (!op) return
+    const next = !op.is_active
+    const { error } = await supabase.from('owner_profiles').update({ is_active: next }).eq('user_id', user.id)
+    if (!error) {
+      setUsers(prev => prev.map(u => u.id === user.id
+        ? { ...u, owner_profile: { ...u.owner_profile, is_active: next } }
+        : u))
+      if (!next) {
+        await supabase.from('notifications').insert({
+          user_id: user.id,
+          title: 'Your account has been deactivated',
+          message: 'Your ProCuro restaurant account has been deactivated by the admin. To appeal, please chat through the ProCuro Chat Centre.',
+          type: 'warning',
+          link: '/owner/chat',
+        })
+      }
+      toast.success(next ? 'Owner account activated' : 'Owner account deactivated')
+    }
+  }
+
+  async function sendPasswordReset(user) {
+    setSendingReset(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
+        redirectTo: `${window.location.origin.replace('/admin', '')}/reset-password`,
+      })
+      if (error) throw error
+      toast.success(`Password reset email sent to ${user.email}`)
+      setResetTarget(null)
+    } catch (err) {
+      toast.error(err.message || 'Failed to send reset email')
+    } finally {
+      setSendingReset(false)
     }
   }
 
@@ -271,6 +312,11 @@ export default function AdminUsersPage() {
                           {u.supplier_profile.is_active ? 'Listed' : 'Unlisted'}
                         </span>
                       )}
+                      {u.role === 'restaurant_owner' && u.owner_profile && (
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${u.owner_profile.is_active !== false ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
+                          {u.owner_profile.is_active !== false ? 'Active' : 'Inactive'}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -301,6 +347,26 @@ export default function AdminUsersPage() {
                           {u.supplier_profile.is_active
                             ? <ToggleRight className="w-4 h-4 text-emerald-500" />
                             : <ToggleLeft className="w-4 h-4" />}
+                        </button>
+                      )}
+                      {u.role === 'restaurant_owner' && u.owner_profile && (
+                        <button
+                          onClick={() => u.owner_profile.is_active !== false ? setOwnerToggleTarget(u) : toggleOwnerActive(u)}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
+                          title={u.owner_profile.is_active !== false ? 'Deactivate owner' : 'Activate owner'}
+                        >
+                          {u.owner_profile.is_active !== false
+                            ? <ToggleRight className="w-4 h-4 text-emerald-500" />
+                            : <ToggleLeft className="w-4 h-4" />}
+                        </button>
+                      )}
+                      {u.role !== 'admin' && (
+                        <button
+                          onClick={() => setResetTarget(u)}
+                          className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-400"
+                          title="Send password reset email"
+                        >
+                          <KeyRound className="w-4 h-4" />
                         </button>
                       )}
                       <button
@@ -412,19 +478,47 @@ export default function AdminUsersPage() {
               )}
             </div>
 
-            <div className="p-5 flex gap-3 border-t border-gray-100">
-              <button
-                onClick={() => { setViewTarget(null); setNotifyTarget(viewTarget); setNotifyTitle(''); setNotifyMsg('') }}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
-              >
-                <Send className="w-4 h-4" /> Send Notification
-              </button>
-              {viewTarget.role === 'supplier' && viewTarget.supplier_profile?.id && (
+            <div className="p-5 space-y-2 border-t border-gray-100">
+              <div className="flex gap-2">
                 <button
-                  onClick={() => { setViewTarget(null); navigate(`/supplier/${viewTarget.supplier_profile.id}`) }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50"
+                  onClick={() => { setViewTarget(null); setNotifyTarget(viewTarget); setNotifyTitle(''); setNotifyMsg('') }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
                 >
-                  View Public Profile
+                  <Send className="w-4 h-4" /> Send Message
+                </button>
+                {viewTarget.role === 'supplier' && viewTarget.supplier_profile?.id && (
+                  <button
+                    onClick={() => { setViewTarget(null); navigate(`/supplier/${viewTarget.supplier_profile.id}`) }}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50"
+                  >
+                    View Profile
+                  </button>
+                )}
+              </div>
+              {viewTarget.role !== 'admin' && (
+                <button
+                  onClick={() => { setViewTarget(null); setResetTarget(viewTarget) }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 border border-amber-200 text-amber-700 rounded-xl text-sm font-semibold hover:bg-amber-50"
+                >
+                  <KeyRound className="w-4 h-4" /> Send Password Reset Email
+                </button>
+              )}
+              {viewTarget.role === 'restaurant_owner' && viewTarget.owner_profile && (
+                <button
+                  onClick={() => {
+                    setViewTarget(null)
+                    viewTarget.owner_profile.is_active !== false ? setOwnerToggleTarget(viewTarget) : toggleOwnerActive(viewTarget)
+                  }}
+                  className={`w-full flex items-center justify-center gap-2 py-2.5 border rounded-xl text-sm font-semibold transition-colors ${
+                    viewTarget.owner_profile.is_active !== false
+                      ? 'border-orange-200 text-orange-700 hover:bg-orange-50'
+                      : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                  }`}
+                >
+                  {viewTarget.owner_profile.is_active !== false
+                    ? <><ToggleLeft className="w-4 h-4" /> Deactivate Account</>
+                    : <><ToggleRight className="w-4 h-4" /> Activate Account</>
+                  }
                 </button>
               )}
             </div>
@@ -483,6 +577,59 @@ export default function AdminUsersPage() {
               <button onClick={() => setBanTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
               <button onClick={() => { toggleBan(banTarget); setBanTarget(null) }} className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600">
                 Yes, Ban User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Owner Deactivate Confirmation Modal */}
+      {ownerToggleTarget && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Deactivate Owner Account</h2>
+              <button onClick={() => setOwnerToggleTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-5">
+              <p className="text-sm font-semibold text-orange-700 mb-1">This restaurant owner will be deactivated and notified.</p>
+              <p className="text-xs text-orange-500"><span className="font-bold">{ownerToggleTarget.owner_profile?.restaurant_name || ownerToggleTarget.full_name || ownerToggleTarget.email}</span> will see a banner saying their account is deactivated.</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setOwnerToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button
+                onClick={() => { toggleOwnerActive(ownerToggleTarget); setOwnerToggleTarget(null) }}
+                className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600"
+              >
+                Yes, Deactivate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Password Reset Confirmation Modal */}
+      {resetTarget && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Send Password Reset</h2>
+              <button onClick={() => setResetTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-5">
+              <p className="text-sm text-amber-800">An email will be sent to:</p>
+              <p className="text-sm font-bold text-amber-900 mt-1">{resetTarget.email}</p>
+              <p className="text-xs text-amber-700 mt-2">The user will receive a secure link to set a new password. The link expires in 1 hour.</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setResetTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button
+                onClick={() => sendPasswordReset(resetTarget)}
+                disabled={sendingReset}
+                className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                <KeyRound className="w-4 h-4" />
+                {sendingReset ? 'Sending...' : 'Send Reset Email'}
               </button>
             </div>
           </div>

@@ -1,8 +1,10 @@
-import { useState } from 'react'
-import { Outlet, NavLink } from 'react-router-dom'
-import { ShoppingBag, ShoppingCart, Package, BarChart3, User, MessageSquare, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { ShoppingBag, ShoppingCart, Package, BarChart3, User, MessageSquare, ChevronLeft, ChevronRight, X, AlertCircle } from 'lucide-react'
 import Navbar from './Navbar'
 import CookieConsent from '../ui/CookieConsent'
+import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 
 const navItems = [
   { to: '/owner/store', icon: ShoppingBag, label: 'Store' },
@@ -14,10 +16,19 @@ const navItems = [
 ]
 
 export default function OwnerLayout() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('ownerSidebarCollapsed') === 'true'
   )
+  const [isActive, setIsActive] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    supabase.from('owner_profiles').select('is_active').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => { if (data) setIsActive(data.is_active ?? true) })
+  }, [user])
 
   function toggleCollapsed() {
     const next = !collapsed
@@ -33,6 +44,20 @@ export default function OwnerLayout() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Navbar onMenuClick={() => setDrawerOpen(o => !o)} />
+
+      {/* Account deactivated banner */}
+      {!isActive && (
+        <div className="fixed top-16 left-0 right-0 z-20 bg-red-500 text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <span>Your account has been deactivated by the admin. Please contact support.</span>
+          <button
+            onClick={() => navigate('/owner/chat')}
+            className="bg-white text-red-600 font-bold px-3 py-0.5 rounded-full text-xs hover:bg-red-50 transition-colors whitespace-nowrap"
+          >
+            Contact Admin →
+          </button>
+        </div>
+      )}
 
       {/* Mobile drawer backdrop */}
       {drawerOpen && (
@@ -72,12 +97,12 @@ export default function OwnerLayout() {
         </nav>
       </aside>
 
-      <div className="flex pt-16">
+      <div className={`flex ${isActive ? 'pt-16' : 'pt-[104px] sm:pt-[104px]'}`}>
         {/* Desktop collapsible sidebar */}
         <aside
-          className={`hidden lg:flex flex-col bg-white border-r border-slate-100 fixed top-16 left-0 bottom-0 z-20 transition-all duration-200 ${
+          className={`hidden lg:flex flex-col bg-white border-r border-slate-100 fixed left-0 bottom-0 z-20 transition-all duration-200 ${
             collapsed ? 'w-14' : 'w-56'
-          }`}
+          } ${isActive ? 'top-16' : 'top-[104px]'}`}
         >
           <nav className="flex-1 px-2 py-4 space-y-1">
             {navItems.map(({ to, icon: Icon, label }) => (

@@ -4,12 +4,17 @@ const { createClient } = require('@supabase/supabase-js')
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
+// Create Supabase client without Realtime (no WebSocket connections)
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   {
     realtime: {
-      enabled: false
+      enabled: false,
+    },
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
     }
   }
 )

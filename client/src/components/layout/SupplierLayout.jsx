@@ -129,7 +129,7 @@ export default function SupplierLayout() {
         </nav>
       </aside>
 
-      <div className={`flex ${showBanner ? 'pt-[104px]' : 'pt-16'}`}>
+      <div className={`flex ${showBanner ? 'pt-[132px] sm:pt-[104px]' : 'pt-16'}`}>
         {/* Desktop collapsible sidebar */}
         <aside
           className={`hidden lg:flex flex-col bg-white border-r border-slate-100 fixed left-0 bottom-0 z-20 transition-all duration-200 ${

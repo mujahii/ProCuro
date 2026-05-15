@@ -4,8 +4,9 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag, ArrowUpRight, Star, MessageSquare } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, Store, MapPin, Globe, X, ShoppingBag, Tag, ArrowUpRight, Star, MessageSquare, Flag } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
+import ReportModal from '../../components/ui/ReportModal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -318,6 +319,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showSupplierModal, setShowSupplierModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [showReportModal, setShowReportModal] = useState(false)
   const canCancel = CANCELLABLE.includes(split.status)
 
   async function handleChatWithSupplier() {
@@ -496,6 +498,15 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
         </button>
       </div>
 
+      <div className="flex justify-center pt-2">
+        <button
+          onClick={() => setShowReportModal(true)}
+          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
+        >
+          <Flag className="w-4 h-4" /> Report this Order
+        </button>
+      </div>
+
       {showCancelModal && (
         <CancelModal
           split={split}
@@ -518,6 +529,15 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
 
       {selectedProduct && (
         <ProductCardModal item={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      )}
+
+      {showReportModal && (
+        <ReportModal
+          type="order"
+          targetId={split.id}
+          targetName={`Order #${split.id.slice(0, 8).toUpperCase()}`}
+          onClose={() => setShowReportModal(false)}
+        />
       )}
     </div>
   )

@@ -65,15 +65,16 @@ export default function ChatPage() {
         .from('conversations')
         .select('*')
         .eq('supplier_id', supplierId)
-        .order('last_message_at', { ascending: false })
-      const ownerIds = [...new Set((convs || []).map(c => c.owner_id))]
+        .order('created_at', { ascending: false })
+      const ownerIds = [...new Set((convs || []).map(c => c.owner_id).filter(Boolean))]
       let ownerMap = {}
       if (ownerIds.length > 0) {
-        const { data: owners } = await supabase
-          .from('users')
-          .select('id, full_name, email, avatar_url')
-          .in('id', ownerIds)
-        ;(owners || []).forEach(o => { ownerMap[o.id] = o })
+        const [{ data: ownerUsers }, { data: ownerProfiles }] = await Promise.all([
+          supabase.from('users').select('id, full_name, email, avatar_url').in('id', ownerIds),
+          supabase.from('owner_profiles').select('user_id, restaurant_name, city').in('user_id', ownerIds),
+        ])
+        ;(ownerUsers || []).forEach(u => { ownerMap[u.id] = { ...ownerMap[u.id], id: u.id, full_name: u.full_name, email: u.email, avatar_url: u.avatar_url } })
+        ;(ownerProfiles || []).forEach(op => { ownerMap[op.user_id] = { ...ownerMap[op.user_id], restaurant_name: op.restaurant_name, city: op.city } })
       }
       setConversations((convs || []).map(c => ({ ...c, owner: ownerMap[c.owner_id] || null })))
     }
@@ -122,8 +123,12 @@ export default function ChatPage() {
       conv = newConv
     }
     if (conv) {
-      const { data: ownerData } = await supabase.from('users').select('id, full_name, email, avatar_url').eq('id', targetOwnerId).single()
-      const enriched = { ...conv, owner: ownerData || null }
+      const [{ data: ownerUser }, { data: ownerProfile }] = await Promise.all([
+        supabase.from('users').select('id, full_name, email, avatar_url').eq('id', targetOwnerId).single(),
+        supabase.from('owner_profiles').select('restaurant_name, city').eq('user_id', targetOwnerId).maybeSingle(),
+      ])
+      const owner = ownerUser ? { ...ownerUser, restaurant_name: ownerProfile?.restaurant_name || null, city: ownerProfile?.city || null } : null
+      const enriched = { ...conv, owner }
       setConversations(prev => prev.find(c => c.id === enriched.id) ? prev : [enriched, ...prev])
       setSelectedConv(enriched)
     }
@@ -217,7 +222,7 @@ export default function ChatPage() {
   function getConvName(conv) {
     if (!conv) return ''
     if (role === 'restaurant_owner') return conv.supplier?.business_name || 'Supplier'
-    return conv.owner?.full_name || conv.owner?.email || 'Restaurant Owner'
+    return conv.owner?.restaurant_name || conv.owner?.full_name || conv.owner?.email || 'Restaurant Owner'
   }
 
   function getConvAvatar(conv) {

@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store, X, ExternalLink, MessageSquare } from 'lucide-react'
+import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, Store, X, ExternalLink, MessageSquare, Flag } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
+import ReportModal from '../../components/ui/ReportModal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 import { formatIBAN } from '../../lib/formatIBAN'
@@ -341,7 +342,8 @@ function fmtPhone(p) {
   return p
 }
 
-function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
+function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
+  const [showReport, setShowReport] = useState(false)
   return (
     <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
@@ -411,15 +413,31 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
           )}
         </div>
 
-        <div className="px-5 pb-5">
+        <div className="px-5 pb-5 space-y-2">
           <button
             onClick={onClose}
             className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors"
           >
             Close
           </button>
+          {ownerId && (
+            <button
+              onClick={() => setShowReport(true)}
+              className="w-full py-2.5 flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
+            >
+              <Flag className="w-4 h-4" /> Report Restaurant Owner
+            </button>
+          )}
         </div>
       </div>
+      {showReport && ownerId && (
+        <ReportModal
+          type="user"
+          targetId={ownerId}
+          targetName={ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant Owner'}
+          onClose={() => setShowReport(false)}
+        />
+      )}
     </div></ModalPortal>
   )
 }
@@ -429,6 +447,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
   const [ownerInfo, setOwnerInfo] = useState(null)
   const [ownerDefaultAddress, setOwnerDefaultAddress] = useState(null)
   const [showOwnerModal, setShowOwnerModal] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
   const deliveryAddress = split.delivery_address
 
   async function handleChatWithOwner() {
@@ -675,11 +694,29 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         )}
       </div>
 
+      <div className="flex justify-center pt-2">
+        <button
+          onClick={() => setShowReportModal(true)}
+          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
+        >
+          <Flag className="w-4 h-4" /> Report this Order
+        </button>
+      </div>
+
       {showOwnerModal && (
         <OwnerProfileModal
           ownerInfo={ownerInfo}
+          ownerId={split.restaurant_owner_id}
           deliveryAddress={displayAddress}
           onClose={() => setShowOwnerModal(false)}
+        />
+      )}
+      {showReportModal && (
+        <ReportModal
+          type="order"
+          targetId={split.id}
+          targetName={`Order #${split.id.slice(0, 8).toUpperCase()}`}
+          onClose={() => setShowReportModal(false)}
         />
       )}
     </div>
@@ -725,7 +762,7 @@ export default function SupplierOrdersPage() {
     })
     if (error) { toast.error(error.message); return }
     setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status } : s))
-    if (selectedSplit?.id === splitId) setSelectedSplit(prev => ({ ...prev, status }))
+    setSelectedSplit(prev => prev?.id === splitId ? { ...prev, status } : prev)
     const msgs = { confirmed: 'Order confirmed!', out_for_delivery: 'Marked as out for delivery!', cancelled: 'Cancellation accepted.' }
     toast.success(msgs[status] || 'Status updated')
   }
@@ -737,10 +774,20 @@ export default function SupplierOrdersPage() {
       p_dispute_message: disputeMsg,
     })
     if (error) { toast.error(error.message); return }
+    const split = splits.find(s => s.id === splitId)
+    if (split?.restaurant_owner_id) {
+      await supabase.from('notifications').insert({
+        user_id: split.restaurant_owner_id,
+        title: 'Order Re-dispatched',
+        message: `Supplier responded to your dispute: "${disputeMsg}". Your order is out for delivery again.`,
+        type: 'info',
+        link: '/owner/orders',
+      })
+    }
     setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status: 'out_for_delivery', dispute_message: disputeMsg } : s))
+    setSelectedSplit(prev => prev?.id === splitId ? { ...prev, status: 'out_for_delivery' } : prev)
     toast.success('Order re-sent for delivery — restaurant owner notified!')
     setDisputeTarget(null)
-    setSelectedSplit(null)
   }
 
   async function cancelFromDispute(splitId, message, refundFile = null) {

@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Send, MessageSquare, ArrowLeft, Shield, Search, X, Phone, Globe, Star, MapPin, CheckCircle } from 'lucide-react'
+import { Send, MessageSquare, ArrowLeft, Shield, Search, X, Paperclip, Trash2, FileText, Loader2 } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import toast from 'react-hot-toast'
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export default function AdminChatPage() {
   const { user } = useAuth()
@@ -16,10 +20,14 @@ export default function AdminChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [search, setSearch] = useState('')
   const [userProfiles, setUserProfiles] = useState({})
   const [profileModal, setProfileModal] = useState(null)
+  const [unreadMap, setUnreadMap] = useState({})
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const bottomRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     if (!user) return
@@ -38,6 +46,7 @@ export default function AdminChatPage() {
   useEffect(() => {
     if (!selectedConv) return
     loadMessages(selectedConv.id)
+    setConfirmDelete(false)
 
     const channel = supabase
       .channel(`admin-conv-${selectedConv.id}`)
@@ -72,6 +81,8 @@ export default function AdminChatPage() {
       .order('created_at', { ascending: false })
 
     const userIds = [...new Set((convs || []).map(c => c.user_id).filter(Boolean))]
+    const convIds = (convs || []).map(c => c.id)
+
     let profileMap = {}
     if (userIds.length > 0) {
       const [{ data: usersData }, { data: ownerData }, { data: supplierData }] = await Promise.all([
@@ -94,13 +105,32 @@ export default function AdminChatPage() {
         }
       })
     }
+
+    // Batch-fetch unread counts per conversation
+    if (convIds.length > 0 && user) {
+      const { data: unreads } = await supabase
+        .from('admin_messages')
+        .select('conversation_id')
+        .in('conversation_id', convIds)
+        .eq('is_read', false)
+        .neq('sender_id', user.id)
+      const map = {}
+      ;(unreads || []).forEach(m => { map[m.conversation_id] = (map[m.conversation_id] || 0) + 1 })
+      setUnreadMap(map)
+    }
+
     setUserProfiles(profileMap)
     setConversations(convs || [])
     setLoading(false)
   }
 
+  function handleSelectConv(conv) {
+    setSelectedConv(conv)
+    setConfirmDelete(false)
+    setUnreadMap(prev => ({ ...prev, [conv.id]: 0 }))
+  }
+
   async function openOrCreateConv(targetUserId) {
-    // Check for existing conversation
     let { data: conv } = await supabase
       .from('admin_conversations')
       .select('*')
@@ -108,15 +138,12 @@ export default function AdminChatPage() {
       .maybeSingle()
 
     if (!conv) {
-      // Try to create; if unique constraint fires, re-fetch
       const { data: newConv, error } = await supabase
         .from('admin_conversations')
         .insert({ user_id: targetUserId })
         .select()
         .single()
-
       if (error) {
-        // Might be a duplicate — try selecting again
         const { data: retry } = await supabase
           .from('admin_conversations')
           .select('*')
@@ -130,7 +157,6 @@ export default function AdminChatPage() {
 
     if (!conv) return
 
-    // Load profile if not already cached
     if (!userProfiles[targetUserId]) {
       const [{ data: u }, { data: op }, { data: sp }] = await Promise.all([
         supabase.from('users').select('id, full_name, email, role, avatar_url, is_banned').eq('id', targetUserId).single(),
@@ -138,19 +164,21 @@ export default function AdminChatPage() {
         supabase.from('supplier_profiles').select('user_id, business_name, city, avatar_url').eq('user_id', targetUserId).maybeSingle(),
       ])
       if (u) {
-        const enriched = {
-          ...u,
-          restaurant_name: op?.restaurant_name,
-          city: op?.city || sp?.city,
-          business_name: sp?.business_name,
-          avatar_url: sp?.avatar_url || u.avatar_url,
-        }
-        setUserProfiles(prev => ({ ...prev, [targetUserId]: enriched }))
+        setUserProfiles(prev => ({
+          ...prev,
+          [targetUserId]: {
+            ...u,
+            restaurant_name: op?.restaurant_name,
+            city: op?.city || sp?.city,
+            business_name: sp?.business_name,
+            avatar_url: sp?.avatar_url || u.avatar_url,
+          },
+        }))
       }
     }
 
     setConversations(prev => prev.find(c => c.id === conv.id) ? prev : [conv, ...prev])
-    setSelectedConv(conv)
+    handleSelectConv(conv)
   }
 
   async function loadMessages(convId) {
@@ -164,19 +192,75 @@ export default function AdminChatPage() {
       .eq('conversation_id', convId).neq('sender_id', user.id)
   }
 
-  async function sendMessage() {
-    if (!input.trim() || !selectedConv || sending) return
+  async function uploadFile(file) {
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error('Only images (JPG, PNG, GIF, WebP) and PDFs are allowed')
+      return null
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error('File must be under 5MB')
+      return null
+    }
+    const ext = file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin'
+    const safeName = `${selectedConv.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
+    const { error } = await supabase.storage.from('chat-attachments').upload(safeName, file)
+    if (error) { toast.error('Upload failed: ' + error.message); return null }
+    const { data: { publicUrl } } = supabase.storage.from('chat-attachments').getPublicUrl(safeName)
+    return { url: publicUrl, type: file.type }
+  }
+
+  async function sendMessage(attachmentUrl, attachmentType) {
     const text = input.trim()
+    if (!text && !attachmentUrl) return
+    if (!selectedConv || sending) return
     setInput('')
     setSending(true)
     const tempId = `temp-${Date.now()}`
-    const optimistic = { id: tempId, conversation_id: selectedConv.id, sender_id: user.id, content: text, is_read: false, created_at: new Date().toISOString() }
-    setMessages(prev => [...prev, optimistic])
+    setMessages(prev => [...prev, {
+      id: tempId,
+      conversation_id: selectedConv.id,
+      sender_id: user.id,
+      content: text,
+      attachment_url: attachmentUrl || null,
+      attachment_type: attachmentType || null,
+      is_read: false,
+      created_at: new Date().toISOString(),
+    }])
     const { data: inserted } = await supabase.from('admin_messages')
-      .insert({ conversation_id: selectedConv.id, sender_id: user.id, content: text })
+      .insert({
+        conversation_id: selectedConv.id,
+        sender_id: user.id,
+        content: text,
+        attachment_url: attachmentUrl || null,
+        attachment_type: attachmentType || null,
+      })
       .select().single()
     if (inserted) setMessages(prev => prev.map(m => m.id === tempId ? inserted : m))
     setSending(false)
+  }
+
+  async function handleFileSelect(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !selectedConv) return
+    setUploading(true)
+    const result = await uploadFile(file)
+    if (result) await sendMessage(result.url, result.type)
+    setUploading(false)
+  }
+
+  async function deleteConversation() {
+    if (!selectedConv) return
+    const { error } = await supabase
+      .from('admin_conversations')
+      .delete()
+      .eq('id', selectedConv.id)
+    if (error) { toast.error('Failed to delete chat'); return }
+    setConversations(prev => prev.filter(c => c.id !== selectedConv.id))
+    setSelectedConv(null)
+    setMessages([])
+    setConfirmDelete(false)
+    toast.success('Chat deleted')
   }
 
   async function openProfile(conv) {
@@ -195,25 +279,27 @@ export default function AdminChatPage() {
   function getRoleLabel(userId) {
     const p = userProfiles[userId]
     if (!p) return ''
-    const map = { restaurant_owner: 'Restaurant Owner', supplier: 'Supplier', admin: 'Admin' }
-    return map[p.role] || p.role
+    return { restaurant_owner: 'Restaurant Owner', supplier: 'Supplier', admin: 'Admin' }[p.role] || p.role
   }
 
   function getRoleBadgeClass(role) {
-    const map = { supplier: 'bg-purple-50 text-purple-700', restaurant_owner: 'bg-blue-50 text-blue-700', admin: 'bg-red-50 text-red-700' }
-    return map[role] || 'bg-gray-100 text-gray-600'
+    return { supplier: 'bg-purple-50 text-purple-700', restaurant_owner: 'bg-blue-50 text-blue-700', admin: 'bg-red-50 text-red-700' }[role] || 'bg-gray-100 text-gray-600'
   }
 
-  const filtered = conversations.filter(c => {
-    if (!search) return true
-    const name = getDisplayName(c).toLowerCase()
-    return name.includes(search.toLowerCase())
-  })
-
+  const filtered = conversations.filter(c =>
+    !search || getDisplayName(c).toLowerCase().includes(search.toLowerCase())
+  )
   const selectedProfile = selectedConv ? userProfiles[selectedConv.user_id] : null
 
   return (
     <div className="flex flex-col" style={{ height: 'calc(100vh - 8.5rem)' }}>
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
+        onChange={handleFileSelect}
+      />
       <h1 className="text-2xl font-black text-gray-900 mb-4 flex-shrink-0">Support Chat</h1>
       <div className="flex-1 min-h-0 flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
 
@@ -241,26 +327,33 @@ export default function AdminChatPage() {
               </div>
             ) : filtered.map(conv => {
               const p = userProfiles[conv.user_id]
+              const unread = unreadMap[conv.id] || 0
               return (
                 <button
                   key={conv.id}
-                  onClick={() => setSelectedConv(conv)}
+                  onClick={() => handleSelectConv(conv)}
                   className={`w-full p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 ${selectedConv?.id === conv.id ? 'bg-emerald-50' : ''}`}
                 >
                   <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                    {p?.avatar_url ? (
-                      <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-sm font-bold text-slate-500">{getDisplayName(conv)?.[0]?.toUpperCase()}</span>
-                    )}
+                    {p?.avatar_url
+                      ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
+                      : <span className="text-sm font-bold text-slate-500">{getDisplayName(conv)?.[0]?.toUpperCase()}</span>
+                    }
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm truncate">{getDisplayName(conv)}</p>
+                    <p className={`text-sm truncate ${unread > 0 ? 'font-black text-gray-900' : 'font-semibold text-gray-900'}`}>{getDisplayName(conv)}</p>
                     <p className="text-xs text-gray-400">{getRoleLabel(conv.user_id)}{p?.city ? ` · ${p.city}` : ''}</p>
                   </div>
-                  {p?.is_banned && (
-                    <span className="text-[10px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded-full">Banned</span>
-                  )}
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                    {unread > 0 && (
+                      <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        {unread > 9 ? '9+' : unread}
+                      </span>
+                    )}
+                    {p?.is_banned && (
+                      <span className="text-[10px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded-full">Banned</span>
+                    )}
+                  </div>
                 </button>
               )
             })}
@@ -270,7 +363,6 @@ export default function AdminChatPage() {
         {/* Message thread */}
         {selectedConv ? (
           <div className="flex-1 flex flex-col min-w-0">
-            {/* Chat header — clickable to view profile */}
             <div className="p-4 border-b border-gray-100 flex items-center gap-3 flex-shrink-0">
               <button onClick={() => setSelectedConv(null)} className="md:hidden p-1.5 hover:bg-gray-100 rounded-lg flex-shrink-0">
                 <ArrowLeft className="w-5 h-5 text-gray-600" />
@@ -278,20 +370,33 @@ export default function AdminChatPage() {
               <button
                 onClick={() => openProfile(selectedConv)}
                 className="flex items-center gap-3 hover:bg-gray-50 rounded-xl px-2 py-1 -ml-2 transition-colors flex-1 min-w-0 text-left"
-                title="View profile"
               >
                 <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                  {selectedProfile?.avatar_url ? (
-                    <img src={selectedProfile.avatar_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-sm font-bold text-slate-500">{getDisplayName(selectedConv)?.[0]?.toUpperCase()}</span>
-                  )}
+                  {selectedProfile?.avatar_url
+                    ? <img src={selectedProfile.avatar_url} alt="" className="w-full h-full object-cover" />
+                    : <span className="text-sm font-bold text-slate-500">{getDisplayName(selectedConv)?.[0]?.toUpperCase()}</span>
+                  }
                 </div>
                 <div className="min-w-0">
                   <p className="font-bold text-gray-900 text-sm truncate">{getDisplayName(selectedConv)}</p>
-                  <p className="text-xs text-gray-400">{getRoleLabel(selectedConv.user_id)}{selectedProfile?.city ? ` · ${selectedProfile.city}` : ''} <span className="text-emerald-600 font-medium">· tap to view profile</span></p>
+                  <p className="text-xs text-gray-400">
+                    {getRoleLabel(selectedConv.user_id)}{selectedProfile?.city ? ` · ${selectedProfile.city}` : ''}
+                    <span className="text-emerald-600 font-medium"> · tap to view profile</span>
+                  </p>
                 </div>
               </button>
+
+              {confirmDelete ? (
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <span className="text-xs text-gray-500 hidden sm:block">Delete chat?</span>
+                  <button onClick={deleteConversation} className="px-2.5 py-1 text-xs bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Delete</button>
+                  <button onClick={() => setConfirmDelete(false)} className="px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200">Cancel</button>
+                </div>
+              ) : (
+                <button onClick={() => setConfirmDelete(true)} className="p-2 hover:bg-gray-100 rounded-lg flex-shrink-0 group" title="Delete conversation">
+                  <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" />
+                </button>
+              )}
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
@@ -310,11 +415,39 @@ export default function AdminChatPage() {
                         }
                       </div>
                     )}
-                    <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                      isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
-                    }`}>
-                      <p>{msg.content}</p>
-                      <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</p>
+                    <div className="max-w-[75%] space-y-1">
+                      {msg.attachment_url && (
+                        msg.attachment_type?.startsWith('image/') ? (
+                          <img
+                            src={msg.attachment_url}
+                            alt="attachment"
+                            className="rounded-xl max-h-48 max-w-full object-contain cursor-pointer block"
+                            onClick={() => window.open(msg.attachment_url, '_blank')}
+                          />
+                        ) : (
+                          <a
+                            href={msg.attachment_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold ${isMine ? 'bg-slate-700 text-white' : 'bg-white border border-slate-200 text-slate-700 shadow-sm'}`}
+                          >
+                            <FileText className="w-4 h-4 flex-shrink-0" /> View PDF
+                          </a>
+                        )
+                      )}
+                      {msg.content && (
+                        <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                          isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
+                        }`}>
+                          <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                          <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</p>
+                        </div>
+                      )}
+                      {msg.attachment_url && !msg.content && (
+                        <p className={`text-[10px] px-1 opacity-60 text-slate-400 ${isMine ? 'text-right' : ''}`}>
+                          {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )
@@ -322,19 +455,28 @@ export default function AdminChatPage() {
               <div ref={bottomRef} />
             </div>
 
-            <div className="p-3 bg-white border-t border-gray-100 flex gap-2 flex-shrink-0">
+            <div className="p-3 bg-white border-t border-gray-100 flex gap-2 flex-shrink-0 items-center">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading || sending}
+                className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
+                title="Attach image or PDF (max 5MB)"
+              >
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin text-emerald-500" /> : <Paperclip className="w-5 h-5" />}
+              </button>
               <input
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                placeholder="Type a message..."
+                placeholder={uploading ? 'Uploading...' : 'Type a message...'}
                 className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-colors"
-                disabled={sending}
+                disabled={sending || uploading}
               />
               <button
-                onClick={sendMessage}
-                disabled={sending || !input.trim()}
+                onClick={() => sendMessage()}
+                disabled={sending || uploading || !input.trim()}
                 className="p-2.5 bg-emerald-600 rounded-full text-white hover:bg-emerald-700 disabled:opacity-40 flex-shrink-0 transition-colors"
               >
                 <Send className="w-4 h-4" />

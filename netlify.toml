@@ -1,7 +1,7 @@
 [build]
   command = "npm run install:all && npm run build"
   publish = "client/dist"
-  environment = { NODE_VERSION = "18.17.0", VITE_SUPABASE_URL = "https://rexngdtweiivdyzrpfud.supabase.co", VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleG5nZHR3ZWlpdmR5enJwZnVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc5ODkzNTksImV4cCI6MjA5MzU2NTM1OX0.IDlcimNLMZ3i5Eo7GMV5GFDHIcNim6cmLvMIOLcawlk", SUPABASE_URL = "https://rexngdtweiivdyzrpfud.supabase.co" }
+  environment = { NODE_VERSION = "18.17.0" }
 
 [functions]
   directory = "netlify/functions"

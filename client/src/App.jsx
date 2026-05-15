@@ -24,6 +24,7 @@ import AdminCertificatesPage from './pages/admin/CertificatesPage'
 import AdminProductsPage from './pages/admin/ProductsPage'
 import AdminOrdersPage from './pages/admin/OrdersPage'
 import AdminReportsPage from './pages/admin/ReportsPage'
+import AdminChatPage from './pages/admin/AdminChatPage'
 
 // Owner pages
 import OwnerLayout from './components/layout/OwnerLayout'
@@ -94,6 +95,7 @@ export default function App() {
               <Route path="products" element={<AdminProductsPage />} />
               <Route path="orders" element={<AdminOrdersPage />} />
               <Route path="reports" element={<AdminReportsPage />} />
+              <Route path="chat" element={<AdminChatPage />} />
             </Route>
 
             {/* Restaurant Owner */}

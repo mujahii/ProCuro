@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Send, MessageSquare, ArrowLeft, Package } from 'lucide-react'
+import { Send, MessageSquare, ArrowLeft, Package, Shield } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -21,6 +21,10 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [adminConv, setAdminConv] = useState(null)
+  const [adminMessages, setAdminMessages] = useState([])
+  const [showingAdmin, setShowingAdmin] = useState(false)
+  const [adminUnread, setAdminUnread] = useState(0)
   const autoSentRef = useRef(false)
   const bottomRef = useRef(null)
 
@@ -38,6 +42,7 @@ export default function ChatPage() {
     if (!user) return
     if (role === 'supplier' && !supplierId) return
     loadConversations()
+    loadAdminConv()
   }, [user, role, supplierId])
 
   // Owner: open conv with supplier from order link
@@ -51,6 +56,64 @@ export default function ChatPage() {
     if (!initOwnerId || role !== 'supplier' || !supplierId) return
     startOrOpenForSupplier(initOwnerId)
   }, [initOwnerId, supplierId, role])
+
+  async function loadAdminConv() {
+    const { data } = await supabase
+      .from('admin_conversations')
+      .select('*')
+      .eq('user_id', user.id)
+      .maybeSingle()
+    if (data) {
+      setAdminConv(data)
+      const { count } = await supabase
+        .from('admin_messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('conversation_id', data.id)
+        .eq('is_read', false)
+        .neq('sender_id', user.id)
+      setAdminUnread(count || 0)
+    }
+  }
+
+  async function openAdminSupport() {
+    let conv = adminConv
+    if (!conv) {
+      const { data } = await supabase
+        .from('admin_conversations')
+        .insert({ user_id: user.id })
+        .select()
+        .single()
+      conv = data
+      setAdminConv(conv)
+    }
+    if (!conv) return
+    setShowingAdmin(true)
+    setSelectedConv(null)
+    const { data: msgs } = await supabase
+      .from('admin_messages')
+      .select('*')
+      .eq('conversation_id', conv.id)
+      .order('created_at', { ascending: true })
+    setAdminMessages(msgs || [])
+    await supabase.from('admin_messages').update({ is_read: true })
+      .eq('conversation_id', conv.id).neq('sender_id', user.id)
+    setAdminUnread(0)
+  }
+
+  async function sendAdminMessage() {
+    if (!input.trim() || !adminConv || sending) return
+    const text = input.trim()
+    setInput('')
+    setSending(true)
+    const tempId = `temp-${Date.now()}`
+    const optimistic = { id: tempId, conversation_id: adminConv.id, sender_id: user.id, content: text, is_read: false, created_at: new Date().toISOString() }
+    setAdminMessages(prev => [...prev, optimistic])
+    const { data: inserted } = await supabase.from('admin_messages')
+      .insert({ conversation_id: adminConv.id, sender_id: user.id, content: text })
+      .select().single()
+    if (inserted) setAdminMessages(prev => prev.map(m => m.id === tempId ? inserted : m))
+    setSending(false)
+  }
 
   async function loadConversations() {
     if (role === 'restaurant_owner') {
@@ -174,8 +237,25 @@ export default function ChatPage() {
   }, [selectedConv?.id])
 
   useEffect(() => {
+    if (!adminConv || !showingAdmin) return
+    const channel = supabase
+      .channel(`admin-conv-${adminConv.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT', schema: 'public', table: 'admin_messages',
+        filter: `conversation_id=eq.${adminConv.id}`,
+      }, (payload) => {
+        setAdminMessages(prev => prev.find(m => m.id === payload.new.id) ? prev : [...prev, payload.new])
+        if (payload.new.sender_id !== user.id) {
+          supabase.from('admin_messages').update({ is_read: true }).eq('id', payload.new.id)
+        }
+      })
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [adminConv?.id, showingAdmin])
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, adminMessages])
 
   async function loadMessages(convId) {
     const { data } = await supabase
@@ -237,11 +317,28 @@ export default function ChatPage() {
       <div className="flex-1 min-h-0 flex bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
 
         {/* Conversation list */}
-        <div className={`${selectedConv ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-72 lg:w-80 border-r border-slate-100 flex-shrink-0`}>
+        <div className={`${selectedConv || showingAdmin ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-72 lg:w-80 border-r border-slate-100 flex-shrink-0`}>
           <div className="p-4 border-b border-slate-100 flex-shrink-0">
             <p className="text-sm font-semibold text-slate-500">{conversations.length} conversation{conversations.length !== 1 ? 's' : ''}</p>
           </div>
           <div className="flex-1 overflow-y-auto">
+            {/* ProCuro Support entry always at top */}
+            <button
+              onClick={openAdminSupport}
+              className={`w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-100 ${showingAdmin ? 'bg-emerald-50' : ''}`}
+            >
+              <div className="w-10 h-10 rounded-full bg-emerald-600 flex-shrink-0 flex items-center justify-center">
+                <Shield className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-slate-900 text-sm">ProCuro Support</p>
+                <p className="text-xs text-slate-400">Admin team</p>
+              </div>
+              {adminUnread > 0 && (
+                <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">{adminUnread}</span>
+              )}
+            </button>
+
             {loading ? (
               <div className="p-6 text-center text-slate-400 text-sm">Loading...</div>
             ) : conversations.length === 0 ? (
@@ -255,8 +352,8 @@ export default function ChatPage() {
             ) : conversations.map(conv => (
               <button
                 key={conv.id}
-                onClick={() => setSelectedConv(conv)}
-                className={`w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-50 ${selectedConv?.id === conv.id ? 'bg-emerald-50' : ''}`}
+                onClick={() => { setSelectedConv(conv); setShowingAdmin(false) }}
+                className={`w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-50 ${selectedConv?.id === conv.id && !showingAdmin ? 'bg-emerald-50' : ''}`}
               >
                 <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
                   {getConvAvatar(conv) ? (
@@ -281,8 +378,63 @@ export default function ChatPage() {
           </div>
         </div>
 
+        {/* Admin support message thread */}
+        {showingAdmin && (
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="p-4 border-b border-slate-100 flex items-center gap-3 flex-shrink-0">
+              <button onClick={() => setShowingAdmin(false)} className="md:hidden p-1.5 hover:bg-slate-100 rounded-lg">
+                <ArrowLeft className="w-5 h-5 text-slate-600" />
+              </button>
+              <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-slate-900 text-sm">ProCuro Support</p>
+                <p className="text-xs text-slate-400">Admin team · Usually responds within 24h</p>
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+              {adminMessages.length === 0 && (
+                <div className="text-center text-slate-400 text-sm py-8">No messages yet. How can we help?</div>
+              )}
+              {adminMessages.map(msg => {
+                const isMine = msg.sender_id === user.id
+                return (
+                  <div key={msg.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-[80%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                      isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
+                    }`}>
+                      <p>{msg.content}</p>
+                      <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</p>
+                    </div>
+                  </div>
+                )
+              })}
+              <div ref={bottomRef} />
+            </div>
+            <div className="p-3 bg-white border-t border-slate-100 flex gap-2 flex-shrink-0">
+              <input
+                type="text"
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendAdminMessage()}
+                placeholder="Message ProCuro Support..."
+                className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-colors"
+                disabled={sending}
+              />
+              <button
+                onClick={sendAdminMessage}
+                disabled={sending || !input.trim()}
+                className="p-2.5 bg-emerald-600 rounded-full text-white hover:bg-emerald-700 disabled:opacity-40 flex-shrink-0 transition-colors"
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Message thread */}
-        {selectedConv ? (
+        {!showingAdmin && selectedConv ? (
           <div className="flex-1 flex flex-col min-w-0">
             <div className="p-4 border-b border-slate-100 flex items-center gap-3 flex-shrink-0">
               <button
@@ -374,7 +526,7 @@ export default function ChatPage() {
               </button>
             </div>
           </div>
-        ) : (
+        ) : !showingAdmin && (
           <div className="hidden md:flex flex-1 items-center justify-center text-center text-slate-400">
             <div>
               <MessageSquare className="w-12 h-12 mx-auto mb-3 text-slate-200" />

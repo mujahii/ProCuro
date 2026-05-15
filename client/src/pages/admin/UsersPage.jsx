@@ -325,13 +325,9 @@ export default function AdminUsersPage() {
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => {
-                          if (u.role === 'supplier' && u.supplier_profile?.id) {
-                            navigate(`/supplier/${u.supplier_profile.id}`)
-                          }
-                        }}
-                        className={`p-1.5 rounded-lg text-emerald-400 ${u.role === 'supplier' && u.supplier_profile?.id ? 'hover:bg-emerald-50 cursor-pointer' : 'opacity-30 cursor-default'}`}
-                        title="Open public profile"
+                        onClick={() => u.role !== 'admin' && navigate(`/admin/chat?user_id=${u.id}`)}
+                        className={`p-1.5 rounded-lg text-emerald-400 ${u.role !== 'admin' ? 'hover:bg-emerald-50 cursor-pointer' : 'opacity-30 cursor-default'}`}
+                        title="Chat with user"
                       >
                         <MessageSquare className="w-4 h-4" />
                       </button>
@@ -486,12 +482,12 @@ export default function AdminUsersPage() {
                 >
                   <Send className="w-4 h-4" /> Send Message
                 </button>
-                {viewTarget.role === 'supplier' && viewTarget.supplier_profile?.id && (
+                {viewTarget.role !== 'admin' && (
                   <button
-                    onClick={() => { setViewTarget(null); navigate(`/supplier/${viewTarget.supplier_profile.id}`) }}
+                    onClick={() => { setViewTarget(null); navigate(`/admin/chat?user_id=${viewTarget.id}`) }}
                     className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50"
                   >
-                    View Profile
+                    <MessageSquare className="w-4 h-4" /> Chat
                   </button>
                 )}
               </div>

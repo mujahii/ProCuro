@@ -1,10 +1,11 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, Award, Package, ShoppingBag, LogOut, Store, Flag } from 'lucide-react'
+import { LayoutDashboard, Users, Award, Package, ShoppingBag, LogOut, Flag, MessageSquare } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import NotificationBell from '../ui/NotificationBell'
+import ProCuroLogo from '../ui/ProCuroLogo'
 
 const navItems = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -13,20 +14,30 @@ const navItems = [
   { to: '/admin/products', icon: Package, label: 'Products' },
   { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
   { to: '/admin/reports', icon: Flag, label: 'Reports', badge: true },
+  { to: '/admin/chat', icon: MessageSquare, label: 'Chat', unreadBadge: true },
 ]
 
 export default function AdminLayout() {
   const { signOut } = useAuth()
   const navigate = useNavigate()
   const [pendingReports, setPendingReports] = useState(0)
+  const [unreadChats, setUnreadChats] = useState(0)
 
   useEffect(() => {
     fetchPendingReports()
-    const channel = supabase
+    fetchUnreadChats()
+    const reportsChannel = supabase
       .channel('admin-reports-badge')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, fetchPendingReports)
       .subscribe()
-    return () => supabase.removeChannel(channel)
+    const chatsChannel = supabase
+      .channel('admin-chat-badge')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'admin_messages' }, fetchUnreadChats)
+      .subscribe()
+    return () => {
+      supabase.removeChannel(reportsChannel)
+      supabase.removeChannel(chatsChannel)
+    }
   }, [])
 
   async function fetchPendingReports() {
@@ -35,6 +46,15 @@ export default function AdminLayout() {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'pending')
     setPendingReports(count || 0)
+  }
+
+  async function fetchUnreadChats() {
+    const { count } = await supabase
+      .from('admin_messages')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_read', false)
+      .neq('sender_id', (await supabase.auth.getUser()).data.user?.id)
+    setUnreadChats(count || 0)
   }
 
   async function handleSignOut() {
@@ -48,9 +68,7 @@ export default function AdminLayout() {
       <aside className="w-60 bg-gray-900 text-white flex flex-col fixed top-0 left-0 h-full z-40">
         <div className="px-5 py-5 border-b border-gray-800">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
-            </div>
+            <ProCuroLogo size={32} />
             <div>
               <span className="font-bold text-lg">ProCuro</span>
               <span className="block text-xs text-gray-400">Admin Panel</span>
@@ -59,7 +77,7 @@ export default function AdminLayout() {
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map(({ to, icon: Icon, label, badge }) => (
+          {navItems.map(({ to, icon: Icon, label, badge, unreadBadge }) => (
             <NavLink
               key={to}
               to={to}
@@ -72,6 +90,11 @@ export default function AdminLayout() {
               {badge && pendingReports > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
                   {pendingReports}
+                </span>
+              )}
+              {unreadBadge && unreadChats > 0 && (
+                <span className="bg-emerald-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                  {unreadChats}
                 </span>
               )}
             </NavLink>

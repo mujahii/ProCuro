@@ -335,6 +335,12 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
   )
 }
 
+function fmtPhone(p) {
+  if (!p || p.includes(' ')) return p
+  if (p.startsWith('+49') && p.length > 3) return `+49 ${p.slice(3, 6)} ${p.slice(6)}`
+  return p
+}
+
 function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
   return (
     <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
@@ -371,7 +377,7 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">Phone</p>
                 <a href={`tel:${ownerInfo.phone}`} className="text-sm font-medium text-slate-800 hover:underline">
-                  {ownerInfo.phone}
+                  {fmtPhone(ownerInfo.phone)}
                 </a>
               </div>
             </div>
@@ -379,7 +385,7 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
           {deliveryAddress && (
             <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl">
               <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">
                   Delivery Address{deliveryAddress.label ? ` · ${deliveryAddress.label}` : ''}
                 </p>
@@ -390,6 +396,14 @@ function OwnerProfileModal({ ownerInfo, deliveryAddress, onClose }) {
                   ].filter(Boolean).join(', ')}
                 </p>
               </div>
+              <a
+                href={`https://maps.google.com/?q=${deliveryAddress.latitude ? `${deliveryAddress.latitude},${deliveryAddress.longitude}` : encodeURIComponent([deliveryAddress.street, deliveryAddress.city].filter(Boolean).join(', '))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-slate-400 hover:text-emerald-600 flex-shrink-0 mt-0.5 transition-colors"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
           )}
           {!ownerInfo?.bio && !ownerInfo?.phone && !deliveryAddress && (
@@ -435,7 +449,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
     })
     // Fallback: if this order has no stored delivery address, fetch owner's default address
     if (!deliveryAddress) {
-      supabase.from('addresses').select('label, street, postal_code, city')
+      supabase.from('addresses').select('label, street, postal_code, city, latitude, longitude')
         .eq('user_id', ownerId).eq('is_default', true).maybeSingle()
         .then(({ data }) => setOwnerDefaultAddress(data))
     }

@@ -47,7 +47,7 @@ export default function NotificationDropdown({ onClose }) {
     <>
       {/* Mobile backdrop */}
       <div className="sm:hidden fixed inset-0 bg-black/20 z-40" onClick={onClose} />
-      <div className="fixed left-3 right-3 top-[68px] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
+      <div className="fixed left-3 right-3 top-[68px] sm:left-auto sm:right-4 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
           <h3 className="font-bold text-slate-900 text-sm">Notifications</h3>
           <button onClick={markAllRead} className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 font-medium">

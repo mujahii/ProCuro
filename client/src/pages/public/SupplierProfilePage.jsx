@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone } from 'lucide-react'
+import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/layout/Navbar'
@@ -10,6 +10,12 @@ import ReportModal from '../../components/ui/ReportModal'
 import toast from 'react-hot-toast'
 
 const INITIAL_LIMIT = 6
+
+function fmtPhone(p) {
+  if (!p || p.includes(' ')) return p
+  if (p.startsWith('+49') && p.length > 3) return `+49 ${p.slice(3, 6)} ${p.slice(6)}`
+  return p
+}
 
 function getProductImageUrl(path) {
   if (!path) return null
@@ -30,6 +36,7 @@ export default function SupplierProfilePage() {
   const [showReportModal, setShowReportModal] = useState(false)
   const [showAll, setShowAll] = useState(false)
   const [activeCategory, setActiveCategory] = useState(null)
+  const [addresses, setAddresses] = useState([])
 
   useEffect(() => {
     if (id) loadData()
@@ -44,6 +51,10 @@ export default function SupplierProfilePage() {
     setSupplier(sp)
     setProducts(prods || [])
     setCertificates(certs || [])
+    if (sp?.user_id) {
+      const { data: addrs } = await supabase.from('addresses').select('*').eq('user_id', sp.user_id)
+      setAddresses(addrs || [])
+    }
     setLoading(false)
   }
 
@@ -258,7 +269,28 @@ export default function SupplierProfilePage() {
               {supplier.phone && (
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
                   <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <a href={`tel:${supplier.phone}`} className="text-sm text-emerald-700 font-medium hover:underline">{supplier.phone}</a>
+                  <a href={`tel:${supplier.phone}`} className="text-sm text-emerald-700 font-medium hover:underline">{fmtPhone(supplier.phone)}</a>
+                </div>
+              )}
+              {addresses.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Locations</p>
+                  <div className="space-y-1.5">
+                    {addresses.map(addr => {
+                      const q = addr.latitude && addr.longitude
+                        ? `${addr.latitude},${addr.longitude}`
+                        : encodeURIComponent([addr.street, addr.city].filter(Boolean).join(', '))
+                      return (
+                        <div key={addr.id} className="flex items-center gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                          <span className="text-sm text-slate-600 flex-1 truncate">{addr.label || addr.city}</span>
+                          <a href={`https://maps.google.com/?q=${q}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-emerald-600 flex-shrink-0 transition-colors">
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
               </div>

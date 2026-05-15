@@ -169,12 +169,32 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
     city: current.city || '',
     cuisine: normaliseCuisine(current.cuisine),
     website: current.website || '',
+    latitude: current.latitude || null,
+    longitude: current.longitude || null,
   })
-  const [gpsCoords, setGpsCoords] = useState(
-    current.latitude && current.longitude ? { lat: current.latitude, lng: current.longitude } : null
-  )
   const [saving, setSaving] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
+  const { addresses: savedAddresses, addAddress, setDefault: setDefaultAddr } = useAddresses()
+  const [showAddrModal, setShowAddrModal] = useState(false)
+  const [selectedAddrId, setSelectedAddrId] = useState('')
+
+  useEffect(() => {
+    if (!selectedAddrId && savedAddresses.length > 0) {
+      const def = savedAddresses.find(a => a.is_default)
+      const byCity = savedAddresses.find(a => a.city === current.city)
+      const initial = def || byCity || savedAddresses[0]
+      if (initial) {
+        setSelectedAddrId(initial.id)
+        setForm(f => ({ ...f, city: initial.city || '', latitude: initial.latitude || null, longitude: initial.longitude || null }))
+      }
+    }
+  }, [savedAddresses])
+
+  function handleSelectAddr(id) {
+    setSelectedAddrId(id)
+    const addr = savedAddresses.find(a => a.id === id)
+    if (addr) setForm(f => ({ ...f, city: addr.city || '', latitude: addr.latitude || null, longitude: addr.longitude || null }))
+  }
 
   async function detectGPS() {
     if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
@@ -185,10 +205,20 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
           const { latitude: lat, longitude: lng } = pos.coords
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
           const data = await res.json()
-          const addr = data.address || {}
-          setForm(f => ({ ...f, city: addr.city || addr.town || addr.village || addr.suburb || f.city }))
-          setGpsCoords({ lat, lng })
-          toast.success('GPS location saved!')
+          const a = data.address || {}
+          const city = a.city || a.town || a.village || a.suburb || ''
+          const newAddr = await addAddress({
+            label: 'Business Location',
+            street: [a.road, a.house_number].filter(Boolean).join(' ') || '',
+            postal_code: a.postcode || '',
+            city,
+            country: 'Germany',
+            latitude: lat,
+            longitude: lng,
+          })
+          setSelectedAddrId(newAddr.id)
+          setForm(f => ({ ...f, city, latitude: lat, longitude: lng }))
+          toast.success('Location saved!')
         } catch {
           toast.error('Could not fetch location from GPS')
         } finally {
@@ -220,37 +250,13 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
           city: form.city.trim() || null,
           cuisine: form.cuisine.length > 0 ? form.cuisine : null,
           website: form.website.trim() || null,
-          latitude: gpsCoords?.lat ?? null,
-          longitude: gpsCoords?.lng ?? null,
+          latitude: form.latitude || null,
+          longitude: form.longitude || null,
         },
         { onConflict: 'user_id' }
       )
-      // Sync GPS location to addresses table as 'Business Location'
-      if (gpsCoords) {
-        const { data: existing } = await supabase
-          .from('addresses')
-          .select('id, is_default')
-          .eq('user_id', userId)
-          .eq('label', 'Business Location')
-          .maybeSingle()
-        const addrPayload = {
-          user_id: userId,
-          label: 'Business Location',
-          city: form.city.trim() || null,
-          street: null,
-          postal_code: null,
-          country: 'Germany',
-          latitude: gpsCoords.lat,
-          longitude: gpsCoords.lng,
-        }
-        if (existing) {
-          await supabase.from('addresses').update(addrPayload).eq('id', existing.id)
-        } else {
-          const noAddresses = (await supabase.from('addresses').select('id', { count: 'exact', head: true }).eq('user_id', userId)).count === 0
-          await supabase.from('addresses').insert({ ...addrPayload, is_default: noAddresses })
-        }
-      }
-      onSaved({ tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null, latitude: gpsCoords?.lat ?? null, longitude: gpsCoords?.lng ?? null })
+      if (selectedAddrId) await setDefaultAddr(selectedAddrId)
+      onSaved({ tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null, latitude: form.latitude || null, longitude: form.longitude || null })
       onClose()
       toast.success('Business details saved!')
     } catch {
@@ -278,29 +284,49 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
           <p className="text-xs text-slate-400 mt-1">Used on invoices and delivery receipts</p>
         </div>
         <div>
-          <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center justify-between mb-2">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide">City / Location</label>
-            <button
-              type="button"
-              onClick={detectGPS}
-              disabled={gpsLoading}
-              className="flex items-center gap-1 text-xs text-emerald-600 font-semibold hover:text-emerald-700 disabled:opacity-50 transition-colors"
-            >
-              {gpsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
-              Detect My Location
+            <button type="button" onClick={() => setShowAddrModal(true)} className="text-xs text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">
+              + Manage Addresses
             </button>
           </div>
-          <input
-            value={form.city}
-            onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            placeholder="e.g. Berlin"
-          />
-          {gpsCoords && (
-            <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
-              <CheckCircle className="w-3.5 h-3.5" /> GPS coordinates saved
-            </p>
+          {savedAddresses.length === 0 ? (
+            <div className="p-4 border border-dashed border-slate-200 rounded-xl text-center">
+              <p className="text-sm text-slate-400 mb-3">No locations added yet</p>
+              <div className="flex items-center justify-center gap-3">
+                <button type="button" onClick={detectGPS} disabled={gpsLoading} className="flex items-center gap-1.5 text-sm text-emerald-600 font-semibold hover:text-emerald-700 disabled:opacity-50 transition-colors">
+                  {gpsLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
+                  Use GPS
+                </button>
+                <span className="text-slate-300">|</span>
+                <button type="button" onClick={() => setShowAddrModal(true)} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700">
+                  Add Address
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {savedAddresses.map(addr => (
+                <button
+                  key={addr.id}
+                  type="button"
+                  onClick={() => handleSelectAddr(addr.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors text-left ${
+                    selectedAddrId === addr.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'
+                  }`}
+                >
+                  <MapPin className={`w-4 h-4 flex-shrink-0 ${selectedAddrId === addr.id ? 'text-emerald-600' : 'text-slate-400'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-semibold truncate ${selectedAddrId === addr.id ? 'text-emerald-700' : 'text-slate-900'}`}>{addr.label || addr.city}</p>
+                    <p className="text-xs text-slate-500 truncate">{[addr.street, [addr.postal_code, addr.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>
+                  </div>
+                  {addr.is_default && <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Favorite</span>}
+                  {selectedAddrId === addr.id && !addr.is_default && <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
+                </button>
+              ))}
+            </div>
           )}
+          {showAddrModal && <AddressModal onClose={() => setShowAddrModal(false)} userId={userId} />}
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">

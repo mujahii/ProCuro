@@ -3,10 +3,7 @@ const { createClient } = require('@supabase/supabase-js')
 const WebSocket = require('ws')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({
-  model: 'gemini-2.5-flash',
-  generationConfig: { thinkingConfig: { thinkingBudget: 0 } },
-})
+const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
 const supabase = createClient(
   process.env.SUPABASE_URL,

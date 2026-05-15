@@ -53,10 +53,16 @@ function ActionModal({ report, onClose, onActionDone }) {
         title: 'Warning from ProCuro Admin',
         message: warnMsg.trim(),
         type: 'warning',
+        link: report.type === 'supplier' ? '/supplier/chat' : '/owner/chat',
       })
-      await supabase.from('reports').update({ status: 'reviewed' }).eq('id', report.id)
+      await supabase.from('reports').update({
+        status: 'reviewed',
+        admin_action: `Warning sent: "${warnMsg.trim()}"`,
+        admin_action_at: new Date().toISOString(),
+      }).eq('id', report.id)
       toast.success('Warning sent')
-      onActionDone(report.id, 'reviewed')
+      onActionDone(report.id, 'reviewed', `Warning sent: "${warnMsg.trim()}"`)
+
       onClose()
     } catch (err) {
       toast.error(err.message || 'Failed to send warning')
@@ -73,12 +79,17 @@ function ActionModal({ report, onClose, onActionDone }) {
       await supabase.from('notifications').insert({
         user_id: targetInfo.user_id,
         title: 'Your account has been suspended',
-        message: 'Your ProCuro account has been suspended following a report. Your profile and products are no longer visible in the store. If you believe this is a mistake, contact procuro@admin.com.',
+        message: 'Your ProCuro account has been suspended following a report. To appeal, please chat with the admin through the ProCuro Chat Centre.',
         type: 'warning',
+        link: '/supplier/chat',
       })
-      await supabase.from('reports').update({ status: 'reviewed' }).eq('id', report.id)
+      await supabase.from('reports').update({
+        status: 'reviewed',
+        admin_action: 'Account suspended',
+        admin_action_at: new Date().toISOString(),
+      }).eq('id', report.id)
       toast.success('Account suspended and user notified')
-      onActionDone(report.id, 'reviewed')
+      onActionDone(report.id, 'reviewed', 'Account suspended')
       onClose()
     } catch (err) {
       toast.error(err.message || 'Failed to suspend account')
@@ -100,9 +111,14 @@ function ActionModal({ report, onClose, onActionDone }) {
           type: 'warning',
         })
       }
-      await supabase.from('reports').update({ status: 'reviewed' }).eq('id', report.id)
+      await supabase.from('reports').update({
+        status: 'reviewed',
+        admin_action: `Product removed: "${targetInfo?.name}"`,
+        admin_action_at: new Date().toISOString(),
+      }).eq('id', report.id)
       toast.success('Product deactivated and supplier notified')
-      onActionDone(report.id, 'reviewed')
+      onActionDone(report.id, 'reviewed', `Product removed: "${targetInfo?.name}"`)
+
       onClose()
     } catch (err) {
       toast.error(err.message || 'Failed to deactivate product')
@@ -112,8 +128,12 @@ function ActionModal({ report, onClose, onActionDone }) {
   }
 
   async function dismiss() {
-    await supabase.from('reports').update({ status: 'dismissed' }).eq('id', report.id)
-    onActionDone(report.id, 'dismissed')
+    await supabase.from('reports').update({
+      status: 'dismissed',
+      admin_action: 'Dismissed — no action needed',
+      admin_action_at: new Date().toISOString(),
+    }).eq('id', report.id)
+    onActionDone(report.id, 'dismissed', 'Dismissed — no action needed')
     onClose()
   }
 
@@ -265,8 +285,8 @@ export default function AdminReportsPage() {
     setLoading(false)
   }
 
-  function handleActionDone(reportId, status) {
-    setReports(prev => prev.map(r => r.id === reportId ? { ...r, status } : r))
+  function handleActionDone(reportId, status, adminAction) {
+    setReports(prev => prev.map(r => r.id === reportId ? { ...r, status, admin_action: adminAction || r.admin_action } : r))
   }
 
   const filtered = reports.filter(r => {
@@ -354,9 +374,12 @@ export default function AdminReportsPage() {
                     <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${STATUS_STYLES[r.status]}`}>
                       {r.status}
                     </span>
+                    {r.admin_action && (
+                      <p className="text-[10px] text-gray-400 mt-1 max-w-[120px] truncate" title={r.admin_action}>{r.admin_action}</p>
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-xs text-emerald-600 font-medium">Review →</span>
+                    <span className="text-xs text-emerald-600 font-medium">{r.status === 'pending' ? 'Review →' : 'View →'}</span>
                   </td>
                 </tr>
               ))}

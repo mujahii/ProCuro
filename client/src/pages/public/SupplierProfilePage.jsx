@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare } from 'lucide-react'
+import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/layout/Navbar'
@@ -127,7 +127,7 @@ export default function SupplierProfilePage() {
                   <span>Halal Certified</span>
                 </>
               )}
-              {supplier.rating > 0 && (
+              {supplier.rating != null && (
                 <span className="text-amber-300 ml-1">★ {Number(supplier.rating).toFixed(1)}</span>
               )}
             </p>
@@ -253,6 +253,12 @@ export default function SupplierProfilePage() {
                   {(Array.isArray(supplier.category) ? supplier.category : [supplier.category]).map(c => (
                     <span key={c} className="text-xs font-medium px-3 py-1 rounded-full bg-slate-100 text-slate-600">{c}</span>
                   ))}
+                </div>
+              )}
+              {supplier.phone && (
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                  <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  <a href={`tel:${supplier.phone}`} className="text-sm text-emerald-700 font-medium hover:underline">{supplier.phone}</a>
                 </div>
               )}
               </div>

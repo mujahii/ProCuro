@@ -27,9 +27,9 @@ const CATEGORIES = [
 ]
 
 const STATS = [
-  { number: '500+', label: 'Restaurants' },
-  { number: '120+', label: 'Verified Suppliers' },
-  { number: '50,000+', label: 'Orders Placed' },
+  { number: '28+', label: 'Restaurants' },
+  { number: '12+', label: 'Verified Suppliers' },
+  { number: '850+', label: 'Orders Placed' },
   { number: '4.9★', label: 'Average Rating' },
 ]
 
@@ -40,9 +40,9 @@ const HOW_IT_WORKS = [
 ]
 
 const STAT_TARGETS = [
-  { target: 500, suffix: '+', label: 'Restaurants' },
-  { target: 120, suffix: '+', label: 'Verified Suppliers' },
-  { target: 50000, suffix: '+', label: 'Orders Placed' },
+  { target: 28, suffix: '+', label: 'Restaurants' },
+  { target: 12, suffix: '+', label: 'Verified Suppliers' },
+  { target: 850, suffix: '+', label: 'Orders Placed' },
   { target: 4.9, suffix: '★', label: 'Average Rating', decimal: true },
 ]
 

@@ -1,13 +1,22 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Search, Ban, Trash2, CheckCircle, Eye, Send, X, History } from 'lucide-react'
+import { Search, Ban, Trash2, CheckCircle, Eye, Send, X, History, ToggleLeft, ToggleRight, MessageSquare } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
+const ROLE_FILTERS = [
+  { value: '', label: 'All Users' },
+  { value: 'supplier', label: 'Suppliers' },
+  { value: 'restaurant_owner', label: 'Restaurant Owners' },
+  { value: 'admin', label: 'Admins' },
+]
+
 export default function AdminUsersPage() {
   const { user: adminUser } = useAuth()
+  const navigate = useNavigate()
   const [tab, setTab] = useState('active')
   const [users, setUsers] = useState([])
   const [deletedAccounts, setDeletedAccounts] = useState([])
@@ -29,7 +38,7 @@ export default function AdminUsersPage() {
   async function loadUsers() {
     const { data } = await supabase
       .from('users')
-      .select('*, supplier_profile:supplier_profiles(business_name, is_verified, city), owner_profile:owner_profiles(restaurant_name, city)')
+      .select('*, supplier_profile:supplier_profiles(id, business_name, is_verified, is_active, city, phone, description, rating, category, website, avatar_url), owner_profile:owner_profiles(restaurant_name, city, tax_id, cuisine, website)')
       .order('created_at', { ascending: false })
     setUsers(data || [])
     setLoading(false)
@@ -43,8 +52,7 @@ export default function AdminUsersPage() {
 
       if (user.role === 'supplier') {
         if (next) {
-          const { error: spErr } = await supabase.from('supplier_profiles').update({ is_active: false }).eq('user_id', user.id)
-          if (spErr) throw spErr
+          await supabase.from('supplier_profiles').update({ is_active: false }).eq('user_id', user.id)
         } else {
           const { data: sp } = await supabase.from('supplier_profiles').select('is_verified').eq('user_id', user.id).single()
           if (sp?.is_verified) {
@@ -59,7 +67,7 @@ export default function AdminUsersPage() {
           title: 'Your account has been suspended',
           message: 'Your ProCuro account has been suspended by the admin. To appeal, please chat with the admin through the ProCuro Chat Centre.',
           type: 'warning',
-          link: '/owner/chat',
+          link: user.role === 'supplier' ? '/supplier/chat' : '/owner/chat',
         })
       }
 
@@ -67,6 +75,28 @@ export default function AdminUsersPage() {
       toast.success(next ? 'User banned' : 'User unbanned')
     } catch (err) {
       toast.error(err.message || 'Failed to update user')
+    }
+  }
+
+  async function toggleSupplierActive(user) {
+    const sp = user.supplier_profile
+    if (!sp) return
+    const next = !sp.is_active
+    const { error } = await supabase.from('supplier_profiles').update({ is_active: next }).eq('id', sp.id)
+    if (!error) {
+      setUsers(prev => prev.map(u => u.id === user.id
+        ? { ...u, supplier_profile: { ...u.supplier_profile, is_active: next } }
+        : u))
+      if (!next) {
+        await supabase.from('notifications').insert({
+          user_id: user.id,
+          title: 'Your supplier account has been deactivated',
+          message: 'Your ProCuro supplier profile has been deactivated. To appeal, please chat with the admin through the ProCuro Chat Centre.',
+          type: 'warning',
+          link: '/supplier/chat',
+        })
+      }
+      toast.success(next ? 'Supplier activated' : 'Supplier deactivated')
     }
   }
 
@@ -126,22 +156,42 @@ export default function AdminUsersPage() {
     return matchSearch && matchRole
   })
 
+  const roleBadge = (role) => {
+    const map = {
+      supplier: 'bg-purple-50 text-purple-700',
+      restaurant_owner: 'bg-blue-50 text-blue-700',
+      admin: 'bg-red-50 text-red-700',
+    }
+    const labels = { supplier: 'Supplier', restaurant_owner: 'Owner', admin: 'Admin' }
+    return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${map[role] || 'bg-gray-100 text-gray-600'}`}>{labels[role] || role}</span>
+  }
+
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-black text-gray-900">Users</h1>
-        <div className="flex gap-2">
-          <div className="relative">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search users..." className="pl-9 input text-sm py-2 w-56" />
-          </div>
-          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="input text-sm py-2 w-40">
-            <option value="">All roles</option>
-            <option value="restaurant_owner">Restaurant Owners</option>
-            <option value="supplier">Suppliers</option>
-            <option value="admin">Admin</option>
-          </select>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 className="text-2xl font-black text-gray-900">Users ({users.length})</h1>
+        <div className="relative">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search users..." className="pl-9 input text-sm py-2 w-56" />
         </div>
+      </div>
+
+      {/* Role filter buttons */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {ROLE_FILTERS.map(f => (
+          <button
+            key={f.value}
+            onClick={() => setRoleFilter(f.value)}
+            className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
+              roleFilter === f.value
+                ? 'bg-slate-900 text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {f.label}
+            {f.value && <span className="ml-1.5 opacity-60">({users.filter(u => u.role === f.value).length})</span>}
+          </button>
+        ))}
       </div>
 
       {/* Tabs */}
@@ -150,7 +200,7 @@ export default function AdminUsersPage() {
           onClick={() => setTab('active')}
           className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px ${tab === 'active' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
-          Active Users ({users.length})
+          Active ({users.length})
         </button>
         <button
           onClick={() => setTab('deleted')}
@@ -175,9 +225,7 @@ export default function AdminUsersPage() {
               {deletedAccounts.map(d => (
                 <tr key={d.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm text-gray-700">{d.email || '—'}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{d.role?.replace('_', ' ') || '—'}</span>
-                  </td>
+                  <td className="px-4 py-3 hidden sm:table-cell">{roleBadge(d.role)}</td>
                   <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">{d.business_name || '—'}</td>
                   <td className="px-4 py-3 text-xs text-gray-400">{d.deleted_at ? format(new Date(d.deleted_at), 'dd MMM yyyy, HH:mm') : '—'}</td>
                 </tr>
@@ -192,7 +240,7 @@ export default function AdminUsersPage() {
             <thead className="bg-gray-50 border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">User</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Role</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Role</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Business</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Joined</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
@@ -206,9 +254,7 @@ export default function AdminUsersPage() {
                     <p className="text-sm font-medium text-gray-900">{u.full_name || '—'}</p>
                     <p className="text-xs text-gray-400">{u.email}</p>
                   </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{u.role?.replace('_', ' ')}</span>
-                  </td>
+                  <td className="px-4 py-3">{roleBadge(u.role)}</td>
                   <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">
                     {u.supplier_profile?.business_name || u.owner_profile?.restaurant_name || '—'}
                   </td>
@@ -216,18 +262,47 @@ export default function AdminUsersPage() {
                     {u.created_at ? format(new Date(u.created_at), 'dd MMM yyyy') : '—'}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${u.is_banned ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
-                      {u.is_banned ? 'Inactive' : 'Active'}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${u.is_banned ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                        {u.is_banned ? 'Banned' : 'Active'}
+                      </span>
+                      {u.role === 'supplier' && u.supplier_profile && (
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${u.supplier_profile.is_active ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
+                          {u.supplier_profile.is_active ? 'Listed' : 'Unlisted'}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1 justify-end">
-                      <button onClick={() => setViewTarget(u)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400" title="View user">
+                      <button onClick={() => setViewTarget(u)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400" title="View profile">
                         <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (u.role === 'supplier' && u.supplier_profile?.id) {
+                            navigate(`/supplier/${u.supplier_profile.id}`)
+                          }
+                        }}
+                        className={`p-1.5 rounded-lg text-emerald-400 ${u.role === 'supplier' && u.supplier_profile?.id ? 'hover:bg-emerald-50 cursor-pointer' : 'opacity-30 cursor-default'}`}
+                        title="Open public profile"
+                      >
+                        <MessageSquare className="w-4 h-4" />
                       </button>
                       <button onClick={() => { setNotifyTarget(u); setNotifyTitle(''); setNotifyMsg('') }} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-400" title="Send notification">
                         <Send className="w-4 h-4" />
                       </button>
+                      {u.role === 'supplier' && u.supplier_profile && (
+                        <button
+                          onClick={() => toggleSupplierActive(u)}
+                          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
+                          title={u.supplier_profile.is_active ? 'Deactivate listing' : 'Activate listing'}
+                        >
+                          {u.supplier_profile.is_active
+                            ? <ToggleRight className="w-4 h-4 text-emerald-500" />
+                            : <ToggleLeft className="w-4 h-4" />}
+                        </button>
+                      )}
                       <button
                         onClick={() => u.is_banned ? toggleBan(u) : setBanTarget(u)}
                         className={`p-1.5 rounded-lg transition-colors ${u.is_banned ? 'text-green-500 hover:bg-green-50' : 'text-orange-500 hover:bg-orange-50'}`}
@@ -250,36 +325,109 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* View User Modal */}
+      {/* View Profile Modal */}
       {viewTarget && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-900">User Details</h2>
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <h2 className="text-lg font-bold text-gray-900">
+                {viewTarget.role === 'supplier' ? 'Supplier' : viewTarget.role === 'restaurant_owner' ? 'Restaurant Owner' : 'Admin'} Profile
+              </h2>
               <button onClick={() => setViewTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
             </div>
-            <div className="space-y-3 text-sm">
+
+            {/* Avatar + name */}
+            <div className="p-5 border-b border-gray-50">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                  {viewTarget.avatar_url || viewTarget.supplier_profile?.avatar_url ? (
+                    <img src={viewTarget.avatar_url || viewTarget.supplier_profile?.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-xl font-bold text-slate-500">{(viewTarget.full_name || viewTarget.email || '?')[0].toUpperCase()}</span>
+                  )}
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900">{viewTarget.full_name || '—'}</p>
+                  <p className="text-sm text-gray-500">{viewTarget.email}</p>
+                  <div className="flex gap-2 mt-1">{roleBadge(viewTarget.role)}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-2 text-sm">
+              {/* Common fields */}
               {[
-                ['Full Name', viewTarget.full_name],
-                ['Email', viewTarget.email],
-                ['Role', viewTarget.role?.replace('_', ' ')],
-                ['Business', viewTarget.supplier_profile?.business_name || viewTarget.owner_profile?.restaurant_name],
-                ['City', viewTarget.supplier_profile?.city || viewTarget.owner_profile?.city],
+                ['Phone', viewTarget.phone],
                 ['Status', viewTarget.is_banned ? 'Banned' : 'Active'],
                 ['Joined', viewTarget.created_at ? format(new Date(viewTarget.created_at), 'dd MMM yyyy') : '—'],
-              ].map(([label, val]) => (
+              ].map(([label, val]) => val && (
                 <div key={label} className="flex justify-between border-b border-gray-50 pb-2">
                   <span className="text-gray-500">{label}</span>
-                  <span className="font-medium text-gray-900 capitalize">{val || '—'}</span>
+                  <span className="font-medium text-gray-900">{val}</span>
                 </div>
               ))}
+
+              {/* Supplier-specific */}
+              {viewTarget.role === 'supplier' && viewTarget.supplier_profile && (
+                <>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-1">Supplier Info</p>
+                  {[
+                    ['Business', viewTarget.supplier_profile.business_name],
+                    ['City', viewTarget.supplier_profile.city],
+                    ['Phone', viewTarget.supplier_profile.phone || viewTarget.phone],
+                    ['Category', Array.isArray(viewTarget.supplier_profile.category) ? viewTarget.supplier_profile.category.join(', ') : viewTarget.supplier_profile.category],
+                    ['Rating', viewTarget.supplier_profile.rating != null ? `${Number(viewTarget.supplier_profile.rating).toFixed(1)} ★` : '—'],
+                    ['Verified', viewTarget.supplier_profile.is_verified ? 'Yes' : 'No'],
+                    ['Listed', viewTarget.supplier_profile.is_active ? 'Yes' : 'No'],
+                    ['Website', viewTarget.supplier_profile.website],
+                  ].map(([label, val]) => val && (
+                    <div key={label} className="flex justify-between border-b border-gray-50 pb-2">
+                      <span className="text-gray-500">{label}</span>
+                      <span className="font-medium text-gray-900 text-right max-w-[60%]">{val}</span>
+                    </div>
+                  ))}
+                  {viewTarget.supplier_profile.description && (
+                    <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 leading-relaxed">{viewTarget.supplier_profile.description}</div>
+                  )}
+                </>
+              )}
+
+              {/* Owner-specific */}
+              {viewTarget.role === 'restaurant_owner' && viewTarget.owner_profile && (
+                <>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide pt-1">Restaurant Info</p>
+                  {[
+                    ['Restaurant', viewTarget.owner_profile.restaurant_name],
+                    ['City', viewTarget.owner_profile.city],
+                    ['Tax ID', viewTarget.owner_profile.tax_id],
+                    ['Cuisine', Array.isArray(viewTarget.owner_profile.cuisine) ? viewTarget.owner_profile.cuisine.join(', ') : viewTarget.owner_profile.cuisine],
+                    ['Website', viewTarget.owner_profile.website],
+                  ].map(([label, val]) => val && (
+                    <div key={label} className="flex justify-between border-b border-gray-50 pb-2">
+                      <span className="text-gray-500">{label}</span>
+                      <span className="font-medium text-gray-900 text-right max-w-[60%]">{val}</span>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
-            <button
-              onClick={() => { setViewTarget(null); setNotifyTarget(viewTarget); setNotifyTitle(''); setNotifyMsg('') }}
-              className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
-            >
-              <Send className="w-4 h-4" /> Send Notification
-            </button>
+
+            <div className="p-5 flex gap-3 border-t border-gray-100">
+              <button
+                onClick={() => { setViewTarget(null); setNotifyTarget(viewTarget); setNotifyTitle(''); setNotifyMsg('') }}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
+              >
+                <Send className="w-4 h-4" /> Send Notification
+              </button>
+              {viewTarget.role === 'supplier' && viewTarget.supplier_profile?.id && (
+                <button
+                  onClick={() => { setViewTarget(null); navigate(`/supplier/${viewTarget.supplier_profile.id}`) }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50"
+                >
+                  View Public Profile
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -306,9 +454,7 @@ export default function AdminUsersPage() {
               autoFocus
             />
             <div className="flex gap-2">
-              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
-                Cancel
-              </button>
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
               <button
                 onClick={confirmDelete}
                 disabled={deleteConfirmText !== 'delete' || deleting}
@@ -330,21 +476,12 @@ export default function AdminUsersPage() {
               <button onClick={() => setBanTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
             </div>
             <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-5">
-              <p className="text-sm font-semibold text-orange-700 mb-1">
-                This user will be banned and will receive a notification.
-              </p>
-              <p className="text-xs text-orange-500">
-                <span className="font-bold">{banTarget.full_name || banTarget.email}</span> will no longer be able to use the platform and their profile will be hidden.
-              </p>
+              <p className="text-sm font-semibold text-orange-700 mb-1">This user will be banned and will receive a notification.</p>
+              <p className="text-xs text-orange-500"><span className="font-bold">{banTarget.full_name || banTarget.email}</span> will no longer be able to use the platform.</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setBanTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
-                Cancel
-              </button>
-              <button
-                onClick={() => { toggleBan(banTarget); setBanTarget(null) }}
-                className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600"
-              >
+              <button onClick={() => setBanTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button onClick={() => { toggleBan(banTarget); setBanTarget(null) }} className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600">
                 Yes, Ban User
               </button>
             </div>
@@ -364,25 +501,10 @@ export default function AdminUsersPage() {
               To: <span className="font-semibold text-gray-700">{notifyTarget.full_name || notifyTarget.email}</span>
             </p>
             <div className="space-y-3">
-              <input
-                value={notifyTitle}
-                onChange={e => setNotifyTitle(e.target.value)}
-                placeholder="Notification title"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-              <textarea
-                value={notifyMsg}
-                onChange={e => setNotifyMsg(e.target.value)}
-                placeholder="Write your message..."
-                rows={4}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
-              />
+              <input value={notifyTitle} onChange={e => setNotifyTitle(e.target.value)} placeholder="Notification title" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+              <textarea value={notifyMsg} onChange={e => setNotifyMsg(e.target.value)} placeholder="Write your message..." rows={4} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none" />
             </div>
-            <button
-              onClick={sendNotification}
-              disabled={sending}
-              className="mt-4 w-full py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60"
-            >
+            <button onClick={sendNotification} disabled={sending} className="mt-4 w-full py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60">
               {sending ? 'Sending...' : 'Send Notification'}
             </button>
           </div>

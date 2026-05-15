@@ -78,6 +78,33 @@ function CertModal({ cert, onApprove, onReject, onClose }) {
           </div>
         )}
 
+        {cert.status === 'approved' && (
+          <div className="space-y-3">
+            {!showReject ? (
+              <button
+                onClick={() => setShowReject(true)}
+                className="w-full flex items-center justify-center gap-2 border border-red-200 text-red-600 font-semibold py-2.5 rounded-lg hover:bg-red-50 text-sm"
+              >
+                <XCircle className="w-4 h-4" /> Revoke Certificate
+              </button>
+            ) : (
+              <div>
+                <div className="bg-red-50 border border-red-100 rounded-lg p-3 mb-3">
+                  <p className="text-xs font-semibold text-red-700">Revoking will deactivate the supplier and notify them to re-upload.</p>
+                </div>
+                <label className="label">Reason for Revocation *</label>
+                <textarea value={rejectionReason} onChange={e => setRejectionReason(e.target.value)} className="input h-20 resize-none mb-3" placeholder="Certificate expired, falsified document, etc." />
+                <div className="flex gap-3">
+                  <button onClick={() => setShowReject(false)} className="flex-1 btn-secondary text-sm">Back</button>
+                  <button onClick={handleReject} disabled={loading} className="flex-1 flex items-center justify-center gap-2 bg-red-600 text-white font-semibold py-2.5 rounded-lg hover:bg-red-700 text-sm disabled:opacity-50">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />} Revoke
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <button onClick={onClose} className="mt-3 w-full text-sm text-gray-500 hover:text-gray-700">Close</button>
       </div>
     </div></ModalPortal>

@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, Flag } from 'lucide-react'
+import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, Flag, AlertCircle } from 'lucide-react'
 import HalalBadge from '../../components/ui/HalalBadge'
 import { useProducts } from '../../hooks/useProducts'
 import { useAddresses } from '../../context/AddressContext'
@@ -8,7 +8,7 @@ import { useGeolocation } from '../../hooks/useGeolocation'
 import AddToCartModal from '../../components/store/AddToCartModal'
 import ReportModal from '../../components/ui/ReportModal'
 import { supabase } from '../../lib/supabase'
-import { useEffect } from 'react'
+import { useAuth } from '../../context/AuthContext'
 
 const CATEGORIES = [
   { name: 'Meat', icon: Beef },
@@ -32,6 +32,7 @@ const SORT_OPTIONS = [
 
 export default function StorePage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState('')
@@ -39,6 +40,8 @@ export default function StorePage() {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [reportProduct, setReportProduct] = useState(null)
   const [suppliers, setSuppliers] = useState([])
+  const [profileComplete, setProfileComplete] = useState(true)
+  const [missingFields, setMissingFields] = useState([])
   const filterRef = useRef(null)
   const { selectedAddress } = useAddresses()
   const { lat: geoLat, lng: geoLng } = useGeolocation()
@@ -64,6 +67,23 @@ export default function StorePage() {
   }, [])
 
   useEffect(() => {
+    if (!user) return
+    async function checkProfile() {
+      const [{ data: u }, { data: op }] = await Promise.all([
+        supabase.from('users').select('phone').eq('id', user.id).single(),
+        supabase.from('owner_profiles').select('city, tax_id').eq('user_id', user.id).maybeSingle(),
+      ])
+      const missing = []
+      if (!u?.phone) missing.push('phone number')
+      if (!op?.city) missing.push('city / location')
+      if (!op?.tax_id) missing.push('Tax ID')
+      setMissingFields(missing)
+      setProfileComplete(missing.length === 0)
+    }
+    checkProfile()
+  }, [user])
+
+  useEffect(() => {
     function handleClick(e) {
       if (filterRef.current && !filterRef.current.contains(e.target)) setFilterOpen(false)
     }
@@ -80,6 +100,25 @@ export default function StorePage() {
 
   return (
     <div className="space-y-8">
+      {/* Incomplete profile warning */}
+      {!profileComplete && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-amber-800">Complete your profile to place orders</p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Missing: {missingFields.join(', ')}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/owner/profile')}
+            className="text-xs bg-amber-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors flex-shrink-0"
+          >
+            Complete Profile
+          </button>
+        </div>
+      )}
+
       {/* Search bar with filter */}
       <div className="flex gap-2">
         <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-slate-100">

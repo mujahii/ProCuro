@@ -53,22 +53,11 @@ export default function AdminUsersPage() {
       const { error } = await supabase.from('users').update({ is_banned: next }).eq('id', user.id)
       if (error) throw error
 
-      if (user.role === 'supplier') {
-        if (next) {
-          await supabase.from('supplier_profiles').update({ is_active: false }).eq('user_id', user.id)
-        } else {
-          const { data: sp } = await supabase.from('supplier_profiles').select('is_verified').eq('user_id', user.id).single()
-          if (sp?.is_verified) {
-            await supabase.from('supplier_profiles').update({ is_active: true }).eq('user_id', user.id)
-          }
-        }
-      }
-
       if (next) {
         await supabase.from('notifications').insert({
           user_id: user.id,
           title: 'Your account has been suspended',
-          message: 'Your ProCuro account has been suspended by the admin. To appeal, please chat with the admin through the ProCuro Chat Centre.',
+          message: 'Your ProCuro account has been suspended by the admin. To appeal, please contact us through the ProCuro Chat Centre.',
           type: 'warning',
           link: user.role === 'supplier' ? '/supplier/chat' : '/owner/chat',
         })
@@ -82,13 +71,19 @@ export default function AdminUsersPage() {
   }
 
   async function toggleOwnerActive(user) {
-    const op = user.owner_profile
-    if (!op) return
-    const next = !op.is_active
-    const { error } = await supabase.from('owner_profiles').update({ is_active: next }).eq('user_id', user.id)
+    const currentlyActive = user.owner_profile?.is_active ?? true
+    const next = !currentlyActive
+    let error
+    if (!user.owner_profile) {
+      const { error: e } = await supabase.from('owner_profiles').insert({ user_id: user.id, is_active: next })
+      error = e
+    } else {
+      const { error: e } = await supabase.from('owner_profiles').update({ is_active: next }).eq('user_id', user.id)
+      error = e
+    }
     if (!error) {
       setUsers(prev => prev.map(u => u.id === user.id
-        ? { ...u, owner_profile: { ...u.owner_profile, is_active: next } }
+        ? { ...u, owner_profile: { ...(u.owner_profile || { user_id: user.id }), is_active: next } }
         : u))
       if (!next) {
         await supabase.from('notifications').insert({
@@ -99,7 +94,7 @@ export default function AdminUsersPage() {
           link: '/owner/chat',
         })
       }
-      toast.success(next ? 'Owner account activated' : 'Owner account deactivated')
+      toast.success(next ? 'Owner account listed' : 'Owner account unlisted')
     }
   }
 
@@ -312,9 +307,9 @@ export default function AdminUsersPage() {
                           {u.supplier_profile.is_active ? 'Listed' : 'Unlisted'}
                         </span>
                       )}
-                      {u.role === 'restaurant_owner' && u.owner_profile && (
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${u.owner_profile.is_active !== false ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
-                          {u.owner_profile.is_active !== false ? 'Active' : 'Inactive'}
+                      {u.role === 'restaurant_owner' && (
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${(u.owner_profile?.is_active ?? true) ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
+                          {(u.owner_profile?.is_active ?? true) ? 'Listed' : 'Unlisted'}
                         </span>
                       )}
                     </div>
@@ -345,13 +340,13 @@ export default function AdminUsersPage() {
                             : <ToggleLeft className="w-4 h-4" />}
                         </button>
                       )}
-                      {u.role === 'restaurant_owner' && u.owner_profile && (
+                      {u.role === 'restaurant_owner' && (
                         <button
-                          onClick={() => u.owner_profile.is_active !== false ? setOwnerToggleTarget(u) : toggleOwnerActive(u)}
+                          onClick={() => (u.owner_profile?.is_active ?? true) ? setOwnerToggleTarget(u) : toggleOwnerActive(u)}
                           className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
-                          title={u.owner_profile.is_active !== false ? 'Deactivate owner' : 'Activate owner'}
+                          title={(u.owner_profile?.is_active ?? true) ? 'Unlist owner' : 'List owner'}
                         >
-                          {u.owner_profile.is_active !== false
+                          {(u.owner_profile?.is_active ?? true)
                             ? <ToggleRight className="w-4 h-4 text-emerald-500" />
                             : <ToggleLeft className="w-4 h-4" />}
                         </button>
@@ -499,21 +494,21 @@ export default function AdminUsersPage() {
                   <KeyRound className="w-4 h-4" /> Send Password Reset Email
                 </button>
               )}
-              {viewTarget.role === 'restaurant_owner' && viewTarget.owner_profile && (
+              {viewTarget.role === 'restaurant_owner' && (
                 <button
                   onClick={() => {
                     setViewTarget(null)
-                    viewTarget.owner_profile.is_active !== false ? setOwnerToggleTarget(viewTarget) : toggleOwnerActive(viewTarget)
+                    ;(viewTarget.owner_profile?.is_active ?? true) ? setOwnerToggleTarget(viewTarget) : toggleOwnerActive(viewTarget)
                   }}
                   className={`w-full flex items-center justify-center gap-2 py-2.5 border rounded-xl text-sm font-semibold transition-colors ${
-                    viewTarget.owner_profile.is_active !== false
+                    (viewTarget.owner_profile?.is_active ?? true)
                       ? 'border-orange-200 text-orange-700 hover:bg-orange-50'
                       : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
                   }`}
                 >
-                  {viewTarget.owner_profile.is_active !== false
-                    ? <><ToggleLeft className="w-4 h-4" /> Deactivate Account</>
-                    : <><ToggleRight className="w-4 h-4" /> Activate Account</>
+                  {(viewTarget.owner_profile?.is_active ?? true)
+                    ? <><ToggleLeft className="w-4 h-4" /> Unlist Account</>
+                    : <><ToggleRight className="w-4 h-4" /> List Account</>
                   }
                 </button>
               )}
@@ -579,17 +574,17 @@ export default function AdminUsersPage() {
         </div>
       )}
 
-      {/* Owner Deactivate Confirmation Modal */}
+      {/* Owner Unlist Confirmation Modal */}
       {ownerToggleTarget && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-900">Deactivate Owner Account</h2>
+              <h2 className="text-lg font-bold text-gray-900">Unlist Owner Account</h2>
               <button onClick={() => setOwnerToggleTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
             </div>
             <div className="bg-orange-50 border border-orange-100 rounded-xl p-4 mb-5">
-              <p className="text-sm font-semibold text-orange-700 mb-1">This restaurant owner will be deactivated and notified.</p>
-              <p className="text-xs text-orange-500"><span className="font-bold">{ownerToggleTarget.owner_profile?.restaurant_name || ownerToggleTarget.full_name || ownerToggleTarget.email}</span> will see a banner saying their account is deactivated.</p>
+              <p className="text-sm font-semibold text-orange-700 mb-1">This restaurant owner will be unlisted and notified.</p>
+              <p className="text-xs text-orange-500"><span className="font-bold">{ownerToggleTarget.owner_profile?.restaurant_name || ownerToggleTarget.full_name || ownerToggleTarget.email}</span> will see a banner saying their account has been deactivated.</p>
             </div>
             <div className="flex gap-2">
               <button onClick={() => setOwnerToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
@@ -597,7 +592,7 @@ export default function AdminUsersPage() {
                 onClick={() => { toggleOwnerActive(ownerToggleTarget); setOwnerToggleTarget(null) }}
                 className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600"
               >
-                Yes, Deactivate
+                Yes, Unlist
               </button>
             </div>
           </div>

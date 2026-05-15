@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, ShoppingCart } from 'lucide-react'
+import { Eye, EyeOff, ShoppingCart, ArrowLeft, Mail, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -27,6 +27,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [forgotMode, setForgotMode] = useState(false)
+  const [resetEmail, setResetEmail] = useState('')
+  const [resetLoading, setResetLoading] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -52,6 +56,21 @@ export default function LoginPage() {
     }
   }
 
+  async function handleForgotPassword(e) {
+    e.preventDefault()
+    if (!resetEmail.trim()) return toast.error('Please enter your email')
+    setResetLoading(true)
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setResetLoading(false)
+    if (error) {
+      toast.error(error.message)
+    } else {
+      setResetSent(true)
+    }
+  }
+
   async function handleOAuth(provider) {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
@@ -73,71 +92,138 @@ export default function LoginPage() {
             <p className="text-slate-500 text-sm">The Halal Procurement Platform</p>
           </div>
 
-          {/* Email / password form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {forgotMode ? (
+            /* Forgot Password form */
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors text-slate-900 placeholder-slate-400"
-                placeholder="you@company.com"
-              />
+              {resetSent ? (
+                <div className="text-center py-4">
+                  <CheckCircle className="w-14 h-14 text-emerald-500 mx-auto mb-4" />
+                  <h2 className="text-lg font-bold text-slate-900 mb-2">Check your email</h2>
+                  <p className="text-sm text-slate-500 mb-1">We sent a password reset link to:</p>
+                  <p className="text-sm font-semibold text-slate-800 mb-4">{resetEmail}</p>
+                  <p className="text-xs text-slate-400 mb-6">Click the link in the email to set a new password. The link expires in 1 hour.</p>
+                  <button
+                    onClick={() => { setForgotMode(false); setResetSent(false); setResetEmail('') }}
+                    className="text-sm text-emerald-600 font-semibold hover:underline"
+                  >
+                    ← Back to login
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={() => setForgotMode(false)}
+                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 mb-5 transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back to login
+                  </button>
+                  <h2 className="text-xl font-bold text-slate-900 mb-1">Forgot your password?</h2>
+                  <p className="text-sm text-slate-500 mb-5">Enter your email and we'll send you a reset link.</p>
+                  <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
+                      <div className="relative">
+                        <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          type="email"
+                          value={resetEmail}
+                          onChange={e => setResetEmail(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors text-slate-900 placeholder-slate-400"
+                          placeholder="you@company.com"
+                          autoFocus
+                          required
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={resetLoading}
+                      className="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-colors text-base shadow-md disabled:opacity-60"
+                    >
+                      {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                    </button>
+                  </form>
+                </>
+              )}
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Password</label>
-              <div className="relative">
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors pr-10 text-slate-900 placeholder-slate-400"
-                  placeholder="••••••••"
-                />
-                <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-3 top-3.5 text-slate-400">
-                  {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          ) : (
+            /* Login form */
+            <>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors text-slate-900 placeholder-slate-400"
+                    placeholder="you@company.com"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">Password</label>
+                    <button
+                      type="button"
+                      onClick={() => setForgotMode(true)}
+                      className="text-xs text-emerald-600 font-semibold hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type={showPw ? 'text' : 'password'}
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors pr-10 text-slate-900 placeholder-slate-400"
+                      placeholder="••••••••"
+                    />
+                    <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-3 top-3.5 text-slate-400">
+                      {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60"
+                >
+                  {loading ? 'Logging in...' : 'Log In'}
                 </button>
+              </form>
+
+              {/* OAuth — below the form */}
+              <div className="mt-6">
+                <div className="flex items-center mb-4">
+                  <div className="flex-1 border-t border-slate-200" />
+                  <span className="px-3 text-xs text-slate-400 font-medium">OR CONTINUE WITH</span>
+                  <div className="flex-1 border-t border-slate-200" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleOAuth('google')}
+                    className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <GoogleLogo /> Google
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOAuth('apple')}
+                    className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  >
+                    <AppleLogo /> Apple
+                  </button>
+                </div>
               </div>
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60"
-            >
-              {loading ? 'Logging in...' : 'Log In'}
-            </button>
-          </form>
 
-          {/* OAuth — below the form */}
-          <div className="mt-6">
-            <div className="flex items-center mb-4">
-              <div className="flex-1 border-t border-slate-200" />
-              <span className="px-3 text-xs text-slate-400 font-medium">OR CONTINUE WITH</span>
-              <div className="flex-1 border-t border-slate-200" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleOAuth('google')}
-                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <GoogleLogo /> Google
-              </button>
-              <button
-                type="button"
-                onClick={() => handleOAuth('apple')}
-                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
-              >
-                <AppleLogo /> Apple
-              </button>
-            </div>
-          </div>
-
-          <p className="text-center mt-8 text-sm text-slate-500">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-emerald-600 font-semibold hover:underline">Sign Up</Link>
-          </p>
+              <p className="text-center mt-8 text-sm text-slate-500">
+                Don't have an account?{' '}
+                <Link to="/register" className="text-emerald-600 font-semibold hover:underline">Sign Up</Link>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>

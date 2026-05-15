@@ -33,6 +33,7 @@ export default function RegisterPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' })
   const [showPw, setShowPw] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -144,9 +145,14 @@ export default function RegisterPage() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Confirm Password</label>
-              <input type="password" required value={form.confirmPassword} onChange={e => update('confirmPassword', e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
-                placeholder="••••••••" />
+              <div className="relative">
+                <input type={showConfirm ? 'text' : 'password'} required value={form.confirmPassword} onChange={e => update('confirmPassword', e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors pr-10"
+                  placeholder="••••••••" />
+                <button type="button" onClick={() => setShowConfirm(p => !p)} className="absolute right-3 top-3.5 text-slate-400">
+                  {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
             <button type="submit" disabled={loading}
               className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60">

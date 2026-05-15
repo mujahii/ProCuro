@@ -11,6 +11,7 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [showPw, setShowPw] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [saving, setSaving] = useState(false)
   const [ready, setReady] = useState(false)
   const [done, setDone] = useState(false)
@@ -93,14 +94,23 @@ export default function ResetPasswordPage() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Confirm Password</label>
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  value={confirm}
-                  onChange={e => setConfirm(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Repeat new password"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirm ? 'text' : 'password'}
+                    value={confirm}
+                    onChange={e => setConfirm(e.target.value)}
+                    className="w-full px-4 py-3 pr-11 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Repeat new password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm(p => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
                 {confirm && password !== confirm && (
                   <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
                 )}

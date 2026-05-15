@@ -73,14 +73,10 @@ export default function AdminUsersPage() {
   async function toggleOwnerActive(user) {
     const currentlyActive = user.owner_profile?.is_active ?? true
     const next = !currentlyActive
-    let error
-    if (!user.owner_profile) {
-      const { error: e } = await supabase.from('owner_profiles').insert({ user_id: user.id, is_active: next })
-      error = e
-    } else {
-      const { error: e } = await supabase.from('owner_profiles').update({ is_active: next }).eq('user_id', user.id)
-      error = e
-    }
+    const { error } = await supabase.rpc('admin_set_owner_active', {
+      p_user_id: user.id,
+      p_is_active: next,
+    })
     if (!error) {
       setUsers(prev => prev.map(u => u.id === user.id
         ? { ...u, owner_profile: { ...(u.owner_profile || { user_id: user.id }), is_active: next } }
@@ -95,6 +91,8 @@ export default function AdminUsersPage() {
         })
       }
       toast.success(next ? 'Owner account listed' : 'Owner account unlisted')
+    } else {
+      toast.error(error.message || 'Failed to update')
     }
   }
 

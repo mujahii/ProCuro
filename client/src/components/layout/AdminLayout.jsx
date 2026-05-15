@@ -1,11 +1,10 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, Award, Package, ShoppingBag, LogOut, Flag, MessageSquare } from 'lucide-react'
+import { LayoutDashboard, Users, Award, Package, ShoppingBag, LogOut, Flag, MessageSquare, Shield } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import NotificationBell from '../ui/NotificationBell'
-import ProCuroLogo from '../ui/ProCuroLogo'
 
 const navItems = [
   { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -68,7 +67,9 @@ export default function AdminLayout() {
       <aside className="w-60 bg-gray-900 text-white flex flex-col fixed top-0 left-0 h-full z-40">
         <div className="px-5 py-5 border-b border-gray-800">
           <div className="flex items-center gap-2">
-            <ProCuroLogo size={32} />
+            <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+              <Shield className="w-4 h-4 text-white" />
+            </div>
             <div>
               <span className="font-bold text-lg">ProCuro</span>
               <span className="block text-xs text-gray-400">Admin Panel</span>

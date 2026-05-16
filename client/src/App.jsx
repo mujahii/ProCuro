@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { AddressProvider } from './context/AddressContext'
+import { LanguageProvider } from './context/LanguageContext'
 
 // Public pages
 import LandingPage from './pages/public/LandingPage'
@@ -72,6 +73,7 @@ function AuthenticatedChatbotFAB() {
 
 export default function App() {
   return (
+    <LanguageProvider>
     <AuthProvider>
       <CartProvider>
         <AddressProvider>
@@ -152,5 +154,6 @@ export default function App() {
         </AddressProvider>
       </CartProvider>
     </AuthProvider>
+    </LanguageProvider>
   )
 }

@@ -1,13 +1,12 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, Flag, AlertCircle, Navigation, X, Loader2 } from 'lucide-react'
+import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, AlertCircle, Navigation, X, Loader2 } from 'lucide-react'
 import HalalBadge from '../../components/ui/HalalBadge'
 import { reverseGeocode } from '../../lib/geocode'
 import { useProducts } from '../../hooks/useProducts'
 import { useAddresses } from '../../context/AddressContext'
 import { useGeolocation } from '../../hooks/useGeolocation'
 import AddToCartModal from '../../components/store/AddToCartModal'
-import ReportModal from '../../components/ui/ReportModal'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
@@ -40,7 +39,6 @@ export default function StorePage() {
   const [sortBy, setSortBy] = useState('')
   const [filterOpen, setFilterOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
-  const [reportProduct, setReportProduct] = useState(null)
   const [suppliers, setSuppliers] = useState([])
   const [profileComplete, setProfileComplete] = useState(true)
   const [missingFields, setMissingFields] = useState([])
@@ -346,7 +344,8 @@ export default function StorePage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {sortedProducts.map(product => (
-                <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} onReport={() => setReportProduct(product)} />
+                <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} />
+
               ))}
             </div>
           )}
@@ -451,7 +450,8 @@ export default function StorePage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {sortedProducts.map(product => (
-                  <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} onReport={() => setReportProduct(product)} />
+                  <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} />
+
                 ))}
               </div>
             )}
@@ -465,9 +465,6 @@ export default function StorePage() {
       {selectedProduct && (
         <AddToCartModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
       )}
-      {reportProduct && (
-        <ReportModal type="product" targetId={reportProduct.id} targetName={reportProduct.name} onClose={() => setReportProduct(null)} />
-      )}
     </div>
   )
 }
@@ -479,7 +476,7 @@ function getProductImageUrl(path) {
   return data?.publicUrl || null
 }
 
-function ProductCard({ product, onAddToCart, onReport }) {
+function ProductCard({ product, onAddToCart }) {
   const imgUrl = getProductImageUrl(product.image_url)
   return (
     <div
@@ -517,21 +514,12 @@ function ProductCard({ product, onAddToCart, onReport }) {
             <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
             <span className="text-xs text-slate-400 ml-1">/ {product.unit_type}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <button
-              onClick={e => { e.stopPropagation(); onReport() }}
-              className="w-8 h-8 rounded-full border border-slate-200 text-slate-400 flex items-center justify-center hover:border-red-300 hover:text-red-400 transition-colors"
-              title="Report product"
-            >
-              <Flag className="w-3.5 h-3.5" />
-            </button>
-            <button
-              onClick={e => { e.stopPropagation(); onAddToCart() }}
-              className="w-8 h-8 rounded-full bg-midnight text-white flex items-center justify-center hover:bg-midnight transition-colors"
-            >
-              <Plus className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            onClick={e => { e.stopPropagation(); onAddToCart() }}
+            className="w-8 h-8 rounded-full bg-midnight text-white flex items-center justify-center hover:bg-midnight-dark transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </div>

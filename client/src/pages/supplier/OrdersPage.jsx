@@ -646,10 +646,12 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         </div>
       )}
 
-      {split.cancellation_reason && split.status === 'cancelled' && (
+      {split.status === 'cancelled' && (split.cancellation_reason || split.cancelled_by) && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
-          <p className="font-semibold mb-1">Cancellation Reason</p>
-          <p>{split.cancellation_reason}</p>
+          <p className="font-semibold mb-1">
+            Cancelled by: {split.cancelled_by === 'supplier' ? 'You' : split.cancelled_by === 'owner' ? 'Restaurant Owner' : split.cancelled_by === 'admin' ? 'ProCuro Admin' : 'Unknown'}
+          </p>
+          {split.cancellation_reason && <p className="text-red-500">{split.cancellation_reason}</p>}
         </div>
       )}
 
@@ -962,8 +964,11 @@ export default function SupplierOrdersPage() {
                       <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Owner wants to cancel: {split.cancellation_reason}
                     </p>
                   )}
-                  {split.status === 'cancelled' && split.cancellation_reason && (
-                    <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">Reason: {split.cancellation_reason}</p>
+                  {split.status === 'cancelled' && (
+                    <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">
+                      Cancelled by {split.cancelled_by === 'supplier' ? 'you' : split.cancelled_by === 'owner' ? 'owner' : 'admin'}
+                      {split.cancellation_reason ? `: ${split.cancellation_reason}` : ''}
+                    </p>
                   )}
                   {split.status === 'delivery_dispute' && (
                     <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">

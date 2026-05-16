@@ -5,9 +5,29 @@ import { useAuth } from '../../context/AuthContext'
 import { reverseGeocode } from '../../lib/geocode'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
+import { useLanguage } from '../../context/LanguageContext'
 import NotificationBell from '../ui/NotificationBell'
 import ChatIcon from '../ui/ChatIcon'
 import toast from 'react-hot-toast'
+
+function LangSwitcher() {
+  const { lang, setLanguage } = useLanguage()
+  return (
+    <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5 flex-shrink-0">
+      {['en', 'de'].map(l => (
+        <button
+          key={l}
+          onClick={() => setLanguage(l)}
+          className={`px-2 py-1 rounded-md text-xs font-bold uppercase transition-colors ${
+            lang === l ? 'bg-white text-midnight shadow-sm' : 'text-slate-400 hover:text-slate-700'
+          }`}
+        >
+          {l}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 export default function Navbar({ onMenuClick }) {
   const { user, role, profile, signOut } = useAuth()
@@ -234,6 +254,7 @@ export default function Navbar({ onMenuClick }) {
 
           {/* Right */}
           <div className="flex items-center gap-2 sm:gap-4 relative">
+            <LangSwitcher />
             {user ? (
               <>
                 <ChatIcon />

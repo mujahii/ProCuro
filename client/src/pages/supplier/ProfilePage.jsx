@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
+import { useLanguage, LANGS } from '../../context/LanguageContext'
 import { reverseGeocode } from '../../lib/geocode'
 import {
   LogOut, Loader2, User, FileText, CheckCircle, Clock, XCircle,
@@ -576,24 +577,29 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
   const [gpsLoading, setGpsLoading] = useState(false)
   const { addresses: savedAddresses, addAddress, setDefault: setDefaultAddr } = useAddresses()
   const [showAddrModal, setShowAddrModal] = useState(false)
-  const [selectedAddrId, setSelectedAddrId] = useState('')
+  const [selectedAddrIds, setSelectedAddrIds] = useState([])
 
   useEffect(() => {
-    if (!selectedAddrId && savedAddresses.length > 0) {
+    if (selectedAddrIds.length === 0 && savedAddresses.length > 0) {
       const def = savedAddresses.find(a => a.is_default)
       const byCity = savedAddresses.find(a => a.city === current.city)
       const initial = def || byCity || savedAddresses[0]
       if (initial) {
-        setSelectedAddrId(initial.id)
+        setSelectedAddrIds([initial.id])
         setForm(f => ({ ...f, city: initial.city || '', latitude: initial.latitude || null, longitude: initial.longitude || null }))
       }
     }
   }, [savedAddresses])
 
-  function handleSelectAddr(id) {
-    setSelectedAddrId(id)
-    const addr = savedAddresses.find(a => a.id === id)
-    if (addr) setForm(f => ({ ...f, city: addr.city || '', latitude: addr.latitude || null, longitude: addr.longitude || null }))
+  function toggleAddrSelection(id) {
+    setSelectedAddrIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      const selected = savedAddresses.filter(a => next.includes(a.id))
+      const cities = [...new Set(selected.map(a => a.city).filter(Boolean))].join(', ')
+      const first = selected[0]
+      setForm(f => ({ ...f, city: cities, latitude: first?.latitude || null, longitude: first?.longitude || null }))
+      return next
+    })
   }
 
   async function detectGPS() {
@@ -615,7 +621,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
             latitude: lat,
             longitude: lng,
           })
-          setSelectedAddrId(newAddr.id)
+          setSelectedAddrIds([newAddr.id])
           setForm(f => ({ ...f, city, latitude: lat, longitude: lng }))
           toast.success('Location saved!')
         } catch {
@@ -651,7 +657,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
         website: form.website.trim() || null,
       }).eq('id', supplierProfileId)
 
-      if (selectedAddrId) await setDefaultAddr(selectedAddrId)
+      if (selectedAddrIds.length > 0) await setDefaultAddr(selectedAddrIds[0])
 
       onSaved({ ...form, category: form.categories })
       onClose()
@@ -687,6 +693,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
               + Manage Addresses
             </button>
           </div>
+          <p className="text-xs text-slate-400 mb-2">Select all locations to display on your profile</p>
           {savedAddresses.length === 0 ? (
             <div className="p-4 border border-dashed border-slate-200 rounded-xl text-center">
               <p className="text-sm text-slate-400 mb-3">No locations added yet</p>
@@ -703,24 +710,29 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
             </div>
           ) : (
             <div className="space-y-2">
-              {savedAddresses.map(addr => (
-                <button
-                  key={addr.id}
-                  type="button"
-                  onClick={() => handleSelectAddr(addr.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors text-left ${
-                    selectedAddrId === addr.id ? 'border-herb bg-lionsmane' : 'border-slate-200 bg-white hover:border-slate-300'
-                  }`}
-                >
-                  <MapPin className={`w-4 h-4 flex-shrink-0 ${selectedAddrId === addr.id ? 'text-midnight' : 'text-slate-400'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold truncate ${selectedAddrId === addr.id ? 'text-midnight-dark' : 'text-slate-900'}`}>{addr.label || addr.city}</p>
-                    <p className="text-xs text-slate-500 truncate">{[addr.street, [addr.postal_code, addr.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>
-                  </div>
-                  {addr.is_default && <span className="text-xs bg-celeste text-midnight-dark px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Favorite</span>}
-                  {selectedAddrId === addr.id && !addr.is_default && <CheckCircle className="w-4 h-4 text-midnight flex-shrink-0" />}
-                </button>
-              ))}
+              {savedAddresses.map(addr => {
+                const isSelected = selectedAddrIds.includes(addr.id)
+                return (
+                  <button
+                    key={addr.id}
+                    type="button"
+                    onClick={() => toggleAddrSelection(addr.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors text-left ${
+                      isSelected ? 'border-herb bg-lionsmane' : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded flex-shrink-0 border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-midnight border-midnight' : 'border-slate-300'}`}>
+                      {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
+                    </div>
+                    <MapPin className={`w-4 h-4 flex-shrink-0 ${isSelected ? 'text-midnight' : 'text-slate-400'}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold truncate ${isSelected ? 'text-midnight-dark' : 'text-slate-900'}`}>{addr.label || addr.city}</p>
+                      <p className="text-xs text-slate-500 truncate">{[addr.street, [addr.postal_code, addr.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>
+                    </div>
+                    {addr.is_default && <span className="text-xs bg-celeste text-midnight-dark px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Main</span>}
+                  </button>
+                )
+              })}
             </div>
           )}
           {showAddrModal && <AddressModal supplierProfileId={supplierProfileId} onClose={() => setShowAddrModal(false)} />}
@@ -999,6 +1011,7 @@ export default function SupplierProfilePage() {
   const navigate = useNavigate()
   const { user, profile, signOut, updateProfileState } = useAuth()
   const { addresses } = useAddresses()
+  const { lang, setLanguage } = useLanguage()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null)
   const [bio, setBio] = useState(profile?.bio || '')
@@ -1273,6 +1286,17 @@ export default function SupplierProfilePage() {
           <SettingRow label="Change Email & Password" onClick={() => setShowPasswordModal(true)} />
           <SettingRow label="Update Phone Number" onClick={() => setShowPhoneModal(true)} />
           <SettingRow label="Manage My Addresses" onClick={() => setShowAddressModal(true)} />
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm font-medium text-slate-700">Language / Sprache</span>
+            <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5">
+              {LANGS.map(l => (
+                <button key={l} onClick={() => setLanguage(l)}
+                  className={`px-3 py-1 rounded-md text-xs font-bold uppercase transition-colors ${lang === l ? 'bg-white text-midnight shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

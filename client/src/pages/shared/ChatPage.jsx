@@ -934,12 +934,19 @@ export default function ChatPage() {
             <div className="bg-midnight h-20 relative flex-shrink-0" />
             <div className="px-5 pb-5 -mt-10 relative">
               <div className="flex items-end justify-between mb-3">
-                <div className="w-20 h-20 rounded-2xl bg-slate-100 border-4 border-white shadow-md flex items-center justify-center overflow-hidden flex-shrink-0">
+                <button
+                  className="w-20 h-20 rounded-2xl bg-slate-100 border-4 border-white shadow-md flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => {
+                    const url = ownerProfileFull?.avatar_url || ownerProfileModal.avatar_url
+                    if (url) window.open(url, '_blank')
+                  }}
+                  title="View photo"
+                >
                   {(ownerProfileFull?.avatar_url || ownerProfileModal.avatar_url)
                     ? <img src={ownerProfileFull?.avatar_url || ownerProfileModal.avatar_url} alt="" className="w-full h-full object-cover" />
                     : <User className="w-9 h-9 text-slate-400" />
                   }
-                </div>
+                </button>
                 <button onClick={() => { setOwnerProfileModal(null); setOwnerProfileFull(null) }} className="p-1.5 rounded-lg hover:bg-slate-100 mb-1">
                   <X className="w-4 h-4 text-slate-500" />
                 </button>

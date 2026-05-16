@@ -92,37 +92,30 @@ exports.handler = async (event) => {
   const eventContext = [...islamicEventHints, ...germanEventHints].join(' ')
 
   const prompts = {
-    restaurant_owner: `You are an expert food procurement analyst for a Halal restaurant in Germany. Analyze this restaurant owner's procurement data from ProCuro.
+    restaurant_owner: `You are a food procurement analyst. Analyze this Halal restaurant owner's data.
 Data: ${JSON.stringify(context)}
-${eventContext ? `Seasonal context: ${eventContext}` : ''}
-Provide exactly 3 numbered points:
-1. **Spending Summary** — 2 sentences on spending and order patterns
-2. **Key Insight** — top supplier, most ordered category, or notable trend
-3. **Recommendation** — one actionable tip to optimize procurement or prepare for upcoming demand
-Keep it concise and practical.`,
+${eventContext ? `Season: ${eventContext}` : ''}
+Reply with exactly 3 bullet points (each ≤ 15 words):
+• **Spending** — total spent and main supplier
+• **Top pick** — most ordered category or product
+• **Tip** — one action to save money or prepare for demand`,
 
-    supplier: `You are an expert business analyst for a Halal food supplier in Germany. Analyze this supplier's data from ProCuro.
+    supplier: `You are a business analyst for a Halal food supplier in Germany. Analyze this data.
 Data: ${JSON.stringify(context)}
-${eventContext ? `Seasonal context: ${eventContext}` : ''}
-Pay special attention to:
-- Products with low or zero stock_quantity (flag them as needing restocking)
-- Products that are best-sellers (high order volume) — these need buffer stock
-- Upcoming Islamic events (Ramadan, Eid) or German events that will spike demand for specific products
-Provide exactly 4 numbered points:
-1. **Sales Performance** — summary of revenue, orders, and top products
-2. **Stock Alert** — which products need restocking urgently (if any have stock ≤ 3 or 0)
-3. **Upcoming Demand** — based on season/events, which products to prepare more of
-4. **Growth Tip** — one actionable recommendation to grow sales
-Keep it concise and data-driven.`,
+${eventContext ? `Season: ${eventContext}` : ''}
+Reply with exactly 4 bullet points (each ≤ 15 words):
+• **Sales** — revenue and order count this period
+• **Best seller** — top product by volume
+• **Stock alert** — any item with stock ≤ 3 (or "all good")
+• **Action** — one concrete step to grow or prepare`,
 
-    admin: `You are a platform analytics expert for ProCuro, a Halal food procurement marketplace in Germany. Analyze this platform data.
+    admin: `You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
 Data: ${JSON.stringify(context)}
-${eventContext ? `Seasonal context: ${eventContext}` : ''}
-Provide exactly 3 numbered points:
-1. **Platform Health** — 2-3 sentence executive summary of activity and health
-2. **Flag** — any concerns, anomalies, or urgent items worth the admin's attention
-3. **Strategic Recommendation** — one platform-level action to improve performance or address risks
-Keep it professional and data-driven.`,
+${eventContext ? `Season: ${eventContext}` : ''}
+Reply with exactly 3 bullet points (each ≤ 15 words):
+• **Health** — active users and order volume summary
+• **Flag** — top issue or anomaly needing attention
+• **Next step** — one platform action to take now`,
   }
 
   const prompt = prompts[profile?.role] || prompts.restaurant_owner

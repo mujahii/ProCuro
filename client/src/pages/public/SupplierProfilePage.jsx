@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink } from 'lucide-react'
+import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/layout/Navbar'
@@ -37,6 +37,7 @@ export default function SupplierProfilePage() {
   const [showAll, setShowAll] = useState(false)
   const [activeCategory, setActiveCategory] = useState(null)
   const [addresses, setAddresses] = useState([])
+  const [avatarLightbox, setAvatarLightbox] = useState(false)
 
   useEffect(() => {
     if (id) loadData()
@@ -121,34 +122,71 @@ export default function SupplierProfilePage() {
         </div>
 
         {/* Banner */}
-        <div className="relative h-48 bg-midnight rounded-xl overflow-hidden mb-8">
+        <div className="relative h-56 bg-midnight rounded-xl overflow-hidden mb-8">
           {supplier.avatar_url ? (
-            <img src={supplier.avatar_url} alt={supplier.business_name} className="w-full h-full object-cover opacity-60" />
+            <img src={supplier.avatar_url} alt={supplier.business_name} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-midnight to-midnight" />
+            <div className="w-full h-full bg-gradient-to-br from-midnight to-herb" />
           )}
-          <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
-            <h1 className="text-3xl font-bold">{supplier.business_name}</h1>
-            <p className="flex items-center gap-2 text-sm opacity-90 mt-1 flex-wrap">
-              {supplier.city && (
-                <>
-                  <MapPin className="w-4 h-4" />
-                  <span>{supplier.city}</span>
-                  {isHalalCertified && <span>•</span>}
-                </>
+          {/* Scrim: transparent at top → dark at bottom */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+          {/* Clickable avatar circle */}
+          {supplier.avatar_url && (
+            <button
+              onClick={() => setAvatarLightbox(true)}
+              className="absolute top-4 right-4 w-14 h-14 rounded-full border-2 border-white/80 overflow-hidden shadow-lg hover:scale-105 transition-transform"
+              title="View photo"
+            >
+              <img src={supplier.avatar_url} alt="" className="w-full h-full object-cover" />
+            </button>
+          )}
+
+          <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+            <h1 className="text-2xl font-black leading-tight">{supplier.business_name}</h1>
+            <div className="flex items-center gap-2 text-sm mt-1.5 flex-wrap">
+              {supplier.city && (() => {
+                const firstAddr = addresses[0]
+                const mapsQ = firstAddr?.latitude && firstAddr?.longitude
+                  ? `${firstAddr.latitude},${firstAddr.longitude}`
+                  : encodeURIComponent(supplier.city)
+                return (
+                  <a href={`https://maps.google.com/?q=${mapsQ}`} target="_blank" rel="noopener noreferrer"
+                     className="flex items-center gap-1 hover:text-celeste transition-colors" onClick={e => e.stopPropagation()}>
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span className="underline-offset-2 hover:underline">{supplier.city}</span>
+                  </a>
+                )
+              })()}
+              {supplier.phone && (
+                <a href={`tel:${supplier.phone}`} className="flex items-center gap-1 hover:text-celeste transition-colors" onClick={e => e.stopPropagation()}>
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>{fmtPhone(supplier.phone)}</span>
+                </a>
               )}
               {isHalalCertified && (
-                <>
-                  <CheckCircle className="w-4 h-4 text-herb-light" />
-                  <span>Halal Certified</span>
-                </>
+                <span className="flex items-center gap-1 bg-white/15 px-2 py-0.5 rounded-full text-xs">
+                  <CheckCircle className="w-3.5 h-3.5 text-herb-light" /> Halal Certified
+                </span>
               )}
               {supplier.rating != null && (
-                <span className="text-marigold-light ml-1">★ {Number(supplier.rating).toFixed(1)}</span>
+                <span className="flex items-center gap-1 bg-white/15 px-2 py-0.5 rounded-full text-xs">
+                  ★ {Number(supplier.rating).toFixed(1)}
+                </span>
               )}
-            </p>
+            </div>
           </div>
         </div>
+
+        {/* Avatar lightbox */}
+        {avatarLightbox && supplier.avatar_url && (
+          <div className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4" onClick={() => setAvatarLightbox(false)}>
+            <button className="absolute top-4 right-4 text-white p-2 hover:bg-white/10 rounded-full transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+            <img src={supplier.avatar_url} alt={supplier.business_name} className="max-w-full max-h-full rounded-2xl object-contain shadow-2xl" onClick={e => e.stopPropagation()} />
+          </div>
+        )}
 
         {!supplier.is_active && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3">

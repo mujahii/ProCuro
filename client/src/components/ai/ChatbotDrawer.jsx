@@ -1,18 +1,19 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, X, Bot, Sparkles } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { askGemini } from '../../lib/gemini'
 
 const SUGGESTIONS = {
   restaurant_owner: [
+    'Which suppliers are near me?',
     'What did I spend last month?',
-    'Show my recent orders',
-    'Which supplier do I order from most?',
+    'Suggest a product I need',
     'Any pending deliveries?',
   ],
   supplier: [
-    'How are my sales this month?',
+    'Who ordered from me this month?',
     'Which products sell best?',
     'Show my pending orders',
     'How can I grow my business?',
@@ -36,13 +37,28 @@ async function fetchContext(user) {
   if (!user) return {}
 
   if (user.role === 'restaurant_owner') {
-    const { data: orders } = await supabase
-      .from('orders')
-      .select('id, status, total_amount, created_at, order_splits(supplier:supplier_profiles(business_name), order_items(quantity, unit_price, product:products(name, category)))')
-      .eq('restaurant_owner_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(6)
-    return { recentOrders: orders || [] }
+    const [{ data: orders }, { data: ownerProfile }, { data: suppliers }] = await Promise.all([
+      supabase
+        .from('orders')
+        .select('id, status, total_amount, created_at, order_splits(supplier:supplier_profiles(id, business_name, city), order_items(quantity, unit_price, product:products(name, category)))')
+        .eq('restaurant_owner_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(6),
+      supabase.from('owner_profiles').select('restaurant_name, city').eq('user_id', user.id).maybeSingle(),
+      supabase.from('supplier_profiles').select('id, business_name, city, category, is_active').eq('is_active', true).limit(20),
+    ])
+    return {
+      ownerCity: ownerProfile?.city || null,
+      restaurantName: ownerProfile?.restaurant_name || null,
+      recentOrders: orders || [],
+      availableSuppliers: (suppliers || []).map(s => ({
+        id: s.id,
+        name: s.business_name,
+        city: s.city,
+        categories: s.category,
+        link: `/supplier/${s.id}`,
+      })),
+    }
   }
 
   if (user.role === 'supplier') {
@@ -55,18 +71,35 @@ async function fetchContext(user) {
     const [{ data: orders }, { data: products }] = await Promise.all([
       supabase
         .from('order_splits')
-        .select('id, status, total_amount, created_at, order_items(quantity, unit_price, product:products(name, category))')
-        .eq('supplier_id', sp.id)
-        .order('created_at', { ascending: false })
-        .limit(6),
-      supabase
-        .from('products')
-        .select('name, category, price, stock_quantity, is_active')
+        .select('id, status, total_amount, created_at, restaurant_owner_id, order_items(quantity, unit_price, product:products(name, category))')
         .eq('supplier_id', sp.id)
         .order('created_at', { ascending: false })
         .limit(10),
+      supabase
+        .from('products')
+        .select('id, name, category, price, stock_quantity, is_active')
+        .eq('supplier_id', sp.id)
+        .order('created_at', { ascending: false })
+        .limit(15),
     ])
-    return { businessName: sp.business_name, recentOrders: orders || [], products: products || [] }
+    const ownerIds = [...new Set((orders || []).map(o => o.restaurant_owner_id).filter(Boolean))]
+    let ownerMap = {}
+    if (ownerIds.length > 0) {
+      const [{ data: ownerUsers }, { data: ownerProfiles }] = await Promise.all([
+        supabase.from('users').select('id, full_name').in('id', ownerIds),
+        supabase.from('owner_profiles').select('user_id, restaurant_name').in('user_id', ownerIds),
+      ])
+      ;(ownerUsers || []).forEach(u => { ownerMap[u.id] = { name: u.full_name } })
+      ;(ownerProfiles || []).forEach(op => { if (ownerMap[op.user_id]) ownerMap[op.user_id].restaurant = op.restaurant_name })
+    }
+    return {
+      businessName: sp.business_name,
+      recentOrders: (orders || []).map(o => ({
+        ...o,
+        ownerName: ownerMap[o.restaurant_owner_id]?.restaurant || ownerMap[o.restaurant_owner_id]?.name || 'Unknown',
+      })),
+      products: (products || []).map(p => ({ id: p.id, name: p.name, category: p.category, price: p.price, stock: p.stock_quantity, active: p.is_active })),
+    }
   }
 
   if (user.role === 'admin') {
@@ -87,6 +120,26 @@ async function fetchContext(user) {
   return {}
 }
 
+function parseSegment(seg, key) {
+  if (seg.startsWith('**') && seg.endsWith('**')) return <strong key={key}>{seg.slice(2, -2)}</strong>
+  if (seg.startsWith('*') && seg.endsWith('*')) return <em key={key}>{seg.slice(1, -1)}</em>
+  // Parse markdown links [text](url)
+  const linkParts = seg.split(/(\[[^\]]+\]\([^)]+\))/g)
+  if (linkParts.length > 1) {
+    return linkParts.map((p, pi) => {
+      const m = p.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
+      if (m) {
+        const [, label, href] = m
+        const isInternal = href.startsWith('/')
+        if (isInternal) return <Link key={`${key}-${pi}`} to={href} className="text-herb font-semibold underline hover:text-herb-dark transition-colors">{label}</Link>
+        return <a key={`${key}-${pi}`} href={href} target="_blank" rel="noopener noreferrer" className="text-herb font-semibold underline hover:text-herb-dark transition-colors">{label}</a>
+      }
+      return p
+    })
+  }
+  return seg
+}
+
 function FormattedMessage({ text }) {
   return (
     <span>
@@ -95,11 +148,7 @@ function FormattedMessage({ text }) {
         return (
           <span key={i}>
             {i > 0 && <br />}
-            {parts.map((seg, j) => {
-              if (seg.startsWith('**') && seg.endsWith('**')) return <strong key={j}>{seg.slice(2, -2)}</strong>
-              if (seg.startsWith('*') && seg.endsWith('*')) return <em key={j}>{seg.slice(1, -1)}</em>
-              return seg
-            })}
+            {parts.map((seg, j) => parseSegment(seg, j))}
           </span>
         )
       })}

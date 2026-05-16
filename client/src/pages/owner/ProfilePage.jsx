@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
+import { useLanguage, LANGS } from '../../context/LanguageContext'
 import { reverseGeocode } from '../../lib/geocode'
 import {
   LogOut, Loader2, User, ChevronRight, X, Eye, EyeOff,
@@ -803,6 +804,7 @@ export default function ProfilePage() {
   const navigate = useNavigate()
   const { user, profile, signOut, updateProfileState } = useAuth()
   const { addresses } = useAddresses()
+  const { lang, setLanguage } = useLanguage()
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null)
   const [displayName, setDisplayName] = useState(profile?.full_name || '')
   const [restaurantName, setRestaurantName] = useState(profile?.restaurant_name || '')
@@ -1016,6 +1018,17 @@ export default function ProfilePage() {
           <SettingRow label="Change Email & Password" onClick={() => setShowPasswordModal(true)} />
           <SettingRow label="Update Phone Number" onClick={() => setShowPhoneModal(true)} />
           <SettingRow label="Manage My Addresses" onClick={() => setShowAddressModal(true)} />
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-sm font-medium text-slate-700">Language / Sprache</span>
+            <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5">
+              {LANGS.map(l => (
+                <button key={l} onClick={() => setLanguage(l)}
+                  className={`px-3 py-1 rounded-md text-xs font-bold uppercase transition-colors ${lang === l ? 'bg-white text-midnight shadow-sm' : 'text-slate-400 hover:text-slate-700'}`}>
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

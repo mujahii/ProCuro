@@ -416,9 +416,19 @@ export default function ChatPage() {
     if (!conv) return
     const col = role === 'restaurant_owner' ? 'pinned_by_owner' : 'pinned_by_supplier'
     const newVal = !conv[col]
+    if (newVal) {
+      const pinnedCount = conversations.filter(c => c[col]).length
+      if (pinnedCount >= 3) {
+        toast.error('You can only pin up to 3 chats')
+        setMenuOpenId(null)
+        setHeaderMenuOpen(false)
+        return
+      }
+    }
     await supabase.from('conversations').update({ [col]: newVal }).eq('id', convId)
     setConversations(prev => prev.map(c => c.id === convId ? { ...c, [col]: newVal } : c))
     setMenuOpenId(null)
+    setHeaderMenuOpen(false)
     toast.success(newVal ? 'Chat pinned' : 'Chat unpinned')
   }
 
@@ -505,7 +515,10 @@ export default function ChatPage() {
                   <p className="text-xs text-slate-400 mt-1">Visit a supplier profile to start a conversation</p>
                 )}
               </div>
-            ) : conversations.map(conv => {
+            ) : [...conversations].sort((a, b) => {
+                const col = role === 'restaurant_owner' ? 'pinned_by_owner' : 'pinned_by_supplier'
+                return (b[col] ? 1 : 0) - (a[col] ? 1 : 0)
+              }).map(conv => {
               const unread = unreadMap[conv.id] || 0
               const isPinned = role === 'restaurant_owner' ? conv.pinned_by_owner : conv.pinned_by_supplier
               const menuOpen = menuOpenId === conv.id

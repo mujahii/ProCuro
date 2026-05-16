@@ -5,6 +5,7 @@ import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 
 function getProductImageUrl(path) {
   if (!path) return null
@@ -101,6 +102,7 @@ function StatsBar() {
 export default function LandingPage() {
   const navigate = useNavigate()
   const { user, authUser, role, loading } = useAuth()
+  const { t } = useLanguage()
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [products, setProducts] = useState([])
   const [suppliers, setSuppliers] = useState([])
@@ -155,26 +157,26 @@ export default function LandingPage() {
 
         <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto pt-8 sm:pt-0 pb-10 sm:pb-0">
           <span className="inline-flex items-center gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-            <CheckCircle className="w-4 h-4" /> Halal Certified Suppliers Only
+            <CheckCircle className="w-4 h-4" /> {t('heroTagline')}
           </span>
           <h1 className="text-4xl sm:text-5xl font-black mb-4 leading-tight text-lionsmane">
-            The Smarter Way to Stock Your Halal Kitchen
+            {t('heroTitle')}
           </h1>
           <p className="text-lg text-celeste mb-8 max-w-xl mx-auto">
-            Connect with verified Halal suppliers. Order everything your restaurant needs in one place. Track, manage, and optimize — all from ProCuro.
+            {t('heroSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
             <button
               onClick={() => navigate('/register')}
               className="bg-marigold hover:bg-marigold-dark text-midnight font-bold px-8 py-4 rounded-xl text-lg shadow-lg transition-all"
             >
-              Start Ordering — It's Free
+              {t('getStarted')}
             </button>
             <button
               onClick={() => navigate('/suppliers')}
               className="border-2 border-lionsmane/60 text-lionsmane hover:bg-lionsmane/10 font-bold px-8 py-4 rounded-xl text-lg transition-all"
             >
-              Browse Suppliers
+              {t('browseSuppliers')}
             </button>
           </div>
           <div className="flex items-center justify-center gap-6 text-sm text-celeste flex-wrap">
@@ -210,7 +212,7 @@ export default function LandingPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900">
-              {selectedCategory !== 'All' ? selectedCategory : 'Featured Products'}
+              {selectedCategory !== 'All' ? selectedCategory : t('featuredProducts')}
             </h2>
             <button onClick={() => navigate('/products')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">
               All <ChevronRight className="w-4 h-4" />
@@ -276,7 +278,7 @@ export default function LandingPage() {
         {/* Verified Suppliers */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-900">Our Verified Halal Suppliers</h2>
+            <h2 className="text-lg font-bold text-slate-900">{t('featuredSuppliers')}</h2>
             <button onClick={() => navigate('/suppliers')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">
               All <ChevronRight className="w-4 h-4" />
             </button>

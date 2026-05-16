@@ -1021,6 +1021,7 @@ export default function SupplierProfilePage() {
   const [bankDetails, setBankDetails] = useState(null)
 
   const [showAvatarModal, setShowAvatarModal] = useState(false)
+  const [avatarLightbox, setAvatarLightbox] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showPhoneModal, setShowPhoneModal] = useState(false)
@@ -1108,7 +1109,10 @@ export default function SupplierProfilePage() {
         <div className="h-28 bg-gradient-to-r from-midnight to-slate-800" />
         <div className="px-8 pb-7 text-center -mt-14">
           <div className="relative inline-block">
-            <div className="w-28 h-28 rounded-full bg-white p-1.5 shadow-xl mx-auto">
+            <button
+              onClick={() => avatarUrl && setAvatarLightbox(true)}
+              className={`w-28 h-28 rounded-full bg-white p-1.5 shadow-xl mx-auto block ${avatarUrl ? 'cursor-pointer' : 'cursor-default'}`}
+            >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
               ) : (
@@ -1116,7 +1120,7 @@ export default function SupplierProfilePage() {
                   <User className="w-10 h-10 text-herb-light" />
                 </div>
               )}
-            </div>
+            </button>
             <button
               onClick={() => setShowAvatarModal(true)}
               className="absolute bottom-1 right-1 bg-midnight text-white p-1.5 rounded-full hover:bg-midnight border-2 border-white transition-colors"
@@ -1179,17 +1183,15 @@ export default function SupplierProfilePage() {
             {supplierProfile?.tax_id && <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />}
           </div>
 
-          {/* City — derived from saved addresses only */}
+          {/* City — shows all selected cities from business details */}
           <div className="flex items-center gap-3 px-4 py-3">
             <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">City</p>
-              {(() => {
-                const city = addresses.find(a => a.is_default)?.city || addresses[0]?.city
-                return city
-                  ? <p className="text-sm font-semibold text-slate-900 mt-0.5">{city}</p>
-                  : <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">Add address →</button>
-              })()}
+              {supplierProfile?.city
+                ? <p className="text-sm font-semibold text-slate-900 mt-0.5">{supplierProfile.city}</p>
+                : <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">Add address →</button>
+              }
             </div>
           </div>
 
@@ -1468,6 +1470,18 @@ export default function SupplierProfilePage() {
             </div>
           </div>
         </Modal>
+      )}
+      {avatarLightbox && avatarUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center"
+          onClick={() => setAvatarLightbox(false)}
+        >
+          <img
+            src={avatarUrl}
+            alt="Profile"
+            className="max-w-[90vw] max-h-[90vh] rounded-2xl object-contain shadow-2xl"
+          />
+        </div>
       )}
     </div>
   )

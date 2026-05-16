@@ -178,24 +178,29 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
   const [gpsLoading, setGpsLoading] = useState(false)
   const { addresses: savedAddresses, addAddress, setDefault: setDefaultAddr } = useAddresses()
   const [showAddrModal, setShowAddrModal] = useState(false)
-  const [selectedAddrId, setSelectedAddrId] = useState('')
+  const [selectedAddrIds, setSelectedAddrIds] = useState([])
 
   useEffect(() => {
-    if (!selectedAddrId && savedAddresses.length > 0) {
+    if (selectedAddrIds.length === 0 && savedAddresses.length > 0) {
       const def = savedAddresses.find(a => a.is_default)
       const byCity = savedAddresses.find(a => a.city === current.city)
       const initial = def || byCity || savedAddresses[0]
       if (initial) {
-        setSelectedAddrId(initial.id)
+        setSelectedAddrIds([initial.id])
         setForm(f => ({ ...f, city: initial.city || '', latitude: initial.latitude || null, longitude: initial.longitude || null }))
       }
     }
   }, [savedAddresses])
 
-  function handleSelectAddr(id) {
-    setSelectedAddrId(id)
-    const addr = savedAddresses.find(a => a.id === id)
-    if (addr) setForm(f => ({ ...f, city: addr.city || '', latitude: addr.latitude || null, longitude: addr.longitude || null }))
+  function toggleAddrSelection(id) {
+    setSelectedAddrIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+      const selected = savedAddresses.filter(a => next.includes(a.id))
+      const cities = [...new Set(selected.map(a => a.city).filter(Boolean))].join(', ')
+      const first = selected[0]
+      setForm(f => ({ ...f, city: cities, latitude: first?.latitude || null, longitude: first?.longitude || null }))
+      return next
+    })
   }
 
   async function detectGPS() {
@@ -256,7 +261,7 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
         },
         { onConflict: 'user_id' }
       )
-      if (selectedAddrId) await setDefaultAddr(selectedAddrId)
+      if (selectedAddrIds.length > 0) await setDefaultAddr(selectedAddrIds[0])
       onSaved({ tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null, latitude: form.latitude || null, longitude: form.longitude || null })
       onClose()
       toast.success('Business details saved!')
@@ -291,6 +296,7 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
               + Manage Addresses
             </button>
           </div>
+          <p className="text-xs text-slate-400 mb-2">Select all locations to display on your profile</p>
           {savedAddresses.length === 0 ? (
             <div className="p-4 border border-dashed border-slate-200 rounded-xl text-center">
               <p className="text-sm text-slate-400 mb-3">No locations added yet</p>
@@ -307,24 +313,29 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
             </div>
           ) : (
             <div className="space-y-2">
-              {savedAddresses.map(addr => (
-                <button
-                  key={addr.id}
-                  type="button"
-                  onClick={() => handleSelectAddr(addr.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors text-left ${
-                    selectedAddrId === addr.id ? 'border-herb bg-lionsmane' : 'border-slate-200 bg-white hover:border-slate-300'
-                  }`}
-                >
-                  <MapPin className={`w-4 h-4 flex-shrink-0 ${selectedAddrId === addr.id ? 'text-midnight' : 'text-slate-400'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold truncate ${selectedAddrId === addr.id ? 'text-midnight-dark' : 'text-slate-900'}`}>{addr.label || addr.city}</p>
-                    <p className="text-xs text-slate-500 truncate">{[addr.street, [addr.postal_code, addr.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>
-                  </div>
-                  {addr.is_default && <span className="text-xs bg-celeste text-midnight-dark px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Favorite</span>}
-                  {selectedAddrId === addr.id && !addr.is_default && <CheckCircle className="w-4 h-4 text-midnight flex-shrink-0" />}
-                </button>
-              ))}
+              {savedAddresses.map(addr => {
+                const isSelected = selectedAddrIds.includes(addr.id)
+                return (
+                  <button
+                    key={addr.id}
+                    type="button"
+                    onClick={() => toggleAddrSelection(addr.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors text-left ${
+                      isSelected ? 'border-herb bg-lionsmane' : 'border-slate-200 bg-white hover:border-slate-300'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded flex-shrink-0 border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-midnight border-midnight' : 'border-slate-300'}`}>
+                      {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
+                    </div>
+                    <MapPin className={`w-4 h-4 flex-shrink-0 ${isSelected ? 'text-midnight' : 'text-slate-400'}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-semibold truncate ${isSelected ? 'text-midnight-dark' : 'text-slate-900'}`}>{addr.label || addr.city}</p>
+                      <p className="text-xs text-slate-500 truncate">{[addr.street, [addr.postal_code, addr.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>
+                    </div>
+                    {addr.is_default && <span className="text-xs bg-celeste text-midnight-dark px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Main</span>}
+                  </button>
+                )
+              })}
             </div>
           )}
           {showAddrModal && <AddressModal onClose={() => setShowAddrModal(false)} userId={userId} />}
@@ -818,6 +829,7 @@ export default function ProfilePage() {
   const [bankDetails, setBankDetails] = useState(null)
 
   const [showAvatarModal, setShowAvatarModal] = useState(false)
+  const [avatarLightbox, setAvatarLightbox] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showPhoneModal, setShowPhoneModal] = useState(false)
@@ -862,7 +874,10 @@ export default function ProfilePage() {
         <div className="h-28 bg-gradient-to-r from-midnight to-slate-800" />
         <div className="px-8 pb-7 text-center -mt-14">
           <div className="relative inline-block">
-            <div className="w-28 h-28 rounded-full bg-white p-1.5 shadow-xl mx-auto">
+            <button
+              onClick={() => avatarUrl && setAvatarLightbox(true)}
+              className={`w-28 h-28 rounded-full bg-white p-1.5 shadow-xl mx-auto block ${avatarUrl ? 'cursor-pointer' : 'cursor-default'}`}
+            >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
               ) : (
@@ -870,7 +885,7 @@ export default function ProfilePage() {
                   <User className="w-10 h-10 text-herb-light" />
                 </div>
               )}
-            </div>
+            </button>
             <button
               onClick={() => setShowAvatarModal(true)}
               className="absolute bottom-1 right-1 bg-midnight text-white p-1.5 rounded-full hover:bg-midnight border-2 border-white transition-colors"
@@ -933,17 +948,15 @@ export default function ProfilePage() {
             {businessInfo.tax_id && <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />}
           </div>
 
-          {/* City — derived from saved addresses only */}
+          {/* City — shows all selected cities from business details */}
           <div className="flex items-center gap-3 px-4 py-3">
             <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">City</p>
-              {(() => {
-                const city = addresses.find(a => a.is_default)?.city || addresses[0]?.city
-                return city
-                  ? <p className="text-sm font-semibold text-slate-900 mt-0.5">{city}</p>
-                  : <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">Add address →</button>
-              })()}
+              {businessInfo.city
+                ? <p className="text-sm font-semibold text-slate-900 mt-0.5">{businessInfo.city}</p>
+                : <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">Add address →</button>
+              }
             </div>
           </div>
 
@@ -1097,6 +1110,18 @@ export default function ProfilePage() {
           onClose={() => setShowDeleteModal(false)}
           onDeleted={() => signOut()}
         />
+      )}
+      {avatarLightbox && avatarUrl && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 flex items-center justify-center"
+          onClick={() => setAvatarLightbox(false)}
+        >
+          <img
+            src={avatarUrl}
+            alt="Profile"
+            className="max-w-[90vw] max-h-[90vh] rounded-2xl object-contain shadow-2xl"
+          />
+        </div>
       )}
     </div>
   )

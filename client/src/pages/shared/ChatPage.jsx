@@ -34,6 +34,11 @@ export default function ChatPage() {
   const [deleteModalConvId, setDeleteModalConvId] = useState(null)
   const menuRef = useRef(null)
   const [ownerProfileModal, setOwnerProfileModal] = useState(null)
+  const [ownerProfileFull, setOwnerProfileFull] = useState(null)
+  const [ownerProfileLoading, setOwnerProfileLoading] = useState(false)
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false)
+  const [adminPinned, setAdminPinned] = useState(() => { try { return localStorage.getItem('adminPinned') === 'true' } catch { return false } })
+  const [adminHidden, setAdminHidden] = useState(() => { try { return localStorage.getItem('adminHidden') === 'true' } catch { return false } })
   const [adminConv, setAdminConv] = useState(null)
   const [adminMessages, setAdminMessages] = useState([])
   const [showingAdmin, setShowingAdmin] = useState(false)
@@ -48,6 +53,7 @@ export default function ChatPage() {
       if (e.target.closest('[data-conv-menu]')) return
       setMenuOpenId(null)
       setHeaderMenuOpen(false)
+      setAdminMenuOpen(false)
     }
     document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
@@ -95,6 +101,10 @@ export default function ChatPage() {
         .eq('is_read', false)
         .neq('sender_id', user.id)
       setAdminUnread(count || 0)
+      if ((count || 0) > 0) {
+        setAdminHidden(false)
+        try { localStorage.removeItem('adminHidden') } catch {}
+      }
     }
   }
 
@@ -396,7 +406,45 @@ export default function ChatPage() {
     setUploading(false)
   }
 
+  function toggleAdminPin() {
+    const newVal = !adminPinned
+    setAdminPinned(newVal)
+    try { localStorage.setItem('adminPinned', newVal ? 'true' : 'false') } catch {}
+    setAdminMenuOpen(false)
+    toast.success(newVal ? 'ProCuro Support pinned' : 'ProCuro Support unpinned')
+  }
+
+  function deleteAdminConv() {
+    setAdminHidden(true)
+    try { localStorage.setItem('adminHidden', 'true') } catch {}
+    setAdminMenuOpen(false)
+    setShowingAdmin(false)
+    toast.success('Chat removed from your inbox')
+  }
+
+  async function fetchAndShowOwnerProfile(owner) {
+    setOwnerProfileModal(owner)
+    setOwnerProfileFull(null)
+    setOwnerProfileLoading(true)
+    const [{ data: userData }, { data: profileData }] = await Promise.all([
+      supabase.from('users').select('full_name, email, avatar_url').eq('id', owner.id).single(),
+      supabase.from('owner_profiles').select('restaurant_name, city, phone, address').eq('user_id', owner.id).maybeSingle(),
+    ])
+    setOwnerProfileFull({
+      id: owner.id,
+      full_name: userData?.full_name || owner.full_name,
+      email: userData?.email || owner.email,
+      avatar_url: userData?.avatar_url || owner.avatar_url,
+      restaurant_name: profileData?.restaurant_name || owner.restaurant_name,
+      city: profileData?.city || owner.city,
+      phone: profileData?.phone || null,
+      address: profileData?.address || null,
+    })
+    setOwnerProfileLoading(false)
+  }
+
   async function deleteConversation(convId) {
+    if (convId === 'admin') { deleteAdminConv(); setDeleteModalConvId(null); return }
     const id = convId || selectedConv?.id
     if (!id) return
     const col = role === 'restaurant_owner' ? 'deleted_for_owner_at' : 'deleted_for_supplier_at'
@@ -487,23 +535,32 @@ export default function ChatPage() {
           </div>
           <div className="flex-1 overflow-y-auto">
             {/* ProCuro Support always at top */}
-            <button
-              onClick={openAdminSupport}
-              className={`w-full p-4 flex items-center gap-3 hover:bg-lionsmane transition-colors text-left border-b border-slate-100 ${showingAdmin ? 'bg-lionsmane' : ''}`}
-            >
-              <div className="w-10 h-10 rounded-full bg-midnight flex-shrink-0 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-slate-900 text-sm">ProCuro Support</p>
-                <p className="text-xs text-slate-400">Admin team</p>
-              </div>
-              {adminUnread > 0 && (
-                <span className="bg-herb text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
-                  {adminUnread > 9 ? '9+' : adminUnread}
-                </span>
-              )}
-            </button>
+            {!adminHidden && (
+              <button
+                onClick={openAdminSupport}
+                className={`w-full p-4 flex items-center gap-3 hover:bg-lionsmane transition-colors text-left border-b border-slate-100 ${showingAdmin ? 'bg-lionsmane' : ''}`}
+              >
+                <div className="relative flex-shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-midnight flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-white" />
+                  </div>
+                  {adminPinned && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-marigold rounded-full flex items-center justify-center shadow-sm ring-2 ring-white z-10">
+                      <Pin className="w-2.5 h-2.5 text-white" />
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-900 text-sm">ProCuro Support</p>
+                  <p className="text-xs text-slate-400">Admin team</p>
+                </div>
+                {adminUnread > 0 && (
+                  <span className="bg-herb text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
+                    {adminUnread > 9 ? '9+' : adminUnread}
+                  </span>
+                )}
+              </button>
+            )}
 
             {loading ? (
               <div className="p-6 text-center text-slate-400 text-sm">Loading...</div>
@@ -531,14 +588,16 @@ export default function ChatPage() {
                     onClick={() => handleSelectConv(conv)}
                     className="flex-1 p-4 flex items-center gap-3 text-left min-w-0"
                   >
-                    <div className="relative w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                      {getConvAvatar(conv)
-                        ? <img src={getConvAvatar(conv)} alt="" className="w-full h-full object-cover" />
-                        : <span className="text-sm font-bold text-slate-500">{getConvName(conv)?.[0]?.toUpperCase()}</span>
-                      }
+                    <div className="relative flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                        {getConvAvatar(conv)
+                          ? <img src={getConvAvatar(conv)} alt="" className="w-full h-full object-cover" />
+                          : <span className="text-sm font-bold text-slate-500">{getConvName(conv)?.[0]?.toUpperCase()}</span>
+                        }
+                      </div>
                       {isPinned && (
-                        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-marigold rounded-full flex items-center justify-center shadow-sm">
-                          <Pin className="w-2 h-2 text-white" />
+                        <span className="absolute -top-1 -right-1 w-4 h-4 bg-marigold rounded-full flex items-center justify-center shadow-sm ring-2 ring-white z-10">
+                          <Pin className="w-2.5 h-2.5 text-white" />
                         </span>
                       )}
                     </div>
@@ -605,6 +664,33 @@ export default function ChatPage() {
               <div className="flex-1">
                 <p className="font-bold text-slate-900 text-sm">ProCuro Support</p>
                 <p className="text-xs text-slate-400">Admin team · Usually responds within 24h</p>
+              </div>
+              <div className="relative flex-shrink-0" data-conv-menu>
+                <button
+                  onClick={() => setAdminMenuOpen(o => !o)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <MoreVertical className="w-4 h-4 text-slate-500" />
+                </button>
+                {adminMenuOpen && (
+                  <div className="absolute right-0 top-9 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-1 overflow-hidden">
+                    <button
+                      onClick={toggleAdminPin}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-lionsmane transition-colors"
+                    >
+                      <Pin className="w-3.5 h-3.5 text-marigold" />
+                      {adminPinned ? 'Unpin' : 'Pin'}
+                    </button>
+                    <div className="border-t border-slate-100 my-0.5" />
+                    <button
+                      onClick={() => { setDeleteModalConvId('admin'); setAdminMenuOpen(false) }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-lionsmane">
@@ -674,7 +760,7 @@ export default function ChatPage() {
               <button
                 onClick={() => {
                   if (role === 'restaurant_owner' && selectedConv.supplier?.id) navigate(`/supplier/${selectedConv.supplier.id}`)
-                  else if (role === 'supplier' && selectedConv.owner) setOwnerProfileModal(selectedConv.owner)
+                  else if (role === 'supplier' && selectedConv.owner) fetchAndShowOwnerProfile(selectedConv.owner)
                 }}
                 className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-herb-light transition-all"
               >
@@ -687,7 +773,7 @@ export default function ChatPage() {
                 <button
                   onClick={() => {
                     if (role === 'restaurant_owner' && selectedConv.supplier?.id) navigate(`/supplier/${selectedConv.supplier.id}`)
-                    else if (role === 'supplier' && selectedConv.owner) setOwnerProfileModal(selectedConv.owner)
+                    else if (role === 'supplier' && selectedConv.owner) fetchAndShowOwnerProfile(selectedConv.owner)
                   }}
                   className="font-bold text-slate-900 text-sm hover:text-midnight transition-colors"
                 >
@@ -842,30 +928,62 @@ export default function ChatPage() {
 
       {/* Owner profile modal (for supplier view) */}
       {ownerProfileModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setOwnerProfileModal(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <h2 className="text-base font-bold text-slate-900">Restaurant Owner</h2>
-              <button onClick={() => setOwnerProfileModal(null)} className="p-1.5 rounded-lg hover:bg-slate-100"><X className="w-4 h-4 text-slate-500" /></button>
-            </div>
-            <div className="p-5 flex flex-col items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
-                {ownerProfileModal.avatar_url
-                  ? <img src={ownerProfileModal.avatar_url} alt="" className="w-full h-full object-cover" />
-                  : <User className="w-10 h-10 text-slate-400" />
-                }
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => { setOwnerProfileModal(null); setOwnerProfileFull(null) }}>
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            {/* Header banner */}
+            <div className="bg-midnight h-20 relative flex-shrink-0" />
+            <div className="px-5 pb-5 -mt-10 relative">
+              <div className="flex items-end justify-between mb-3">
+                <div className="w-20 h-20 rounded-2xl bg-slate-100 border-4 border-white shadow-md flex items-center justify-center overflow-hidden flex-shrink-0">
+                  {(ownerProfileFull?.avatar_url || ownerProfileModal.avatar_url)
+                    ? <img src={ownerProfileFull?.avatar_url || ownerProfileModal.avatar_url} alt="" className="w-full h-full object-cover" />
+                    : <User className="w-9 h-9 text-slate-400" />
+                  }
+                </div>
+                <button onClick={() => { setOwnerProfileModal(null); setOwnerProfileFull(null) }} className="p-1.5 rounded-lg hover:bg-slate-100 mb-1">
+                  <X className="w-4 h-4 text-slate-500" />
+                </button>
               </div>
-              <div className="text-center">
-                <p className="font-bold text-slate-900 text-lg">{ownerProfileModal.restaurant_name || ownerProfileModal.full_name || 'Restaurant Owner'}</p>
-                {ownerProfileModal.full_name && ownerProfileModal.restaurant_name && (
-                  <p className="text-sm text-slate-500 mt-0.5">{ownerProfileModal.full_name}</p>
-                )}
-                {ownerProfileModal.city && (
-                  <p className="text-sm text-slate-500 flex items-center gap-1 justify-center mt-1">
-                    <MapPin className="w-3.5 h-3.5" />{ownerProfileModal.city}
+              {ownerProfileLoading ? (
+                <div className="flex items-center gap-2 py-3 text-slate-400 text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Loading profile...
+                </div>
+              ) : (
+                <>
+                  <p className="font-black text-slate-900 text-lg leading-tight">
+                    {(ownerProfileFull?.restaurant_name || ownerProfileModal.restaurant_name) || (ownerProfileFull?.full_name || ownerProfileModal.full_name) || 'Restaurant Owner'}
                   </p>
-                )}
-              </div>
+                  {(ownerProfileFull?.full_name || ownerProfileModal.full_name) && (ownerProfileFull?.restaurant_name || ownerProfileModal.restaurant_name) && (
+                    <p className="text-sm text-slate-500 mt-0.5">{ownerProfileFull?.full_name || ownerProfileModal.full_name}</p>
+                  )}
+                  <div className="mt-3 space-y-2">
+                    {(ownerProfileFull?.city || ownerProfileModal.city) && (
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <MapPin className="w-4 h-4 text-herb flex-shrink-0" />
+                        <span>{ownerProfileFull?.city || ownerProfileModal.city}</span>
+                      </div>
+                    )}
+                    {ownerProfileFull?.address && (
+                      <div className="flex items-start gap-2 text-sm text-slate-600">
+                        <MapPin className="w-4 h-4 text-herb flex-shrink-0 mt-0.5" />
+                        <span>{ownerProfileFull.address}</span>
+                      </div>
+                    )}
+                    {ownerProfileFull?.phone && (
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <span className="w-4 h-4 flex items-center justify-center text-herb flex-shrink-0">📞</span>
+                        <a href={`tel:${ownerProfileFull.phone}`} className="hover:text-midnight transition-colors">{ownerProfileFull.phone}</a>
+                      </div>
+                    )}
+                    {ownerProfileFull?.email && (
+                      <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <span className="w-4 h-4 flex items-center justify-center text-herb flex-shrink-0">✉️</span>
+                        <a href={`mailto:${ownerProfileFull.email}`} className="hover:text-midnight transition-colors truncate">{ownerProfileFull.email}</a>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

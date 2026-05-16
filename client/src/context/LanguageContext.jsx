@@ -1,7 +1,19 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { setActiveLanguage } from '../lib/autoTranslate'
+import { createContext, useContext, useState } from 'react'
 
 const LanguageContext = createContext()
+
+// Set Google Translate cookie so the widget translates the whole page on next load.
+function setGoogleTranslateCookie(lang) {
+  const value = lang === 'en' ? '/en/en' : `/en/${lang}`
+  const host = window.location.hostname
+  document.cookie = `googtrans=${value};path=/`
+  document.cookie = `googtrans=${value};path=/;domain=${host}`
+  // Also set on the parent domain (.example.com) so subdomains share the choice
+  const parts = host.split('.')
+  if (parts.length > 1) {
+    document.cookie = `googtrans=${value};path=/;domain=.${parts.slice(-2).join('.')}`
+  }
+}
 
 export const LANGS = ['en', 'de']
 
@@ -137,17 +149,12 @@ export function LanguageProvider({ children }) {
 
   function setLanguage(l) {
     if (!LANGS.includes(l)) return
-    setLang(l)
     try { localStorage.setItem('procuro_lang', l) } catch {}
-    setActiveLanguage(l)
+    setGoogleTranslateCookie(l)
+    // Reload so the Google Translate widget picks up the new cookie and
+    // translates the entire page in one pass (no per-render lag).
+    window.location.reload()
   }
-
-  useEffect(() => {
-    // Apply the persisted language to the DOM on first mount (after children render)
-    const id = requestAnimationFrame(() => setActiveLanguage(lang))
-    return () => cancelAnimationFrame(id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
 
   function t(key) {
     return T[lang]?.[key] ?? T.en?.[key] ?? key

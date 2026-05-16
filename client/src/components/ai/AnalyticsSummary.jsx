@@ -1,15 +1,39 @@
 import { useState, useEffect, useRef } from 'react'
-import { Sparkles, RefreshCw, TrendingUp, AlertTriangle, Lightbulb, Calendar } from 'lucide-react'
+import {
+  Sparkles, RefreshCw, TrendingUp, AlertTriangle, Lightbulb, Calendar,
+  DollarSign, Trophy, Package, Target, Activity, Flag, ArrowRight,
+} from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { getAnalyticsSummary } from '../../lib/gemini'
 import Skeleton from '../ui/Skeleton'
 
-const INSIGHT_META = [
-  { key: 'sales', icon: TrendingUp,      bg: 'bg-herb/10',     border: 'border-herb/20',     iconBg: 'bg-herb',     text: 'text-herb-dark' },
-  { key: 'stock', icon: AlertTriangle,   bg: 'bg-marigold/10', border: 'border-marigold/20', iconBg: 'bg-marigold', text: 'text-marigold-dark' },
-  { key: 'demand',icon: Calendar,        bg: 'bg-celeste/30',  border: 'border-celeste',      iconBg: 'bg-midnight', text: 'text-midnight' },
-  { key: 'tip',   icon: Lightbulb,       bg: 'bg-lionsmane',   border: 'border-marigold/30', iconBg: 'bg-marigold-dark', text: 'text-slate-700' },
+const FALLBACK_META = [
+  { icon: TrendingUp,    bg: 'bg-herb/10',     border: 'border-herb/20',     iconBg: 'bg-herb',          text: 'text-herb-dark' },
+  { icon: AlertTriangle, bg: 'bg-marigold/10', border: 'border-marigold/20', iconBg: 'bg-marigold',      text: 'text-marigold-dark' },
+  { icon: Calendar,      bg: 'bg-celeste/30',  border: 'border-celeste',     iconBg: 'bg-midnight',      text: 'text-midnight' },
+  { icon: Lightbulb,     bg: 'bg-lionsmane',   border: 'border-marigold/30', iconBg: 'bg-marigold-dark', text: 'text-slate-700' },
 ]
+
+// Title keyword → icon + colour mapping. Matches keywords from the analytics
+// prompts (Sales, Spending, Stock, Top pick, Best seller, Tip, Action, etc.).
+const TITLE_META = [
+  { match: /spend|revenue|sales|payment|invoice/i, icon: DollarSign,    bg: 'bg-herb/10',     border: 'border-herb/20',     iconBg: 'bg-herb',          text: 'text-herb-dark' },
+  { match: /top|best|seller|pick|favorite|popular/i, icon: Trophy,      bg: 'bg-celeste/30',  border: 'border-celeste',     iconBg: 'bg-midnight',      text: 'text-midnight' },
+  { match: /stock|inventory|low|out\s*of/i,        icon: Package,       bg: 'bg-marigold/10', border: 'border-marigold/20', iconBg: 'bg-marigold',      text: 'text-marigold-dark' },
+  { match: /tip|advice|suggest|recommend/i,        icon: Lightbulb,     bg: 'bg-lionsmane',   border: 'border-marigold/30', iconBg: 'bg-marigold-dark', text: 'text-slate-700' },
+  { match: /action|next|step|grow/i,               icon: ArrowRight,    bg: 'bg-herb/10',     border: 'border-herb/20',     iconBg: 'bg-herb-dark',     text: 'text-herb-dark' },
+  { match: /alert|warning|issue|problem|concern/i, icon: AlertTriangle, bg: 'bg-red-50',      border: 'border-red-100',     iconBg: 'bg-red-500',       text: 'text-red-700' },
+  { match: /flag|risk/i,                           icon: Flag,          bg: 'bg-red-50',      border: 'border-red-100',     iconBg: 'bg-red-500',       text: 'text-red-700' },
+  { match: /health|activity|active|user/i,         icon: Activity,      bg: 'bg-celeste/30',  border: 'border-celeste',     iconBg: 'bg-midnight',      text: 'text-midnight' },
+  { match: /target|goal|objective/i,               icon: Target,        bg: 'bg-celeste/30',  border: 'border-celeste',     iconBg: 'bg-midnight',      text: 'text-midnight' },
+  { match: /season|demand|event|holiday|ramadan|eid|christmas/i, icon: Calendar, bg: 'bg-celeste/30', border: 'border-celeste', iconBg: 'bg-midnight', text: 'text-midnight' },
+  { match: /trend|growth|increase/i,               icon: TrendingUp,    bg: 'bg-herb/10',     border: 'border-herb/20',     iconBg: 'bg-herb',          text: 'text-herb-dark' },
+]
+
+function metaForTitle(title, fallbackIdx) {
+  for (const m of TITLE_META) if (m.match.test(title)) return m
+  return FALLBACK_META[fallbackIdx % FALLBACK_META.length]
+}
 
 function renderInlineBold(text) {
   const parts = text.split(/\*\*([^*]+)\*\*/)
@@ -20,41 +44,60 @@ function renderInlineBold(text) {
   )
 }
 
+function InsightCard({ title, rest, meta }) {
+  const Icon = meta.icon
+  return (
+    <div className={`flex gap-3 p-4 rounded-2xl border ${meta.bg} ${meta.border}`}>
+      <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm`}>
+        <Icon className="w-4 h-4 text-white" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className={`text-sm font-bold mb-0.5 ${meta.text}`}>{title.replace(/[*:]+$/, '').trim()}</p>
+        {rest && <p className="text-sm text-slate-600 leading-relaxed">{renderInlineBold(rest)}</p>}
+      </div>
+    </div>
+  )
+}
+
 function AIText({ text }) {
   if (!text) return null
-  const paragraphs = text.split(/\n+/).filter(p => p.trim())
+  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean)
+  let cardIdx = 0
 
   return (
     <div className="space-y-3">
-      {paragraphs.map((para, idx) => {
-        // Match: "1. **Title:** rest" or "1. **Title** rest"
-        const numbered = para.match(/^(\d+)\.\s+\*\*([^*:]+)[*:]?\*?\*?[:\s]*(.*)/)
+      {lines.map((line, idx) => {
+        // Numbered: "1. **Title:** rest"
+        const numbered = line.match(/^\d+\.\s+\*\*([^*]+?)\*\*[\s:—–-]*(.*)$/)
         if (numbered) {
-          const [, num, title, rest] = numbered
-          const meta = INSIGHT_META[(Number(num) - 1) % INSIGHT_META.length]
-          const Icon = meta.icon
-          return (
-            <div key={idx} className={`flex gap-3 p-4 rounded-2xl border ${meta.bg} ${meta.border}`}>
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm`}>
-                <Icon className="w-4 h-4 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className={`text-sm font-bold mb-0.5 ${meta.text}`}>{title.replace(/[*:]+$/, '')}</p>
-                {rest && <p className="text-sm text-slate-600 leading-relaxed">{renderInlineBold(rest)}</p>}
-              </div>
-            </div>
-          )
+          const [, title, rest] = numbered
+          const meta = metaForTitle(title, cardIdx++)
+          return <InsightCard key={idx} title={title} rest={rest} meta={meta} />
         }
-        if (para.startsWith('Here') || para.startsWith('Based')) {
+        // Bulleted: "• **Title** — rest" / "- **Title**: rest" / "* **Title** rest"
+        const bulleted = line.match(/^[•*\-–—]\s*\*\*([^*]+?)\*\*[\s:—–-]*(.*)$/)
+        if (bulleted) {
+          const [, title, rest] = bulleted
+          const meta = metaForTitle(title, cardIdx++)
+          return <InsightCard key={idx} title={title} rest={rest} meta={meta} />
+        }
+        // Plain bullet without bold ("• rest" or "- rest")
+        const plainBullet = line.match(/^[•*\-–—]\s+(.+)$/)
+        if (plainBullet) {
+          const rest = plainBullet[1]
+          const meta = FALLBACK_META[cardIdx++ % FALLBACK_META.length]
+          return <InsightCard key={idx} title="Insight" rest={rest} meta={meta} />
+        }
+        if (line.startsWith('Here') || line.startsWith('Based')) {
           return (
             <p key={idx} className="text-xs text-slate-400 italic leading-relaxed px-1">
-              {renderInlineBold(para)}
+              {renderInlineBold(line)}
             </p>
           )
         }
         return (
           <p key={idx} className="text-sm text-slate-600 leading-relaxed px-1">
-            {renderInlineBold(para)}
+            {renderInlineBold(line)}
           </p>
         )
       })}

@@ -16,25 +16,34 @@ export default function Footer() {
         <div>
           <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Company</h4>
           <ul className="space-y-2 text-sm">
-            <li><span className="hover:text-white cursor-pointer transition-colors">About Us</span></li>
-            <li><span className="hover:text-white cursor-pointer transition-colors">Careers</span></li>
-            <li><span className="hover:text-white cursor-pointer transition-colors">Press</span></li>
+            <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
+            <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
+            <li><Link to="/press" className="hover:text-white transition-colors">Press</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Resources</h4>
           <ul className="space-y-2 text-sm">
-            <li><span className="hover:text-white cursor-pointer transition-colors">Help Center</span></li>
-            <li><span className="hover:text-white cursor-pointer transition-colors">Privacy Policy</span></li>
-            <li><span className="hover:text-white cursor-pointer transition-colors">Terms of Service</span></li>
+            <li><Link to="/help" className="hover:text-white transition-colors">Help Center</Link></li>
+            <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+            <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
           </ul>
         </div>
         <div>
           <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Contact</h4>
           <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-2"><Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" /> support@procuro.com</li>
-            <li className="flex items-center gap-2"><Phone className="w-4 h-4 text-emerald-400 flex-shrink-0" /> +49 30 12345678</li>
-            <li className="flex items-center gap-2"><Globe className="w-4 h-4 text-emerald-400 flex-shrink-0" /> Berlin, Germany</li>
+            <li className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <a href="mailto:support@procuro.com" className="hover:text-white transition-colors">support@procuro.com</a>
+            </li>
+            <li className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <a href="tel:+4915560608671" className="hover:text-white transition-colors">+49 155 6060 8671</a>
+            </li>
+            <li className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <span>Paderborn, Germany</span>
+            </li>
           </ul>
         </div>
       </div>

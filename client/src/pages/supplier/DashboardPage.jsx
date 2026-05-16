@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useAddresses } from '../../context/AddressContext'
 import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
 import ProductForm from '../../components/supplier/ProductForm'
 import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, X, CheckCircle, AlertCircle, Clock } from 'lucide-react'
@@ -20,6 +21,7 @@ function getImageUrl(path) {
 export default function SupplierDashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { addresses } = useAddresses()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [stats, setStats] = useState(null)
   const [products, setProducts] = useState([])
@@ -117,7 +119,7 @@ export default function SupplierDashboardPage() {
       )}
 
       {/* Certification status banner */}
-      {!loading && !user?.is_banned && !supplierProfile?.is_verified && (
+      {!loading && !user?.is_banned && (!supplierProfile?.is_verified || addresses.length === 0) && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <div className="flex items-start gap-3 mb-3">
             <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
@@ -155,11 +157,24 @@ export default function SupplierDashboardPage() {
                 </button>
               )}
             </div>
+            <div className="flex items-center gap-2 text-sm">
+              {addresses.length > 0
+                ? <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                : <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
+              <span className={addresses.length > 0 ? 'text-emerald-700 font-medium' : 'text-slate-700'}>
+                Business Address {addresses.length > 0 ? '— Added' : '— Required'}
+              </span>
+              {addresses.length === 0 && (
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-emerald-600 font-semibold hover:underline ml-1">
+                  Go →
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {!loading && !user?.is_banned && supplierProfile?.is_verified && (
+      {!loading && !user?.is_banned && supplierProfile?.is_verified && addresses.length > 0 && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
           <div>

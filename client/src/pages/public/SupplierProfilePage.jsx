@@ -59,6 +59,11 @@ export default function SupplierProfilePage() {
   }
 
   async function viewCert(cert) {
+    if (!user) {
+      toast.error('Please log in to view this certificate')
+      navigate('/login')
+      return
+    }
     const win = window.open('about:blank', '_blank')
     const { data, error } = await supabase.storage.from('halal-certificates').createSignedUrl(cert.file_url, 300)
     if (data?.signedUrl) {

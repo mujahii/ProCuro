@@ -14,6 +14,12 @@ import PublicSupplierProfilePage from './pages/public/SupplierProfilePage'
 import SupplierListPage from './pages/public/SupplierListPage'
 import ProductsListPage from './pages/public/ProductsListPage'
 import ResetPasswordPage from './pages/public/ResetPasswordPage'
+import AboutPage from './pages/public/AboutPage'
+import HelpCenterPage from './pages/public/HelpCenterPage'
+import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage'
+import TermsOfServicePage from './pages/public/TermsOfServicePage'
+import CareersPage from './pages/public/CareersPage'
+import PressPage from './pages/public/PressPage'
 
 // Admin pages
 import AdminLoginPage from './pages/admin/AdminLoginPage'
@@ -53,6 +59,16 @@ import ProtectedRoute from './components/routing/ProtectedRoute'
 import PublicOnlyRoute from './components/routing/PublicOnlyRoute'
 import AdminLayout from './components/layout/AdminLayout'
 import ChatbotFAB from './components/ai/ChatbotFAB'
+import { useAuth } from './context/AuthContext'
+import { useLocation } from 'react-router-dom'
+
+function AuthenticatedChatbotFAB() {
+  const { user } = useAuth()
+  const { pathname } = useLocation()
+  const isChatPage = pathname.includes('/chat')
+  if (!user || isChatPage) return null
+  return <ChatbotFAB />
+}
 
 export default function App() {
   return (
@@ -83,6 +99,12 @@ export default function App() {
             <Route path="/supplier/:id" element={<PublicSupplierProfilePage />} />
             <Route path="/products" element={<ProductsListPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/help" element={<HelpCenterPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/terms" element={<TermsOfServicePage />} />
+            <Route path="/careers" element={<CareersPage />} />
+            <Route path="/press" element={<PressPage />} />
 
             {/* Admin (separate, not linked from public login) */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -126,7 +148,7 @@ export default function App() {
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
-          <ChatbotFAB />
+          <AuthenticatedChatbotFAB />
         </AddressProvider>
       </CartProvider>
     </AuthProvider>

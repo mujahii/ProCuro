@@ -30,6 +30,7 @@ export default function ChatPage() {
   const [confirmDeleteConv, setConfirmDeleteConv] = useState(false)
   const [deleteListConvId, setDeleteListConvId] = useState(null)
   const [menuOpenId, setMenuOpenId] = useState(null)
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
   const [deleteModalConvId, setDeleteModalConvId] = useState(null)
   const menuRef = useRef(null)
   const [ownerProfileModal, setOwnerProfileModal] = useState(null)
@@ -42,9 +43,14 @@ export default function ChatPage() {
   const fileInputRef = useRef(null)
 
   useEffect(() => {
-    function handleClickOutside() { setMenuOpenId(null) }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    function handleClickOutside(e) {
+      // Don't close if click was inside any conv menu (dropdown or trigger button)
+      if (e.target.closest('[data-conv-menu]')) return
+      setMenuOpenId(null)
+      setHeaderMenuOpen(false)
+    }
+    document.addEventListener('click', handleClickOutside)
+    return () => document.removeEventListener('click', handleClickOutside)
   }, [])
 
   useEffect(() => {
@@ -540,9 +546,9 @@ export default function ChatPage() {
                   </button>
 
                   {/* Three-dot menu */}
-                  <div className="relative flex-shrink-0 pr-2">
+                  <div className="relative flex-shrink-0 pr-2" data-conv-menu>
                     <button
-                      onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpen ? null : conv.id) }}
+                      onClick={() => setMenuOpenId(menuOpen ? null : conv.id)}
                       className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-slate-200 rounded-lg transition-all"
                     >
                       <MoreVertical className="w-4 h-4 text-slate-500" />
@@ -550,7 +556,7 @@ export default function ChatPage() {
                     {menuOpen && (
                       <div className="absolute right-0 top-8 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-1 overflow-hidden">
                         <button
-                          onClick={e => { e.stopPropagation(); togglePin(conv.id) }}
+                          onClick={() => togglePin(conv.id)}
                           className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-lionsmane transition-colors"
                         >
                           <Pin className="w-3.5 h-3.5 text-marigold" />
@@ -558,7 +564,7 @@ export default function ChatPage() {
                         </button>
                         <div className="border-t border-slate-100 my-0.5" />
                         <button
-                          onClick={e => { e.stopPropagation(); setDeleteModalConvId(conv.id); setMenuOpenId(null) }}
+                          onClick={() => { setDeleteModalConvId(conv.id); setMenuOpenId(null) }}
                           className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -682,17 +688,17 @@ export default function ChatPage() {
                 )}
               </div>
 
-              <div className="relative flex-shrink-0">
+              <div className="relative flex-shrink-0" data-conv-menu>
                 <button
-                  onClick={() => setMenuOpenId(menuOpenId === selectedConv.id ? null : selectedConv.id)}
+                  onClick={() => setHeaderMenuOpen(o => !o)}
                   className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
                 >
                   <MoreVertical className="w-4 h-4 text-slate-500" />
                 </button>
-                {menuOpenId === selectedConv.id && (
+                {headerMenuOpen && (
                   <div className="absolute right-0 top-9 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-1 overflow-hidden">
                     <button
-                      onClick={() => togglePin(selectedConv.id)}
+                      onClick={() => { togglePin(selectedConv.id); setHeaderMenuOpen(false) }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-lionsmane transition-colors"
                     >
                       <Pin className="w-3.5 h-3.5 text-marigold" />
@@ -700,7 +706,7 @@ export default function ChatPage() {
                     </button>
                     <div className="border-t border-slate-100 my-0.5" />
                     <button
-                      onClick={() => { setDeleteModalConvId(selectedConv.id); setMenuOpenId(null) }}
+                      onClick={() => { setDeleteModalConvId(selectedConv.id); setHeaderMenuOpen(false) }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

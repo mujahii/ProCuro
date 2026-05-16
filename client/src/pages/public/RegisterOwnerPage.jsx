@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Check } from 'lucide-react'
+import { Eye, EyeOff, ShoppingCart, Check } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -87,7 +87,7 @@ export default function RegisterPage() {
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <img src="/image.png" alt="ProCuro" className="w-7 h-7 object-contain" />
+              <ShoppingCart className="w-7 h-7 text-midnight" />
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
             <p className="text-slate-500 text-sm">Create your free account</p>

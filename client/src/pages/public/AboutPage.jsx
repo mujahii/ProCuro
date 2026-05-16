@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Users, Shield, Globe } from 'lucide-react'
+import { ArrowLeft, ShoppingCart, Users, Shield, Globe } from 'lucide-react'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 
@@ -14,7 +14,7 @@ export default function AboutPage() {
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <img src="/image.png" alt="ProCuro" className="w-8 h-8 object-contain" />
+          <ShoppingCart className="w-8 h-8 text-midnight" />
           <h1 className="text-3xl font-black text-slate-900">About ProCuro</h1>
         </div>
 

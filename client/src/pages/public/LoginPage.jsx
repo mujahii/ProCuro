@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, ArrowLeft, Mail, CheckCircle } from 'lucide-react'
+import { Eye, EyeOff, ShoppingCart, ArrowLeft, Mail, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -86,7 +86,7 @@ export default function LoginPage() {
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-2">
-              <img src="/image.png" alt="ProCuro" className="w-8 h-8 object-contain" />
+              <ShoppingCart className="w-8 h-8 text-midnight" />
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
             <p className="text-slate-500 text-sm">The Halal Procurement Platform</p>

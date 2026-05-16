@@ -3,7 +3,21 @@ const { createClient } = require('@supabase/supabase-js')
 const WebSocket = require('ws')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+const MODEL_FALLBACKS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-2.0-flash-lite']
+
+async function generateWithFallback(prompt) {
+  const errors = []
+  for (const name of MODEL_FALLBACKS) {
+    try {
+      const m = genAI.getGenerativeModel({ model: name })
+      const r = await m.generateContent(prompt)
+      return r.response.text()
+    } catch (err) {
+      errors.push(`${name}: ${err?.message?.split('\n')[0] || err}`)
+    }
+  }
+  throw new Error(`All Gemini models failed → ${errors.join(' | ')}`)
+}
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -114,11 +128,11 @@ Keep it professional and data-driven.`,
   const prompt = prompts[profile?.role] || prompts.restaurant_owner
 
   try {
-    const result = await model.generateContent(prompt)
+    const summary = await generateWithFallback(prompt)
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ summary: result.response.text() }),
+      body: JSON.stringify({ summary }),
     }
   } catch (err) {
     console.error('Gemini analytics error:', err?.message || err, err?.stack)

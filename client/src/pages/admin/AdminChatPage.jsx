@@ -26,6 +26,7 @@ export default function AdminChatPage() {
   const [profileModal, setProfileModal] = useState(null)
   const [unreadMap, setUnreadMap] = useState({})
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleteListConvId, setDeleteListConvId] = useState(null)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -249,17 +250,15 @@ export default function AdminChatPage() {
     setUploading(false)
   }
 
-  async function deleteConversation() {
-    if (!selectedConv) return
-    const { error } = await supabase
-      .from('admin_conversations')
-      .delete()
-      .eq('id', selectedConv.id)
+  async function deleteConversation(convId) {
+    const id = convId || selectedConv?.id
+    if (!id) return
+    const { error } = await supabase.from('admin_conversations').delete().eq('id', id)
     if (error) { toast.error('Failed to delete chat'); return }
-    setConversations(prev => prev.filter(c => c.id !== selectedConv.id))
-    setSelectedConv(null)
-    setMessages([])
+    setConversations(prev => prev.filter(c => c.id !== id))
+    if (selectedConv?.id === id) { setSelectedConv(null); setMessages([]) }
     setConfirmDelete(false)
+    setDeleteListConvId(null)
     toast.success('Chat deleted')
   }
 
@@ -328,33 +327,52 @@ export default function AdminChatPage() {
             ) : filtered.map(conv => {
               const p = userProfiles[conv.user_id]
               const unread = unreadMap[conv.id] || 0
+              const isDeleting = deleteListConvId === conv.id
               return (
-                <button
+                <div
                   key={conv.id}
-                  onClick={() => handleSelectConv(conv)}
-                  className={`w-full p-4 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 ${selectedConv?.id === conv.id ? 'bg-emerald-50' : ''}`}
+                  className={`group flex items-center border-b border-gray-50 ${selectedConv?.id === conv.id ? 'bg-emerald-50' : 'hover:bg-gray-50'} transition-colors`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                    {p?.avatar_url
-                      ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
-                      : <span className="text-sm font-bold text-slate-500">{getDisplayName(conv)?.[0]?.toUpperCase()}</span>
-                    }
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-sm truncate ${unread > 0 ? 'font-black text-gray-900' : 'font-semibold text-gray-900'}`}>{getDisplayName(conv)}</p>
-                    <p className="text-xs text-gray-400">{getRoleLabel(conv.user_id)}{p?.city ? ` · ${p.city}` : ''}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                    {unread > 0 && (
-                      <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                        {unread > 9 ? '9+' : unread}
-                      </span>
-                    )}
-                    {p?.is_banned && (
-                      <span className="text-[10px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded-full">Banned</span>
-                    )}
-                  </div>
-                </button>
+                  <button
+                    onClick={() => handleSelectConv(conv)}
+                    className="flex-1 p-4 flex items-center gap-3 text-left min-w-0"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                      {p?.avatar_url
+                        ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
+                        : <span className="text-sm font-bold text-slate-500">{getDisplayName(conv)?.[0]?.toUpperCase()}</span>
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm truncate ${unread > 0 ? 'font-black text-gray-900' : 'font-semibold text-gray-900'}`}>{getDisplayName(conv)}</p>
+                      <p className="text-xs text-gray-400">{getRoleLabel(conv.user_id)}{p?.city ? ` · ${p.city}` : ''}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                      {unread > 0 && (
+                        <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                          {unread > 9 ? '9+' : unread}
+                        </span>
+                      )}
+                      {p?.is_banned && (
+                        <span className="text-[10px] bg-red-100 text-red-600 font-bold px-1.5 py-0.5 rounded-full">Banned</span>
+                      )}
+                    </div>
+                  </button>
+                  {isDeleting ? (
+                    <div className="flex items-center gap-1 pr-2 flex-shrink-0">
+                      <button onClick={() => deleteConversation(conv.id)} className="px-2 py-1 text-[10px] bg-red-600 text-white rounded font-semibold hover:bg-red-700">Del</button>
+                      <button onClick={() => setDeleteListConvId(null)} className="px-2 py-1 text-[10px] bg-gray-100 text-gray-700 rounded font-semibold">✕</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={e => { e.stopPropagation(); setDeleteListConvId(conv.id) }}
+                      className="opacity-0 group-hover:opacity-100 p-2 mr-1 hover:bg-red-50 rounded-lg flex-shrink-0 transition-all"
+                      title="Delete conversation"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
+                    </button>
+                  )}
+                </div>
               )
             })}
           </div>

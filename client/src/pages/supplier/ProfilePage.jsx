@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
+import { reverseGeocode } from '../../lib/geocode'
 import {
   LogOut, Loader2, User, FileText, CheckCircle, Clock, XCircle,
   ExternalLink, ChevronRight, X, Eye, EyeOff, Upload,
@@ -315,8 +316,7 @@ function AddressModal({ onClose, supplierProfileId }) {
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-          const data = await res.json()
+          const data = await reverseGeocode(lat, lng)
           const addr = data.address || {}
           setForm(f => ({
             ...f,
@@ -603,8 +603,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-          const data = await res.json()
+          const data = await reverseGeocode(lat, lng)
           const a = data.address || {}
           const city = a.city || a.town || a.village || a.suburb || ''
           const newAddr = await addAddress({

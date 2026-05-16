@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X, Navigation, AlertTriangle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { reverseGeocode } from '../../lib/geocode'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import { usePlaceOrder } from '../../hooks/usePlaceOrder'
@@ -399,8 +400,7 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-          const data = await res.json()
+          const data = await reverseGeocode(lat, lng)
           const addr = data.address || {}
           setForm(f => ({
             ...f,

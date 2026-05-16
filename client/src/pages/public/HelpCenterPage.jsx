@@ -21,23 +21,13 @@ export default function HelpCenterPage() {
   const [topic, setTopic] = useState('')
   const [message, setMessage] = useState('')
   const [sent, setSent] = useState(false)
-  const [sending, setSending] = useState(false)
 
-  async function handleSubmit(e) {
+  function handleSubmit(e) {
     e.preventDefault()
     if (!name.trim() || !email.trim() || !message.trim()) return toast.error('Please fill in all required fields')
-    setSending(true)
-    try {
-      const body = `Name: ${name}\nEmail: ${email}\nTopic: ${topic || 'Not specified'}\n\nMessage:\n${message}`
-      const res = await fetch(`mailto:support@procuro.com?subject=Help%20Request%3A%20${encodeURIComponent(topic || 'General')}&body=${encodeURIComponent(body)}`)
-      // Use mailto as primary fallback — always works
-      window.location.href = `mailto:support@procuro.com?subject=${encodeURIComponent(`ProCuro Help: ${topic || 'General'}`)}&body=${encodeURIComponent(body)}`
-      setSent(true)
-    } catch {
-      toast.error('Could not open email client. Please email us directly at support@procuro.com')
-    } finally {
-      setSending(false)
-    }
+    const body = `Name: ${name}\nEmail: ${email}\nTopic: ${topic || 'Not specified'}\n\nMessage:\n${message}`
+    window.location.href = `mailto:support@procuro.com?subject=${encodeURIComponent(`ProCuro Help: ${topic || 'General'}`)}&body=${encodeURIComponent(body)}`
+    setSent(true)
   }
 
   return (
@@ -110,11 +100,11 @@ export default function HelpCenterPage() {
             <div className="flex items-center gap-3 pt-1">
               <button
                 type="submit"
-                disabled={sending}
+                disabled={sent}
                 className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                {sending ? 'Opening...' : 'Send Message'}
+                Send Message
               </button>
             </div>
             <p className="text-xs text-slate-400 text-center">

@@ -48,7 +48,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 pt-8 border-t border-slate-800 text-center text-xs opacity-50">
-        © 2025 ProCuro GmbH. All rights reserved.
+        © 2026 ProCuro GmbH. All rights reserved.
       </div>
     </footer>
   )

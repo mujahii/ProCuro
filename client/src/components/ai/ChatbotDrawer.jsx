@@ -87,13 +87,24 @@ async function fetchContext(user) {
   return {}
 }
 
-function formatMessage(text) {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .split('\n')
-    .map((line, i) => `<span key=${i}>${line}</span>`)
-    .join('<br/>')
+function FormattedMessage({ text }) {
+  return (
+    <span>
+      {text.split('\n').map((line, i) => {
+        const parts = line.split(/(\*\*.*?\*\*|\*.*?\*)/g)
+        return (
+          <span key={i}>
+            {i > 0 && <br />}
+            {parts.map((seg, j) => {
+              if (seg.startsWith('**') && seg.endsWith('**')) return <strong key={j}>{seg.slice(2, -2)}</strong>
+              if (seg.startsWith('*') && seg.endsWith('*')) return <em key={j}>{seg.slice(1, -1)}</em>
+              return seg
+            })}
+          </span>
+        )
+      })}
+    </span>
+  )
 }
 
 export default function ChatbotDrawer({ open, onClose }) {
@@ -182,8 +193,9 @@ export default function ChatbotDrawer({ open, onClose }) {
                   ? 'bg-emerald-600 text-white rounded-br-none'
                   : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
               }`}
-              dangerouslySetInnerHTML={{ __html: formatMessage(msg.content) }}
-            />
+            >
+              <FormattedMessage text={msg.content} />
+            </div>
           </div>
         ))}
 

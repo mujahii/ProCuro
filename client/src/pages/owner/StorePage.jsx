@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, Flag, AlertCircle, Navigation, X, Loader2 } from 'lucide-react'
 import HalalBadge from '../../components/ui/HalalBadge'
+import { reverseGeocode } from '../../lib/geocode'
 import { useProducts } from '../../hooks/useProducts'
 import { useAddresses } from '../../context/AddressContext'
 import { useGeolocation } from '../../hooks/useGeolocation'
@@ -109,8 +110,7 @@ export default function StorePage() {
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-          const geoData = await res.json()
+          const geoData = await reverseGeocode(lat, lng)
           const addr = geoData.address || {}
           const city = addr.city || addr.town || addr.village || addr.suburb || ''
           // Save to addresses and owner_profiles

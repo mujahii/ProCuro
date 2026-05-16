@@ -27,7 +27,7 @@ function getProductImageUrl(path) {
 export default function SupplierProfilePage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
   const [supplier, setSupplier] = useState(null)
   const [products, setProducts] = useState([])
   const [certificates, setCertificates] = useState([])

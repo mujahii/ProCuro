@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShoppingCart, User, MapPin, Star, Plus, LogOut, Loader2, Navigation, Check, Menu } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { reverseGeocode } from '../../lib/geocode'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import NotificationBell from '../ui/NotificationBell'
@@ -59,8 +60,7 @@ export default function Navbar({ onMenuClick }) {
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
-          const data = await res.json()
+          const data = await reverseGeocode(lat, lng)
           const addr = data.address || {}
           setAddrForm(f => ({
             ...f,

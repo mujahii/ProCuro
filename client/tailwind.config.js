@@ -4,27 +4,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Navy / Steel / Burgundy / Cream palette
-        midnight: { DEFAULT: '#022E4C', dark: '#011D31', light: '#1B4565' },
-        lionsmane: { DEFAULT: '#E2D9CB', dark: '#CFC3AE' },
-        celeste: { DEFAULT: '#517493', dark: '#3E5C76' },
-        herb: { DEFAULT: '#517493', dark: '#3E5C76', light: '#7390AB' },
-        marigold: { DEFAULT: '#56061D', dark: '#3D0414', light: '#7A1530' },
+        // Navy / Gold / Aqua / Teal / Sand palette
+        midnight: { DEFAULT: '#083A4F', dark: '#052532', light: '#1B5468' },
+        lionsmane: { DEFAULT: '#E5E1DD', dark: '#CFC8BE' },
+        celeste: { DEFAULT: '#C0D5D6', dark: '#A2BCBE' },
+        herb: { DEFAULT: '#407E8C', dark: '#2F606C', light: '#5E96A4' },
+        marigold: { DEFAULT: '#A58D66', dark: '#8A7553', light: '#BFA988' },
 
         // Brand aliases
         primary: {
-          DEFAULT: '#022E4C',
-          light: '#1B4565',
-          dark: '#011D31',
-          50: '#E2D9CB',
-          100: '#517493',
+          DEFAULT: '#083A4F',
+          light: '#1B5468',
+          dark: '#052532',
+          50: '#E5E1DD',
+          100: '#C0D5D6',
         },
         accent: {
-          DEFAULT: '#56061D',
-          light: '#7A1530',
-          dark: '#3D0414',
+          DEFAULT: '#A58D66',
+          light: '#BFA988',
+          dark: '#8A7553',
         },
-        surface: '#E2D9CB',
+        surface: '#E5E1DD',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

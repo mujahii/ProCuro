@@ -4,10 +4,10 @@
 
 @layer base {
   :root {
-    --color-primary: #022E4C;
-    --color-accent: #56061D;
-    --color-surface: #E2D9CB;
-    --color-text: #022E4C;
+    --color-primary: #083A4F;
+    --color-accent: #A58D66;
+    --color-surface: #E5E1DD;
+    --color-text: #083A4F;
   }
 
   * {
@@ -20,7 +20,7 @@
 
   body {
     font-family: 'Inter', system-ui, sans-serif;
-    background-color: #E2D9CB;
+    background-color: #E5E1DD;
     color: var(--color-text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

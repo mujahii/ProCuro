@@ -4,8 +4,8 @@
   "description": "Halal Supply Chain, Simplified",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#022E4C",
-  "theme_color": "#022E4C",
+  "background_color": "#083A4F",
+  "theme_color": "#083A4F",
   "icons": [
     {
       "src": "/favicon.svg",

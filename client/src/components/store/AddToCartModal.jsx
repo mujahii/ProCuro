@@ -52,18 +52,32 @@ export default function AddToCartModal({ product, onClose }) {
   async function calcDeliveryFee() {
     setDeliveryLoading(true)
     try {
-      // Get owner location: from selected address, or from owner_profiles
-      let ownerLat = selectedAddress?.latitude
-      let ownerLng = selectedAddress?.longitude
+      let ownerLat = null
+      let ownerLng = null
 
-      // Fallback 1: any saved address with coordinates
-      if (!ownerLat || !ownerLng) {
+      // Step 1: use selected address coordinates if available
+      if (selectedAddress?.latitude && selectedAddress?.longitude) {
+        ownerLat = selectedAddress.latitude
+        ownerLng = selectedAddress.longitude
+      }
+
+      // Step 2: forward-geocode the selected address city/postal_code (preferred — uses the user's chosen address)
+      if (!ownerLat && selectedAddress?.city) {
+        const query = [selectedAddress.postal_code, selectedAddress.city].filter(Boolean).join(' ')
+        try {
+          const geo = await forwardGeocode(query)
+          if (geo) { ownerLat = parseFloat(geo.lat); ownerLng = parseFloat(geo.lon) }
+        } catch {}
+      }
+
+      // Step 3: any other saved address with coordinates
+      if (!ownerLat) {
         const addrWithCoords = addresses?.find(a => a.latitude && a.longitude)
         if (addrWithCoords) { ownerLat = addrWithCoords.latitude; ownerLng = addrWithCoords.longitude }
       }
 
-      // Fallback 2: owner_profiles lat/lng + city for geocoding
-      if ((!ownerLat || !ownerLng) && user) {
+      // Step 4: owner_profiles lat/lng or city
+      if (!ownerLat && user) {
         const { data: op } = await supabase
           .from('owner_profiles')
           .select('latitude, longitude, city')
@@ -72,7 +86,6 @@ export default function AddToCartModal({ product, onClose }) {
         if (op?.latitude && op?.longitude) {
           ownerLat = op.latitude; ownerLng = op.longitude
         } else if (op?.city) {
-          // Fallback 3: forward-geocode the city name
           try {
             const geo = await forwardGeocode(op.city)
             if (geo) { ownerLat = parseFloat(geo.lat); ownerLng = parseFloat(geo.lon) }
@@ -80,9 +93,9 @@ export default function AddToCartModal({ product, onClose }) {
         }
       }
 
-      // Fallback 4: forward-geocode from any address's city
-      if (!ownerLat || !ownerLng) {
-        const addrWithCity = addresses?.find(a => a.city || a.postal_code)
+      // Step 5: forward-geocode from any other address city
+      if (!ownerLat) {
+        const addrWithCity = addresses?.find(a => a !== selectedAddress && (a.city || a.postal_code))
         if (addrWithCity) {
           const query = [addrWithCity.postal_code, addrWithCity.city].filter(Boolean).join(' ')
           try {

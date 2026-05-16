@@ -98,8 +98,8 @@ export default function StorePage() {
   // Show GPS banner based on permission state and saved addresses
   useEffect(() => {
     if (!user || addresses === undefined) return
-    const hasLocation = addresses.some(a => a.latitude && a.longitude)
-    if (hasLocation || sessionStorage.getItem('gps_banner_dismissed') === '1') return
+    // Hide banner if user has any saved address (they already know their location)
+    if (addresses.length > 0 || sessionStorage.getItem('gps_banner_dismissed') === '1') return
 
     async function checkPermission() {
       if (!navigator.geolocation) { setLocationBanner('denied'); return }
@@ -169,13 +169,19 @@ export default function StorePage() {
               postcode = a.postcode || ''
             }
           } catch {}
-          await addAddress({ label: 'My Location', city, street: null, postal_code: postcode, latitude: lat, longitude: lng })
+          // Always save to owner_profiles (upsert is safe even if row exists)
           await supabase.from('owner_profiles').upsert({ user_id: user.id, city, latitude: lat, longitude: lng }, { onConflict: 'user_id' })
+          // Try to add a new address, but don't fail if one already exists
+          try {
+            await addAddress({ label: 'My Location', city, street: null, postal_code: postcode, latitude: lat, longitude: lng })
+          } catch {}
           await reloadAddresses()
           setLocationBanner(null)
           sessionStorage.setItem('gps_banner_dismissed', '1')
         } catch {
-          setLocationBanner('denied')
+          // GPS succeeded but something else failed — still dismiss, don't show blocked message
+          setLocationBanner(null)
+          sessionStorage.setItem('gps_banner_dismissed', '1')
         } finally {
           setLocationSaving(false)
         }

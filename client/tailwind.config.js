@@ -4,27 +4,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Jenny Henderson palette
-        midnight: { DEFAULT: '#013D5A', dark: '#012A3F', light: '#1A5572' },
-        lionsmane: { DEFAULT: '#FCF3E3', dark: '#F0E4CC' },
-        celeste: { DEFAULT: '#BDD3CE', dark: '#9CB8B2' },
-        herb: { DEFAULT: '#708C69', dark: '#5A7254', light: '#8DA886' },
-        marigold: { DEFAULT: '#F4A258', dark: '#E08B3F', light: '#F8BC85' },
+        // Copper / Inkwell / Mocha / Cream palette
+        midnight: { DEFAULT: '#394B6F', dark: '#2A3A58', light: '#4D6490' },
+        lionsmane: { DEFAULT: '#F7F8F4', dark: '#EDEEE8' },
+        celeste: { DEFAULT: '#C1B39A', dark: '#A89A82' },
+        herb: { DEFAULT: '#C1B39A', dark: '#A89A82', light: '#D4C9B8' },
+        marigold: { DEFAULT: '#A87C4F', dark: '#8A6440', light: '#C49A6E' },
 
-        // Brand aliases (redefined to map onto new palette)
+        // Brand aliases
         primary: {
-          DEFAULT: '#013D5A',
-          light: '#1A5572',
-          dark: '#012A3F',
-          50: '#FCF3E3',
-          100: '#BDD3CE',
+          DEFAULT: '#394B6F',
+          light: '#4D6490',
+          dark: '#2A3A58',
+          50: '#F7F8F4',
+          100: '#C1B39A',
         },
         accent: {
-          DEFAULT: '#F4A258',
-          light: '#F8BC85',
-          dark: '#E08B3F',
+          DEFAULT: '#A87C4F',
+          light: '#C49A6E',
+          dark: '#8A6440',
         },
-        surface: '#FCF3E3',
+        surface: '#F7F8F4',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

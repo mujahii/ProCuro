@@ -147,19 +147,19 @@ export default function LandingPage() {
 
       {/* Hero Banner — frosted glass, no recognizable photo */}
       <section className="relative min-h-[560px] flex items-center justify-center overflow-hidden bg-midnight">
-        {/* Heavily blurred image — pure color texture, unrecognizable */}
+        {/* Image at near-zero opacity + 160px blur — completely unrecognisable, only bleeds colour warmth */}
         <img
           src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&q=80&w=1200"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover scale-125 opacity-30"
-          style={{ filter: 'blur(80px)' }}
+          className="absolute inset-0 w-full h-full object-cover scale-125 opacity-[0.08]"
+          style={{ filter: 'blur(160px)' }}
         />
-        {/* Palette-matched frosted overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-midnight/80 via-midnight/85 to-herb/60 backdrop-blur-2xl" />
-        {/* Soft blob accents for depth */}
-        <div className="absolute -top-20 -right-20 w-96 h-96 bg-marigold/20 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-celeste/20 rounded-full blur-3xl" />
+        {/* Deep frosted overlay — Inkwell base with faint Copper glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-midnight/92 via-midnight/90 to-marigold/20 backdrop-blur-3xl" />
+        {/* Soft colour blobs for warmth */}
+        <div className="absolute -top-20 -right-20 w-96 h-96 bg-marigold/15 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-herb/10 rounded-full blur-3xl" />
 
         <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto pt-8 sm:pt-0 pb-10 sm:pb-0">
           <span className="inline-flex items-center gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-sm font-medium px-4 py-1.5 rounded-full mb-6">

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ShoppingCart, Mail, Phone, Globe } from 'lucide-react'
+import { Mail, Phone, Globe } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
         <div>
           <h3 className="text-white text-lg font-bold mb-4 flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5 text-herb-light" /> ProCuro
+            <img src="/image.png" alt="ProCuro" className="w-5 h-5 object-contain" /> ProCuro
           </h3>
           <p className="text-sm opacity-70 leading-relaxed">
             Empowering Halal businesses with seamless procurement and inventory solutions across Germany.

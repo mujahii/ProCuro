@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingCart, ChevronRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import toast from 'react-hot-toast'
@@ -62,7 +62,7 @@ export default function SelectRolePage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-3">
-            <ShoppingCart className="w-8 h-8 text-midnight" />
+            <img src="/image.png" alt="ProCuro" className="w-8 h-8 object-contain" />
             <span className="text-2xl font-bold text-slate-900">ProCuro</span>
           </div>
           <div className="mb-2">

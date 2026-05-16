@@ -139,7 +139,7 @@ export default function Navbar({ onMenuClick }) {
 
             {/* Logo */}
             <Link to={getHomeLink()} className="flex-shrink-0 flex items-center gap-2">
-              <ShoppingCart className="w-8 h-8 text-midnight" />
+              <img src="/image.png" alt="ProCuro" className="w-8 h-8 object-contain" />
               <span className="font-bold text-xl text-midnight hidden sm:block">ProCuro</span>
             </Link>
 

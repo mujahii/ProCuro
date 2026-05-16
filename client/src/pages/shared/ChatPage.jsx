@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Send, MessageSquare, ArrowLeft, Package, Shield, Paperclip, FileText, Trash2, Loader2, X, MapPin, User } from 'lucide-react'
+import { Send, MessageSquare, ArrowLeft, Package, Shield, Paperclip, FileText, MoreVertical, Pin, Trash2, Loader2, X, MapPin, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -29,6 +29,9 @@ export default function ChatPage() {
   const [unreadMap, setUnreadMap] = useState({})
   const [confirmDeleteConv, setConfirmDeleteConv] = useState(false)
   const [deleteListConvId, setDeleteListConvId] = useState(null)
+  const [menuOpenId, setMenuOpenId] = useState(null)
+  const [deleteModalConvId, setDeleteModalConvId] = useState(null)
+  const menuRef = useRef(null)
   const [ownerProfileModal, setOwnerProfileModal] = useState(null)
   const [adminConv, setAdminConv] = useState(null)
   const [adminMessages, setAdminMessages] = useState([])
@@ -37,6 +40,12 @@ export default function ChatPage() {
   const autoSentRef = useRef(false)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside() { setMenuOpenId(null) }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => {
     if (role !== 'supplier' || !user) return
@@ -115,6 +124,7 @@ export default function ChatPage() {
         .from('conversations')
         .select('*, supplier:supplier_profiles(id, business_name, avatar_url, city)')
         .eq('owner_id', user.id)
+        .is('deleted_for_owner_at', null)
         .order('last_message_at', { ascending: false })
       const convIds = (data || []).map(c => c.id)
       if (convIds.length > 0) {
@@ -134,6 +144,7 @@ export default function ChatPage() {
         .from('conversations')
         .select('*')
         .eq('supplier_id', supplierId)
+        .is('deleted_for_supplier_at', null)
         .order('created_at', { ascending: false })
       const convIds = (convs || []).map(c => c.id)
       const ownerIds = [...new Set((convs || []).map(c => c.owner_id).filter(Boolean))]
@@ -382,13 +393,27 @@ export default function ChatPage() {
   async function deleteConversation(convId) {
     const id = convId || selectedConv?.id
     if (!id) return
-    const { error } = await supabase.from('conversations').delete().eq('id', id)
+    const col = role === 'restaurant_owner' ? 'deleted_for_owner_at' : 'deleted_for_supplier_at'
+    const { error } = await supabase.from('conversations').update({ [col]: new Date().toISOString() }).eq('id', id)
     if (error) { toast.error('Failed to delete chat'); return }
     setConversations(prev => prev.filter(c => c.id !== id))
     if (selectedConv?.id === id) { setSelectedConv(null); setMessages([]) }
     setConfirmDeleteConv(false)
     setDeleteListConvId(null)
-    toast.success('Chat deleted')
+    setDeleteModalConvId(null)
+    setMenuOpenId(null)
+    toast.success('Chat removed from your inbox')
+  }
+
+  async function togglePin(convId) {
+    const conv = conversations.find(c => c.id === convId)
+    if (!conv) return
+    const col = role === 'restaurant_owner' ? 'pinned_by_owner' : 'pinned_by_supplier'
+    const newVal = !conv[col]
+    await supabase.from('conversations').update({ [col]: newVal }).eq('id', convId)
+    setConversations(prev => prev.map(c => c.id === convId ? { ...c, [col]: newVal } : c))
+    setMenuOpenId(null)
+    toast.success(newVal ? 'Chat pinned' : 'Chat unpinned')
   }
 
   function getConvName(conv) {
@@ -476,21 +501,27 @@ export default function ChatPage() {
               </div>
             ) : conversations.map(conv => {
               const unread = unreadMap[conv.id] || 0
-              const isDeleting = deleteListConvId === conv.id
+              const isPinned = role === 'restaurant_owner' ? conv.pinned_by_owner : conv.pinned_by_supplier
+              const menuOpen = menuOpenId === conv.id
               return (
                 <div
                   key={conv.id}
-                  className={`group flex items-center border-b border-slate-50 ${selectedConv?.id === conv.id && !showingAdmin ? 'bg-lionsmane' : 'hover:bg-lionsmane'} transition-colors`}
+                  className={`group relative flex items-center border-b border-slate-50 ${selectedConv?.id === conv.id && !showingAdmin ? 'bg-lionsmane' : 'hover:bg-lionsmane'} transition-colors`}
                 >
                   <button
                     onClick={() => handleSelectConv(conv)}
                     className="flex-1 p-4 flex items-center gap-3 text-left min-w-0"
                   >
-                    <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    <div className="relative w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
                       {getConvAvatar(conv)
                         ? <img src={getConvAvatar(conv)} alt="" className="w-full h-full object-cover" />
                         : <span className="text-sm font-bold text-slate-500">{getConvName(conv)?.[0]?.toUpperCase()}</span>
                       }
+                      {isPinned && (
+                        <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-marigold rounded-full flex items-center justify-center shadow-sm">
+                          <Pin className="w-2 h-2 text-white" />
+                        </span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm truncate ${unread > 0 ? 'font-black text-slate-900' : 'font-semibold text-slate-900'}`}>{getConvName(conv)}</p>
@@ -507,21 +538,35 @@ export default function ChatPage() {
                       </span>
                     )}
                   </button>
-                  {/* Delete from list */}
-                  {isDeleting ? (
-                    <div className="flex items-center gap-1 pr-2 flex-shrink-0">
-                      <button onClick={() => deleteConversation(conv.id)} className="px-2 py-1 text-[10px] bg-red-600 text-white rounded font-semibold hover:bg-red-700">Del</button>
-                      <button onClick={() => setDeleteListConvId(null)} className="px-2 py-1 text-[10px] bg-slate-100 text-slate-700 rounded font-semibold">✕</button>
-                    </div>
-                  ) : (
+
+                  {/* Three-dot menu */}
+                  <div className="relative flex-shrink-0 pr-2">
                     <button
-                      onClick={e => { e.stopPropagation(); setDeleteListConvId(conv.id) }}
-                      className="opacity-0 group-hover:opacity-100 p-2 mr-1 hover:bg-red-50 rounded-lg flex-shrink-0 transition-all"
-                      title="Delete conversation"
+                      onClick={e => { e.stopPropagation(); setMenuOpenId(menuOpen ? null : conv.id) }}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-slate-200 rounded-lg transition-all"
                     >
-                      <Trash2 className="w-3.5 h-3.5 text-slate-400 hover:text-red-500" />
+                      <MoreVertical className="w-4 h-4 text-slate-500" />
                     </button>
-                  )}
+                    {menuOpen && (
+                      <div className="absolute right-0 top-8 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-1 overflow-hidden">
+                        <button
+                          onClick={e => { e.stopPropagation(); togglePin(conv.id) }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-lionsmane transition-colors"
+                        >
+                          <Pin className="w-3.5 h-3.5 text-marigold" />
+                          {isPinned ? 'Unpin' : 'Pin'}
+                        </button>
+                        <div className="border-t border-slate-100 my-0.5" />
+                        <button
+                          onClick={e => { e.stopPropagation(); setDeleteModalConvId(conv.id); setMenuOpenId(null) }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )
             })}
@@ -637,17 +682,33 @@ export default function ChatPage() {
                 )}
               </div>
 
-              {confirmDeleteConv ? (
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-xs text-slate-500 hidden sm:block">Delete?</span>
-                  <button onClick={() => deleteConversation()} className="px-2.5 py-1 text-xs bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Delete</button>
-                  <button onClick={() => setConfirmDeleteConv(false)} className="px-2.5 py-1 text-xs bg-slate-100 text-slate-700 rounded-lg font-semibold hover:bg-slate-200">Cancel</button>
-                </div>
-              ) : (
-                <button onClick={() => setConfirmDeleteConv(true)} className="p-2 hover:bg-slate-100 rounded-lg flex-shrink-0 group" title="Delete conversation">
-                  <Trash2 className="w-4 h-4 text-slate-400 group-hover:text-red-500 transition-colors" />
+              <div className="relative flex-shrink-0">
+                <button
+                  onClick={() => setMenuOpenId(menuOpenId === selectedConv.id ? null : selectedConv.id)}
+                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <MoreVertical className="w-4 h-4 text-slate-500" />
                 </button>
-              )}
+                {menuOpenId === selectedConv.id && (
+                  <div className="absolute right-0 top-9 w-40 bg-white rounded-xl shadow-xl border border-slate-100 z-50 py-1 overflow-hidden">
+                    <button
+                      onClick={() => togglePin(selectedConv.id)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-700 hover:bg-lionsmane transition-colors"
+                    >
+                      <Pin className="w-3.5 h-3.5 text-marigold" />
+                      {(role === 'restaurant_owner' ? selectedConv.pinned_by_owner : selectedConv.pinned_by_supplier) ? 'Unpin' : 'Pin'}
+                    </button>
+                    <div className="border-t border-slate-100 my-0.5" />
+                    <button
+                      onClick={() => { setDeleteModalConvId(selectedConv.id); setMenuOpenId(null) }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-lionsmane">
@@ -730,6 +791,35 @@ export default function ChatPage() {
           </div>
         )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {deleteModalConvId && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDeleteModalConvId(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="w-6 h-6 text-red-500" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900 text-center mb-1">Delete conversation?</h3>
+            <p className="text-sm text-slate-500 text-center mb-6">
+              This will remove the chat from your inbox. The other person can still see it.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteModalConvId(null)}
+                className="flex-1 py-2.5 border-2 border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-lionsmane transition-colors text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteConversation(deleteModalConvId)}
+                className="flex-1 py-2.5 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors text-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Owner profile modal (for supplier view) */}
       {ownerProfileModal && (

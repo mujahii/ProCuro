@@ -110,11 +110,17 @@ export default function StorePage() {
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          const geoData = await reverseGeocode(lat, lng)
-          const addr = geoData.address || {}
-          const city = addr.city || addr.town || addr.village || addr.suburb || ''
-          // Save to addresses and owner_profiles
-          await addAddress({ label: 'Business Location', city, street: null, postal_code: addr.postcode || null, country: 'Germany', latitude: lat, longitude: lng })
+          // Geocoding is best-effort; lat/lng is always saved even if it fails
+          let city = '', postcode = ''
+          try {
+            const geoData = await reverseGeocode(lat, lng)
+            if (geoData?.address) {
+              const a = geoData.address
+              city = a.city || a.town || a.village || a.suburb || ''
+              postcode = a.postcode || ''
+            }
+          } catch {}
+          await addAddress({ label: 'Business Location', city, street: null, postal_code: postcode, country: 'Germany', latitude: lat, longitude: lng })
           await supabase.from('owner_profiles').upsert({ user_id: user.id, city, latitude: lat, longitude: lng }, { onConflict: 'user_id' })
           await reloadAddresses()
           setLocationBanner(null)

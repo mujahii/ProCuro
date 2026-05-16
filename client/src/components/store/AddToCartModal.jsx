@@ -29,7 +29,7 @@ export default function AddToCartModal({ product, onClose }) {
   const { addItem } = useCart()
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { selectedAddress } = useAddresses()
+  const { selectedAddress, addresses } = useAddresses()
   const [qty, setQty] = useState(1)
   const [discountCode, setDiscountCode] = useState('')
   const [appliedDiscount, setAppliedDiscount] = useState(0)
@@ -55,14 +55,20 @@ export default function AddToCartModal({ product, onClose }) {
       let ownerLat = selectedAddress?.latitude
       let ownerLng = selectedAddress?.longitude
 
+      // Fallback 1: any saved address with coordinates
+      if (!ownerLat || !ownerLng) {
+        const addrWithCoords = addresses?.find(a => a.latitude && a.longitude)
+        if (addrWithCoords) { ownerLat = addrWithCoords.latitude; ownerLng = addrWithCoords.longitude }
+      }
+
+      // Fallback 2: owner_profiles lat/lng (saved when GPS was allowed)
       if ((!ownerLat || !ownerLng) && user) {
         const { data: op } = await supabase
           .from('owner_profiles')
           .select('latitude, longitude')
           .eq('user_id', user.id)
           .maybeSingle()
-        ownerLat = op?.latitude
-        ownerLng = op?.longitude
+        if (op?.latitude && op?.longitude) { ownerLat = op.latitude; ownerLng = op.longitude }
       }
 
       if (!ownerLat || !ownerLng) {

@@ -52,57 +52,23 @@ export default function AddToCartModal({ product, onClose }) {
   async function calcDeliveryFee() {
     setDeliveryLoading(true)
     try {
-      let ownerLat = null
-      let ownerLng = null
-
-      // Step 1: use selected address coordinates if available
-      if (selectedAddress?.latitude && selectedAddress?.longitude) {
-        ownerLat = selectedAddress.latitude
-        ownerLng = selectedAddress.longitude
+      // No selected address → ask user to add one; never fall back to other sources
+      if (!selectedAddress) {
+        setOwnerHasLocation(false)
+        setDeliveryFee(null)
+        return
       }
 
-      // Step 2: forward-geocode the selected address city/postal_code (preferred — uses the user's chosen address)
-      if (!ownerLat && selectedAddress?.city) {
+      let ownerLat = selectedAddress.latitude || null
+      let ownerLng = selectedAddress.longitude || null
+
+      // If selected address has no coordinates, forward-geocode its city/postcode
+      if (!ownerLat && (selectedAddress.city || selectedAddress.postal_code)) {
         const query = [selectedAddress.postal_code, selectedAddress.city].filter(Boolean).join(' ')
         try {
           const geo = await forwardGeocode(query)
           if (geo) { ownerLat = parseFloat(geo.lat); ownerLng = parseFloat(geo.lon) }
         } catch {}
-      }
-
-      // Step 3: any other saved address with coordinates
-      if (!ownerLat) {
-        const addrWithCoords = addresses?.find(a => a.latitude && a.longitude)
-        if (addrWithCoords) { ownerLat = addrWithCoords.latitude; ownerLng = addrWithCoords.longitude }
-      }
-
-      // Step 4: owner_profiles lat/lng or city
-      if (!ownerLat && user) {
-        const { data: op } = await supabase
-          .from('owner_profiles')
-          .select('latitude, longitude, city')
-          .eq('user_id', user.id)
-          .maybeSingle()
-        if (op?.latitude && op?.longitude) {
-          ownerLat = op.latitude; ownerLng = op.longitude
-        } else if (op?.city) {
-          try {
-            const geo = await forwardGeocode(op.city)
-            if (geo) { ownerLat = parseFloat(geo.lat); ownerLng = parseFloat(geo.lon) }
-          } catch {}
-        }
-      }
-
-      // Step 5: forward-geocode from any other address city
-      if (!ownerLat) {
-        const addrWithCity = addresses?.find(a => a !== selectedAddress && (a.city || a.postal_code))
-        if (addrWithCity) {
-          const query = [addrWithCity.postal_code, addrWithCity.city].filter(Boolean).join(' ')
-          try {
-            const geo = await forwardGeocode(query)
-            if (geo) { ownerLat = parseFloat(geo.lat); ownerLng = parseFloat(geo.lon) }
-          } catch {}
-        }
       }
 
       if (!ownerLat || !ownerLng) {
@@ -209,7 +175,7 @@ export default function AddToCartModal({ product, onClose }) {
                 onClick={() => { onClose(); navigate('/owner/profile') }}
                 className="text-marigold font-semibold hover:underline flex items-center gap-1"
               >
-                <MapPin className="w-3.5 h-3.5" /> Add your location to see delivery fee
+                <MapPin className="w-3.5 h-3.5" /> Add an address to see delivery fee
               </button>
             ) : deliveryFee === null ? (
               <span className="text-slate-400">Delivery fee unavailable</span>

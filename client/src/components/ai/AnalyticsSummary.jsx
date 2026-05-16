@@ -82,8 +82,8 @@ export default function AnalyticsSummary({ context }) {
       const { data: { session } } = await supabase.auth.getSession()
       const text = await getAnalyticsSummary(context, session?.access_token ?? '')
       setSummary(text)
-    } catch {
-      setError('AI analysis is temporarily unavailable.')
+    } catch (err) {
+      setError(err?.message || 'AI analysis is temporarily unavailable.')
     } finally {
       setLoading(false)
     }

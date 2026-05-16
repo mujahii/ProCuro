@@ -18,7 +18,8 @@ export async function askGemini(prompt, context, accessToken) {
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}))
     console.error(`AI chat error [${res.status}]:`, errBody)
-    throw new Error(errBody.error || `AI service error (${res.status})`)
+    const detail = errBody.detail ? ` — ${errBody.detail}` : ''
+    throw new Error(`${errBody.error || `AI service error (${res.status})`}${detail}`)
   }
   const data = await res.json()
   return data.response
@@ -36,7 +37,8 @@ export async function getAnalyticsSummary(context, accessToken) {
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}))
     console.error(`AI analytics error [${res.status}]:`, errBody)
-    throw new Error(errBody.error || `AI service error (${res.status})`)
+    const detail = errBody.detail ? ` — ${errBody.detail}` : ''
+    throw new Error(`${errBody.error || `AI service error (${res.status})`}${detail}`)
   }
   const data = await res.json()
   return data.summary

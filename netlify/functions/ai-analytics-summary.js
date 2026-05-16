@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai')
 const { createClient } = require('@supabase/supabase-js')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -117,7 +117,14 @@ Keep it professional and data-driven.`,
       body: JSON.stringify({ summary: result.response.text() }),
     }
   } catch (err) {
-    console.error('Gemini analytics error:', err)
-    return { statusCode: 503, headers, body: JSON.stringify({ error: 'AI analysis is temporarily unavailable.' }) }
+    console.error('Gemini analytics error:', err?.message || err, err?.stack)
+    return {
+      statusCode: 503,
+      headers,
+      body: JSON.stringify({
+        error: 'AI analysis is temporarily unavailable.',
+        detail: err?.message || String(err),
+      }),
+    }
   }
 }

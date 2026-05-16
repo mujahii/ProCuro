@@ -2,7 +2,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai')
 const { createClient } = require('@supabase/supabase-js')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -92,7 +92,14 @@ exports.handler = async (event) => {
       body: JSON.stringify({ response: result.response.text() }),
     }
   } catch (err) {
-    console.error('Gemini error:', err)
-    return { statusCode: 503, headers, body: JSON.stringify({ error: 'AI assistant is temporarily unavailable. Please try again.' }) }
+    console.error('Gemini chat error:', err?.message || err, err?.stack)
+    return {
+      statusCode: 503,
+      headers,
+      body: JSON.stringify({
+        error: 'AI assistant is temporarily unavailable. Please try again.',
+        detail: err?.message || String(err),
+      }),
+    }
   }
 }

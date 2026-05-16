@@ -581,25 +581,29 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
 
   useEffect(() => {
     if (selectedAddrIds.length === 0 && savedAddresses.length > 0) {
-      const def = savedAddresses.find(a => a.is_default)
-      const byCity = savedAddresses.find(a => a.city === current.city)
-      const initial = def || byCity || savedAddresses[0]
-      if (initial) {
-        setSelectedAddrIds([initial.id])
-        setForm(f => ({ ...f, city: initial.city || '', latitude: initial.latitude || null, longitude: initial.longitude || null }))
+      const savedCities = (current.city || '').split(',').map(c => c.trim()).filter(Boolean)
+      let matched = savedAddresses.filter(a => savedCities.includes(a.city))
+      if (matched.length === 0) {
+        const def = savedAddresses.find(a => a.is_default)
+        matched = def ? [def] : [savedAddresses[0]]
       }
+      const ids = matched.map(a => a.id)
+      const cities = [...new Set(matched.map(a => a.city).filter(Boolean))].join(', ')
+      const first = matched[0]
+      setSelectedAddrIds(ids)
+      setForm(f => ({ ...f, city: cities, latitude: first?.latitude || null, longitude: first?.longitude || null }))
     }
   }, [savedAddresses])
 
   function toggleAddrSelection(id) {
-    setSelectedAddrIds(prev => {
-      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-      const selected = savedAddresses.filter(a => next.includes(a.id))
-      const cities = [...new Set(selected.map(a => a.city).filter(Boolean))].join(', ')
-      const first = selected[0]
-      setForm(f => ({ ...f, city: cities, latitude: first?.latitude || null, longitude: first?.longitude || null }))
-      return next
-    })
+    const next = selectedAddrIds.includes(id)
+      ? selectedAddrIds.filter(x => x !== id)
+      : [...selectedAddrIds, id]
+    const selected = savedAddresses.filter(a => next.includes(a.id))
+    const cities = [...new Set(selected.map(a => a.city).filter(Boolean))].join(', ')
+    const first = selected[0]
+    setSelectedAddrIds(next)
+    setForm(f => ({ ...f, city: cities, latitude: first?.latitude || null, longitude: first?.longitude || null }))
   }
 
   async function detectGPS() {
@@ -1184,14 +1188,19 @@ export default function SupplierProfilePage() {
           </div>
 
           {/* City — shows all selected cities from business details */}
-          <div className="flex items-center gap-3 px-4 py-3">
-            <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0" />
+          <div className="flex items-start gap-3 px-4 py-3">
+            <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">City</p>
-              {supplierProfile?.city
-                ? <p className="text-sm font-semibold text-slate-900 mt-0.5">{supplierProfile.city}</p>
-                : <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">Add address →</button>
-              }
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-1.5">City</p>
+              {supplierProfile?.city ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {supplierProfile.city.split(',').map(c => c.trim()).filter(Boolean).map(c => (
+                    <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-celeste text-midnight-dark">{c}</span>
+                  ))}
+                </div>
+              ) : (
+                <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">Add address →</button>
+              )}
             </div>
           </div>
 

@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { setActiveLanguage } from '../lib/autoTranslate'
 
 const LanguageContext = createContext()
 
@@ -138,7 +139,15 @@ export function LanguageProvider({ children }) {
     if (!LANGS.includes(l)) return
     setLang(l)
     try { localStorage.setItem('procuro_lang', l) } catch {}
+    setActiveLanguage(l)
   }
+
+  useEffect(() => {
+    // Apply the persisted language to the DOM on first mount (after children render)
+    const id = requestAnimationFrame(() => setActiveLanguage(lang))
+    return () => cancelAnimationFrame(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   function t(key) {
     return T[lang]?.[key] ?? T.en?.[key] ?? key

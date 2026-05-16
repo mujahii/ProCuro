@@ -156,7 +156,7 @@ export default function LandingPage() {
           style={{ filter: 'blur(160px)' }}
         />
         {/* Deep frosted overlay — Inkwell base with faint Copper glow */}
-        <div className="absolute inset-0 bg-gradient-to-br from-midnight/92 via-midnight/90 to-marigold/20 backdrop-blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-br from-midnight/92 via-midnight/88 to-marigold/25 backdrop-blur-3xl" />
         {/* Soft colour blobs for warmth */}
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-marigold/15 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-herb/10 rounded-full blur-3xl" />

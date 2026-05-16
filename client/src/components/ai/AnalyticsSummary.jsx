@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Sparkles, RefreshCw, TrendingUp, AlertTriangle, Lightbulb, Calendar } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { getAnalyticsSummary } from '../../lib/gemini'
@@ -67,9 +67,13 @@ export default function AnalyticsSummary({ context }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  const hasGenerated = useRef(false)
   useEffect(() => {
-    if (context) generate()
-  }, [])
+    if (context && !hasGenerated.current) {
+      hasGenerated.current = true
+      generate()
+    }
+  }, [context])
 
   async function generate() {
     setLoading(true)

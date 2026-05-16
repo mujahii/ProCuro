@@ -84,7 +84,7 @@ export default function AllProductsPage() {
         <div className="relative" ref={filterRef}>
           <button
             onClick={() => setFilterOpen(o => !o)}
-            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-midnight text-white border-midnight' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
           >
             <Filter className="w-4 h-4" />
             <span className="hidden sm:inline">{sortBy ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Sort'}</span>
@@ -96,7 +96,7 @@ export default function AllProductsPage() {
                 <button
                   key={opt.value}
                   onClick={() => { setSortBy(opt.value); setFilterOpen(false) }}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-slate-700 hover:bg-slate-50'}`}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value ? 'text-midnight-dark font-semibold bg-lionsmane' : 'text-slate-700 hover:bg-lionsmane'}`}
                 >
                   {opt.label}
                 </button>
@@ -114,7 +114,7 @@ export default function AllProductsPage() {
             onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
             className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
               activeCategory === cat
-                ? 'bg-slate-900 text-white'
+                ? 'bg-midnight text-white'
                 : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
             }`}
           >
@@ -146,7 +146,7 @@ export default function AllProductsPage() {
             <button
               onClick={loadMore}
               disabled={loading}
-              className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+              className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-lionsmane transition-colors disabled:opacity-50"
             >
               {loading ? 'Loading...' : 'Load More'}
             </button>
@@ -193,7 +193,7 @@ function ProductCard({ product, onAddToCart }) {
         {product.description && (
           <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
         )}
-        <p className="text-xs font-bold text-emerald-700 mb-3">{product.supplier?.business_name}</p>
+        <p className="text-xs font-bold text-midnight-dark mb-3">{product.supplier?.business_name}</p>
         <div className="flex items-center justify-between">
           <div>
             <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
@@ -201,7 +201,7 @@ function ProductCard({ product, onAddToCart }) {
           </div>
           <button
             onClick={e => { e.stopPropagation(); onAddToCart() }}
-            className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
+            className="w-8 h-8 rounded-full bg-midnight text-white flex items-center justify-center hover:bg-midnight transition-colors"
           >
             <Plus className="w-5 h-5" />
           </button>

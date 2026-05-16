@@ -24,8 +24,8 @@ function AIText({ text }) {
         if (numbered) {
           const [, num, title, rest] = numbered
           return (
-            <div key={idx} className="flex gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-              <span className="w-6 h-6 bg-emerald-600 text-white rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+            <div key={idx} className="flex gap-3 p-3 bg-lionsmane rounded-xl border border-slate-100">
+              <span className="w-6 h-6 bg-midnight text-white rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                 {num}
               </span>
               <div className="min-w-0">
@@ -79,7 +79,7 @@ export default function AnalyticsSummary({ context }) {
     <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-lg flex items-center justify-center shadow-sm">
+          <div className="w-8 h-8 bg-gradient-to-br from-herb to-midnight-dark rounded-lg flex items-center justify-center shadow-sm">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -119,7 +119,7 @@ export default function AnalyticsSummary({ context }) {
         ) : error ? (
           <div className="text-center py-4">
             <p className="text-sm text-slate-400">{error}</p>
-            <button onClick={generate} className="mt-2 text-xs text-emerald-600 font-semibold hover:text-emerald-700">
+            <button onClick={generate} className="mt-2 text-xs text-midnight font-semibold hover:text-midnight-dark">
               Try again
             </button>
           </div>
@@ -131,7 +131,7 @@ export default function AnalyticsSummary({ context }) {
             <p className="text-sm text-slate-400 mb-3">Get AI-powered insights about your procurement patterns.</p>
             <button
               onClick={generate}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5" /> Generate Insights
             </button>

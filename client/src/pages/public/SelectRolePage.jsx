@@ -48,8 +48,8 @@ export default function SelectRolePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-midnight">
+        <div className="w-10 h-10 border-4 border-herb border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -57,12 +57,12 @@ export default function SelectRolePage() {
   if (!authUser) return null
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-midnight flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-3">
-            <ShoppingCart className="w-8 h-8 text-emerald-600" />
+            <ShoppingCart className="w-8 h-8 text-midnight" />
             <span className="text-2xl font-bold text-slate-900">ProCuro</span>
           </div>
           <div className="mb-2">
@@ -79,27 +79,27 @@ export default function SelectRolePage() {
           <button
             onClick={() => handleSelectRole('restaurant_owner')}
             disabled={selecting}
-            className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-herb hover:bg-lionsmane transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="text-3xl">🍽️</span>
             <div className="flex-1">
               <p className="font-bold text-slate-900 text-base">Restaurant Owner</p>
               <p className="text-xs text-slate-500 mt-0.5">Browse and order from verified Halal suppliers</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors flex-shrink-0" />
+            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-herb transition-colors flex-shrink-0" />
           </button>
 
           <button
             onClick={() => handleSelectRole('supplier')}
             disabled={selecting}
-            className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-herb hover:bg-lionsmane transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="text-3xl">🏪</span>
             <div className="flex-1">
               <p className="font-bold text-slate-900 text-base">Supplier</p>
               <p className="text-xs text-slate-500 mt-0.5">Sell your Halal products to restaurants across Germany</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors flex-shrink-0" />
+            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-herb transition-colors flex-shrink-0" />
           </button>
         </div>
 

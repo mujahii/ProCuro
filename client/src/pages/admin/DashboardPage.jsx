@@ -70,7 +70,7 @@ export default function AdminDashboardPage() {
     { label: 'Suppliers', value: stats.totalSuppliers, icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
     { label: 'Restaurant Owners', value: stats.totalOwners, icon: Users, color: 'text-green-600', bg: 'bg-green-50' },
     { label: 'Total Orders', value: stats.totalOrders, icon: ShoppingBag, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'Pending Certificates', value: stats.pendingCerts, icon: Award, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+    { label: 'Pending Certificates', value: stats.pendingCerts, icon: Award, color: 'text-marigold-dark', bg: 'bg-lionsmane' },
     { label: 'Total GMV', value: `€${stats.totalRevenue?.toFixed(2)}`, icon: Euro, color: 'text-primary', bg: 'bg-primary-100' },
   ] : []
 

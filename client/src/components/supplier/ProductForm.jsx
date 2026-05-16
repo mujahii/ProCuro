@@ -98,7 +98,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
               </div>
             </div>
           ) : (
-            <div className="h-40 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 hover:border-emerald-400 hover:bg-emerald-50 transition-colors">
+            <div className="h-40 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-2 hover:border-herb-light hover:bg-lionsmane transition-colors">
               <ImagePlus className="w-8 h-8 text-slate-300" />
               <span className="text-sm text-slate-400 font-medium">+ Upload Image</span>
             </div>
@@ -118,7 +118,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
             required
             value={form.name}
             onChange={e => update('name', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors"
             placeholder="e.g. Premium Lamb Chops"
           />
         </div>
@@ -130,7 +130,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
             value={form.description}
             onChange={e => update('description', e.target.value)}
             rows={3}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors resize-none"
             placeholder="Describe your product..."
           />
         </div>
@@ -145,7 +145,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
             step="0.01"
             value={form.price}
             onChange={e => update('price', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors"
             placeholder="0.00"
           />
         </div>
@@ -158,7 +158,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
               required
               value={form.unit_type}
               onChange={e => update('unit_type', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors bg-white"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors bg-white"
             >
               {UNIT_TYPES.map(u => <option key={u} value={u}>{u.charAt(0).toUpperCase() + u.slice(1)}</option>)}
             </select>
@@ -172,7 +172,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
               step="0.1"
               value={form.discount_percent}
               onChange={e => update('discount_percent', e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors"
               placeholder="Optional"
             />
           </div>
@@ -189,7 +189,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
                 onClick={() => update('category', cat)}
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   form.category === cat
-                    ? 'bg-slate-900 text-white'
+                    ? 'bg-midnight text-white'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
@@ -208,7 +208,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
             step="1"
             value={form.stock_quantity}
             onChange={e => update('stock_quantity', e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-slate-900 text-sm outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors"
             placeholder="0"
           />
           <p className="text-xs text-slate-400 mt-1">You'll be notified when stock reaches 3 or runs out</p>
@@ -219,11 +219,11 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
           type="button"
           onClick={() => update('is_active', !form.is_active)}
           className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-colors ${
-            form.is_active ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white'
+            form.is_active ? 'border-herb bg-lionsmane' : 'border-slate-200 bg-white'
           }`}
         >
           <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 transition-colors ${
-            form.is_active ? 'bg-emerald-600' : 'bg-slate-200'
+            form.is_active ? 'bg-midnight' : 'bg-slate-200'
           }`}>
             {form.is_active && <Check className="w-3.5 h-3.5 text-white" />}
           </div>
@@ -237,7 +237,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full py-3.5 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           {loading ? 'Saving...' : (product ? 'Save Changes' : 'Add Product')}

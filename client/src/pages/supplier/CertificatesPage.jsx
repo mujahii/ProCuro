@@ -118,7 +118,7 @@ export default function SupplierCertificatesPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1 flex-shrink-0">
-                    <button onClick={() => viewCert(cert)} className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors" title="View">
+                    <button onClick={() => viewCert(cert)} className="p-1.5 text-slate-400 hover:text-midnight transition-colors" title="View">
                       <ExternalLink className="w-4 h-4" />
                     </button>
                     <button onClick={() => setEditingCert(cert)} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors" title="Edit">
@@ -170,7 +170,7 @@ export default function SupplierCertificatesPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDeleteCert(null)}
-                className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+                className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors"
               >
                 Cancel
               </button>
@@ -230,7 +230,7 @@ function UploadModal({ supplierProfile, onClose, onUploaded }) {
           <input
             value={label}
             onChange={e => setLabel(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="e.g. Chicken Halal Certificate"
           />
         </div>
@@ -238,25 +238,25 @@ function UploadModal({ supplierProfile, onClose, onUploaded }) {
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">File</label>
           <div
             onClick={() => inputRef.current?.click()}
-            className="border-2 border-dashed border-emerald-300 rounded-xl bg-emerald-50 p-6 flex flex-col items-center gap-2 cursor-pointer hover:bg-emerald-100 transition-colors"
+            className="border-2 border-dashed border-celeste-dark rounded-xl bg-lionsmane p-6 flex flex-col items-center gap-2 cursor-pointer hover:bg-celeste transition-colors"
           >
             <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={e => setFile(e.target.files[0])} />
             {file ? (
               <>
-                <CheckCircle className="w-7 h-7 text-emerald-500" />
-                <p className="text-sm font-semibold text-emerald-700 text-center truncate max-w-full px-2">{file.name}</p>
+                <CheckCircle className="w-7 h-7 text-herb" />
+                <p className="text-sm font-semibold text-midnight-dark text-center truncate max-w-full px-2">{file.name}</p>
               </>
             ) : (
               <>
-                <Upload className="w-7 h-7 text-emerald-400" />
+                <Upload className="w-7 h-7 text-herb-light" />
                 <p className="text-sm text-slate-500">PDF, JPG, PNG · Max 5MB</p>
               </>
             )}
           </div>
         </div>
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">Cancel</button>
-          <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">Cancel</button>
+          <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
             Upload
           </button>
@@ -333,7 +333,7 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
           <input
             value={label}
             onChange={e => setLabel(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="e.g. Meat Halal Certificate"
           />
         </div>
@@ -341,13 +341,13 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Replace File (optional)</label>
           <div
             onClick={() => inputRef.current?.click()}
-            className="border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 p-5 flex flex-col items-center gap-2 cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
+            className="border-2 border-dashed border-slate-200 rounded-xl bg-lionsmane p-5 flex flex-col items-center gap-2 cursor-pointer hover:border-celeste-dark hover:bg-lionsmane transition-colors"
           >
             <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={e => setNewFile(e.target.files[0])} />
             {newFile ? (
               <>
-                <CheckCircle className="w-6 h-6 text-emerald-500" />
-                <p className="text-sm font-semibold text-emerald-700 truncate max-w-full px-2">{newFile.name}</p>
+                <CheckCircle className="w-6 h-6 text-herb" />
+                <p className="text-sm font-semibold text-midnight-dark truncate max-w-full px-2">{newFile.name}</p>
               </>
             ) : (
               <>
@@ -358,8 +358,8 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
           </div>
         </div>
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">Cancel</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">Cancel</button>
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Changes
           </button>

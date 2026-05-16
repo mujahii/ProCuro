@@ -80,13 +80,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-midnight flex items-center justify-center p-4">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-2">
-              <ShoppingCart className="w-8 h-8 text-emerald-600" />
+              <ShoppingCart className="w-8 h-8 text-midnight" />
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
             <p className="text-slate-500 text-sm">The Halal Procurement Platform</p>
@@ -97,14 +97,14 @@ export default function LoginPage() {
             <div>
               {resetSent ? (
                 <div className="text-center py-4">
-                  <CheckCircle className="w-14 h-14 text-emerald-500 mx-auto mb-4" />
+                  <CheckCircle className="w-14 h-14 text-herb mx-auto mb-4" />
                   <h2 className="text-lg font-bold text-slate-900 mb-2">Check your email</h2>
                   <p className="text-sm text-slate-500 mb-1">We sent a password reset link to:</p>
                   <p className="text-sm font-semibold text-slate-800 mb-4">{resetEmail}</p>
                   <p className="text-xs text-slate-400 mb-6">Click the link in the email to set a new password. The link expires in 1 hour.</p>
                   <button
                     onClick={() => { setForgotMode(false); setResetSent(false); setResetEmail('') }}
-                    className="text-sm text-emerald-600 font-semibold hover:underline"
+                    className="text-sm text-midnight font-semibold hover:underline"
                   >
                     ← Back to login
                   </button>
@@ -128,7 +128,7 @@ export default function LoginPage() {
                           type="email"
                           value={resetEmail}
                           onChange={e => setResetEmail(e.target.value)}
-                          className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors text-slate-900 placeholder-slate-400"
+                          className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors text-slate-900 placeholder-slate-400"
                           placeholder="you@company.com"
                           autoFocus
                           required
@@ -138,7 +138,7 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={resetLoading}
-                      className="w-full py-3 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-colors text-base shadow-md disabled:opacity-60"
+                      className="w-full py-3 bg-midnight text-white font-bold rounded-lg hover:bg-midnight-dark transition-colors text-base shadow-md disabled:opacity-60"
                     >
                       {resetLoading ? 'Sending...' : 'Send Reset Link'}
                     </button>
@@ -156,7 +156,7 @@ export default function LoginPage() {
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors text-slate-900 placeholder-slate-400"
+                    className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors text-slate-900 placeholder-slate-400"
                     placeholder="you@company.com"
                   />
                 </div>
@@ -166,7 +166,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setForgotMode(true)}
-                      className="text-xs text-emerald-600 font-semibold hover:underline"
+                      className="text-xs text-midnight font-semibold hover:underline"
                     >
                       Forgot password?
                     </button>
@@ -176,7 +176,7 @@ export default function LoginPage() {
                       type={showPw ? 'text' : 'password'}
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors pr-10 text-slate-900 placeholder-slate-400"
+                      className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors pr-10 text-slate-900 placeholder-slate-400"
                       placeholder="••••••••"
                     />
                     <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-3 top-3.5 text-slate-400">
@@ -187,7 +187,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60"
+                  className="w-full py-3 bg-midnight text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60"
                 >
                   {loading ? 'Logging in...' : 'Log In'}
                 </button>
@@ -204,14 +204,14 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => handleOAuth('google')}
-                    className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                    className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-lionsmane transition-colors"
                   >
                     <GoogleLogo /> Google
                   </button>
                   <button
                     type="button"
                     onClick={() => handleOAuth('apple')}
-                    className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                    className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-lionsmane transition-colors"
                   >
                     <AppleLogo /> Apple
                   </button>
@@ -220,7 +220,7 @@ export default function LoginPage() {
 
               <p className="text-center mt-8 text-sm text-slate-500">
                 Don't have an account?{' '}
-                <Link to="/register" className="text-emerald-600 font-semibold hover:underline">Sign Up</Link>
+                <Link to="/register" className="text-midnight font-semibold hover:underline">Sign Up</Link>
               </p>
             </>
           )}

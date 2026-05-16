@@ -6,7 +6,7 @@ import Footer from '../../components/layout/Footer'
 export default function PrivacyPolicyPage() {
   const navigate = useNavigate()
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-12 flex-grow w-full">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-8 transition-colors">
@@ -14,7 +14,7 @@ export default function PrivacyPolicyPage() {
         </button>
 
         <div className="flex items-center gap-3 mb-2">
-          <Shield className="w-7 h-7 text-emerald-600" />
+          <Shield className="w-7 h-7 text-midnight" />
           <h1 className="text-2xl font-black text-slate-900">Datenschutzerklärung</h1>
         </div>
         <p className="text-slate-500 text-sm mb-8">Privacy Policy — Zuletzt aktualisiert: Mai 2025</p>
@@ -24,11 +24,11 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="font-bold text-slate-900 text-base mb-2">1. Verantwortlicher</h2>
             <p>Verantwortlicher im Sinne der Datenschutz-Grundverordnung (DSGVO) und des Bundesdatenschutzgesetzes (BDSG) ist:</p>
-            <div className="mt-2 p-3 bg-slate-50 rounded-xl text-slate-600">
+            <div className="mt-2 p-3 bg-lionsmane rounded-xl text-slate-600">
               <strong>ProCuro GmbH</strong><br />
               Paderborn, Nordrhein-Westfalen, Deutschland<br />
-              E-Mail: <a href="mailto:support@procuro.com" className="text-emerald-600 hover:underline">support@procuro.com</a><br />
-              Telefon: <a href="tel:+4915560608671" className="text-emerald-600 hover:underline">+49 155 6060 8671</a>
+              E-Mail: <a href="mailto:support@procuro.com" className="text-midnight hover:underline">support@procuro.com</a><br />
+              Telefon: <a href="tel:+4915560608671" className="text-midnight hover:underline">+49 155 6060 8671</a>
             </div>
           </section>
 
@@ -87,16 +87,16 @@ export default function PrivacyPolicyPage() {
               <li><strong>Widerspruchsrecht (Art. 21 DSGVO):</strong> Recht auf Widerspruch gegen die Verarbeitung</li>
               <li><strong>Widerrufsrecht:</strong> Erteilte Einwilligungen können jederzeit widerrufen werden</li>
             </ul>
-            <p className="mt-2">Zur Ausübung Ihrer Rechte wenden Sie sich bitte an: <a href="mailto:support@procuro.com" className="text-emerald-600 hover:underline">support@procuro.com</a></p>
+            <p className="mt-2">Zur Ausübung Ihrer Rechte wenden Sie sich bitte an: <a href="mailto:support@procuro.com" className="text-midnight hover:underline">support@procuro.com</a></p>
           </section>
 
           <section>
             <h2 className="font-bold text-slate-900 text-base mb-2">8. Beschwerderecht</h2>
             <p>Sie haben das Recht, sich bei einer Datenschutzaufsichtsbehörde zu beschweren. Die zuständige Aufsichtsbehörde für Nordrhein-Westfalen ist:</p>
-            <div className="mt-2 p-3 bg-slate-50 rounded-xl text-slate-600">
+            <div className="mt-2 p-3 bg-lionsmane rounded-xl text-slate-600">
               Landesbeauftragte für Datenschutz und Informationsfreiheit NRW<br />
               Postfach 20 04 44, 40102 Düsseldorf<br />
-              <a href="https://www.ldi.nrw.de" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">www.ldi.nrw.de</a>
+              <a href="https://www.ldi.nrw.de" target="_blank" rel="noopener noreferrer" className="text-midnight hover:underline">www.ldi.nrw.de</a>
             </div>
           </section>
 

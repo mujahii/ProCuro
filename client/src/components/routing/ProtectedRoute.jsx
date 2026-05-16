@@ -6,9 +6,9 @@ export default function ProtectedRoute({ children, allowedRoles }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-lionsmane">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-herb border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-slate-500">Loading...</p>
         </div>
       </div>

@@ -15,8 +15,8 @@ import ModalPortal from '../../components/ui/ModalPortal'
 import { formatIBAN, handleIBANInput } from '../../lib/formatIBAN'
 
 const CERT_STATUS = {
-  pending:  { label: 'Pending Review', icon: Clock,       color: 'text-amber-600 bg-amber-50 border-amber-200' },
-  approved: { label: 'Approved',       icon: CheckCircle, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
+  pending:  { label: 'Pending Review', icon: Clock,       color: 'text-marigold bg-lionsmane border-marigold-light' },
+  approved: { label: 'Approved',       icon: CheckCircle, color: 'text-midnight bg-lionsmane border-celeste' },
   rejected: { label: 'Rejected',       icon: XCircle,     color: 'text-red-600 bg-red-50 border-red-200' },
 }
 
@@ -77,20 +77,20 @@ function AvatarModal({ userId, onClose, onSaved }) {
     <Modal title="Update Profile Picture" onClose={onClose}>
       <div
         onClick={() => inputRef.current?.click()}
-        className="border-2 border-dashed border-emerald-300 rounded-xl bg-emerald-50 p-10 flex items-center justify-center cursor-pointer hover:bg-emerald-100 transition-colors mb-4"
+        className="border-2 border-dashed border-celeste-dark rounded-xl bg-lionsmane p-10 flex items-center justify-center cursor-pointer hover:bg-celeste transition-colors mb-4"
       >
         <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
         {preview ? (
           <img src={preview} alt="Preview" className="w-24 h-24 rounded-full object-cover" />
         ) : (
-          <span className="text-4xl text-emerald-400 font-light leading-none">+</span>
+          <span className="text-4xl text-herb-light font-light leading-none">+</span>
         )}
       </div>
       <div className="flex gap-3">
-        <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+        <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
           Cancel
         </button>
-        <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+        <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
           {saving && <Loader2 className="w-4 h-4 animate-spin" />}
           Save
         </button>
@@ -134,7 +134,7 @@ function EditProfileModal({ userId, currentName, supplierProfile, currentBio, on
           <input
             value={name}
             onChange={e => setName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="e.g. Ahmed Hassan"
           />
         </div>
@@ -143,7 +143,7 @@ function EditProfileModal({ userId, currentName, supplierProfile, currentBio, on
           <input
             value={businessName}
             onChange={e => setBusinessName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="e.g. Al-Nour Meats GmbH"
           />
           <p className="text-xs text-slate-400 mt-1">Shown under your name in the app</p>
@@ -154,16 +154,16 @@ function EditProfileModal({ userId, currentName, supplierProfile, currentBio, on
             value={bio}
             onChange={e => setBio(e.target.value)}
             rows={3}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb resize-none"
             placeholder="A short description about your business..."
           />
           <p className="text-xs text-slate-400 mt-1">Optional — tells restaurant owners about your supply business</p>
         </div>
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Changes
           </button>
@@ -214,7 +214,7 @@ function PasswordModal({ onClose }) {
             type="email"
             value={form.email}
             onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="new@email.com"
           />
         </div>
@@ -225,7 +225,7 @@ function PasswordModal({ onClose }) {
               type={showPw ? 'text' : 'password'}
               value={form.password}
               onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
               placeholder="Min. 6 characters"
             />
             <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
@@ -239,15 +239,15 @@ function PasswordModal({ onClose }) {
             type={showPw ? 'text' : 'password'}
             value={form.confirm}
             onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="Repeat new password"
           />
         </div>
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save
           </button>
@@ -285,15 +285,15 @@ function PhoneModal({ userId, currentPhone, onClose, onSaved }) {
             type="tel"
             value={phone}
             onChange={e => setPhone(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="+49 170 1234567"
           />
         </div>
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save
           </button>
@@ -392,17 +392,17 @@ function AddressModal({ onClose, supplierProfileId }) {
           <p className="text-sm text-slate-400 text-center py-2">No addresses yet.</p>
         ) : (
           addresses.map(addr => (
-            <div key={addr.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${addr.is_default ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'}`}>
+            <div key={addr.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${addr.is_default ? 'border-celeste-dark bg-lionsmane' : 'border-slate-200 bg-white'}`}>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <p className="text-sm font-bold text-slate-900 truncate">{addr.label || addr.city || 'Address'}</p>
-                  {addr.is_default && <Star className="w-3.5 h-3.5 text-emerald-500 fill-emerald-500 flex-shrink-0" />}
+                  {addr.is_default && <Star className="w-3.5 h-3.5 text-herb fill-herb flex-shrink-0" />}
                 </div>
                 <p className="text-xs text-slate-500 truncate">{formatAddress(addr)}</p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {!addr.is_default && (
-                  <button onClick={() => handleSetDefault(addr.id)} className="text-xs text-emerald-600 font-semibold hover:underline whitespace-nowrap">
+                  <button onClick={() => handleSetDefault(addr.id)} className="text-xs text-midnight font-semibold hover:underline whitespace-nowrap">
                     Set Favorite
                   </button>
                 )}
@@ -422,7 +422,7 @@ function AddressModal({ onClose, supplierProfileId }) {
             type="button"
             onClick={detectGPS}
             disabled={gpsLoading}
-            className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-midnight font-semibold hover:text-midnight-dark disabled:opacity-50 transition-colors"
           >
             {gpsLoading
               ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -434,30 +434,30 @@ function AddressModal({ onClose, supplierProfileId }) {
           <input
             value={form.label}
             onChange={e => setForm(f => ({ ...f, label: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="Location Name (e.g. Warehouse A)"
           />
           <input
             value={form.street}
             onChange={e => setForm(f => ({ ...f, street: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="Street"
           />
           <div className="flex gap-2">
             <input
               value={form.postal_code}
               onChange={e => setForm(f => ({ ...f, postal_code: e.target.value }))}
-              className="w-28 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-28 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
               placeholder="PLZ (Zip)"
             />
             <input
               value={form.city}
               onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
               placeholder="City"
             />
           </div>
-          <button type="submit" disabled={saving} className="w-full py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button type="submit" disabled={saving} className="w-full py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Address
           </button>
@@ -520,37 +520,37 @@ function BankModal({ userId, onClose }) {
         <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
       ) : (
         <>
-          <p className="text-xs text-slate-500 mb-4 bg-slate-50 rounded-xl p-3">
+          <p className="text-xs text-slate-500 mb-4 bg-lionsmane rounded-xl p-3">
             These details are only shown to restaurant owners who choose bank transfer as their payment method.
           </p>
           <form onSubmit={handleSave} className="space-y-3">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">Bank Name</label>
-              <input value={form.bank_name} onChange={e => setForm(f => ({ ...f, bank_name: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Deutsche Bank" />
+              <input value={form.bank_name} onChange={e => setForm(f => ({ ...f, bank_name: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb" placeholder="Deutsche Bank" />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">Account Holder</label>
-              <input value={form.account_holder} onChange={e => setForm(f => ({ ...f, account_holder: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Al-Nour Meats GmbH" />
+              <input value={form.account_holder} onChange={e => setForm(f => ({ ...f, account_holder: e.target.value }))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb" placeholder="Al-Nour Meats GmbH" />
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">IBAN</label>
               <input
                 value={form.iban}
                 onChange={e => { setForm(f => ({ ...f, iban: handleIBANInput(e.target.value) })); setIbanError('') }}
-                className={`w-full px-4 py-3 rounded-xl border text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500 ${ibanError ? 'border-red-300' : 'border-slate-200'}`}
+                className={`w-full px-4 py-3 rounded-xl border text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-herb ${ibanError ? 'border-red-300' : 'border-slate-200'}`}
                 placeholder="DE89 3704 0044 0532 0130 00"
               />
               {ibanError && <p className="text-xs text-red-600 mt-1">{ibanError}</p>}
             </div>
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-1.5">BIC / SWIFT</label>
-              <input value={form.bic} onChange={e => setForm(f => ({ ...f, bic: e.target.value.toUpperCase() }))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="COBADEFFXXX" />
+              <input value={form.bic} onChange={e => setForm(f => ({ ...f, bic: e.target.value.toUpperCase() }))} className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-herb" placeholder="COBADEFFXXX" />
             </div>
             <div className="flex gap-3 pt-1">
-              <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+              <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
                 Cancel
               </button>
-              <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+              <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                 Save
               </button>
@@ -675,7 +675,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
           <input
             value={form.tax_id}
             onChange={e => setForm(f => ({ ...f, tax_id: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="e.g. DE123456789"
           />
           <p className="text-xs text-slate-400 mt-1">Required to receive payments and appear verified</p>
@@ -683,7 +683,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide">City / Location</label>
-            <button type="button" onClick={() => setShowAddrModal(true)} className="text-xs text-emerald-600 font-semibold hover:text-emerald-700 transition-colors">
+            <button type="button" onClick={() => setShowAddrModal(true)} className="text-xs text-midnight font-semibold hover:text-midnight-dark transition-colors">
               + Manage Addresses
             </button>
           </div>
@@ -691,12 +691,12 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
             <div className="p-4 border border-dashed border-slate-200 rounded-xl text-center">
               <p className="text-sm text-slate-400 mb-3">No locations added yet</p>
               <div className="flex items-center justify-center gap-3">
-                <button type="button" onClick={detectGPS} disabled={gpsLoading} className="flex items-center gap-1.5 text-sm text-emerald-600 font-semibold hover:text-emerald-700 disabled:opacity-50 transition-colors">
+                <button type="button" onClick={detectGPS} disabled={gpsLoading} className="flex items-center gap-1.5 text-sm text-midnight font-semibold hover:text-midnight-dark disabled:opacity-50 transition-colors">
                   {gpsLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
                   Use GPS
                 </button>
                 <span className="text-slate-300">|</span>
-                <button type="button" onClick={() => setShowAddrModal(true)} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700">
+                <button type="button" onClick={() => setShowAddrModal(true)} className="text-sm text-midnight font-semibold hover:text-midnight-dark">
                   Add Address
                 </button>
               </div>
@@ -709,16 +709,16 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
                   type="button"
                   onClick={() => handleSelectAddr(addr.id)}
                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors text-left ${
-                    selectedAddrId === addr.id ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 bg-white hover:border-slate-300'
+                    selectedAddrId === addr.id ? 'border-herb bg-lionsmane' : 'border-slate-200 bg-white hover:border-slate-300'
                   }`}
                 >
-                  <MapPin className={`w-4 h-4 flex-shrink-0 ${selectedAddrId === addr.id ? 'text-emerald-600' : 'text-slate-400'}`} />
+                  <MapPin className={`w-4 h-4 flex-shrink-0 ${selectedAddrId === addr.id ? 'text-midnight' : 'text-slate-400'}`} />
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold truncate ${selectedAddrId === addr.id ? 'text-emerald-700' : 'text-slate-900'}`}>{addr.label || addr.city}</p>
+                    <p className={`text-sm font-semibold truncate ${selectedAddrId === addr.id ? 'text-midnight-dark' : 'text-slate-900'}`}>{addr.label || addr.city}</p>
                     <p className="text-xs text-slate-500 truncate">{[addr.street, [addr.postal_code, addr.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>
                   </div>
-                  {addr.is_default && <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Favorite</span>}
-                  {selectedAddrId === addr.id && !addr.is_default && <CheckCircle className="w-4 h-4 text-emerald-600 flex-shrink-0" />}
+                  {addr.is_default && <span className="text-xs bg-celeste text-midnight-dark px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Favorite</span>}
+                  {selectedAddrId === addr.id && !addr.is_default && <CheckCircle className="w-4 h-4 text-midnight flex-shrink-0" />}
                 </button>
               ))}
             </div>
@@ -737,7 +737,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
                 onClick={() => toggleCategory(cat)}
                 className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
                   form.categories.includes(cat)
-                    ? 'bg-slate-900 text-white border-slate-900'
+                    ? 'bg-midnight text-white border-slate-900'
                     : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
                 }`}
               >
@@ -751,15 +751,15 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
           <input
             value={form.website}
             onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="https://yourbusiness.com"
           />
         </div>
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save
           </button>
@@ -811,7 +811,7 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
           <input
             value={label}
             onChange={e => setLabel(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="e.g. Chicken Halal Certificate"
           />
         </div>
@@ -819,27 +819,27 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">File</label>
           <div
             onClick={() => inputRef.current?.click()}
-            className="border-2 border-dashed border-emerald-300 rounded-xl bg-emerald-50 p-6 flex flex-col items-center gap-2 cursor-pointer hover:bg-emerald-100 transition-colors"
+            className="border-2 border-dashed border-celeste-dark rounded-xl bg-lionsmane p-6 flex flex-col items-center gap-2 cursor-pointer hover:bg-celeste transition-colors"
           >
             <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={e => setFile(e.target.files[0])} />
             {file ? (
               <>
-                <CheckCircle className="w-7 h-7 text-emerald-500" />
-                <p className="text-sm font-semibold text-emerald-700 text-center truncate max-w-full px-2">{file.name}</p>
+                <CheckCircle className="w-7 h-7 text-herb" />
+                <p className="text-sm font-semibold text-midnight-dark text-center truncate max-w-full px-2">{file.name}</p>
               </>
             ) : (
               <>
-                <Upload className="w-7 h-7 text-emerald-400" />
+                <Upload className="w-7 h-7 text-herb-light" />
                 <p className="text-sm text-slate-500">PDF, JPG, PNG · Max 5MB</p>
               </>
             )}
           </div>
         </div>
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
             Upload
           </button>
@@ -891,7 +891,7 @@ function CertEditModal({ cert, supplierProfileId, onClose, onSaved }) {
           <input
             value={label}
             onChange={e => setLabel(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="e.g. Meat Halal Certificate"
           />
         </div>
@@ -899,13 +899,13 @@ function CertEditModal({ cert, supplierProfileId, onClose, onSaved }) {
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Replace File (optional)</label>
           <div
             onClick={() => inputRef.current?.click()}
-            className="border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 p-5 flex flex-col items-center gap-2 cursor-pointer hover:border-emerald-300 hover:bg-emerald-50 transition-colors"
+            className="border-2 border-dashed border-slate-200 rounded-xl bg-lionsmane p-5 flex flex-col items-center gap-2 cursor-pointer hover:border-celeste-dark hover:bg-lionsmane transition-colors"
           >
             <input ref={inputRef} type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={e => setNewFile(e.target.files[0])} />
             {newFile ? (
               <>
-                <CheckCircle className="w-6 h-6 text-emerald-500" />
-                <p className="text-sm font-semibold text-emerald-700 text-center truncate max-w-full px-2">{newFile.name}</p>
+                <CheckCircle className="w-6 h-6 text-herb" />
+                <p className="text-sm font-semibold text-midnight-dark text-center truncate max-w-full px-2">{newFile.name}</p>
               </>
             ) : (
               <>
@@ -916,10 +916,10 @@ function CertEditModal({ cert, supplierProfileId, onClose, onSaved }) {
           </div>
         </div>
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Changes
           </button>
@@ -966,7 +966,7 @@ function DeleteAccountModal({ onClose, onDeleted }) {
           />
         </div>
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
           <button
@@ -987,7 +987,7 @@ function SettingRow({ label, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center justify-between px-4 py-4 hover:bg-slate-50 transition-colors text-left"
+      className="w-full flex items-center justify-between px-4 py-4 hover:bg-lionsmane transition-colors text-left"
     >
       <span className="text-sm font-medium text-slate-800">{label}</span>
       <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -1092,21 +1092,21 @@ export default function SupplierProfilePage() {
 
       {/* Profile Header */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div className="h-28 bg-gradient-to-r from-slate-900 to-slate-800" />
+        <div className="h-28 bg-gradient-to-r from-midnight to-slate-800" />
         <div className="px-8 pb-7 text-center -mt-14">
           <div className="relative inline-block">
             <div className="w-28 h-28 rounded-full bg-white p-1.5 shadow-xl mx-auto">
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
               ) : (
-                <div className="w-full h-full rounded-full bg-emerald-100 flex items-center justify-center">
-                  <User className="w-10 h-10 text-emerald-400" />
+                <div className="w-full h-full rounded-full bg-celeste flex items-center justify-center">
+                  <User className="w-10 h-10 text-herb-light" />
                 </div>
               )}
             </div>
             <button
               onClick={() => setShowAvatarModal(true)}
-              className="absolute bottom-1 right-1 bg-slate-900 text-white p-1.5 rounded-full hover:bg-emerald-600 border-2 border-white transition-colors"
+              className="absolute bottom-1 right-1 bg-midnight text-white p-1.5 rounded-full hover:bg-midnight border-2 border-white transition-colors"
             >
               <Pencil className="w-3 h-3" />
             </button>
@@ -1114,7 +1114,7 @@ export default function SupplierProfilePage() {
           <h2 className="font-bold text-slate-900 text-xl mt-3">{profile?.full_name || 'Supplier'}</h2>
           <p className="text-sm text-slate-400 mt-0.5">{businessName || 'Supplier'}</p>
           {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
-          <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-emerald-600 font-semibold hover:underline">
+          <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-midnight font-semibold hover:underline">
             Edit Profile
           </button>
         </div>
@@ -1126,14 +1126,14 @@ export default function SupplierProfilePage() {
           onClick={() => navigate('/supplier/orders')}
           className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
         >
-          <Package className="w-6 h-6 text-emerald-600" />
+          <Package className="w-6 h-6 text-midnight" />
           <span className="text-sm font-semibold text-slate-700">My Sales</span>
         </button>
         <button
           onClick={() => navigate('/supplier/analytics')}
           className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
         >
-          <TrendingUp className="w-6 h-6 text-emerald-600" />
+          <TrendingUp className="w-6 h-6 text-midnight" />
           <span className="text-sm font-semibold text-slate-700">View Analysis</span>
         </button>
       </div>
@@ -1144,7 +1144,7 @@ export default function SupplierProfilePage() {
           <h3 className="font-bold text-slate-900 text-base">Business Details</h3>
           <button
             onClick={() => setShowBusinessInfoModal(true)}
-            className="text-xs text-emerald-600 font-semibold hover:underline"
+            className="text-xs text-midnight font-semibold hover:underline"
           >
             Edit
           </button>
@@ -1158,12 +1158,12 @@ export default function SupplierProfilePage() {
               {supplierProfile?.tax_id ? (
                 <p className="text-sm font-semibold text-slate-900 mt-0.5">{supplierProfile.tax_id}</p>
               ) : (
-                <button onClick={() => setShowBusinessInfoModal(true)} className="text-sm text-amber-500 font-semibold hover:underline mt-0.5">
+                <button onClick={() => setShowBusinessInfoModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">
                   Add Tax ID →
                 </button>
               )}
             </div>
-            {supplierProfile?.tax_id && <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />}
+            {supplierProfile?.tax_id && <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />}
           </div>
 
           {/* City — derived from saved addresses only */}
@@ -1175,7 +1175,7 @@ export default function SupplierProfilePage() {
                 const city = addresses.find(a => a.is_default)?.city || addresses[0]?.city
                 return city
                   ? <p className="text-sm font-semibold text-slate-900 mt-0.5">{city}</p>
-                  : <button onClick={() => setShowAddressModal(true)} className="text-sm text-amber-500 font-semibold hover:underline mt-0.5">Add address →</button>
+                  : <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">Add address →</button>
               })()}
             </div>
           </div>
@@ -1188,7 +1188,7 @@ export default function SupplierProfilePage() {
               {supplierProfile?.category?.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
                   {(Array.isArray(supplierProfile.category) ? supplierProfile.category : [supplierProfile.category]).map(c => (
-                    <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-900 text-white">{c}</span>
+                    <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-midnight text-white">{c}</span>
                   ))}
                 </div>
               ) : (
@@ -1204,12 +1204,12 @@ export default function SupplierProfilePage() {
                 <CreditCard className="w-4 h-4 text-slate-300" />
                 <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Bank Details</p>
               </div>
-              <button onClick={() => setShowBankModal(true)} className="text-xs text-emerald-600 font-semibold hover:underline">
+              <button onClick={() => setShowBankModal(true)} className="text-xs text-midnight font-semibold hover:underline">
                 {bankDetails ? 'Edit' : 'Add'}
               </button>
             </div>
             {bankDetails ? (
-              <div className="bg-slate-50 rounded-xl p-3 space-y-2">
+              <div className="bg-lionsmane rounded-xl p-3 space-y-2">
                 {bankDetails.bank_name && (
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-slate-400">Bank</span>
@@ -1236,7 +1236,7 @@ export default function SupplierProfilePage() {
                 )}
               </div>
             ) : (
-              <button onClick={() => setShowBankModal(true)} className="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-sm text-amber-500 font-semibold hover:border-amber-300 transition-colors">
+              <button onClick={() => setShowBankModal(true)} className="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-sm text-marigold font-semibold hover:border-marigold-light transition-colors">
                 + Add bank details
               </button>
             )}
@@ -1249,9 +1249,9 @@ export default function SupplierProfilePage() {
               const isVerified = supplierProfile?.is_verified && hasAddress
               return (
                 <div className={`p-3 rounded-xl border text-sm font-medium flex items-center gap-2 ${
-                  isVerified ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                  isVerified ? 'bg-lionsmane border-celeste text-midnight-dark'
                   : !hasAddress ? 'bg-red-50 border-red-200 text-red-700'
-                  : 'bg-amber-50 border-amber-200 text-amber-700'
+                  : 'bg-lionsmane border-marigold-light text-marigold-dark'
                 }`}>
                   {isVerified
                     ? <><CheckCircle className="w-4 h-4 flex-shrink-0" /> Verified — visible to restaurant owners as Halal Certified</>
@@ -1280,11 +1280,11 @@ export default function SupplierProfilePage() {
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-            <FileText className="w-5 h-5 text-emerald-600" /> Certificates
+            <FileText className="w-5 h-5 text-midnight" /> Certificates
           </h3>
           <button
             onClick={() => setShowCertUploadModal(true)}
-            className="text-xs text-emerald-600 font-semibold hover:underline flex items-center gap-1"
+            className="text-xs text-midnight font-semibold hover:underline flex items-center gap-1"
           >
             + Add
           </button>
@@ -1302,7 +1302,7 @@ export default function SupplierProfilePage() {
               const Icon = status.icon
               const displayName = cert.file_name || cert.file_url?.split('/').pop() || 'Certificate'
               return (
-                <div key={cert.id} className="p-3 bg-slate-50 rounded-xl border border-slate-100">
+                <div key={cert.id} className="p-3 bg-lionsmane rounded-xl border border-slate-100">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <FileText className="w-7 h-7 text-slate-400 flex-shrink-0" />
@@ -1317,7 +1317,7 @@ export default function SupplierProfilePage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 flex-shrink-0">
-                      <button onClick={() => viewCert(cert)} className="p-1.5 text-slate-400 hover:text-emerald-600 transition-colors" title="View">
+                      <button onClick={() => viewCert(cert)} className="p-1.5 text-slate-400 hover:text-midnight transition-colors" title="View">
                         <ExternalLink className="w-4 h-4" />
                       </button>
                       <button onClick={() => setEditingCert(cert)} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors" title="Edit">
@@ -1431,7 +1431,7 @@ export default function SupplierProfilePage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmDeleteCert(null)}
-                className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+                className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors"
               >
                 Cancel
               </button>

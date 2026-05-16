@@ -110,7 +110,7 @@ export default function AdminSuppliersPage() {
       {loading ? <SkeletonTable rows={6} /> : (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Business</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Owner</th>
@@ -129,7 +129,7 @@ export default function AdminSuppliersPage() {
                   <tr
                     key={s.id}
                     ref={s.id === highlightId ? highlightRef : null}
-                    className={`hover:bg-gray-50 transition-colors ${s.id === highlightId ? 'bg-emerald-50 outline outline-2 outline-emerald-400' : ''}`}
+                    className={`hover:bg-lionsmane transition-colors ${s.id === highlightId ? 'bg-lionsmane outline outline-2 outline-herb-light' : ''}`}
                   >
                     <td className="px-4 py-3">
                       <p className="text-sm font-medium text-gray-900">{s.business_name || '—'}</p>
@@ -142,8 +142,8 @@ export default function AdminSuppliersPage() {
                     </td>
                     <td className="px-4 py-3">
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        s.is_verified ? 'bg-emerald-50 text-emerald-700' :
-                        certStatus === 'pending' ? 'bg-amber-50 text-amber-700' :
+                        s.is_verified ? 'bg-lionsmane text-midnight-dark' :
+                        certStatus === 'pending' ? 'bg-lionsmane text-marigold-dark' :
                         'bg-gray-100 text-gray-500'
                       }`}>
                         {s.is_verified ? 'Verified' : certStatus === 'pending' ? 'Pending' : 'Unverified'}
@@ -163,7 +163,7 @@ export default function AdminSuppliersPage() {
                           <Send className="w-4 h-4" />
                         </button>
                         <button onClick={() => handleToggleClick(s)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400" title={s.is_active ? 'Deactivate' : 'Activate'}>
-                          {s.is_active ? <ToggleRight className="w-4 h-4 text-emerald-500" /> : <ToggleLeft className="w-4 h-4" />}
+                          {s.is_active ? <ToggleRight className="w-4 h-4 text-herb" /> : <ToggleLeft className="w-4 h-4" />}
                         </button>
                       </div>
                     </td>
@@ -204,7 +204,7 @@ export default function AdminSuppliersPage() {
             </div>
             <button
               onClick={() => { setViewTarget(null); setNotifyTarget(viewTarget) }}
-              className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
+              className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
             >
               <Send className="w-4 h-4" /> Send Notification
             </button>
@@ -229,7 +229,7 @@ export default function AdminSuppliersPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
+              <button onClick={() => setToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-lionsmane">
                 Cancel
               </button>
               <button
@@ -269,20 +269,20 @@ export default function AdminSuppliersPage() {
                 value={notifyTitle}
                 onChange={e => setNotifyTitle(e.target.value)}
                 placeholder="Notification title"
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
               />
               <textarea
                 value={notifyMsg}
                 onChange={e => setNotifyMsg(e.target.value)}
                 placeholder="Write your message..."
                 rows={4}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-herb resize-none"
               />
             </div>
             <button
               onClick={sendNotification}
               disabled={sending}
-              className="mt-4 w-full py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60"
+              className="mt-4 w-full py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-midnight-dark disabled:opacity-60"
             >
               {sending ? 'Sending...' : 'Send'}
             </button>

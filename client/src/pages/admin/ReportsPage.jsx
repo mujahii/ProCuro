@@ -7,8 +7,8 @@ import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
 const STATUS_STYLES = {
-  pending: 'bg-amber-50 text-amber-700',
-  reviewed: 'bg-emerald-50 text-emerald-700',
+  pending: 'bg-lionsmane text-marigold-dark',
+  reviewed: 'bg-lionsmane text-midnight-dark',
   dismissed: 'bg-gray-100 text-gray-500',
 }
 
@@ -164,13 +164,13 @@ function ActionModal({ report, onClose, onActionDone }) {
             </div>
           ))}
           {report.details && (
-            <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 leading-relaxed">
+            <div className="bg-lionsmane rounded-lg p-3 text-xs text-gray-600 leading-relaxed">
               {report.details}
             </div>
           )}
           <button
             onClick={() => { onClose(); navigate(`${report.type === 'supplier' ? '/admin/suppliers' : '/admin/products'}?id=${report.target_id}`) }}
-            className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700 transition-colors mt-1"
+            className="flex items-center gap-1.5 text-xs text-midnight font-semibold hover:text-midnight-dark transition-colors mt-1"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             View {report.type === 'supplier' ? 'Supplier' : 'Product'} in Admin Panel
@@ -189,14 +189,14 @@ function ActionModal({ report, onClose, onActionDone }) {
                 onChange={e => setWarnMsg(e.target.value)}
                 placeholder="Write your warning message to the account owner..."
                 rows={3}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-marigold-light resize-none"
                 autoFocus
               />
               <div className="flex gap-2">
-                <button onClick={() => setShowWarnInput(false)} className="flex-1 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50">
+                <button onClick={() => setShowWarnInput(false)} className="flex-1 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-500 hover:bg-lionsmane">
                   Back
                 </button>
-                <button onClick={sendWarning} disabled={loading} className="flex-1 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 disabled:opacity-50 flex items-center justify-center gap-2">
+                <button onClick={sendWarning} disabled={loading} className="flex-1 py-2 bg-marigold text-white rounded-xl text-sm font-semibold hover:bg-marigold disabled:opacity-50 flex items-center justify-center gap-2">
                   <Send className="w-4 h-4" /> Send Warning
                 </button>
               </div>
@@ -206,12 +206,12 @@ function ActionModal({ report, onClose, onActionDone }) {
               {/* Send Warning */}
               <button
                 onClick={() => setShowWarnInput(true)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 transition-colors text-left"
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-marigold-light bg-lionsmane hover:bg-marigold-light transition-colors text-left"
               >
-                <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <AlertTriangle className="w-4 h-4 text-marigold flex-shrink-0" />
                 <div>
-                  <p className="text-sm font-semibold text-amber-800">Send Warning</p>
-                  <p className="text-xs text-amber-600">Notify the account owner with a custom warning message</p>
+                  <p className="text-sm font-semibold text-marigold-dark">Send Warning</p>
+                  <p className="text-xs text-marigold">Notify the account owner with a custom warning message</p>
                 </div>
               </button>
 
@@ -249,7 +249,7 @@ function ActionModal({ report, onClose, onActionDone }) {
               {report.status === 'pending' && (
                 <button
                   onClick={dismiss}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-gray-100 hover:bg-lionsmane transition-colors text-left"
                 >
                   <XCircle className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   <div>
@@ -332,7 +332,7 @@ export default function AdminReportsPage() {
       {loading ? <SkeletonTable rows={6} /> : (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Type</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Target</th>
@@ -345,7 +345,7 @@ export default function AdminReportsPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(r => (
-                <tr key={r.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelected(r)}>
+                <tr key={r.id} className="hover:bg-lionsmane cursor-pointer" onClick={() => setSelected(r)}>
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
                       r.type === 'product' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'
@@ -355,7 +355,7 @@ export default function AdminReportsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <p className="text-sm font-semibold text-gray-900 hover:text-emerald-600 transition-colors">{r.target_name || '—'}</p>
+                    <p className="text-sm font-semibold text-gray-900 hover:text-midnight transition-colors">{r.target_name || '—'}</p>
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-sm text-gray-700">{r.reason}</p>
@@ -379,7 +379,7 @@ export default function AdminReportsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-xs text-emerald-600 font-medium">{r.status === 'pending' ? 'Review →' : 'View →'}</span>
+                    <span className="text-xs text-midnight font-medium">{r.status === 'pending' ? 'Review →' : 'View →'}</span>
                   </td>
                 </tr>
               ))}

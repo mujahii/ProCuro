@@ -41,8 +41,8 @@ export default function RegisterPage() {
   const strengthInfo = [
     { label: '', color: 'bg-slate-200' },
     { label: 'Weak', color: 'bg-red-500' },
-    { label: 'Good', color: 'bg-yellow-500' },
-    { label: 'Strong', color: 'bg-emerald-500' },
+    { label: 'Good', color: 'bg-marigold' },
+    { label: 'Strong', color: 'bg-herb' },
   ][strength] || { label: '', color: 'bg-slate-200' }
 
   function update(field, val) {
@@ -81,13 +81,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 py-10">
+    <div className="min-h-screen bg-midnight flex items-center justify-center p-4 py-10">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <ShoppingCart className="w-7 h-7 text-emerald-600" />
+              <ShoppingCart className="w-7 h-7 text-midnight" />
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
             <p className="text-slate-500 text-sm">Create your free account</p>
@@ -101,20 +101,20 @@ export default function RegisterPage() {
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Full Name</label>
               <input type="text" required value={form.fullName} onChange={e => update('fullName', e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors"
                 placeholder="Your name" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
               <input type="email" required value={form.email} onChange={e => update('email', e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors"
                 placeholder="you@example.com" />
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Password</label>
               <div className="relative">
                 <input type={showPw ? 'text' : 'password'} required value={form.password} onChange={e => update('password', e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors pr-10"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors pr-10"
                   placeholder="••••••••" />
                 <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-3 top-3.5 text-slate-400">
                   {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -124,18 +124,18 @@ export default function RegisterPage() {
                 <div className="mt-2 space-y-2">
                   <div className="flex justify-between text-xs">
                     <span className="text-slate-500">Strength</span>
-                    <span className={`font-bold ${strength === 1 ? 'text-red-500' : strength === 2 ? 'text-yellow-500' : 'text-emerald-500'}`}>{strengthInfo.label}</span>
+                    <span className={`font-bold ${strength === 1 ? 'text-red-500' : strength === 2 ? 'text-marigold' : 'text-herb'}`}>{strengthInfo.label}</span>
                   </div>
                   <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div className={`h-full transition-all duration-300 ${strengthInfo.color}`} style={{ width: `${(strength / 3) * 100}%` }} />
                   </div>
-                  <div className="space-y-1 bg-slate-50 p-3 rounded-lg border border-slate-100">
+                  <div className="space-y-1 bg-lionsmane p-3 rounded-lg border border-slate-100">
                     {[
                       [form.password.length > 8, 'Over 8 characters'],
                       [/[A-Z]/.test(form.password), 'One uppercase letter'],
                       [/[@#$%^&+=!]/.test(form.password), 'Special character (@#$%...)'],
                     ].map(([ok, label]) => (
-                      <div key={label} className={`flex items-center gap-2 text-xs ${ok ? 'text-emerald-600 font-medium' : 'text-slate-400'}`}>
+                      <div key={label} className={`flex items-center gap-2 text-xs ${ok ? 'text-midnight font-medium' : 'text-slate-400'}`}>
                         <Check className="w-3 h-3" /> {label}
                       </div>
                     ))}
@@ -147,7 +147,7 @@ export default function RegisterPage() {
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Confirm Password</label>
               <div className="relative">
                 <input type={showConfirm ? 'text' : 'password'} required value={form.confirmPassword} onChange={e => update('confirmPassword', e.target.value)}
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors pr-10"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors pr-10"
                   placeholder="••••••••" />
                 <button type="button" onClick={() => setShowConfirm(p => !p)} className="absolute right-3 top-3.5 text-slate-400">
                   {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -155,7 +155,7 @@ export default function RegisterPage() {
               </div>
             </div>
             <button type="submit" disabled={loading}
-              className="w-full py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60">
+              className="w-full py-3 bg-midnight text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60">
               {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
@@ -169,11 +169,11 @@ export default function RegisterPage() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <button type="button" onClick={() => handleOAuth('google')}
-                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-lionsmane transition-colors">
                 <GoogleLogo /> Google
               </button>
               <button type="button" onClick={() => handleOAuth('apple')}
-                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                className="flex items-center justify-center gap-2.5 px-4 py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:bg-lionsmane transition-colors">
                 <AppleLogo /> Apple
               </button>
             </div>
@@ -181,7 +181,7 @@ export default function RegisterPage() {
 
           <p className="text-center mt-6 text-sm text-slate-500">
             Already have an account?{' '}
-            <Link to="/login" className="text-emerald-600 font-semibold hover:underline">Log In</Link>
+            <Link to="/login" className="text-midnight font-semibold hover:underline">Log In</Link>
           </p>
         </div>
       </div>

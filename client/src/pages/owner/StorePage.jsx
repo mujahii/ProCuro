@@ -146,17 +146,17 @@ export default function StorePage() {
     <div className="space-y-8">
       {/* Incomplete profile warning */}
       {!profileComplete && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-marigold flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-amber-800">Complete your profile to place orders</p>
-            <p className="text-xs text-amber-700 mt-0.5">
+            <p className="text-sm font-bold text-marigold-dark">Complete your profile to place orders</p>
+            <p className="text-xs text-marigold-dark mt-0.5">
               Missing: {missingFields.join(', ')}
             </p>
           </div>
           <button
             onClick={() => navigate('/owner/profile')}
-            className="text-xs bg-amber-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors flex-shrink-0"
+            className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-marigold-dark transition-colors flex-shrink-0"
           >
             Complete Profile
           </button>
@@ -187,17 +187,17 @@ export default function StorePage() {
         </div>
       )}
       {locationBanner === 'denied' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
-          <MapPin className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 flex items-start gap-3">
+          <MapPin className="w-5 h-5 text-marigold flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-amber-800">Location access denied</p>
-            <p className="text-xs text-amber-700 mt-0.5">Delivery fees can't be shown without your location. Add one in your profile.</p>
+            <p className="text-sm font-bold text-marigold-dark">Location access denied</p>
+            <p className="text-xs text-marigold-dark mt-0.5">Delivery fees can't be shown without your location. Add one in your profile.</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={() => navigate('/owner/profile')} className="text-xs bg-amber-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors">
+            <button onClick={() => navigate('/owner/profile')} className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-marigold-dark transition-colors">
               Add Location
             </button>
-            <button onClick={dismissLocationBanner} className="text-amber-400 hover:text-amber-600 transition-colors">
+            <button onClick={dismissLocationBanner} className="text-marigold-light hover:text-marigold transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -220,7 +220,7 @@ export default function StorePage() {
         <div className="relative" ref={filterRef}>
           <button
             onClick={() => setFilterOpen(o => !o)}
-            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-midnight text-white border-midnight' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
           >
             <Filter className="w-4 h-4" />
             <span className="hidden sm:inline">{sortBy ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Filter'}</span>
@@ -232,7 +232,7 @@ export default function StorePage() {
                 <button
                   key={opt.value}
                   onClick={() => { setSortBy(opt.value); setFilterOpen(false) }}
-                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-slate-700 hover:bg-slate-50'}`}
+                  className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value ? 'text-midnight-dark font-semibold bg-lionsmane' : 'text-slate-700 hover:bg-lionsmane'}`}
                 >
                   {opt.label}
                 </button>
@@ -253,7 +253,7 @@ export default function StorePage() {
                 onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
                 className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
                   selectedCategory === name
-                    ? 'bg-slate-900 text-white'
+                    ? 'bg-midnight text-white'
                     : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
                 }`}
               >
@@ -296,13 +296,13 @@ export default function StorePage() {
                 >
                   <div className={`w-20 h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
                     selectedCategory === name
-                      ? 'bg-emerald-50 border-emerald-500 shadow-md'
-                      : 'bg-white border-slate-100 group-hover:border-emerald-300 group-hover:shadow-md'
+                      ? 'bg-lionsmane border-herb shadow-md'
+                      : 'bg-white border-slate-100 group-hover:border-celeste-dark group-hover:shadow-md'
                   }`}>
-                    <Icon className={`w-9 h-9 ${selectedCategory === name ? 'text-emerald-600' : 'text-slate-400 group-hover:text-emerald-500'}`} />
+                    <Icon className={`w-9 h-9 ${selectedCategory === name ? 'text-midnight' : 'text-slate-400 group-hover:text-herb'}`} />
                   </div>
                   <span className={`text-xs font-medium whitespace-nowrap ${
-                    selectedCategory === name ? 'text-emerald-700 font-bold' : 'text-slate-600 group-hover:text-slate-900'
+                    selectedCategory === name ? 'text-midnight-dark font-bold' : 'text-slate-600 group-hover:text-slate-900'
                   }`}>{name}</span>
                 </div>
               ))}
@@ -313,7 +313,7 @@ export default function StorePage() {
           <div>
             <div className="flex justify-between items-end mb-4 px-1">
               <h2 className="text-lg font-bold text-slate-900">Recommended Suppliers</h2>
-              <button onClick={() => navigate('/suppliers')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">
+              <button onClick={() => navigate('/suppliers')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">
                 See All <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -341,16 +341,16 @@ export default function StorePage() {
                     <h3 className="font-bold text-slate-900 text-sm">{supplier.business_name}</h3>
                     {supplier.city && <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{supplier.city}</p>}
                     {supplier.rating > 0 && (
-                      <div className="flex items-center gap-1 mt-1 text-xs text-amber-500">
+                      <div className="flex items-center gap-1 mt-1 text-xs text-marigold">
                         <span>★</span> {Number(supplier.rating).toFixed(1)}
                       </div>
                     )}
                     {isVerified ? (
-                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">
+                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-lionsmane text-midnight-dark border-celeste">
                         <HalalBadge status="approved" size={12} /> Halal Certified
                       </div>
                     ) : isPending ? (
-                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-lionsmane text-marigold-dark border-marigold-light">
                         <HalalBadge status="pending" size={12} /> Pending Review
                       </div>
                     ) : null}
@@ -366,7 +366,7 @@ export default function StorePage() {
               <h2 className="text-lg font-bold text-slate-900">
                 {selectedCategory !== 'All' ? selectedCategory : 'Recommended Orders'}
               </h2>
-              <button onClick={() => navigate('/owner/products')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">See All <ChevronRight className="w-4 h-4" /></button>
+              <button onClick={() => navigate('/owner/products')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">See All <ChevronRight className="w-4 h-4" /></button>
             </div>
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -437,7 +437,7 @@ function ProductCard({ product, onAddToCart, onReport }) {
         {product.description && (
           <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
         )}
-        <p className="text-xs font-bold text-emerald-700 mb-3">{product.supplier?.business_name}</p>
+        <p className="text-xs font-bold text-midnight-dark mb-3">{product.supplier?.business_name}</p>
         <div className="flex items-center justify-between">
           <div>
             <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
@@ -453,7 +453,7 @@ function ProductCard({ product, onAddToCart, onReport }) {
             </button>
             <button
               onClick={e => { e.stopPropagation(); onAddToCart() }}
-              className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
+              className="w-8 h-8 rounded-full bg-midnight text-white flex items-center justify-center hover:bg-midnight transition-colors"
             >
               <Plus className="w-5 h-5" />
             </button>

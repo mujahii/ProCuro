@@ -6,7 +6,7 @@ import Footer from '../../components/layout/Footer'
 export default function TermsOfServicePage() {
   const navigate = useNavigate()
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-12 flex-grow w-full">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-8 transition-colors">
@@ -14,7 +14,7 @@ export default function TermsOfServicePage() {
         </button>
 
         <div className="flex items-center gap-3 mb-2">
-          <FileText className="w-7 h-7 text-emerald-600" />
+          <FileText className="w-7 h-7 text-midnight" />
           <h1 className="text-2xl font-black text-slate-900">Allgemeine Geschäftsbedingungen</h1>
         </div>
         <p className="text-slate-500 text-sm mb-8">Terms of Service — Stand: Mai 2025</p>
@@ -96,7 +96,7 @@ export default function TermsOfServicePage() {
 
           <section>
             <h2 className="font-bold text-slate-900 text-base mb-2">§ 10 Anwendbares Recht und Gerichtsstand</h2>
-            <p>Es gilt deutsches Recht unter Ausschluss des UN-Kaufrechts (CISG). Gerichtsstand für alle Streitigkeiten aus diesem Vertrag ist, sofern der Nutzer Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen ist, Paderborn, Deutschland. Die EU-Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">https://ec.europa.eu/consumers/odr</a></p>
+            <p>Es gilt deutsches Recht unter Ausschluss des UN-Kaufrechts (CISG). Gerichtsstand für alle Streitigkeiten aus diesem Vertrag ist, sofern der Nutzer Kaufmann, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen ist, Paderborn, Deutschland. Die EU-Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer" className="text-midnight hover:underline">https://ec.europa.eu/consumers/odr</a></p>
           </section>
 
           <section>
@@ -106,11 +106,11 @@ export default function TermsOfServicePage() {
 
           <section>
             <h2 className="font-bold text-slate-900 text-base mb-2">§ 12 Kontakt</h2>
-            <div className="p-3 bg-slate-50 rounded-xl text-slate-600">
+            <div className="p-3 bg-lionsmane rounded-xl text-slate-600">
               <strong>ProCuro GmbH</strong><br />
               Paderborn, Nordrhein-Westfalen, Deutschland<br />
-              E-Mail: <a href="mailto:support@procuro.com" className="text-emerald-600 hover:underline">support@procuro.com</a><br />
-              Telefon: <a href="tel:+4915560608671" className="text-emerald-600 hover:underline">+49 155 6060 8671</a>
+              E-Mail: <a href="mailto:support@procuro.com" className="text-midnight hover:underline">support@procuro.com</a><br />
+              Telefon: <a href="tel:+4915560608671" className="text-midnight hover:underline">+49 155 6060 8671</a>
             </div>
           </section>
 

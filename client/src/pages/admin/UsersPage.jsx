@@ -218,7 +218,7 @@ export default function AdminUsersPage() {
             onClick={() => setRoleFilter(f.value)}
             className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
               roleFilter === f.value
-                ? 'bg-slate-900 text-white'
+                ? 'bg-midnight text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
       <div className="flex gap-1 mb-4 border-b border-gray-200">
         <button
           onClick={() => setTab('active')}
-          className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px ${tab === 'active' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+          className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px ${tab === 'active' ? 'border-midnight text-midnight-dark' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
         >
           Active ({users.length})
         </button>
@@ -247,7 +247,7 @@ export default function AdminUsersPage() {
       {tab === 'deleted' ? (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Email</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Role</th>
@@ -257,7 +257,7 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {deletedAccounts.map(d => (
-                <tr key={d.id} className="hover:bg-gray-50">
+                <tr key={d.id} className="hover:bg-lionsmane">
                   <td className="px-4 py-3 text-sm text-gray-700">{d.email || '—'}</td>
                   <td className="px-4 py-3 hidden sm:table-cell">{roleBadge(d.role)}</td>
                   <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">{d.business_name || '—'}</td>
@@ -271,7 +271,7 @@ export default function AdminUsersPage() {
       ) : loading ? <SkeletonTable rows={6} /> : (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">User</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Role</th>
@@ -283,7 +283,7 @@ export default function AdminUsersPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(u => (
-                <tr key={u.id} className="hover:bg-gray-50">
+                <tr key={u.id} className="hover:bg-lionsmane">
                   <td className="px-4 py-3">
                     <p className="text-sm font-medium text-gray-900">{u.full_name || '—'}</p>
                     <p className="text-xs text-gray-400">{u.email}</p>
@@ -297,7 +297,7 @@ export default function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-1">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${u.is_banned ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-700'}`}>
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${u.is_banned ? 'bg-red-50 text-red-600' : 'bg-lionsmane text-midnight-dark'}`}>
                         {u.is_banned ? 'Banned' : 'Active'}
                       </span>
                       {u.role === 'supplier' && u.supplier_profile && (
@@ -319,7 +319,7 @@ export default function AdminUsersPage() {
                       </button>
                       <button
                         onClick={() => u.role !== 'admin' && navigate(`/admin/chat?user_id=${u.id}`)}
-                        className={`p-1.5 rounded-lg text-emerald-400 ${u.role !== 'admin' ? 'hover:bg-emerald-50 cursor-pointer' : 'opacity-30 cursor-default'}`}
+                        className={`p-1.5 rounded-lg text-herb-light ${u.role !== 'admin' ? 'hover:bg-lionsmane cursor-pointer' : 'opacity-30 cursor-default'}`}
                         title="Chat with user"
                       >
                         <MessageSquare className="w-4 h-4" />
@@ -334,7 +334,7 @@ export default function AdminUsersPage() {
                           title={u.supplier_profile.is_active ? 'Deactivate listing' : 'Activate listing'}
                         >
                           {u.supplier_profile.is_active
-                            ? <ToggleRight className="w-4 h-4 text-emerald-500" />
+                            ? <ToggleRight className="w-4 h-4 text-herb" />
                             : <ToggleLeft className="w-4 h-4" />}
                         </button>
                       )}
@@ -345,14 +345,14 @@ export default function AdminUsersPage() {
                           title={(u.owner_profile?.is_active ?? true) ? 'Unlist owner' : 'List owner'}
                         >
                           {(u.owner_profile?.is_active ?? true)
-                            ? <ToggleRight className="w-4 h-4 text-emerald-500" />
+                            ? <ToggleRight className="w-4 h-4 text-herb" />
                             : <ToggleLeft className="w-4 h-4" />}
                         </button>
                       )}
                       {u.role !== 'admin' && (
                         <button
                           onClick={() => setResetTarget(u)}
-                          className="p-1.5 rounded-lg hover:bg-amber-50 text-amber-400"
+                          className="p-1.5 rounded-lg hover:bg-lionsmane text-marigold-light"
                           title="Send password reset email"
                         >
                           <KeyRound className="w-4 h-4" />
@@ -442,7 +442,7 @@ export default function AdminUsersPage() {
                     </div>
                   ))}
                   {viewTarget.supplier_profile.description && (
-                    <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 leading-relaxed">{viewTarget.supplier_profile.description}</div>
+                    <div className="bg-lionsmane rounded-lg p-3 text-xs text-gray-600 leading-relaxed">{viewTarget.supplier_profile.description}</div>
                   )}
                 </>
               )}
@@ -471,14 +471,14 @@ export default function AdminUsersPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => { setViewTarget(null); setNotifyTarget(viewTarget); setNotifyTitle(''); setNotifyMsg('') }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
                 >
                   <Send className="w-4 h-4" /> Send Message
                 </button>
                 {viewTarget.role !== 'admin' && (
                   <button
                     onClick={() => { setViewTarget(null); navigate(`/admin/chat?user_id=${viewTarget.id}`) }}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50"
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-lionsmane"
                   >
                     <MessageSquare className="w-4 h-4" /> Chat
                   </button>
@@ -487,7 +487,7 @@ export default function AdminUsersPage() {
               {viewTarget.role !== 'admin' && (
                 <button
                   onClick={() => { setViewTarget(null); setResetTarget(viewTarget) }}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 border border-amber-200 text-amber-700 rounded-xl text-sm font-semibold hover:bg-amber-50"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 border border-marigold-light text-marigold-dark rounded-xl text-sm font-semibold hover:bg-lionsmane"
                 >
                   <KeyRound className="w-4 h-4" /> Send Password Reset Email
                 </button>
@@ -501,7 +501,7 @@ export default function AdminUsersPage() {
                   className={`w-full flex items-center justify-center gap-2 py-2.5 border rounded-xl text-sm font-semibold transition-colors ${
                     (viewTarget.owner_profile?.is_active ?? true)
                       ? 'border-orange-200 text-orange-700 hover:bg-orange-50'
-                      : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+                      : 'border-celeste text-midnight-dark hover:bg-lionsmane'
                   }`}
                 >
                   {(viewTarget.owner_profile?.is_active ?? true)
@@ -537,7 +537,7 @@ export default function AdminUsersPage() {
               autoFocus
             />
             <div className="flex gap-2">
-              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-lionsmane">Cancel</button>
               <button
                 onClick={confirmDelete}
                 disabled={deleteConfirmText !== 'delete' || deleting}
@@ -563,7 +563,7 @@ export default function AdminUsersPage() {
               <p className="text-xs text-orange-500"><span className="font-bold">{banTarget.full_name || banTarget.email}</span> will no longer be able to use the platform.</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setBanTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button onClick={() => setBanTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-lionsmane">Cancel</button>
               <button onClick={() => { toggleBan(banTarget); setBanTarget(null) }} className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600">
                 Yes, Ban User
               </button>
@@ -585,7 +585,7 @@ export default function AdminUsersPage() {
               <p className="text-xs text-orange-500"><span className="font-bold">{ownerToggleTarget.owner_profile?.restaurant_name || ownerToggleTarget.full_name || ownerToggleTarget.email}</span> will see a banner saying their account has been deactivated.</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setOwnerToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button onClick={() => setOwnerToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-lionsmane">Cancel</button>
               <button
                 onClick={() => { toggleOwnerActive(ownerToggleTarget); setOwnerToggleTarget(null) }}
                 className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600"
@@ -605,17 +605,17 @@ export default function AdminUsersPage() {
               <h2 className="text-lg font-bold text-gray-900">Send Password Reset</h2>
               <button onClick={() => setResetTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
             </div>
-            <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-5">
-              <p className="text-sm text-amber-800">An email will be sent to:</p>
-              <p className="text-sm font-bold text-amber-900 mt-1">{resetTarget.email}</p>
-              <p className="text-xs text-amber-700 mt-2">The user will receive a secure link to set a new password. The link expires in 1 hour.</p>
+            <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 mb-5">
+              <p className="text-sm text-marigold-dark">An email will be sent to:</p>
+              <p className="text-sm font-bold text-marigold-dark mt-1">{resetTarget.email}</p>
+              <p className="text-xs text-marigold-dark mt-2">The user will receive a secure link to set a new password. The link expires in 1 hour.</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setResetTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+              <button onClick={() => setResetTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-lionsmane">Cancel</button>
               <button
                 onClick={() => sendPasswordReset(resetTarget)}
                 disabled={sendingReset}
-                className="flex-1 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 disabled:opacity-60 flex items-center justify-center gap-2"
+                className="flex-1 py-2.5 bg-marigold text-white rounded-xl text-sm font-semibold hover:bg-marigold disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 <KeyRound className="w-4 h-4" />
                 {sendingReset ? 'Sending...' : 'Send Reset Email'}
@@ -637,10 +637,10 @@ export default function AdminUsersPage() {
               To: <span className="font-semibold text-gray-700">{notifyTarget.full_name || notifyTarget.email}</span>
             </p>
             <div className="space-y-3">
-              <input value={notifyTitle} onChange={e => setNotifyTitle(e.target.value)} placeholder="Notification title" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-              <textarea value={notifyMsg} onChange={e => setNotifyMsg(e.target.value)} placeholder="Write your message..." rows={4} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none" />
+              <input value={notifyTitle} onChange={e => setNotifyTitle(e.target.value)} placeholder="Notification title" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-herb" />
+              <textarea value={notifyMsg} onChange={e => setNotifyMsg(e.target.value)} placeholder="Write your message..." rows={4} className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-herb resize-none" />
             </div>
-            <button onClick={sendNotification} disabled={sending} className="mt-4 w-full py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 disabled:opacity-60">
+            <button onClick={sendNotification} disabled={sending} className="mt-4 w-full py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-midnight-dark disabled:opacity-60">
               {sending ? 'Sending...' : 'Send Notification'}
             </button>
           </div>

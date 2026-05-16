@@ -78,7 +78,7 @@ function FilterContent({ filters, onChange, onNearMe, geoLoading, onClose }) {
       {/* Reset */}
       <button
         onClick={() => onChange({ sortBy: '', city: '', maxPrice: 500 })}
-        className="w-full text-xs font-semibold text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl py-2 hover:bg-gray-50 transition-colors"
+        className="w-full text-xs font-semibold text-gray-500 hover:text-gray-700 border border-gray-200 rounded-xl py-2 hover:bg-lionsmane transition-colors"
       >
         Reset Filters
       </button>

@@ -42,7 +42,7 @@ export default function AdminOrdersPage() {
       {loading ? <SkeletonTable rows={6} /> : (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Order ID</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Owner</th>
@@ -54,7 +54,7 @@ export default function AdminOrdersPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(split => (
-                <tr key={split.id} className="hover:bg-gray-50">
+                <tr key={split.id} className="hover:bg-lionsmane">
                   <td className="px-4 py-3 font-mono text-xs text-gray-500">{split.id.slice(0, 8).toUpperCase()}</td>
                   <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-900">{split.order?.owner?.full_name || '—'}</td>
                   <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-500">{split.supplier?.business_name || '—'}</td>

@@ -146,7 +146,7 @@ export default function AddToCartModal({ product, onClose }) {
               <h2 className="text-2xl font-bold text-slate-900">{product.name}</h2>
               <button
                 onClick={() => { onClose(); navigate(`/supplier/${product.supplier_id}`) }}
-                className="text-emerald-600 font-bold text-lg hover:underline text-left"
+                className="text-midnight font-bold text-lg hover:underline text-left"
               >{product.supplier?.business_name}</button>
             </div>
             <div className="text-right">
@@ -167,14 +167,14 @@ export default function AddToCartModal({ product, onClose }) {
             ) : !ownerHasLocation ? (
               <button
                 onClick={() => { onClose(); navigate('/owner/profile') }}
-                className="text-amber-600 font-semibold hover:underline flex items-center gap-1"
+                className="text-marigold font-semibold hover:underline flex items-center gap-1"
               >
                 <MapPin className="w-3.5 h-3.5" /> Add your location to see delivery fee
               </button>
             ) : deliveryFee === null ? (
               <span className="text-slate-400">Delivery fee unavailable</span>
             ) : deliveryFee === 0 ? (
-              <span className="text-emerald-600 font-semibold">Free delivery</span>
+              <span className="text-midnight font-semibold">Free delivery</span>
             ) : (
               <span className="text-slate-600">Delivery: <span className="font-semibold text-slate-800">€{deliveryFee.toFixed(2)}</span></span>
             )}
@@ -183,7 +183,7 @@ export default function AddToCartModal({ product, onClose }) {
           {inStock ? (
             <div className="space-y-4 mb-6">
               {/* Quantity */}
-              <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl">
+              <div className="flex items-center gap-4 p-4 bg-lionsmane rounded-xl">
                 <span className="font-bold text-slate-700">Quantity</span>
                 <div className="flex items-center gap-4 ml-auto">
                   <button
@@ -206,15 +206,15 @@ export default function AddToCartModal({ product, onClose }) {
                     value={discountCode}
                     onChange={e => { setDiscountCode(e.target.value); setDiscountMessage(''); setAppliedDiscount(0) }}
                     placeholder="Discount Code"
-                    className="flex-1 p-3 border border-slate-200 rounded-lg outline-none text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                    className="flex-1 p-3 border border-slate-200 rounded-lg outline-none text-sm focus:ring-2 focus:ring-herb focus:border-transparent"
                   />
                   <button
                     onClick={handleApplyDiscount}
-                    className="px-4 py-2 border-2 border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors"
+                    className="px-4 py-2 border-2 border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-lionsmane transition-colors"
                   >Apply</button>
                 </div>
                 {discountMessage && (
-                  <p className={`text-xs mt-1 ${discountMessage.includes('Applied') ? 'text-emerald-600' : 'text-red-500'}`}>
+                  <p className={`text-xs mt-1 ${discountMessage.includes('Applied') ? 'text-midnight' : 'text-red-500'}`}>
                     {discountMessage}
                   </p>
                 )}
@@ -230,12 +230,12 @@ export default function AddToCartModal({ product, onClose }) {
           <div className="flex gap-4">
             <button
               onClick={onClose}
-              className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors"
+              className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors"
             >Close</button>
             <button
               onClick={handleAdd}
               disabled={!inStock}
-              className="flex-[2] py-3 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-[2] py-3 bg-midnight text-white font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {inStock ? `Add to Cart - €${total.toFixed(2)}` : 'Unavailable'}
             </button>

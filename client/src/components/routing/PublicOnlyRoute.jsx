@@ -6,8 +6,8 @@ export default function PublicOnlyRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-lionsmane">
+        <div className="w-10 h-10 border-4 border-herb border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }

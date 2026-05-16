@@ -64,7 +64,7 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-lionsmane flex">
 
       {/* Mobile overlay */}
       {mobileOpen && (
@@ -76,7 +76,7 @@ export default function AdminLayout() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full z-40 bg-gray-900 text-white flex flex-col transition-all duration-300
+        className={`fixed top-0 left-0 h-full z-40 bg-midnight text-white flex flex-col transition-all duration-300
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0
           ${collapsed ? 'lg:w-16 w-64' : 'w-64 lg:w-60'}
@@ -84,7 +84,7 @@ export default function AdminLayout() {
       >
         {/* Logo row */}
         <div className={`border-b border-gray-800 flex items-center gap-2 transition-all duration-300 ${collapsed ? 'lg:justify-center lg:px-0 px-5 py-5' : 'px-5 py-5'}`}>
-          <div className="w-8 h-8 bg-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-midnight rounded-xl flex items-center justify-center flex-shrink-0">
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div className={`${collapsed ? 'lg:hidden' : ''} overflow-hidden`}>
@@ -119,7 +119,7 @@ export default function AdminLayout() {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative group
                 ${collapsed ? 'lg:justify-center lg:px-0' : ''}
-                ${isActive ? 'bg-emerald-700 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`
+                ${isActive ? 'bg-marigold text-midnight' : 'text-gray-400 hover:bg-gray-800 hover:text-white'}`
               }
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
@@ -138,7 +138,7 @@ export default function AdminLayout() {
                 </span>
               )}
               {unreadBadge && unreadChats > 0 && (
-                <span className={`bg-emerald-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${collapsed ? 'lg:absolute lg:top-1 lg:right-1 lg:min-w-0 lg:w-4 lg:h-4 lg:p-0 lg:flex lg:items-center lg:justify-center' : ''}`}>
+                <span className={`bg-herb text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${collapsed ? 'lg:absolute lg:top-1 lg:right-1 lg:min-w-0 lg:w-4 lg:h-4 lg:p-0 lg:flex lg:items-center lg:justify-center' : ''}`}>
                   {unreadChats}
                 </span>
               )}

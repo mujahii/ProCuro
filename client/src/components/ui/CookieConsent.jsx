@@ -17,7 +17,7 @@ export default function CookieConsent() {
   if (!visible) return null
 
   return (
-    <div className="fixed bottom-20 lg:bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-sm bg-gray-900 text-white rounded-xl p-4 shadow-2xl z-50">
+    <div className="fixed bottom-20 lg:bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-sm bg-midnight text-white rounded-xl p-4 shadow-2xl z-50">
       <p className="text-sm leading-relaxed">
         We use essential cookies for authentication and session management. No tracking cookies.
       </p>

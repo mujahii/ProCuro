@@ -89,7 +89,7 @@ export default function SupplierListPage() {
     })
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         <div className="flex items-center justify-between mb-6">
@@ -113,7 +113,7 @@ export default function SupplierListPage() {
           <button
             onClick={handleNearMe}
             disabled={gpsLoading}
-            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors flex-shrink-0 ${sortBy === 'nearest' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors flex-shrink-0 ${sortBy === 'nearest' ? 'bg-midnight text-white border-midnight' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
           >
             {gpsLoading ? (
               <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -125,7 +125,7 @@ export default function SupplierListPage() {
           <div className="relative" ref={filterRef}>
             <button
               onClick={() => setFilterOpen(o => !o)}
-              className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy && sortBy !== 'nearest' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+              className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy && sortBy !== 'nearest' ? 'bg-midnight text-white border-midnight' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
             >
               <Filter className="w-4 h-4" />
               <span className="hidden sm:inline">{sortBy && sortBy !== 'nearest' ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Sort'}</span>
@@ -137,7 +137,7 @@ export default function SupplierListPage() {
                   <button
                     key={opt.value}
                     onClick={() => handleSortSelect(opt.value)}
-                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2 ${sortBy === opt.value ? 'text-emerald-700 font-semibold bg-emerald-50' : 'text-slate-700 hover:bg-slate-50'}`}
+                    className={`w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-2 ${sortBy === opt.value ? 'text-midnight-dark font-semibold bg-lionsmane' : 'text-slate-700 hover:bg-lionsmane'}`}
                   >
                     {opt.label}
                   </button>
@@ -155,7 +155,7 @@ export default function SupplierListPage() {
               onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
               className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
                 activeCategory === cat
-                  ? 'bg-slate-900 text-white'
+                  ? 'bg-midnight text-white'
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
               }`}
             >
@@ -174,7 +174,7 @@ export default function SupplierListPage() {
             {(search || activeCategory) && (
               <button
                 onClick={() => { setSearch(''); setActiveCategory(null) }}
-                className="mt-3 text-sm text-emerald-600 font-semibold hover:underline"
+                className="mt-3 text-sm text-midnight font-semibold hover:underline"
               >
                 Clear filters
               </button>
@@ -211,12 +211,12 @@ export default function SupplierListPage() {
                       <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                         <MapPin className="w-3 h-3" />{supplier.city}
                         {distKm !== null && (
-                          <span className="ml-1 text-emerald-600 font-semibold">· {distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`} away</span>
+                          <span className="ml-1 text-midnight font-semibold">· {distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`} away</span>
                         )}
                       </p>
                     )}
                     {supplier.rating > 0 && (
-                      <p className="text-xs text-amber-500 mt-1">★ {Number(supplier.rating).toFixed(1)}</p>
+                      <p className="text-xs text-marigold mt-1">★ {Number(supplier.rating).toFixed(1)}</p>
                     )}
                     {categories.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5">
@@ -226,11 +226,11 @@ export default function SupplierListPage() {
                       </div>
                     )}
                     {isVerified ? (
-                      <div className="mt-2 inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-medium border border-emerald-100">
+                      <div className="mt-2 inline-flex items-center gap-1 bg-lionsmane text-midnight-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-celeste">
                         <HalalBadge status="approved" size={12} /> Halal Certified
                       </div>
                     ) : isPending ? (
-                      <div className="mt-2 inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full text-[10px] font-medium border border-amber-100">
+                      <div className="mt-2 inline-flex items-center gap-1 bg-lionsmane text-marigold-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-marigold-light">
                         Pending Review
                       </div>
                     ) : null}

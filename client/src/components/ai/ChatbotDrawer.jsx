@@ -168,7 +168,7 @@ export default function ChatbotDrawer({ open, onClose }) {
         }`}
     >
       {/* Header */}
-      <div className="bg-gradient-to-r from-emerald-700 to-emerald-600 p-4 flex justify-between items-center text-white flex-shrink-0">
+      <div className="bg-gradient-to-r from-midnight to-herb p-4 flex justify-between items-center text-white flex-shrink-0">
         <h3 className="font-bold flex items-center gap-2 text-sm">
           <Sparkles className="w-4 h-4" />
           ProCuro AI Assistant
@@ -179,18 +179,18 @@ export default function ChatbotDrawer({ open, onClose }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 p-3 overflow-y-auto space-y-3 bg-slate-50">
+      <div className="flex-1 p-3 overflow-y-auto space-y-3 bg-lionsmane">
         {messages.map((msg, i) => (
           <div key={i} className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'assistant' && (
-              <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0 mb-1">
+              <div className="w-6 h-6 rounded-full bg-midnight flex items-center justify-center flex-shrink-0 mb-1">
                 <Bot className="w-3.5 h-3.5 text-white" />
               </div>
             )}
             <div
               className={`max-w-[78%] p-3 rounded-2xl text-sm leading-relaxed ${
                 msg.role === 'user'
-                  ? 'bg-emerald-600 text-white rounded-br-none'
+                  ? 'bg-midnight text-white rounded-br-none'
                   : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
               }`}
             >
@@ -206,7 +206,7 @@ export default function ChatbotDrawer({ open, onClose }) {
               <button
                 key={i}
                 onClick={() => send(s)}
-                className="text-xs bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-full px-3 py-1 hover:bg-emerald-100 transition-colors"
+                className="text-xs bg-lionsmane border border-celeste text-midnight-dark rounded-full px-3 py-1 hover:bg-celeste transition-colors"
               >
                 {s}
               </button>
@@ -216,7 +216,7 @@ export default function ChatbotDrawer({ open, onClose }) {
 
         {loading && (
           <div className="flex items-end gap-2 justify-start">
-            <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-midnight flex items-center justify-center flex-shrink-0">
               <Bot className="w-3.5 h-3.5 text-white" />
             </div>
             <div className="bg-white border border-slate-200 px-4 py-3 rounded-2xl rounded-bl-none shadow-sm flex gap-1">
@@ -241,13 +241,13 @@ export default function ChatbotDrawer({ open, onClose }) {
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
           placeholder="Ask me anything..."
-          className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-colors"
+          className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-herb focus:bg-white transition-colors"
           disabled={loading}
         />
         <button
           onClick={() => send()}
           disabled={loading || !input.trim()}
-          className="p-2 bg-emerald-600 rounded-full text-white hover:bg-emerald-700 disabled:opacity-40 flex-shrink-0 transition-colors"
+          className="p-2 bg-midnight rounded-full text-white hover:bg-midnight-dark disabled:opacity-40 flex-shrink-0 transition-colors"
         >
           <Send className="w-4 h-4" />
         </button>

@@ -76,10 +76,10 @@ export default function SupplierProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+      <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
         <Navbar />
         <div className="flex-1 flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-midnight border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     )
@@ -87,11 +87,11 @@ export default function SupplierProfilePage() {
 
   if (!supplier) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+      <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
           <p className="text-slate-400 mb-4">Supplier not found</p>
-          <button onClick={() => navigate('/suppliers')} className="text-emerald-600 font-semibold hover:underline">Browse all suppliers</button>
+          <button onClick={() => navigate('/suppliers')} className="text-midnight font-semibold hover:underline">Browse all suppliers</button>
         </div>
       </div>
     )
@@ -103,7 +103,7 @@ export default function SupplierProfilePage() {
   const visibleProducts = showAll ? filteredProducts : filteredProducts.slice(0, INITIAL_LIMIT)
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         <div className="flex items-center justify-between mb-6">
@@ -121,11 +121,11 @@ export default function SupplierProfilePage() {
         </div>
 
         {/* Banner */}
-        <div className="relative h-48 bg-slate-900 rounded-xl overflow-hidden mb-8">
+        <div className="relative h-48 bg-midnight rounded-xl overflow-hidden mb-8">
           {supplier.avatar_url ? (
             <img src={supplier.avatar_url} alt={supplier.business_name} className="w-full h-full object-cover opacity-60" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-r from-slate-900 to-emerald-900" />
+            <div className="w-full h-full bg-gradient-to-r from-midnight to-midnight" />
           )}
           <div className="absolute inset-0 p-6 flex flex-col justify-end text-white">
             <h1 className="text-3xl font-bold">{supplier.business_name}</h1>
@@ -139,12 +139,12 @@ export default function SupplierProfilePage() {
               )}
               {isHalalCertified && (
                 <>
-                  <CheckCircle className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle className="w-4 h-4 text-herb-light" />
                   <span>Halal Certified</span>
                 </>
               )}
               {supplier.rating != null && (
-                <span className="text-amber-300 ml-1">★ {Number(supplier.rating).toFixed(1)}</span>
+                <span className="text-marigold-light ml-1">★ {Number(supplier.rating).toFixed(1)}</span>
               )}
             </p>
           </div>
@@ -171,7 +171,7 @@ export default function SupplierProfilePage() {
               {filteredProducts.length > INITIAL_LIMIT && (
                 <button
                   onClick={() => setShowAll(v => !v)}
-                  className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
+                  className="text-sm text-midnight font-semibold hover:text-midnight-dark transition-colors"
                 >
                   {showAll ? 'Show Less' : `See All (${filteredProducts.length})`}
                 </button>
@@ -187,7 +187,7 @@ export default function SupplierProfilePage() {
                     onClick={() => { setActiveCategory(activeCategory === cat ? null : cat); setShowAll(false) }}
                     className={`text-xs font-medium px-3 py-1 rounded-full transition-colors ${
                       activeCategory === cat
-                        ? 'bg-slate-900 text-white'
+                        ? 'bg-midnight text-white'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
@@ -210,7 +210,7 @@ export default function SupplierProfilePage() {
                     <div
                       key={product.id}
                       onClick={() => profile?.role === 'restaurant_owner' && supplier.is_active && setSelectedProduct(product)}
-                      className={`bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 transition-colors ${profile?.role === 'restaurant_owner' && supplier.is_active ? 'cursor-pointer hover:border-emerald-500' : 'opacity-60'}`}
+                      className={`bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 transition-colors ${profile?.role === 'restaurant_owner' && supplier.is_active ? 'cursor-pointer hover:border-herb' : 'opacity-60'}`}
                     >
                       <div className="w-20 h-20 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
                         {imgUrl ? (
@@ -223,13 +223,13 @@ export default function SupplierProfilePage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-slate-900">{product.name}</h4>
-                        <p className="text-sm font-semibold text-emerald-600 mt-0.5">
+                        <p className="text-sm font-semibold text-midnight mt-0.5">
                           €{Number(product.price).toFixed(2)} / {product.unit_type}
                         </p>
                         {profile?.role === 'restaurant_owner' && supplier.is_active && (
                           <button
                             onClick={e => { e.stopPropagation(); setSelectedProduct(product) }}
-                            className="mt-2 text-xs bg-slate-900 text-white px-3 py-1 rounded-full hover:bg-emerald-600 transition-colors"
+                            className="mt-2 text-xs bg-midnight text-white px-3 py-1 rounded-full hover:bg-midnight transition-colors"
                           >
                             Add
                           </button>
@@ -245,7 +245,7 @@ export default function SupplierProfilePage() {
             {filteredProducts.length > INITIAL_LIMIT && (
               <button
                 onClick={() => setShowAll(v => !v)}
-                className="mt-4 w-full py-2.5 text-sm text-emerald-600 font-semibold border border-emerald-200 rounded-xl hover:bg-emerald-50 transition-colors"
+                className="mt-4 w-full py-2.5 text-sm text-midnight font-semibold border border-celeste rounded-xl hover:bg-lionsmane transition-colors"
               >
                 {showAll ? 'Show Less' : `See All ${filteredProducts.length} Products`}
               </button>
@@ -274,7 +274,7 @@ export default function SupplierProfilePage() {
               {supplier.phone && (
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
                   <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <a href={`tel:${supplier.phone}`} className="text-sm text-emerald-700 font-medium hover:underline">{fmtPhone(supplier.phone)}</a>
+                  <a href={`tel:${supplier.phone}`} className="text-sm text-midnight-dark font-medium hover:underline">{fmtPhone(supplier.phone)}</a>
                 </div>
               )}
               {addresses.length > 0 && (
@@ -289,7 +289,7 @@ export default function SupplierProfilePage() {
                         <div key={addr.id} className="flex items-center gap-2">
                           <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                           <span className="text-sm text-slate-600 flex-1 truncate">{addr.label || addr.city}</span>
-                          <a href={`https://maps.google.com/?q=${q}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-emerald-600 flex-shrink-0 transition-colors">
+                          <a href={`https://maps.google.com/?q=${q}`} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-midnight flex-shrink-0 transition-colors">
                             <ExternalLink className="w-3.5 h-3.5" />
                           </a>
                         </div>
@@ -310,13 +310,13 @@ export default function SupplierProfilePage() {
                 ) : (
                   <div className="space-y-2">
                     {certificates.map(cert => (
-                      <div key={cert.id} className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-100">
-                        <FileText className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                      <div key={cert.id} className="flex items-center gap-3 p-3 bg-lionsmane rounded-lg border border-celeste">
+                        <FileText className="w-5 h-5 text-midnight flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-emerald-900 truncate">{cert.file_name || 'Halal Certificate'}</p>
-                          <p className="text-xs text-emerald-700">Verified {new Date(cert.uploaded_at || cert.created_at).getFullYear()}</p>
+                          <p className="text-sm font-semibold text-midnight truncate">{cert.file_name || 'Halal Certificate'}</p>
+                          <p className="text-xs text-midnight-dark">Verified {new Date(cert.uploaded_at || cert.created_at).getFullYear()}</p>
                         </div>
-                        <button onClick={() => viewCert(cert)} className="text-emerald-600 hover:text-emerald-700 flex-shrink-0">
+                        <button onClick={() => viewCert(cert)} className="text-midnight hover:text-midnight-dark flex-shrink-0">
                           <Eye className="w-4 h-4" />
                         </button>
                       </div>
@@ -330,14 +330,14 @@ export default function SupplierProfilePage() {
             {!profile ? (
               <button
                 onClick={() => navigate('/login')}
-                className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
+                className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
               >
                 Order from this Supplier
               </button>
             ) : profile.role === 'restaurant_owner' ? (
               <button
                 onClick={() => navigate(`/owner/chat?supplier_id=${supplier.id}`)}
-                className="w-full py-3 bg-white border-2 border-slate-200 text-slate-900 font-bold rounded-xl hover:border-emerald-400 hover:text-emerald-700 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3 bg-white border-2 border-slate-200 text-slate-900 font-bold rounded-xl hover:border-herb-light hover:text-midnight-dark transition-colors flex items-center justify-center gap-2"
               >
                 <MessageSquare className="w-5 h-5" /> Message Supplier
               </button>

@@ -95,7 +95,7 @@ export default function CartPage() {
         <p className="text-slate-500 text-sm mb-6">Add some products from the store to get started.</p>
         <button
           onClick={() => navigate('/owner/store')}
-          className="bg-slate-900 text-white font-bold px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md"
+          className="bg-midnight text-white font-bold px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md"
         >
           Browse Products
         </button>
@@ -107,8 +107,8 @@ export default function CartPage() {
   if (step === 3) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4 animate-in zoom-in duration-300">
-        <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
-          <CheckCircle className="w-10 h-10 text-emerald-600" />
+        <div className="w-20 h-20 bg-celeste rounded-full flex items-center justify-center mb-6">
+          <CheckCircle className="w-10 h-10 text-midnight" />
         </div>
         <h1 className="text-3xl font-bold text-slate-900 mb-2">Order Placed!</h1>
         <p className="text-slate-500 mb-2">Your order has been sent to the supplier(s).</p>
@@ -122,7 +122,7 @@ export default function CartPage() {
         <p className="text-xs text-slate-400 mb-6">Redirecting to store in a few seconds...</p>
         <button
           onClick={() => navigate('/owner/store')}
-          className="bg-slate-900 text-white font-bold px-8 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md"
+          className="bg-midnight text-white font-bold px-8 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md"
         >
           Back to Store
         </button>
@@ -148,7 +148,7 @@ export default function CartPage() {
             <button
               key={id}
               onClick={() => setSelectedPayment(id)}
-              className={`p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all ${selectedPayment === id ? 'border-emerald-500 bg-emerald-50 text-emerald-700' : 'border-slate-100 bg-white text-slate-400 hover:border-slate-300'}`}
+              className={`p-4 rounded-xl border-2 flex flex-col items-center gap-3 transition-all ${selectedPayment === id ? 'border-herb bg-lionsmane text-midnight-dark' : 'border-slate-100 bg-white text-slate-400 hover:border-slate-300'}`}
             >
               <Icon className="w-8 h-8" />
               <span className="text-sm font-semibold">{label}</span>
@@ -164,21 +164,21 @@ export default function CartPage() {
                 <div key={supplierId}>
                   <p className="font-bold text-slate-900 mb-2">{group.supplier?.business_name}</p>
                   {bank ? (
-                    <div className="bg-slate-50 p-3 rounded-lg text-sm space-y-1 mb-3">
+                    <div className="bg-lionsmane p-3 rounded-lg text-sm space-y-1 mb-3">
                       <p><span className="text-slate-500">Account:</span> <span className="font-medium">{bank.account_holder || bank.account_name}</span></p>
                       <p><span className="text-slate-500">IBAN:</span> <span className="font-mono font-semibold">{bank.iban}</span></p>
-                      <p><span className="text-slate-500">Amount:</span> <span className="font-bold text-emerald-700">€{group.subtotal.toFixed(2)}</span></p>
+                      <p><span className="text-slate-500">Amount:</span> <span className="font-bold text-midnight-dark">€{group.subtotal.toFixed(2)}</span></p>
                     </div>
                   ) : (
                     <p className="text-sm text-slate-400 mb-3">Loading bank details...</p>
                   )}
-                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-emerald-400 transition-colors">
+                  <div className="border-2 border-dashed border-slate-200 rounded-xl p-4 text-center hover:border-herb-light transition-colors">
                     <input type="file" accept="image/*,.pdf" className="hidden" id={`receipt-${supplierId}`} onChange={e => handleReceiptFile(supplierId, e.target.files[0])} />
                     <label htmlFor={`receipt-${supplierId}`} className="cursor-pointer flex flex-col items-center gap-2">
                       {receiptFiles[supplierId] ? (
                         <>
-                          <CheckCircle className="w-8 h-8 text-emerald-600" />
-                          <p className="text-sm font-medium text-emerald-700">{receiptFiles[supplierId].name}</p>
+                          <CheckCircle className="w-8 h-8 text-midnight" />
+                          <p className="text-sm font-medium text-midnight-dark">{receiptFiles[supplierId].name}</p>
                           <p className="text-xs text-slate-400">Click to change</p>
                         </>
                       ) : (
@@ -197,7 +197,7 @@ export default function CartPage() {
         )}
 
         {selectedPayment === 'cash_on_delivery' && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-700">
+          <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 text-sm text-marigold-dark">
             <p className="font-semibold mb-1">Cash on Delivery</p>
             <p>Please have the exact amount of <strong>€{total.toFixed(2)}</strong> ready when your order arrives.</p>
           </div>
@@ -206,7 +206,7 @@ export default function CartPage() {
         <button
           onClick={handlePlaceOrder}
           disabled={!selectedPayment || loading}
-          className="w-full py-4 text-lg bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-4 text-lg bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : `Place Order — €${(total + groups.reduce((s, [, g]) => s + Number(g.items[0]?.product?.delivery_fee || 0), 0)).toFixed(2)}`}
         </button>
@@ -238,9 +238,9 @@ export default function CartPage() {
       {/* Delivery address */}
       <button
         onClick={() => setShowAddressPicker(true)}
-        className="w-full bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center gap-3 hover:border-emerald-300 transition-colors text-left"
+        className="w-full bg-lionsmane p-4 rounded-xl border border-slate-200 flex items-center gap-3 hover:border-celeste-dark transition-colors text-left"
       >
-        <MapPin className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+        <MapPin className="w-5 h-5 text-midnight flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-xs text-slate-500 font-medium">Delivering To</p>
           {selectedAddress ? (
@@ -253,7 +253,7 @@ export default function CartPage() {
               </p>
             </>
           ) : (
-            <p className="text-sm font-semibold text-emerald-600">+ Add delivery address</p>
+            <p className="text-sm font-semibold text-midnight">+ Add delivery address</p>
           )}
         </div>
         <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
@@ -274,7 +274,7 @@ export default function CartPage() {
           const deliveryFee = Number(group.items[0]?.product?.delivery_fee || 0)
           return (
             <div key={supplierId} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="bg-slate-50 px-5 py-3 border-b border-slate-100">
+              <div className="bg-lionsmane px-5 py-3 border-b border-slate-100">
                 <p className="font-bold text-slate-900 text-sm">{group.supplier?.business_name || 'Supplier'}</p>
               </div>
               <div className="divide-y divide-slate-50">
@@ -319,14 +319,14 @@ export default function CartPage() {
                 })}
               </div>
               {/* Per-supplier subtotal + delivery */}
-              <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50 space-y-1">
+              <div className="px-5 py-3 border-t border-slate-100 bg-lionsmane/50 space-y-1">
                 <div className="flex justify-between text-xs text-slate-500">
                   <span>Items subtotal</span>
                   <span>€{group.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-slate-500">
                   <span className="flex items-center gap-1"><Truck className="w-3 h-3" /> Delivery</span>
-                  <span>{deliveryFee > 0 ? `€${deliveryFee.toFixed(2)}` : <span className="text-emerald-600 font-medium">Free</span>}</span>
+                  <span>{deliveryFee > 0 ? `€${deliveryFee.toFixed(2)}` : <span className="text-midnight font-medium">Free</span>}</span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-slate-800 pt-1 border-t border-slate-100">
                   <span>Supplier total</span>
@@ -359,7 +359,7 @@ export default function CartPage() {
           </div>
           <div className="flex justify-between text-sm text-slate-500">
             <span className="flex items-center gap-1"><Truck className="w-3.5 h-3.5" /> Total delivery</span>
-            <span>{totalDelivery > 0 ? `€${totalDelivery.toFixed(2)}` : <span className="text-emerald-600 font-medium">Free</span>}</span>
+            <span>{totalDelivery > 0 ? `€${totalDelivery.toFixed(2)}` : <span className="text-midnight font-medium">Free</span>}</span>
           </div>
           <div className="border-t border-slate-100 pt-2 flex justify-between font-bold text-lg text-slate-900">
             <span>Grand Total</span>
@@ -369,12 +369,12 @@ export default function CartPage() {
       </div>
 
       {!selectedAddress && (
-        <p className="text-xs text-amber-600 font-medium text-center -mb-2">Please select a delivery address to continue</p>
+        <p className="text-xs text-marigold font-medium text-center -mb-2">Please select a delivery address to continue</p>
       )}
       <button
         onClick={() => setStep(2)}
         disabled={!!profile?.is_banned || !selectedAddress}
-        className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base disabled:opacity-40 disabled:cursor-not-allowed"
+        className="w-full py-4 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Continue to Payment — €{grandTotal.toFixed(2)}
       </button>
@@ -456,11 +456,11 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
                   onClick={() => onSelect(addr.id)}
                   className={`w-full text-left p-4 rounded-xl border-2 flex items-start gap-3 transition-colors ${
                     selectedAddress?.id === addr.id
-                      ? 'border-emerald-500 bg-emerald-50'
+                      ? 'border-herb bg-lionsmane'
                       : 'border-slate-100 hover:border-slate-300'
                   }`}
                 >
-                  <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${selectedAddress?.id === addr.id ? 'text-emerald-600' : 'text-slate-400'}`} />
+                  <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${selectedAddress?.id === addr.id ? 'text-midnight' : 'text-slate-400'}`} />
                   <div className="min-w-0">
                     {addr.label && <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">{addr.label}</p>}
                     <p className="text-sm font-semibold text-slate-900">
@@ -471,14 +471,14 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
                     </p>
                   </div>
                   {selectedAddress?.id === addr.id && (
-                    <CheckCircle className="w-4 h-4 text-emerald-500 ml-auto flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="w-4 h-4 text-herb ml-auto flex-shrink-0 mt-0.5" />
                   )}
                 </button>
               ))}
 
               <button
                 onClick={() => setShowForm(true)}
-                className="w-full p-4 rounded-xl border-2 border-dashed border-slate-200 text-slate-500 font-semibold text-sm hover:border-emerald-400 hover:text-emerald-600 transition-colors flex items-center justify-center gap-2"
+                className="w-full p-4 rounded-xl border-2 border-dashed border-slate-200 text-slate-500 font-semibold text-sm hover:border-herb-light hover:text-midnight transition-colors flex items-center justify-center gap-2"
               >
                 <MapPin className="w-4 h-4" /> Add New Address
               </button>
@@ -486,35 +486,35 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
           ) : (
             <div className="space-y-3">
               {addresses.length > 0 && (
-                <button onClick={() => setShowForm(false)} className="text-sm text-emerald-600 font-semibold hover:underline flex items-center gap-1">
+                <button onClick={() => setShowForm(false)} className="text-sm text-midnight font-semibold hover:underline flex items-center gap-1">
                   ← Back to saved addresses
                 </button>
               )}
               <button type="button" onClick={detectGPS} disabled={gpsLoading}
-                className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700 disabled:opacity-50">
+                className="flex items-center gap-1.5 text-xs text-midnight font-semibold hover:text-midnight-dark disabled:opacity-50">
                 {gpsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
                 {gpsLoading ? 'Detecting...' : 'Use My Location'}
               </button>
               <div className="space-y-2.5">
                 <input value={form.label} onChange={e => update('label', e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
                   placeholder="Label (e.g. Restaurant, Office)" />
                 <input value={form.street} onChange={e => update('street', e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
                   placeholder="Street *" />
                 <div className="flex gap-2">
                   <input value={form.postal_code} onChange={e => update('postal_code', e.target.value)}
-                    className="w-28 px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-28 px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
                     placeholder="Postal Code" />
                   <input value={form.city} onChange={e => update('city', e.target.value)}
-                    className="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
                     placeholder="City *" />
                 </div>
               </div>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 mt-2"
+                className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 mt-2"
               >
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                 Save Address

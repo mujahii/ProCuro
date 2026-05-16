@@ -4,19 +4,27 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Jenny Henderson palette
+        midnight: { DEFAULT: '#013D5A', dark: '#012A3F', light: '#1A5572' },
+        lionsmane: { DEFAULT: '#FCF3E3', dark: '#F0E4CC' },
+        celeste: { DEFAULT: '#BDD3CE', dark: '#9CB8B2' },
+        herb: { DEFAULT: '#708C69', dark: '#5A7254', light: '#8DA886' },
+        marigold: { DEFAULT: '#F4A258', dark: '#E08B3F', light: '#F8BC85' },
+
+        // Brand aliases (redefined to map onto new palette)
         primary: {
-          DEFAULT: '#1B4332',
-          light: '#2D6A4F',
-          dark: '#0D2B1F',
-          50: '#f0faf4',
-          100: '#dcf5e5',
+          DEFAULT: '#013D5A',
+          light: '#1A5572',
+          dark: '#012A3F',
+          50: '#FCF3E3',
+          100: '#BDD3CE',
         },
         accent: {
-          DEFAULT: '#D4A017',
-          light: '#E8B94F',
-          dark: '#A87D0F',
+          DEFAULT: '#F4A258',
+          light: '#F8BC85',
+          dark: '#E08B3F',
         },
-        surface: '#F9F9F7',
+        surface: '#FCF3E3',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],

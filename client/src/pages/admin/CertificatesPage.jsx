@@ -212,7 +212,7 @@ export default function AdminCertificatesPage() {
       {loading ? <SkeletonTable rows={5} /> : (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Supplier</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">City</th>
@@ -223,7 +223,7 @@ export default function AdminCertificatesPage() {
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map(cert => (
-                <tr key={cert.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setSelected(cert)}>
+                <tr key={cert.id} className="hover:bg-lionsmane cursor-pointer" onClick={() => setSelected(cert)}>
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">{cert.supplier?.business_name || '—'}</td>
                   <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-500">{cert.supplier?.city || '—'}</td>
                   <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">{format(new Date(cert.uploaded_at), 'dd MMM yyyy')}</td>

@@ -311,7 +311,7 @@ export default function AdminChatPage() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Search users..."
-                className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full pl-9 pr-3 py-2 text-sm bg-lionsmane rounded-lg border border-gray-200 outline-none focus:ring-2 focus:ring-herb"
               />
             </div>
           </div>
@@ -331,7 +331,7 @@ export default function AdminChatPage() {
               return (
                 <div
                   key={conv.id}
-                  className={`group flex items-center border-b border-gray-50 ${selectedConv?.id === conv.id ? 'bg-emerald-50' : 'hover:bg-gray-50'} transition-colors`}
+                  className={`group flex items-center border-b border-gray-50 ${selectedConv?.id === conv.id ? 'bg-lionsmane' : 'hover:bg-lionsmane'} transition-colors`}
                 >
                   <button
                     onClick={() => handleSelectConv(conv)}
@@ -349,7 +349,7 @@ export default function AdminChatPage() {
                     </div>
                     <div className="flex flex-col items-end gap-1 flex-shrink-0">
                       {unread > 0 && (
-                        <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                        <span className="bg-herb text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                           {unread > 9 ? '9+' : unread}
                         </span>
                       )}
@@ -387,7 +387,7 @@ export default function AdminChatPage() {
               </button>
               <button
                 onClick={() => openProfile(selectedConv)}
-                className="flex items-center gap-3 hover:bg-gray-50 rounded-xl px-2 py-1 -ml-2 transition-colors flex-1 min-w-0 text-left"
+                className="flex items-center gap-3 hover:bg-lionsmane rounded-xl px-2 py-1 -ml-2 transition-colors flex-1 min-w-0 text-left"
               >
                 <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {selectedProfile?.avatar_url
@@ -399,7 +399,7 @@ export default function AdminChatPage() {
                   <p className="font-bold text-gray-900 text-sm truncate">{getDisplayName(selectedConv)}</p>
                   <p className="text-xs text-gray-400">
                     {getRoleLabel(selectedConv.user_id)}{selectedProfile?.city ? ` · ${selectedProfile.city}` : ''}
-                    <span className="text-emerald-600 font-medium"> · tap to view profile</span>
+                    <span className="text-midnight font-medium"> · tap to view profile</span>
                   </p>
                 </div>
               </button>
@@ -417,7 +417,7 @@ export default function AdminChatPage() {
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-lionsmane">
               {messages.length === 0 && (
                 <div className="text-center text-slate-400 text-sm py-8">No messages yet. Say hello!</div>
               )}
@@ -455,7 +455,7 @@ export default function AdminChatPage() {
                       )}
                       {msg.content && (
                         <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                          isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
+                          isMine ? 'bg-midnight text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
                         }`}>
                           <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                           <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</p>
@@ -478,10 +478,10 @@ export default function AdminChatPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || sending}
-                className="p-2 text-gray-400 hover:text-emerald-600 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
+                className="p-2 text-gray-400 hover:text-midnight hover:bg-gray-100 rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
                 title="Attach image or PDF (max 5MB)"
               >
-                {uploading ? <Loader2 className="w-5 h-5 animate-spin text-emerald-500" /> : <Paperclip className="w-5 h-5" />}
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin text-herb" /> : <Paperclip className="w-5 h-5" />}
               </button>
               <input
                 type="text"
@@ -489,13 +489,13 @@ export default function AdminChatPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                 placeholder={uploading ? 'Uploading...' : 'Type a message...'}
-                className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-colors"
+                className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-herb focus:bg-white transition-colors"
                 disabled={sending || uploading}
               />
               <button
                 onClick={() => sendMessage()}
                 disabled={sending || uploading || !input.trim()}
-                className="p-2.5 bg-emerald-600 rounded-full text-white hover:bg-emerald-700 disabled:opacity-40 flex-shrink-0 transition-colors"
+                className="p-2.5 bg-midnight rounded-full text-white hover:bg-midnight-dark disabled:opacity-40 flex-shrink-0 transition-colors"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -579,7 +579,7 @@ export default function AdminChatPage() {
                     </div>
                   ))}
                   {profileModal.supplier_profile.description && (
-                    <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 leading-relaxed">{profileModal.supplier_profile.description}</div>
+                    <div className="bg-lionsmane rounded-lg p-3 text-xs text-gray-600 leading-relaxed">{profileModal.supplier_profile.description}</div>
                   )}
                 </>
               )}
@@ -609,7 +609,7 @@ export default function AdminChatPage() {
             <div className="p-5 border-t border-gray-100">
               <button
                 onClick={() => setProfileModal(null)}
-                className="w-full py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
+                className="w-full py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
               >
                 Close
               </button>

@@ -29,10 +29,10 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-midnight flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-midnight rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Shield className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
@@ -48,7 +48,7 @@ export default function AdminLoginPage() {
                 required
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-herb text-sm"
                 placeholder="admin@procuro.de"
               />
             </div>
@@ -59,14 +59,14 @@ export default function AdminLoginPage() {
                 required
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                className="w-full border border-slate-200 rounded-lg px-4 py-3 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-herb text-sm"
                 placeholder="••••••••"
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 shadow-md"
+              className="w-full bg-midnight hover:bg-slate-800 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 shadow-md"
             >
               {loading ? 'Signing in...' : 'Sign In as Admin'}
             </button>

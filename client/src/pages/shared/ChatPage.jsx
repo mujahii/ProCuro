@@ -448,9 +448,9 @@ export default function ChatPage() {
             {/* ProCuro Support always at top */}
             <button
               onClick={openAdminSupport}
-              className={`w-full p-4 flex items-center gap-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-100 ${showingAdmin ? 'bg-emerald-50' : ''}`}
+              className={`w-full p-4 flex items-center gap-3 hover:bg-lionsmane transition-colors text-left border-b border-slate-100 ${showingAdmin ? 'bg-lionsmane' : ''}`}
             >
-              <div className="w-10 h-10 rounded-full bg-emerald-600 flex-shrink-0 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-midnight flex-shrink-0 flex items-center justify-center">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
@@ -458,7 +458,7 @@ export default function ChatPage() {
                 <p className="text-xs text-slate-400">Admin team</p>
               </div>
               {adminUnread > 0 && (
-                <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="bg-herb text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
                   {adminUnread > 9 ? '9+' : adminUnread}
                 </span>
               )}
@@ -480,7 +480,7 @@ export default function ChatPage() {
               return (
                 <div
                   key={conv.id}
-                  className={`group flex items-center border-b border-slate-50 ${selectedConv?.id === conv.id && !showingAdmin ? 'bg-emerald-50' : 'hover:bg-slate-50'} transition-colors`}
+                  className={`group flex items-center border-b border-slate-50 ${selectedConv?.id === conv.id && !showingAdmin ? 'bg-lionsmane' : 'hover:bg-lionsmane'} transition-colors`}
                 >
                   <button
                     onClick={() => handleSelectConv(conv)}
@@ -502,7 +502,7 @@ export default function ChatPage() {
                       )}
                     </div>
                     {unread > 0 && (
-                      <span className="bg-emerald-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="bg-herb text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0">
                         {unread > 9 ? '9+' : unread}
                       </span>
                     )}
@@ -535,7 +535,7 @@ export default function ChatPage() {
               <button onClick={() => setShowingAdmin(false)} className="md:hidden p-1.5 hover:bg-slate-100 rounded-lg">
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
               </button>
-              <div className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-midnight flex items-center justify-center flex-shrink-0">
                 <Shield className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
@@ -543,7 +543,7 @@ export default function ChatPage() {
                 <p className="text-xs text-slate-400">Admin team · Usually responds within 24h</p>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-lionsmane">
               {adminMessages.length === 0 && (
                 <div className="text-center text-slate-400 text-sm py-8">No messages yet. How can we help?</div>
               )}
@@ -554,7 +554,7 @@ export default function ChatPage() {
                     <div className="max-w-[80%] space-y-1">
                       {renderAttachment(msg, isMine)}
                       {msg.content && (
-                        <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'}`}>
+                        <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMine ? 'bg-midnight text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'}`}>
                           <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                           <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</p>
                         </div>
@@ -575,10 +575,10 @@ export default function ChatPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || sending}
-                className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-slate-100 rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
+                className="p-2 text-slate-400 hover:text-midnight hover:bg-slate-100 rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
                 title="Attach image or PDF (max 5MB)"
               >
-                {uploading ? <Loader2 className="w-5 h-5 animate-spin text-emerald-500" /> : <Paperclip className="w-5 h-5" />}
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin text-herb" /> : <Paperclip className="w-5 h-5" />}
               </button>
               <input
                 type="text"
@@ -586,13 +586,13 @@ export default function ChatPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendAdminMessage()}
                 placeholder={uploading ? 'Uploading...' : 'Message ProCuro Support...'}
-                className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-colors"
+                className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-herb focus:bg-white transition-colors"
                 disabled={sending || uploading}
               />
               <button
                 onClick={() => sendAdminMessage()}
                 disabled={sending || uploading || !input.trim()}
-                className="p-2.5 bg-emerald-600 rounded-full text-white hover:bg-emerald-700 disabled:opacity-40 flex-shrink-0 transition-colors"
+                className="p-2.5 bg-midnight rounded-full text-white hover:bg-midnight-dark disabled:opacity-40 flex-shrink-0 transition-colors"
               >
                 <Send className="w-4 h-4" />
               </button>
@@ -612,7 +612,7 @@ export default function ChatPage() {
                   if (role === 'restaurant_owner' && selectedConv.supplier?.id) navigate(`/supplier/${selectedConv.supplier.id}`)
                   else if (role === 'supplier' && selectedConv.owner) setOwnerProfileModal(selectedConv.owner)
                 }}
-                className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-emerald-400 transition-all"
+                className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-herb-light transition-all"
               >
                 {getConvAvatar(selectedConv)
                   ? <img src={getConvAvatar(selectedConv)} alt="" className="w-full h-full object-cover" />
@@ -625,7 +625,7 @@ export default function ChatPage() {
                     if (role === 'restaurant_owner' && selectedConv.supplier?.id) navigate(`/supplier/${selectedConv.supplier.id}`)
                     else if (role === 'supplier' && selectedConv.owner) setOwnerProfileModal(selectedConv.owner)
                   }}
-                  className="font-bold text-slate-900 text-sm hover:text-emerald-600 transition-colors"
+                  className="font-bold text-slate-900 text-sm hover:text-midnight transition-colors"
                 >
                   {getConvName(selectedConv)}
                 </button>
@@ -650,7 +650,7 @@ export default function ChatPage() {
               )}
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-lionsmane">
               {messages.length === 0 && (
                 <div className="text-center text-slate-400 text-sm py-8">No messages yet. Say hello!</div>
               )}
@@ -666,7 +666,7 @@ export default function ChatPage() {
                         <button
                           onClick={() => navigate(orderLink)}
                           className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors w-full ${
-                            isMine ? 'bg-slate-800 text-emerald-300 border-slate-700 hover:bg-slate-700' : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                            isMine ? 'bg-slate-800 text-celeste-dark border-slate-700 hover:bg-slate-700' : 'bg-lionsmane text-midnight-dark border-celeste hover:bg-celeste'
                           }`}
                         >
                           <Package className="w-3.5 h-3.5 flex-shrink-0" /> View Order Details →
@@ -675,7 +675,7 @@ export default function ChatPage() {
                       {renderAttachment(msg, isMine)}
                       {msg.content && (
                         <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                          isMine ? 'bg-slate-900 text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
+                          isMine ? 'bg-midnight text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
                         }`}>
                           <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                           <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</p>
@@ -698,10 +698,10 @@ export default function ChatPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || sending}
-                className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-slate-100 rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
+                className="p-2 text-slate-400 hover:text-midnight hover:bg-slate-100 rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
                 title="Attach image or PDF (max 5MB)"
               >
-                {uploading ? <Loader2 className="w-5 h-5 animate-spin text-emerald-500" /> : <Paperclip className="w-5 h-5" />}
+                {uploading ? <Loader2 className="w-5 h-5 animate-spin text-herb" /> : <Paperclip className="w-5 h-5" />}
               </button>
               <input
                 type="text"
@@ -709,13 +709,13 @@ export default function ChatPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                 placeholder={uploading ? 'Uploading...' : 'Type a message...'}
-                className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-colors"
+                className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-herb focus:bg-white transition-colors"
                 disabled={sending || uploading}
               />
               <button
                 onClick={() => sendMessage()}
                 disabled={sending || uploading || !input.trim()}
-                className="p-2.5 bg-emerald-600 rounded-full text-white hover:bg-emerald-700 disabled:opacity-40 flex-shrink-0 transition-colors"
+                className="p-2.5 bg-midnight rounded-full text-white hover:bg-midnight-dark disabled:opacity-40 flex-shrink-0 transition-colors"
               >
                 <Send className="w-4 h-4" />
               </button>

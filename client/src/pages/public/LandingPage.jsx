@@ -67,7 +67,7 @@ function StatItem({ target, suffix, label, decimal, started }) {
   const count = useCountUp(target, 1800, started, decimal)
   return (
     <div>
-      <p className="text-3xl font-black text-emerald-600">
+      <p className="text-3xl font-black text-midnight">
         {decimal ? count.toFixed(1) : count.toLocaleString()}{suffix}
       </p>
       <p className="text-sm text-slate-500 mt-1">{label}</p>
@@ -142,45 +142,53 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
 
-      {/* Hero Banner */}
-      <section className="relative min-h-[560px] flex items-center justify-center overflow-hidden">
+      {/* Hero Banner — frosted glass, no recognizable photo */}
+      <section className="relative min-h-[560px] flex items-center justify-center overflow-hidden bg-midnight">
+        {/* Heavily blurred image — pure color texture, unrecognizable */}
         <img
-          src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&q=80&w=2000"
-          alt="Restaurant kitchen"
-          className="absolute inset-0 w-full h-full object-cover"
+          src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?auto=format&fit=crop&q=80&w=1200"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover scale-125 opacity-30"
+          style={{ filter: 'blur(80px)' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/80 to-slate-900/80" />
+        {/* Palette-matched frosted overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-midnight/80 via-midnight/85 to-herb/60 backdrop-blur-2xl" />
+        {/* Soft blob accents for depth */}
+        <div className="absolute -top-20 -right-20 w-96 h-96 bg-marigold/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-celeste/20 rounded-full blur-3xl" />
+
         <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto pt-8 sm:pt-0 pb-10 sm:pb-0">
-          <span className="inline-flex items-center gap-2 bg-emerald-600/30 border border-emerald-400/40 text-emerald-200 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
+          <span className="inline-flex items-center gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-sm font-medium px-4 py-1.5 rounded-full mb-6">
             <CheckCircle className="w-4 h-4" /> Halal Certified Suppliers Only
           </span>
-          <h1 className="text-4xl sm:text-5xl font-black mb-4 leading-tight">
+          <h1 className="text-4xl sm:text-5xl font-black mb-4 leading-tight text-lionsmane">
             The Smarter Way to Stock Your Halal Kitchen
           </h1>
-          <p className="text-lg text-slate-200 mb-8 max-w-xl mx-auto">
+          <p className="text-lg text-celeste mb-8 max-w-xl mx-auto">
             Connect with verified Halal suppliers. Order everything your restaurant needs in one place. Track, manage, and optimize — all from ProCuro.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
             <button
               onClick={() => navigate('/register')}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-4 rounded-xl text-lg shadow-lg transition-all"
+              className="bg-marigold hover:bg-marigold-dark text-midnight font-bold px-8 py-4 rounded-xl text-lg shadow-lg transition-all"
             >
               Start Ordering — It's Free
             </button>
             <button
               onClick={() => navigate('/suppliers')}
-              className="border-2 border-white/60 text-white hover:bg-white/10 font-bold px-8 py-4 rounded-xl text-lg transition-all"
+              className="border-2 border-lionsmane/60 text-lionsmane hover:bg-lionsmane/10 font-bold px-8 py-4 rounded-xl text-lg transition-all"
             >
               Browse Suppliers
             </button>
           </div>
-          <div className="flex items-center justify-center gap-6 text-sm text-slate-200 flex-wrap">
-            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-emerald-400" /> GDPR Compliant</span>
-            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-emerald-400" /> Halal Verified Suppliers</span>
-            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-emerald-400" /> No Hidden Fees</span>
+          <div className="flex items-center justify-center gap-6 text-sm text-celeste flex-wrap">
+            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> GDPR Compliant</span>
+            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> Halal Verified Suppliers</span>
+            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> No Hidden Fees</span>
           </div>
         </div>
       </section>
@@ -198,7 +206,7 @@ export default function LandingPage() {
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat === selectedCategory ? 'All' : cat)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${selectedCategory === cat ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-700 hover:border-emerald-300'}`}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${selectedCategory === cat ? 'bg-midnight text-white' : 'bg-white border border-slate-200 text-slate-700 hover:border-celeste-dark'}`}
               >
                 {cat}
               </button>
@@ -212,7 +220,7 @@ export default function LandingPage() {
             <h2 className="text-lg font-bold text-slate-900">
               {selectedCategory !== 'All' ? selectedCategory : 'Featured Products'}
             </h2>
-            <button onClick={() => navigate('/products')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">
+            <button onClick={() => navigate('/products')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">
               All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -250,7 +258,7 @@ export default function LandingPage() {
                     {product.description && (
                       <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
                     )}
-                    <p className="text-xs font-bold text-emerald-700 mb-3">{product.supplier?.business_name}</p>
+                    <p className="text-xs font-bold text-midnight-dark mb-3">{product.supplier?.business_name}</p>
                     <div className="flex items-center justify-between">
                       <div>
                         <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
@@ -258,7 +266,7 @@ export default function LandingPage() {
                       </div>
                       <button
                         onClick={e => { e.stopPropagation(); navigate('/login') }}
-                        className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center hover:bg-emerald-600 transition-colors"
+                        className="w-8 h-8 rounded-full bg-midnight text-white flex items-center justify-center hover:bg-midnight transition-colors"
                       >
                         <Plus className="w-5 h-5" />
                       </button>
@@ -277,7 +285,7 @@ export default function LandingPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900">Our Verified Halal Suppliers</h2>
-            <button onClick={() => navigate('/suppliers')} className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 flex items-center gap-1">
+            <button onClick={() => navigate('/suppliers')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">
               All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -298,11 +306,11 @@ export default function LandingPage() {
                 <h3 className="font-bold text-slate-900 text-sm truncate w-full">{supplier.business_name}</h3>
                 <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate w-full justify-center"><MapPin className="w-3 h-3 flex-shrink-0" />{supplier.city}</p>
                 {supplier.rating > 0 && (
-                  <div className="flex items-center gap-1 mt-1 text-xs text-amber-500">
+                  <div className="flex items-center gap-1 mt-1 text-xs text-marigold">
                     <span>★</span> {Number(supplier.rating).toFixed(1)}
                   </div>
                 )}
-                <div className="mt-2 flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full text-[10px] font-medium border border-emerald-100">
+                <div className="mt-2 flex items-center gap-1 bg-lionsmane text-midnight-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-celeste">
                   <CheckCircle className="w-3 h-3" /> Halal Certified
                 </div>
               </div>
@@ -320,10 +328,10 @@ export default function LandingPage() {
             {HOW_IT_WORKS.map(({ icon: Icon, title, desc }, i) => (
               <div key={title} className="text-center">
                 <div className="relative inline-block mb-4">
-                  <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
-                    <Icon className="w-8 h-8 text-emerald-600" />
+                  <div className="w-16 h-16 bg-celeste rounded-full flex items-center justify-center mx-auto">
+                    <Icon className="w-8 h-8 text-midnight" />
                   </div>
-                  <span className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-xs">{i + 1}</span>
+                  <span className="absolute -top-1 -right-1 w-6 h-6 bg-midnight text-white rounded-full flex items-center justify-center font-bold text-xs">{i + 1}</span>
                 </div>
                 <h3 className="font-bold text-slate-900 text-lg mb-2">{title}</h3>
                 <p className="text-slate-500 text-sm">{desc}</p>

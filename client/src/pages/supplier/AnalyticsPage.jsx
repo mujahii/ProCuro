@@ -18,7 +18,7 @@ function StatCard({ label, value, icon: Icon, color, bg }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
       <div className="flex items-center gap-2 mb-3">
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${bg || 'bg-emerald-100'}`}>
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${bg || 'bg-celeste'}`}>
           <Icon className={`w-4 h-4 ${color}`} />
         </div>
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
@@ -155,9 +155,9 @@ export default function SupplierAnalyticsPage() {
         <>
           {/* KPI cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <StatCard label="Revenue" value={`€${stats.revenue.toFixed(2)}`} icon={Euro} color="text-emerald-700" bg="bg-emerald-100" />
+            <StatCard label="Revenue" value={`€${stats.revenue.toFixed(2)}`} icon={Euro} color="text-midnight-dark" bg="bg-celeste" />
             <StatCard label="Orders" value={stats.orders} icon={ShoppingBag} color="text-blue-600" bg="bg-blue-100" />
-            <StatCard label="Best Product" value={stats.bestProduct} icon={TrendingUp} color="text-yellow-600" bg="bg-yellow-100" />
+            <StatCard label="Best Product" value={stats.bestProduct} icon={TrendingUp} color="text-marigold-dark" bg="bg-marigold-light" />
             <StatCard label="Active Products" value={stats.activeProducts} icon={Package} color="text-purple-600" bg="bg-purple-100" />
           </div>
 

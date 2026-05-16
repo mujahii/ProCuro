@@ -65,16 +65,16 @@ export default function SupplierLayout() {
 
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-      isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+      isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'
     }`
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-lionsmane">
       <Navbar onMenuClick={() => setDrawerOpen(o => !o)} />
 
       {/* Setup / verification banner — disappears when profile complete + certificate uploaded */}
       {!bannerLoading && (profileIncomplete || certStatus !== 'approved') && (
-        <div className="fixed top-16 left-0 right-0 z-20 bg-amber-500 text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap">
+        <div className="fixed top-16 left-0 right-0 z-20 bg-marigold text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap">
           <span>
             {profileIncomplete
               ? '⚠️ Complete your business details (business name + tax ID) to start selling.'
@@ -84,7 +84,7 @@ export default function SupplierLayout() {
           </span>
           <button
             onClick={() => navigate('/supplier/profile')}
-            className="bg-white text-amber-700 font-bold px-3 py-0.5 rounded-full text-xs hover:bg-amber-50 transition-colors whitespace-nowrap"
+            className="bg-white text-marigold-dark font-bold px-3 py-0.5 rounded-full text-xs hover:bg-lionsmane transition-colors whitespace-nowrap"
           >
             Complete Profile →
           </button>
@@ -145,7 +145,7 @@ export default function SupplierLayout() {
                 className={({ isActive }) =>
                   `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     collapsed ? 'justify-center px-0' : 'gap-3 px-3'
-                  } ${isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`
+                  } ${isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'}`
                 }
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
@@ -159,7 +159,7 @@ export default function SupplierLayout() {
             <button
               onClick={toggleCollapsed}
               title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className="w-full flex items-center justify-center p-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700 transition-colors"
+              className="w-full flex items-center justify-center p-2 rounded-lg bg-midnight text-white hover:bg-slate-700 transition-colors"
             >
               {collapsed
                 ? <ChevronRight className="w-4 h-4" />

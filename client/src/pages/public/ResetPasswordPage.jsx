@@ -45,13 +45,13 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <KeyRound className="w-5 h-5 text-emerald-600" />
+            <div className="w-10 h-10 bg-celeste rounded-full flex items-center justify-center flex-shrink-0">
+              <KeyRound className="w-5 h-5 text-midnight" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-900">Set New Password</h1>
@@ -61,7 +61,7 @@ export default function ResetPasswordPage() {
 
           {done ? (
             <div className="text-center py-4">
-              <CheckCircle className="w-12 h-12 text-emerald-500 mx-auto mb-3" />
+              <CheckCircle className="w-12 h-12 text-herb mx-auto mb-3" />
               <p className="font-bold text-slate-900 mb-1">Password Updated!</p>
               <p className="text-sm text-slate-500">Redirecting you to login...</p>
             </div>
@@ -80,7 +80,7 @@ export default function ResetPasswordPage() {
                     type={showPw ? 'text' : 'password'}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 pr-11 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-3 pr-11 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
                     placeholder="Min. 6 characters"
                     required
                     minLength={6}
@@ -102,7 +102,7 @@ export default function ResetPasswordPage() {
                     type={showConfirm ? 'text' : 'password'}
                     value={confirm}
                     onChange={e => setConfirm(e.target.value)}
-                    className="w-full px-4 py-3 pr-11 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-4 py-3 pr-11 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
                     placeholder="Repeat new password"
                     required
                   />
@@ -121,7 +121,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={saving || !password || !confirm}
-                className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                 {saving ? 'Saving...' : 'Set New Password'}

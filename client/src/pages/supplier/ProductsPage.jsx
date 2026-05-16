@@ -20,21 +20,21 @@ const DELIVERY_TIERS = [
 function DeliveryFeeTable() {
   const [open, setOpen] = useState(false)
   return (
-    <div className="mb-6 border border-emerald-200 rounded-xl overflow-hidden">
+    <div className="mb-6 border border-celeste rounded-xl overflow-hidden">
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-emerald-50 hover:bg-emerald-100 transition-colors text-left"
+        className="w-full flex items-center justify-between px-4 py-3 bg-lionsmane hover:bg-celeste transition-colors text-left"
       >
-        <span className="flex items-center gap-2 text-sm font-semibold text-emerald-800">
+        <span className="flex items-center gap-2 text-sm font-semibold text-midnight">
           <Truck className="w-4 h-4" /> Delivery Fee Structure
         </span>
-        {open ? <ChevronUp className="w-4 h-4 text-emerald-600" /> : <ChevronDown className="w-4 h-4 text-emerald-600" />}
+        {open ? <ChevronUp className="w-4 h-4 text-midnight" /> : <ChevronDown className="w-4 h-4 text-midnight" />}
       </button>
       {open && (
         <div className="bg-white">
           <table className="w-full text-sm">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-100">
+              <tr className="bg-lionsmane border-b border-gray-100">
                 <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Distance</th>
                 <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Delivery Fee</th>
               </tr>
@@ -43,7 +43,7 @@ function DeliveryFeeTable() {
               {DELIVERY_TIERS.map(t => (
                 <tr key={t.range}>
                   <td className="px-4 py-2 text-gray-700">{t.range}</td>
-                  <td className="px-4 py-2 text-right font-semibold text-emerald-700">{t.fee}</td>
+                  <td className="px-4 py-2 text-right font-semibold text-midnight-dark">{t.fee}</td>
                 </tr>
               ))}
             </tbody>
@@ -159,7 +159,7 @@ export default function SupplierProductsPage() {
       ) : (
         <div className="card overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Category</th>
@@ -172,7 +172,7 @@ export default function SupplierProductsPage() {
               {products.map(product => {
                 const imgUrl = getImageUrl(product.image_url)
                 return (
-                  <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={product.id} className="hover:bg-lionsmane transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
@@ -200,7 +200,7 @@ export default function SupplierProductsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1 justify-end">
                         <button onClick={() => toggleActive(product)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                          {product.is_active ? <ToggleRight className="w-7 h-7 text-emerald-600" /> : <ToggleLeft className="w-7 h-7 text-gray-300" />}
+                          {product.is_active ? <ToggleRight className="w-7 h-7 text-midnight" /> : <ToggleLeft className="w-7 h-7 text-gray-300" />}
                         </button>
                         <button onClick={() => { setEditProduct(product); setShowForm(true) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400">
                           <Edit2 className="w-4 h-4" />

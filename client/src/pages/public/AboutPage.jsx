@@ -6,7 +6,7 @@ import Footer from '../../components/layout/Footer'
 export default function AboutPage() {
   const navigate = useNavigate()
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-12 flex-grow w-full">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-8 transition-colors">
@@ -14,7 +14,7 @@ export default function AboutPage() {
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <ShoppingCart className="w-8 h-8 text-emerald-600" />
+          <ShoppingCart className="w-8 h-8 text-midnight" />
           <h1 className="text-3xl font-black text-slate-900">About ProCuro</h1>
         </div>
 
@@ -29,7 +29,7 @@ export default function AboutPage() {
             { icon: Globe, title: 'Made in Germany', desc: 'Headquartered in Paderborn, NRW. Fully compliant with German and EU regulations.' },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
-              <Icon className="w-6 h-6 text-emerald-600 mb-3" />
+              <Icon className="w-6 h-6 text-midnight mb-3" />
               <h3 className="font-bold text-slate-900 mb-1">{title}</h3>
               <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
             </div>
@@ -46,8 +46,8 @@ export default function AboutPage() {
 
         <h2 className="text-xl font-bold text-slate-900 mb-3">Contact Us</h2>
         <p className="text-slate-600">
-          Email: <a href="mailto:support@procuro.com" className="text-emerald-600 font-semibold hover:underline">support@procuro.com</a><br />
-          Phone: <a href="tel:+4915560608671" className="text-emerald-600 font-semibold hover:underline">+49 155 6060 8671</a><br />
+          Email: <a href="mailto:support@procuro.com" className="text-midnight font-semibold hover:underline">support@procuro.com</a><br />
+          Phone: <a href="tel:+4915560608671" className="text-midnight font-semibold hover:underline">+49 155 6060 8671</a><br />
           Location: Paderborn, North Rhine-Westphalia, Germany
         </p>
       </main>

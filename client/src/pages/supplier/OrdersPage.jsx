@@ -37,9 +37,9 @@ function CancelModal({ split, onCancel, onClose }) {
         </div>
 
         {isBankTransfer && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
-            <p className="text-sm font-semibold text-amber-800">Bank transfer order</p>
-            <p className="text-xs text-amber-700 mt-1">You must upload proof of the returned payment before this cancellation can be submitted.</p>
+          <div className="bg-lionsmane border border-marigold-light rounded-xl p-3 mb-4">
+            <p className="text-sm font-semibold text-marigold-dark">Bank transfer order</p>
+            <p className="text-xs text-marigold-dark mt-1">You must upload proof of the returned payment before this cancellation can be submitted.</p>
           </div>
         )}
 
@@ -62,7 +62,7 @@ function CancelModal({ split, onCancel, onClose }) {
               type="button"
               onClick={() => inputRef.current?.click()}
               className={`w-full py-3 border-2 border-dashed rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
-                file ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-300 text-slate-500 hover:border-amber-400 hover:text-amber-700'
+                file ? 'border-herb-light bg-lionsmane text-midnight-dark' : 'border-slate-300 text-slate-500 hover:border-marigold-light hover:text-marigold-dark'
               }`}
             >
               {file ? <CheckCircle className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
@@ -72,7 +72,7 @@ function CancelModal({ split, onCancel, onClose }) {
         )}
 
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors">
             Keep Order
           </button>
           <button
@@ -134,22 +134,22 @@ function RefundSection({ split, supplierId, onUploaded }) {
 
   if (split.refund_receipt_url) {
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-        <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+      <div className="bg-lionsmane border border-celeste rounded-xl p-4 flex items-center gap-3">
+        <CheckCircle className="w-5 h-5 text-herb flex-shrink-0" />
         <div>
-          <p className="text-sm font-bold text-emerald-800">Refund receipt uploaded</p>
-          <p className="text-xs text-emerald-700 mt-0.5">Waiting for the restaurant owner to confirm.</p>
+          <p className="text-sm font-bold text-midnight">Refund receipt uploaded</p>
+          <p className="text-xs text-midnight-dark mt-0.5">Waiting for the restaurant owner to confirm.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
-      <p className="text-sm font-bold text-amber-800">Bank Transfer Refund Required</p>
-      <p className="text-xs text-amber-700">Please return the payment to the restaurant owner and upload your refund receipt.</p>
+    <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 space-y-3">
+      <p className="text-sm font-bold text-marigold-dark">Bank Transfer Refund Required</p>
+      <p className="text-xs text-marigold-dark">Please return the payment to the restaurant owner and upload your refund receipt.</p>
       {ownerBank ? (
-        <div className="bg-white rounded-lg p-3 border border-amber-100 space-y-2">
+        <div className="bg-white rounded-lg p-3 border border-marigold-light space-y-2">
           <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Owner Bank Details</p>
           {ownerBank.bank_name && (
             <div>
@@ -177,14 +177,14 @@ function RefundSection({ split, supplierId, onUploaded }) {
           )}
         </div>
       ) : (
-        <p className="text-xs text-amber-700 italic">Owner bank details not available — contact them directly.</p>
+        <p className="text-xs text-marigold-dark italic">Owner bank details not available — contact them directly.</p>
       )}
       <div className="space-y-2">
         <input ref={inputRef} type="file" className="hidden" accept="image/*,.pdf" onChange={e => setFile(e.target.files[0])} />
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="w-full py-2.5 border-2 border-dashed border-amber-300 rounded-lg text-sm text-amber-800 font-medium hover:bg-amber-100 transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 border-2 border-dashed border-marigold-light rounded-lg text-sm text-marigold-dark font-medium hover:bg-marigold-light transition-colors flex items-center justify-center gap-2"
         >
           <Upload className="w-4 h-4" />
           {file ? file.name : 'Select Refund Receipt'}
@@ -193,7 +193,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
           <button
             onClick={handleUpload}
             disabled={uploading}
-            className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+            className="w-full py-2.5 bg-marigold hover:bg-marigold-dark text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
           >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             Upload & Notify Owner
@@ -222,7 +222,7 @@ function PaymentReceiptDisplay({ path }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-1.5 text-sm text-emerald-600 font-semibold hover:underline"
+      className="flex items-center gap-1.5 text-sm text-midnight font-semibold hover:underline"
     >
       <ExternalLink className="w-4 h-4" /> View Payment Receipt
     </a>
@@ -282,12 +282,12 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Choose Resolution</p>
             <button
               onClick={() => setAction('resend')}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 transition-colors text-left"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-celeste bg-lionsmane hover:bg-celeste transition-colors text-left"
             >
-              <Truck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+              <Truck className="w-4 h-4 text-midnight flex-shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-emerald-800">Re-send Order</p>
-                <p className="text-xs text-emerald-600">Mark out for delivery again — owner will be notified</p>
+                <p className="text-sm font-semibold text-midnight">Re-send Order</p>
+                <p className="text-xs text-midnight">Mark out for delivery again — owner will be notified</p>
               </div>
             </button>
             <button
@@ -310,7 +310,7 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
               type="button"
               onClick={() => inputRef.current?.click()}
               className={`w-full py-3 border-2 border-dashed rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
-                file ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-300 text-slate-500 hover:border-amber-400'
+                file ? 'border-herb-light bg-lionsmane text-midnight-dark' : 'border-slate-300 text-slate-500 hover:border-marigold-light'
               }`}
             >
               {file ? <CheckCircle className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
@@ -320,14 +320,14 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
         )}
         {action !== null ? (
           <div className="flex gap-3">
-            <button onClick={() => { setAction(null); setFile(null) }} className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
+            <button onClick={() => { setAction(null); setFile(null) }} className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors">
               Back
             </button>
             <button
               onClick={handleSubmit}
               disabled={loading || !message.trim() || (action === 'cancel' && isBankTransfer && !file)}
               className={`flex-1 flex items-center justify-center gap-2 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50 ${
-                action === 'resend' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700'
+                action === 'resend' ? 'bg-midnight hover:bg-midnight-dark' : 'bg-red-600 hover:bg-red-700'
               }`}
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : action === 'resend' ? <Truck className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
@@ -335,7 +335,7 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
             </button>
           </div>
         ) : (
-          <button onClick={onClose} className="w-full py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="w-full py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors">
             Close
           </button>
         )}
@@ -356,7 +356,7 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
   return (
     <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-emerald-600 px-6 py-10 text-center relative">
+        <div className="bg-midnight px-6 py-10 text-center relative">
           <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -371,19 +371,19 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
             {ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant'}
           </h2>
           {ownerInfo?.restaurant_name && ownerInfo?.full_name && (
-            <p className="text-emerald-100 text-sm mt-1">{ownerInfo.full_name}</p>
+            <p className="text-celeste text-sm mt-1">{ownerInfo.full_name}</p>
           )}
         </div>
 
         <div className="p-5 space-y-3">
           {ownerInfo?.bio && (
-            <div className="p-3 bg-slate-50 rounded-xl">
+            <div className="p-3 bg-lionsmane rounded-xl">
               <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">About</p>
               <p className="text-sm text-slate-700">{ownerInfo.bio}</p>
             </div>
           )}
           {ownerInfo?.phone && (
-            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+            <div className="flex items-center gap-3 p-3 bg-lionsmane rounded-xl">
               <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">Phone</p>
@@ -394,7 +394,7 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
             </div>
           )}
           {deliveryAddress && (
-            <div className="flex items-start gap-3 p-3 bg-slate-50 rounded-xl">
+            <div className="flex items-start gap-3 p-3 bg-lionsmane rounded-xl">
               <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">
@@ -411,7 +411,7 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
                 href={`https://maps.google.com/?q=${deliveryAddress.latitude ? `${deliveryAddress.latitude},${deliveryAddress.longitude}` : encodeURIComponent([deliveryAddress.street, deliveryAddress.city].filter(Boolean).join(', '))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-400 hover:text-emerald-600 flex-shrink-0 mt-0.5 transition-colors"
+                className="text-slate-400 hover:text-midnight flex-shrink-0 mt-0.5 transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
               </a>
@@ -426,14 +426,14 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
           {ownerId && (
             <button
               onClick={() => { onClose(); navigate(`/supplier/chat?owner_id=${ownerId}`) }}
-              className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2"
             >
               <MessageSquare className="w-4 h-4" /> Message Owner
             </button>
           )}
           <button
             onClick={onClose}
-            className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors"
+            className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors"
           >
             Close
           </button>
@@ -509,18 +509,18 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Delivery To</p>
           <button
             onClick={handleChatWithOwner}
-            className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-midnight font-semibold hover:text-midnight-dark transition-colors"
           >
             <MessageSquare className="w-3.5 h-3.5" /> Chat with Owner
           </button>
         </div>
         <div className="flex items-start gap-3">
           <button onClick={() => setShowOwnerModal(true)} className="flex-shrink-0">
-            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden border-2 border-emerald-100">
+            <div className="w-10 h-10 rounded-full bg-celeste flex items-center justify-center overflow-hidden border-2 border-celeste">
               {ownerInfo?.avatar_url ? (
                 <img src={ownerInfo.avatar_url} alt="owner" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-sm font-bold text-emerald-700">
+                <span className="text-sm font-bold text-midnight-dark">
                   {(ownerInfo?.restaurant_name || ownerInfo?.full_name || '?')[0].toUpperCase()}
                 </span>
               )}
@@ -529,7 +529,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           <div className="flex-1 space-y-1.5">
             <button
               onClick={() => setShowOwnerModal(true)}
-              className="font-bold text-slate-900 text-base hover:text-emerald-600 transition-colors text-left underline-offset-2 hover:underline"
+              className="font-bold text-slate-900 text-base hover:text-midnight transition-colors text-left underline-offset-2 hover:underline"
             >
               {ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant Owner'}
             </button>
@@ -547,14 +547,14 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
                 href={`https://maps.google.com/?q=${displayAddress.latitude ? `${displayAddress.latitude},${displayAddress.longitude}` : encodeURIComponent([displayAddress.street, displayAddress.city].filter(Boolean).join(', '))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-1.5 text-sm text-emerald-600 hover:text-emerald-700 hover:underline transition-colors"
+                className="flex items-start gap-1.5 text-sm text-midnight hover:text-midnight-dark hover:underline transition-colors"
               >
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                 <span>
                   {[displayAddress.street, [displayAddress.postal_code, displayAddress.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}
                   {displayAddress.label && <span className="text-xs text-slate-400 ml-1">({displayAddress.label})</span>}
                   {!deliveryAddress && ownerDefaultAddress && (
-                    <span className="text-xs text-amber-500 ml-1">(registered address)</span>
+                    <span className="text-xs text-marigold ml-1">(registered address)</span>
                   )}
                 </span>
               </a>
@@ -594,7 +594,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         </div>
         <div>
           <p className="text-sm font-bold text-slate-900 mb-3">Items Ordered</p>
-          <div className="bg-slate-50 p-4 rounded-xl space-y-2">
+          <div className="bg-lionsmane p-4 rounded-xl space-y-2">
             {split.order_items?.map(item => (
               <div key={item.id} className="flex justify-between text-sm">
                 <span className="text-slate-700">{item.quantity}× {item.product?.name}</span>
@@ -605,7 +605,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         </div>
         <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
           <span className="text-xl font-bold text-slate-900">Total</span>
-          <span className="text-2xl font-bold text-emerald-600">€{Number(split.subtotal).toFixed(2)}</span>
+          <span className="text-2xl font-bold text-midnight">€{Number(split.subtotal).toFixed(2)}</span>
         </div>
       </div>
 
@@ -661,11 +661,11 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
       )}
 
       {split.status === 'refund_uploaded' && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+        <div className="bg-lionsmane border border-celeste rounded-xl p-4 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-herb flex-shrink-0" />
           <div>
-            <p className="text-sm font-bold text-emerald-800">Refund receipt uploaded</p>
-            <p className="text-xs text-emerald-700 mt-0.5">Waiting for the restaurant owner to confirm the refund.</p>
+            <p className="text-sm font-bold text-midnight">Refund receipt uploaded</p>
+            <p className="text-xs text-midnight-dark mt-0.5">Waiting for the restaurant owner to confirm the refund.</p>
           </div>
         </div>
       )}
@@ -695,13 +695,13 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
 
       <div className="flex gap-3">
         {split.status === 'pending_payment' && !split.receipt_url && (
-          <div className="flex-1 py-3 bg-amber-50 rounded-xl text-amber-700 text-sm text-center font-medium border border-amber-200">
+          <div className="flex-1 py-3 bg-lionsmane rounded-xl text-marigold-dark text-sm text-center font-medium border border-marigold-light">
             Waiting for restaurant owner to upload payment receipt
           </div>
         )}
         {(split.status === 'pending_confirmation' || (split.status === 'pending_payment' && split.receipt_url)) && (
           <>
-            <button onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }} className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
+            <button onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }} className="flex-1 py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
               <CheckCircle className="w-4 h-4" /> Confirm Order
             </button>
             <button onClick={() => onCancel(split)} className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors">
@@ -711,7 +711,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         )}
         {split.status === 'confirmed' && (
           <>
-            <button onClick={() => { onUpdateStatus(split.id, 'out_for_delivery'); onBack() }} className="flex-1 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
+            <button onClick={() => { onUpdateStatus(split.id, 'out_for_delivery'); onBack() }} className="flex-1 py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
               <Truck className="w-4 h-4" /> Mark Out for Delivery
             </button>
             <button onClick={() => onCancel(split)} className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors">
@@ -918,11 +918,11 @@ export default function SupplierOrdersPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === t.id ? 'text-emerald-600 border-b-2 border-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === t.id ? 'text-midnight border-b-2 border-midnight' : 'text-slate-400 hover:text-slate-600'}`}
           >
             {t.label}
             {t.count > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === t.id ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === t.id ? 'bg-celeste text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
                 {t.count}
               </span>
             )}
@@ -976,14 +976,14 @@ export default function SupplierOrdersPage() {
                   <div className="flex flex-col gap-2">
                     <button
                       onClick={() => setSelectedSplit(split)}
-                      className="flex items-center gap-1 px-3 py-1.5 border-2 border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+                      className="flex items-center gap-1 px-3 py-1.5 border-2 border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-lionsmane transition-colors"
                     >
                       View Details <ChevronRight className="w-4 h-4" />
                     </button>
                     {(split.status === 'pending_confirmation' || (split.status === 'pending_payment' && split.receipt_url)) && (
                       <button
                         onClick={() => updateStatus(split.id, 'confirmed')}
-                        className="px-3 py-1.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
+                        className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
                       >
                         <CheckCircle className="w-3.5 h-3.5" /> Confirm
                       </button>
@@ -999,7 +999,7 @@ export default function SupplierOrdersPage() {
                     {split.status === 'confirmed' && (
                       <button
                         onClick={() => updateStatus(split.id, 'out_for_delivery')}
-                        className="px-3 py-1.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
+                        className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
                       >
                         <Truck className="w-3.5 h-3.5" /> Out for Delivery
                       </button>

@@ -151,7 +151,7 @@ export default function ReportModal({ type, targetId, targetName, onClose }) {
         </div>
 
         <div className="flex gap-2 p-5 pt-0">
-          <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">
+          <button onClick={onClose} className="flex-1 py-2.5 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-lionsmane">
             Cancel
           </button>
           <button

@@ -38,7 +38,7 @@ export default function NotificationDropdown({ onClose }) {
   }
 
   const typeColor = (type) => {
-    if (type === 'warning') return 'bg-amber-50 border-l-2 border-amber-400'
+    if (type === 'warning') return 'bg-lionsmane border-l-2 border-marigold-light'
     if (type === 'certificate_reviewed') return 'bg-blue-50 border-l-2 border-blue-400'
     return ''
   }
@@ -71,10 +71,10 @@ export default function NotificationDropdown({ onClose }) {
                   if (n.link) { onClose(); navigate(n.link) }
                   else onClose()
                 }}
-                className={`w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors ${!n.is_read ? typeColor(n.type) || 'bg-slate-50/80' : ''}`}
+                className={`w-full text-left px-4 py-3 hover:bg-lionsmane transition-colors ${!n.is_read ? typeColor(n.type) || 'bg-lionsmane/80' : ''}`}
               >
                 <div className="flex items-start gap-3">
-                  {!n.is_read && <div className="w-2 h-2 bg-emerald-500 rounded-full mt-1.5 flex-shrink-0" />}
+                  {!n.is_read && <div className="w-2 h-2 bg-herb rounded-full mt-1.5 flex-shrink-0" />}
                   <div className={`flex-1 min-w-0 ${n.is_read ? 'pl-5' : ''}`}>
                     <p className="text-sm font-semibold text-slate-900 leading-tight">{n.title}</p>
                     <p className="text-xs text-slate-500 mt-0.5 leading-relaxed line-clamp-2">{n.message}</p>

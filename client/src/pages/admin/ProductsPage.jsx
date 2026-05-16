@@ -99,7 +99,7 @@ export default function AdminProductsPage() {
       {loading ? <SkeletonTable rows={6} /> : (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Supplier</th>
@@ -114,7 +114,7 @@ export default function AdminProductsPage() {
                 <tr
                   key={product.id}
                   ref={product.id === highlightId ? highlightRef : null}
-                  className={`hover:bg-gray-50 transition-colors ${product.id === highlightId ? 'bg-emerald-50 outline outline-2 outline-emerald-400' : ''}`}
+                  className={`hover:bg-lionsmane transition-colors ${product.id === highlightId ? 'bg-lionsmane outline outline-2 outline-herb-light' : ''}`}
                 >
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">{product.name}</td>
                   <td className="px-4 py-3 hidden sm:table-cell text-xs text-gray-500">{product.supplier?.business_name || '—'}</td>
@@ -203,7 +203,7 @@ export default function AdminProductsPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50">
+              <button onClick={() => setToggleTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-lionsmane">
                 Cancel
               </button>
               <button

@@ -120,52 +120,52 @@ export default function SupplierDashboardPage() {
 
       {/* Certification status banner */}
       {!loading && !user?.is_banned && (!supplierProfile?.is_verified || addresses.length === 0) && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+        <div className="bg-lionsmane border border-marigold-light rounded-xl p-4">
           <div className="flex items-start gap-3 mb-3">
-            <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-marigold flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-amber-800">Account not certified yet</p>
-              <p className="text-sm text-amber-700 mt-0.5">Your products are hidden from the store until you complete the steps below.</p>
+              <p className="font-bold text-marigold-dark">Account not certified yet</p>
+              <p className="text-sm text-marigold-dark mt-0.5">Your products are hidden from the store until you complete the steps below.</p>
             </div>
           </div>
           <div className="space-y-2 ml-8">
             <div className="flex items-center gap-2 text-sm">
               {certStatus.hasApprovedCert
-                ? <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                ? <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />
                 : certStatus.certPending
-                  ? <Clock className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                  ? <Clock className="w-4 h-4 text-marigold flex-shrink-0" />
                   : <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
-              <span className={certStatus.hasApprovedCert ? 'text-emerald-700 font-medium' : 'text-slate-700'}>
+              <span className={certStatus.hasApprovedCert ? 'text-midnight-dark font-medium' : 'text-slate-700'}>
                 Halal Certificate {certStatus.hasApprovedCert ? '— Approved' : certStatus.certPending ? '— Pending review' : '— Upload required'}
               </span>
               {!certStatus.hasApprovedCert && (
-                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-emerald-600 font-semibold hover:underline ml-1">
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-midnight font-semibold hover:underline ml-1">
                   Go →
                 </button>
               )}
             </div>
             <div className="flex items-center gap-2 text-sm">
               {certStatus.hasBank
-                ? <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                ? <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />
                 : <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
-              <span className={certStatus.hasBank ? 'text-emerald-700 font-medium' : 'text-slate-700'}>
+              <span className={certStatus.hasBank ? 'text-midnight-dark font-medium' : 'text-slate-700'}>
                 Bank Details {certStatus.hasBank ? '— Added' : '— Required'}
               </span>
               {!certStatus.hasBank && (
-                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-emerald-600 font-semibold hover:underline ml-1">
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-midnight font-semibold hover:underline ml-1">
                   Go →
                 </button>
               )}
             </div>
             <div className="flex items-center gap-2 text-sm">
               {addresses.length > 0
-                ? <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                ? <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />
                 : <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
-              <span className={addresses.length > 0 ? 'text-emerald-700 font-medium' : 'text-slate-700'}>
+              <span className={addresses.length > 0 ? 'text-midnight-dark font-medium' : 'text-slate-700'}>
                 Business Address {addresses.length > 0 ? '— Added' : '— Required'}
               </span>
               {addresses.length === 0 && (
-                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-emerald-600 font-semibold hover:underline ml-1">
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-midnight font-semibold hover:underline ml-1">
                   Go →
                 </button>
               )}
@@ -175,11 +175,11 @@ export default function SupplierDashboardPage() {
       )}
 
       {!loading && !user?.is_banned && supplierProfile?.is_verified && addresses.length > 0 && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+        <div className="bg-lionsmane border border-celeste rounded-xl p-4 flex items-center gap-3">
+          <CheckCircle className="w-5 h-5 text-herb flex-shrink-0" />
           <div>
-            <p className="font-bold text-emerald-800">Account certified</p>
-            <p className="text-sm text-emerald-700">Your products are visible in the store.</p>
+            <p className="font-bold text-midnight">Account certified</p>
+            <p className="text-sm text-midnight-dark">Your products are visible in the store.</p>
           </div>
         </div>
       )}
@@ -193,15 +193,15 @@ export default function SupplierDashboardPage() {
           {/* Stats cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Revenue */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-xl shadow-md">
+            <div className="bg-gradient-to-br from-midnight to-slate-800 text-white p-6 rounded-xl shadow-md">
               <div className="flex items-center gap-2 mb-3">
-                <Euro className="w-5 h-5 text-emerald-400" />
+                <Euro className="w-5 h-5 text-herb-light" />
                 <p className="text-slate-300 text-sm font-medium">Total Revenue</p>
               </div>
               <p className="text-3xl font-black">€{stats.totalRevenue.toFixed(2)}</p>
               <div className="flex items-center gap-1 mt-2">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                <p className="text-xs text-emerald-400 font-medium">€{stats.monthRevenue.toFixed(2)} this month</p>
+                <TrendingUp className="w-3.5 h-3.5 text-herb-light" />
+                <p className="text-xs text-herb-light font-medium">€{stats.monthRevenue.toFixed(2)} this month</p>
               </div>
             </div>
 
@@ -224,7 +224,7 @@ export default function SupplierDashboardPage() {
               className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow"
             >
               <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-5 h-5 text-emerald-600" />
+                <TrendingUp className="w-5 h-5 text-midnight" />
                 <p className="text-slate-500 text-sm font-medium">Analytics</p>
               </div>
               <p className="text-lg font-bold text-slate-900">See Full Analysis</p>
@@ -241,7 +241,7 @@ export default function SupplierDashboardPage() {
               <h2 className="text-lg font-bold text-slate-900">My Products</h2>
               <button
                 onClick={() => navigate('/supplier/products')}
-                className="text-sm text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
+                className="text-sm text-midnight font-semibold hover:text-midnight-dark transition-colors"
               >
                 Manage All
               </button>
@@ -253,7 +253,7 @@ export default function SupplierDashboardPage() {
                 <p className="text-slate-400 text-sm">No products yet</p>
                 <button
                   onClick={() => navigate('/supplier/products')}
-                  className="mt-3 text-sm text-emerald-600 font-semibold hover:underline"
+                  className="mt-3 text-sm text-midnight font-semibold hover:underline"
                 >
                   Add your first product
                 </button>
@@ -286,7 +286,7 @@ export default function SupplierDashboardPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-slate-900 text-sm truncate">{product.name}</p>
-                        <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5 ${product.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                        <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5 ${product.is_active ? 'bg-lionsmane text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
                           {product.is_active ? 'In Stock' : 'Out of Stock'}
                         </span>
                         <p className="text-sm font-bold text-slate-900 mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">/ {product.unit_type}</span></p>

@@ -33,7 +33,7 @@ export default function CartDrawer({ open, onClose }) {
           ) : (
             groups.map(group => (
               <div key={group.supplierId} className="border-b border-gray-100">
-                <div className="bg-gray-50 px-5 py-2.5">
+                <div className="bg-lionsmane px-5 py-2.5">
                   <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     {group.supplier?.business_name || 'Supplier'}
                   </p>

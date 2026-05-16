@@ -42,7 +42,7 @@ function ProductCardModal({ item, onClose }) {
             </div>
             <div className="text-right">
               <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Qty Ordered</p>
-              <p className="text-base font-bold text-emerald-600">{item.quantity}×</p>
+              <p className="text-base font-bold text-midnight">{item.quantity}×</p>
             </div>
           </div>
           <div className="flex justify-between items-center pt-2 border-t border-slate-100">
@@ -51,7 +51,7 @@ function ProductCardModal({ item, onClose }) {
           </div>
         </div>
         <div className="px-5 pb-5">
-          <button onClick={onClose} className="w-full py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors">
+          <button onClick={onClose} className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors">
             Close
           </button>
         </div>
@@ -85,9 +85,9 @@ function CancelModal({ split, onCancel, onClose }) {
         </div>
 
         {isBankTransfer && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
-            <p className="text-sm font-semibold text-amber-800">Bank transfer order</p>
-            <p className="text-xs text-amber-700 mt-1">
+          <div className="bg-lionsmane border border-marigold-light rounded-xl p-3 mb-4">
+            <p className="text-sm font-semibold text-marigold-dark">Bank transfer order</p>
+            <p className="text-xs text-marigold-dark mt-1">
               Your cancellation will be sent to the supplier for review. Once they agree, they will upload proof of the returned payment.
             </p>
           </div>
@@ -109,7 +109,7 @@ function CancelModal({ split, onCancel, onClose }) {
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition-colors"
+            className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors"
           >
             Keep Order
           </button>
@@ -145,7 +145,7 @@ function RefundReceiptDisplay({ path }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 text-sm text-emerald-600 font-semibold hover:underline"
+      className="flex items-center gap-2 text-sm text-midnight font-semibold hover:underline"
     >
       <ExternalLink className="w-4 h-4" /> View Refund Receipt
     </a>
@@ -174,7 +174,7 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
   return (
     <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-slate-900 px-6 py-10 text-center relative">
+        <div className="bg-midnight px-6 py-10 text-center relative">
           <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
@@ -189,7 +189,7 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
           <div className="flex items-center justify-center gap-2 mt-2 flex-wrap">
             {sp?.category && <span className="text-xs text-slate-300 bg-white/10 px-2.5 py-1 rounded-full">{sp.category}</span>}
             {sp?.is_verified && (
-              <span className="flex items-center gap-1 text-xs text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full">
+              <span className="flex items-center gap-1 text-xs text-herb-light bg-herb-light/10 px-2.5 py-1 rounded-full">
                 <CheckCircle className="w-3 h-3" /> Verified
               </span>
             )}
@@ -200,17 +200,17 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
           {!sp && <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>}
           {sp?.description && <p className="text-sm text-slate-600 leading-relaxed">{sp.description}</p>}
           {sp?.city && (
-            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+            <div className="flex items-center gap-3 p-3 bg-lionsmane rounded-xl">
               <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0" />
               <p className="text-sm font-medium text-slate-700">{sp.city}</p>
             </div>
           )}
           {sp?.website && (
-            <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
+            <div className="flex items-center gap-3 p-3 bg-lionsmane rounded-xl">
               <Globe className="w-4 h-4 text-slate-400 flex-shrink-0" />
               <a href={sp.website.startsWith('http') ? sp.website : `https://${sp.website}`}
                 target="_blank" rel="noopener noreferrer"
-                className="text-sm text-emerald-600 font-medium hover:underline truncate">
+                className="text-sm text-midnight font-medium hover:underline truncate">
                 {sp.website}
               </a>
             </div>
@@ -220,11 +220,11 @@ function SupplierProfileModal({ supplierId, businessName, onClose }) {
         <div className="px-5 pb-5 space-y-3">
           <button
             onClick={() => { onClose(); navigate(`/supplier/${supplierId}`) }}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 bg-midnight hover:bg-midnight-dark text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             <ArrowUpRight className="w-4 h-4" /> View Products & Certificates
           </button>
-          <button onClick={onClose} className="w-full py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors">
+          <button onClick={onClose} className="w-full py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-lionsmane transition-colors">
             Close
           </button>
         </div>
@@ -256,13 +256,13 @@ function RatingModal({ split, onSubmit, onSkip }) {
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
         <div className="relative inline-block mb-4">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={split.supplier?.business_name} className="w-16 h-16 rounded-full object-cover mx-auto border-2 border-emerald-100 shadow-sm" />
+            <img src={avatarUrl} alt={split.supplier?.business_name} className="w-16 h-16 rounded-full object-cover mx-auto border-2 border-celeste shadow-sm" />
           ) : (
-            <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto border-2 border-emerald-100">
-              <span className="text-xl font-bold text-emerald-600">{split.supplier?.business_name?.[0]?.toUpperCase() || '?'}</span>
+            <div className="w-16 h-16 bg-lionsmane rounded-full flex items-center justify-center mx-auto border-2 border-celeste">
+              <span className="text-xl font-bold text-midnight">{split.supplier?.business_name?.[0]?.toUpperCase() || '?'}</span>
             </div>
           )}
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm">
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-herb rounded-full flex items-center justify-center shadow-sm">
             <CheckCircle className="w-4 h-4 text-white" />
           </div>
         </div>
@@ -291,19 +291,19 @@ function RatingModal({ split, onSubmit, onSkip }) {
         </div>
 
         {selected > 0 && (
-          <p className="text-sm font-semibold text-amber-600 mb-4">
+          <p className="text-sm font-semibold text-marigold mb-4">
             {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][selected]}
           </p>
         )}
 
         <div className="flex gap-3">
-          <button onClick={onSkip} className="flex-1 py-2.5 border-2 border-slate-200 text-slate-600 font-semibold rounded-xl text-sm hover:bg-slate-50 transition-colors">
+          <button onClick={onSkip} className="flex-1 py-2.5 border-2 border-slate-200 text-slate-600 font-semibold rounded-xl text-sm hover:bg-lionsmane transition-colors">
             Skip
           </button>
           <button
             onClick={handleSubmit}
             disabled={!selected || loading}
-            className="flex-1 py-2.5 bg-slate-900 text-white font-bold rounded-xl text-sm hover:bg-slate-800 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 bg-midnight text-white font-bold rounded-xl text-sm hover:bg-slate-800 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             Submit Rating
@@ -365,7 +365,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
             <p className="text-xs text-slate-500 font-medium mb-1">Supplier</p>
             <button
               onClick={() => setShowSupplierModal(true)}
-              className="font-semibold text-emerald-700 hover:text-emerald-800 transition-colors text-left underline-offset-2 hover:underline"
+              className="font-semibold text-midnight-dark hover:text-midnight transition-colors text-left underline-offset-2 hover:underline"
             >
               {split.supplier?.business_name}
             </button>
@@ -378,7 +378,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
 
         <div>
           <p className="text-sm font-bold text-slate-900 mb-3">Items Ordered</p>
-          <div className="bg-slate-50 rounded-xl divide-y divide-slate-100 overflow-hidden">
+          <div className="bg-lionsmane rounded-xl divide-y divide-slate-100 overflow-hidden">
             {split.order_items?.map(item => {
               const img = getProductImageUrl(item.product?.image_url)
               return (
@@ -395,7 +395,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
                   <div className="flex-1 min-w-0">
                     <button
                       onClick={() => setSelectedProduct(item)}
-                      className="text-sm font-semibold text-slate-900 hover:text-emerald-600 transition-colors text-left underline-offset-2 hover:underline truncate block max-w-full"
+                      className="text-sm font-semibold text-slate-900 hover:text-midnight transition-colors text-left underline-offset-2 hover:underline truncate block max-w-full"
                     >
                       {item.product?.name}
                     </button>
@@ -410,7 +410,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
 
         <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
           <span className="text-xl font-bold text-slate-900">Total</span>
-          <span className="text-2xl font-bold text-emerald-600">€{Number(split.subtotal).toFixed(2)}</span>
+          <span className="text-2xl font-bold text-midnight">€{Number(split.subtotal).toFixed(2)}</span>
         </div>
       </div>
 
@@ -429,13 +429,13 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
       )}
 
       {split.status === 'refund_uploaded' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
-          <p className="text-sm font-bold text-amber-800">Refund Receipt Uploaded</p>
-          <p className="text-xs text-amber-700">The supplier has uploaded proof of refund. Please verify and confirm below.</p>
+        <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 space-y-3">
+          <p className="text-sm font-bold text-marigold-dark">Refund Receipt Uploaded</p>
+          <p className="text-xs text-marigold-dark">The supplier has uploaded proof of refund. Please verify and confirm below.</p>
           {split.refund_receipt_url && <RefundReceiptDisplay path={split.refund_receipt_url} />}
           <button
             onClick={() => { onConfirmRefund(split.id); onBack() }}
-            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md"
+            className="w-full py-3 bg-midnight hover:bg-midnight-dark text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md"
           >
             <CheckCircle className="w-4 h-4" /> Confirm Refund Received
           </button>
@@ -467,7 +467,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => { onMarkDelivered(split.id); onBack() }}
-              className="py-3.5 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-sm"
+              className="py-3.5 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-sm"
             >
               Mark as Delivered
             </button>
@@ -489,13 +489,13 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
         )}
         <button
           onClick={handleChatWithSupplier}
-          className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
+          className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-lionsmane transition-colors text-sm"
         >
-          <MessageSquare className="w-4 h-4 text-emerald-600" /> Chat with Supplier
+          <MessageSquare className="w-4 h-4 text-midnight" /> Chat with Supplier
         </button>
         <button
           onClick={() => generateInvoice(split.order, [split], profile)}
-          className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
+          className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-lionsmane transition-colors text-sm"
         >
           <Download className="w-4 h-4" /> Download Invoice
         </button>
@@ -671,11 +671,11 @@ export default function OrdersPage() {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === t.id ? 'text-emerald-600 border-b-2 border-emerald-600' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === t.id ? 'text-midnight border-b-2 border-midnight' : 'text-slate-400 hover:text-slate-600'}`}
           >
             {t.label}
             {t.count > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === t.id ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === t.id ? 'bg-celeste text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
                 {t.count}
               </span>
             )}
@@ -743,14 +743,14 @@ export default function OrdersPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setSelectedOrder(split)}
-                    className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-lionsmane transition-colors"
                   >
                     View Details <ChevronRight className="w-4 h-4" />
                   </button>
                   {split.status === 'out_for_delivery' && (
                     <button
                       onClick={e => { e.stopPropagation(); markDelivered(split.id) }}
-                      className="px-3 py-1.5 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors"
+                      className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors"
                     >
                       Mark Delivered
                     </button>
@@ -758,7 +758,7 @@ export default function OrdersPage() {
                   {split.status === 'refund_uploaded' && (
                     <button
                       onClick={e => { e.stopPropagation(); confirmRefund(split.id) }}
-                      className="px-3 py-1.5 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-1"
+                      className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-midnight-dark transition-colors flex items-center gap-1"
                     >
                       <CheckCircle className="w-3.5 h-3.5" /> Confirm Refund
                     </button>

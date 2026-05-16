@@ -38,11 +38,11 @@ export default function OwnerLayout() {
 
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-      isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+      isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'
     }`
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-lionsmane">
       <Navbar onMenuClick={() => setDrawerOpen(o => !o)} />
 
       {/* Account deactivated banner */}
@@ -113,7 +113,7 @@ export default function OwnerLayout() {
                 className={({ isActive }) =>
                   `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     collapsed ? 'justify-center px-0' : 'gap-3 px-3'
-                  } ${isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'}`
+                  } ${isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'}`
                 }
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
@@ -127,7 +127,7 @@ export default function OwnerLayout() {
             <button
               onClick={toggleCollapsed}
               title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className="w-full flex items-center justify-center p-2 rounded-lg bg-slate-900 text-white hover:bg-slate-700 transition-colors"
+              className="w-full flex items-center justify-center p-2 rounded-lg bg-midnight text-white hover:bg-slate-700 transition-colors"
             >
               {collapsed
                 ? <ChevronRight className="w-4 h-4" />

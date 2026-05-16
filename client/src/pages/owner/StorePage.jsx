@@ -10,6 +10,7 @@ import AddToCartModal from '../../components/store/AddToCartModal'
 import ReportModal from '../../components/ui/ReportModal'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import toast from 'react-hot-toast'
 
 const CATEGORIES = [
   { name: 'Meat', icon: Beef },
@@ -94,23 +95,39 @@ export default function StorePage() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Show GPS prompt if owner has no saved location
+  // Show GPS banner based on permission state and saved addresses
   useEffect(() => {
     if (!user || addresses === undefined) return
     const hasLocation = addresses.some(a => a.latitude && a.longitude)
-    if (!hasLocation && sessionStorage.getItem('gps_banner_dismissed') !== '1') {
-      setLocationBanner('prompt')
+    if (hasLocation || sessionStorage.getItem('gps_banner_dismissed') === '1') return
+
+    async function checkPermission() {
+      if (!navigator.geolocation) { setLocationBanner('denied'); return }
+      try {
+        const perm = await navigator.permissions.query({ name: 'geolocation' })
+        if (perm.state === 'denied') {
+          setLocationBanner('denied')
+        } else if (perm.state === 'granted') {
+          // Already granted — silently save location without showing any banner
+          saveGPSLocation()
+        } else {
+          // 'prompt' — show the Allow button
+          setLocationBanner('prompt')
+        }
+      } catch {
+        // Permissions API not available (iOS < 16) — fall back to showing prompt
+        setLocationBanner('prompt')
+      }
     }
+    checkPermission()
   }, [user, addresses])
 
-  async function handleAllowGPS() {
-    if (!navigator.geolocation) { setLocationBanner('denied'); return }
+  async function saveGPSLocation() {
     setLocationSaving(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          // Geocoding is best-effort; lat/lng is always saved even if it fails
           let city = '', postcode = ''
           try {
             const geoData = await reverseGeocode(lat, lng)
@@ -120,7 +137,39 @@ export default function StorePage() {
               postcode = a.postcode || ''
             }
           } catch {}
-          await addAddress({ label: 'Business Location', city, street: null, postal_code: postcode, country: 'Germany', latitude: lat, longitude: lng })
+          await addAddress({ label: 'My Location', city, street: null, postal_code: postcode, latitude: lat, longitude: lng })
+          await supabase.from('owner_profiles').upsert({ user_id: user.id, city, latitude: lat, longitude: lng }, { onConflict: 'user_id' })
+          await reloadAddresses()
+          setLocationBanner(null)
+          sessionStorage.setItem('gps_banner_dismissed', '1')
+        } catch {
+          // Silent fail on auto-save; don't show denied banner
+        } finally {
+          setLocationSaving(false)
+        }
+      },
+      () => { setLocationBanner('denied'); setLocationSaving(false) },
+      { enableHighAccuracy: false, timeout: 10000 }
+    )
+  }
+
+  async function handleAllowGPS() {
+    if (!navigator.geolocation) { setLocationBanner('denied'); return }
+    setLocationSaving(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude: lat, longitude: lng } = pos.coords
+          let city = '', postcode = ''
+          try {
+            const geoData = await reverseGeocode(lat, lng)
+            if (geoData?.address) {
+              const a = geoData.address
+              city = a.city || a.town || a.village || a.suburb || ''
+              postcode = a.postcode || ''
+            }
+          } catch {}
+          await addAddress({ label: 'My Location', city, street: null, postal_code: postcode, latitude: lat, longitude: lng })
           await supabase.from('owner_profiles').upsert({ user_id: user.id, city, latitude: lat, longitude: lng }, { onConflict: 'user_id' })
           await reloadAddresses()
           setLocationBanner(null)
@@ -131,8 +180,19 @@ export default function StorePage() {
           setLocationSaving(false)
         }
       },
-      () => { setLocationBanner('denied'); setLocationSaving(false) },
-      { enableHighAccuracy: true, timeout: 10000 }
+      (err) => {
+        if (err.code === 1) {
+          // Permission denied
+          setLocationBanner('denied')
+        } else {
+          // Timeout or unavailable — don't punish the user
+          toast.error('Could not detect location. Add it manually.')
+          setLocationBanner(null)
+          sessionStorage.setItem('gps_banner_dismissed', '1')
+        }
+        setLocationSaving(false)
+      },
+      { enableHighAccuracy: false, timeout: 10000 }
     )
   }
 
@@ -196,12 +256,14 @@ export default function StorePage() {
         <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 flex items-start gap-3">
           <MapPin className="w-5 h-5 text-marigold flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-marigold-dark">Location access denied</p>
-            <p className="text-xs text-marigold-dark mt-0.5">Delivery fees can't be shown without your location. Add one in your profile.</p>
+            <p className="text-sm font-bold text-marigold-dark">Location blocked in browser settings</p>
+            <p className="text-xs text-marigold-dark mt-0.5">
+              Enable location for this site in your browser settings, or enter your address manually in your profile.
+            </p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={() => navigate('/owner/profile')} className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-marigold-dark transition-colors">
-              Add Location
+            <button onClick={() => navigate('/owner/profile')} className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-marigold-dark transition-colors whitespace-nowrap">
+              Add Manually
             </button>
             <button onClick={dismissLocationBanner} className="text-marigold-light hover:text-marigold transition-colors">
               <X className="w-4 h-4" />

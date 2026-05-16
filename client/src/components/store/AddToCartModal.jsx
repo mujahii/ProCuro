@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
 import { supabase } from '../../lib/supabase'
+import { forwardGeocode } from '../../lib/geocode'
 import ModalPortal from '../ui/ModalPortal'
 import ReportModal from '../ui/ReportModal'
 import toast from 'react-hot-toast'
@@ -61,14 +62,34 @@ export default function AddToCartModal({ product, onClose }) {
         if (addrWithCoords) { ownerLat = addrWithCoords.latitude; ownerLng = addrWithCoords.longitude }
       }
 
-      // Fallback 2: owner_profiles lat/lng (saved when GPS was allowed)
+      // Fallback 2: owner_profiles lat/lng + city for geocoding
       if ((!ownerLat || !ownerLng) && user) {
         const { data: op } = await supabase
           .from('owner_profiles')
-          .select('latitude, longitude')
+          .select('latitude, longitude, city')
           .eq('user_id', user.id)
           .maybeSingle()
-        if (op?.latitude && op?.longitude) { ownerLat = op.latitude; ownerLng = op.longitude }
+        if (op?.latitude && op?.longitude) {
+          ownerLat = op.latitude; ownerLng = op.longitude
+        } else if (op?.city) {
+          // Fallback 3: forward-geocode the city name
+          try {
+            const geo = await forwardGeocode(op.city)
+            if (geo) { ownerLat = parseFloat(geo.lat); ownerLng = parseFloat(geo.lon) }
+          } catch {}
+        }
+      }
+
+      // Fallback 4: forward-geocode from any address's city
+      if (!ownerLat || !ownerLng) {
+        const addrWithCity = addresses?.find(a => a.city || a.postal_code)
+        if (addrWithCity) {
+          const query = [addrWithCity.postal_code, addrWithCity.city].filter(Boolean).join(' ')
+          try {
+            const geo = await forwardGeocode(query)
+            if (geo) { ownerLat = parseFloat(geo.lat); ownerLng = parseFloat(geo.lon) }
+          } catch {}
+        }
       }
 
       if (!ownerLat || !ownerLng) {

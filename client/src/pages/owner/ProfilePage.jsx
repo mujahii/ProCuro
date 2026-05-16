@@ -506,7 +506,7 @@ function PhoneModal({ userId, currentPhone, onClose, onSaved }) {
 
 function AddressModal({ onClose, userId }) {
   const { addresses, addAddress, deleteAddress, setDefault, reload } = useAddresses()
-  const [form, setForm] = useState({ label: '', street: '', postal_code: '', city: '' })
+  const [form, setForm] = useState({ label: '', street: '', postal_code: '', city: '', latitude: null, longitude: null })
   const [saving, setSaving] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
 
@@ -517,17 +517,20 @@ function AddressModal({ onClose, userId }) {
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          const data = await reverseGeocode(lat, lng)
-          const addr = data.address || {}
-          setForm(f => ({
-            ...f,
-            street: [addr.road, addr.house_number].filter(Boolean).join(' ') || '',
-            postal_code: addr.postcode || '',
-            city: addr.city || addr.town || addr.village || addr.suburb || '',
-          }))
+          let street = '', postal_code = '', city = ''
+          try {
+            const data = await reverseGeocode(lat, lng)
+            if (data?.address) {
+              const a = data.address
+              street = [a.road, a.house_number].filter(Boolean).join(' ') || ''
+              postal_code = a.postcode || ''
+              city = a.city || a.town || a.village || a.suburb || ''
+            }
+          } catch {}
+          setForm(f => ({ ...f, street, postal_code, city, latitude: lat, longitude: lng }))
           toast.success('Location detected!')
         } catch {
-          toast.error('Could not fetch address from GPS')
+          toast.error('Could not detect GPS position')
         } finally {
           setGpsLoading(false)
         }
@@ -543,7 +546,7 @@ function AddressModal({ onClose, userId }) {
     setSaving(true)
     try {
       await addAddress({ ...form, country: 'Germany' })
-      setForm({ label: '', street: '', postal_code: '', city: '' })
+      setForm({ label: '', street: '', postal_code: '', city: '', latitude: null, longitude: null })
       toast.success('Address added!')
     } catch (err) {
       toast.error(err.message)

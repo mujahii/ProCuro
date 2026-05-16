@@ -19,7 +19,7 @@ export default function Navbar({ onMenuClick }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [addingAddr, setAddingAddr] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
-  const [addrForm, setAddrForm] = useState({ label: '', street: '', postal_code: '', city: '' })
+  const [addrForm, setAddrForm] = useState({ label: '', street: '', postal_code: '', city: '', latitude: null, longitude: null })
   const [savingAddr, setSavingAddr] = useState(false)
   const addrRef = useRef(null)
   const userRef = useRef(null)
@@ -60,16 +60,19 @@ export default function Navbar({ onMenuClick }) {
       async (pos) => {
         try {
           const { latitude: lat, longitude: lng } = pos.coords
-          const data = await reverseGeocode(lat, lng)
-          const addr = data.address || {}
-          setAddrForm(f => ({
-            ...f,
-            street: [addr.road, addr.house_number].filter(Boolean).join(' ') || '',
-            postal_code: addr.postcode || '',
-            city: addr.city || addr.town || addr.village || '',
-          }))
+          let street = '', postal_code = '', city = ''
+          try {
+            const data = await reverseGeocode(lat, lng)
+            if (data?.address) {
+              const a = data.address
+              street = [a.road, a.house_number].filter(Boolean).join(' ') || ''
+              postal_code = a.postcode || ''
+              city = a.city || a.town || a.village || ''
+            }
+          } catch {}
+          setAddrForm(f => ({ ...f, street, postal_code, city, latitude: lat, longitude: lng }))
         } catch {
-          toast.error('Could not fetch address from GPS')
+          toast.error('Could not detect GPS position')
         } finally {
           setGpsLoading(false)
         }
@@ -87,7 +90,7 @@ export default function Navbar({ onMenuClick }) {
       await addAddress(addrForm)
       toast.success('Address saved!')
       setAddingAddr(false)
-      setAddrForm({ label: '', street: '', postal_code: '', city: '' })
+      setAddrForm({ label: '', street: '', postal_code: '', city: '', latitude: null, longitude: null })
     } catch {
       toast.error('Failed to save address')
     } finally {

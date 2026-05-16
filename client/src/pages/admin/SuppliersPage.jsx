@@ -75,14 +75,17 @@ export default function AdminSuppliersPage() {
     }
   }
 
-  const categories = [...new Set(suppliers.map(s => s.category).filter(Boolean))].sort()
+  const categories = [...new Set(
+    suppliers.flatMap(s => Array.isArray(s.category) ? s.category : s.category ? [s.category] : [])
+  )].sort()
 
   const filtered = suppliers.filter(s => {
     const matchSearch = !search ||
       s.business_name?.toLowerCase().includes(search.toLowerCase()) ||
       s.city?.toLowerCase().includes(search.toLowerCase()) ||
       s.user?.email?.toLowerCase().includes(search.toLowerCase())
-    const matchCat = !categoryFilter || s.category === categoryFilter
+    const cats = Array.isArray(s.category) ? s.category : s.category ? [s.category] : []
+    const matchCat = !categoryFilter || cats.includes(categoryFilter)
     return matchSearch && matchCat
   })
 

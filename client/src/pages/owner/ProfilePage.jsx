@@ -825,7 +825,7 @@ export default function ProfilePage() {
   const navigate = useNavigate()
   const { user, profile, signOut, updateProfileState } = useAuth()
   const { addresses } = useAddresses()
-  const { lang, setLanguage } = useLanguage()
+  const { lang, setLanguage, t } = useLanguage()
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null)
   const [displayName, setDisplayName] = useState(profile?.full_name || '')
   const [restaurantName, setRestaurantName] = useState(profile?.restaurant_name || '')

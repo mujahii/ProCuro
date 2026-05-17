@@ -1021,7 +1021,7 @@ export default function SupplierProfilePage() {
   const navigate = useNavigate()
   const { user, profile, signOut, updateProfileState } = useAuth()
   const { addresses } = useAddresses()
-  const { lang, setLanguage } = useLanguage()
+  const { lang, setLanguage, t } = useLanguage()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null)
   const [bio, setBio] = useState(profile?.bio || '')

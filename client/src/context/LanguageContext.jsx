@@ -2,19 +2,6 @@ import { createContext, useContext, useState } from 'react'
 
 const LanguageContext = createContext()
 
-// Set Google Translate cookie so the widget translates the whole page on next load.
-function setGoogleTranslateCookie(lang) {
-  const value = lang === 'en' ? '/en/en' : `/en/${lang}`
-  const host = window.location.hostname
-  document.cookie = `googtrans=${value};path=/`
-  document.cookie = `googtrans=${value};path=/;domain=${host}`
-  // Also set on the parent domain (.example.com) so subdomains share the choice
-  const parts = host.split('.')
-  if (parts.length > 1) {
-    document.cookie = `googtrans=${value};path=/;domain=.${parts.slice(-2).join('.')}`
-  }
-}
-
 export const LANGS = ['en', 'de']
 
 const T = {
@@ -52,6 +39,60 @@ const T = {
     ctaSubtitle: 'Join hundreds of restaurants already saving time and money with ProCuro.',
     startFree: 'Start for Free',
     learnMore: 'Learn More',
+
+    // Profile pages
+    profilePicture: 'Profile Picture',
+    editProfile: 'Edit Profile',
+    businessDetails: 'Business Details',
+    accountSettings: 'Account Settings',
+    languageSprache: 'Language / Sprache',
+    changeEmailPassword: 'Change Email & Password',
+    updatePhoneNumber: 'Update Phone Number',
+    manageMyAddresses: 'Manage My Addresses',
+    deleteAccount: 'Delete Account',
+    viewMyOrders: 'View My Orders',
+    viewAnalysis: 'View Analysis',
+    mySales: 'My Sales',
+    restaurant: 'Restaurant',
+    supplier: 'Supplier',
+    restaurantOwner: 'Restaurant Owner',
+    taxIdVat: 'Tax ID / VAT',
+    city: 'City',
+    cuisineType: 'Cuisine / Type',
+    categories: 'Categories',
+    businessLocations: 'Business Locations',
+    bankDetails: 'Bank Details',
+    add: 'Add',
+    addAddress: 'Add address',
+    addTaxId: 'Add Tax ID',
+    addBankDetails: 'Add bank details',
+    notSet: 'Not set',
+    saveChanges: 'Save Changes',
+    selected: 'selected',
+    locationsHelp: 'Tap each location you want shown on your profile',
+    manageAddresses: 'Manage Addresses',
+    cityLocation: 'City / Location',
+    useGps: 'Use GPS',
+    useMyLocation: 'Use My Location',
+    detecting: 'Detecting…',
+    halal: 'Halal',
+    aboutOptional: 'A short description about your restaurant...',
+    yourName: 'Your Name',
+    restaurantName: 'Restaurant Name',
+    businessName: 'Business Name',
+    description: 'Description',
+    bio: 'About',
+    website: 'Website (optional)',
+    requiredField: '* Required',
+
+    // AI
+    aiInsights: 'AI Insights',
+    poweredByGemini: 'Powered by Gemini',
+    refreshInsights: 'Refresh insights',
+    tryAgain: 'Try again',
+    generateInsights: 'Generate Insights',
+    analyseYourSales: 'Analyse your sales data',
+    aiHelpText: 'Get AI-powered insights on revenue, top products, and growth opportunities.',
 
     // Common
     save: 'Save',
@@ -114,6 +155,60 @@ const T = {
     startFree: 'Kostenlos starten',
     learnMore: 'Mehr erfahren',
 
+    // Profile pages
+    profilePicture: 'Profilbild',
+    editProfile: 'Profil bearbeiten',
+    businessDetails: 'Geschäftsdaten',
+    accountSettings: 'Kontoeinstellungen',
+    languageSprache: 'Sprache / Language',
+    changeEmailPassword: 'E-Mail & Passwort ändern',
+    updatePhoneNumber: 'Telefonnummer aktualisieren',
+    manageMyAddresses: 'Meine Adressen verwalten',
+    deleteAccount: 'Konto löschen',
+    viewMyOrders: 'Meine Bestellungen',
+    viewAnalysis: 'Analyse ansehen',
+    mySales: 'Meine Verkäufe',
+    restaurant: 'Restaurant',
+    supplier: 'Lieferant',
+    restaurantOwner: 'Restaurantbesitzer',
+    taxIdVat: 'Steuernummer / USt-IdNr.',
+    city: 'Stadt',
+    cuisineType: 'Küche / Typ',
+    categories: 'Kategorien',
+    businessLocations: 'Geschäftsstandorte',
+    bankDetails: 'Bankdaten',
+    add: 'Hinzufügen',
+    addAddress: 'Adresse hinzufügen',
+    addTaxId: 'Steuernummer hinzufügen',
+    addBankDetails: 'Bankdaten hinzufügen',
+    notSet: 'Nicht festgelegt',
+    saveChanges: 'Änderungen speichern',
+    selected: 'ausgewählt',
+    locationsHelp: 'Tippen Sie auf jeden Standort, den Sie in Ihrem Profil anzeigen möchten',
+    manageAddresses: 'Adressen verwalten',
+    cityLocation: 'Stadt / Standort',
+    useGps: 'GPS verwenden',
+    useMyLocation: 'Meinen Standort verwenden',
+    detecting: 'Suche…',
+    halal: 'Halal',
+    aboutOptional: 'Eine kurze Beschreibung Ihres Restaurants...',
+    yourName: 'Ihr Name',
+    restaurantName: 'Restaurantname',
+    businessName: 'Firmenname',
+    description: 'Beschreibung',
+    bio: 'Über',
+    website: 'Webseite (optional)',
+    requiredField: '* Pflichtfeld',
+
+    // AI
+    aiInsights: 'KI-Einblicke',
+    poweredByGemini: 'Powered by Gemini',
+    refreshInsights: 'Einblicke aktualisieren',
+    tryAgain: 'Erneut versuchen',
+    generateInsights: 'Einblicke generieren',
+    analyseYourSales: 'Verkaufsdaten analysieren',
+    aiHelpText: 'KI-gestützte Einblicke in Umsatz, Top-Produkte und Wachstumschancen.',
+
     // Common
     save: 'Speichern',
     cancel: 'Abbrechen',
@@ -149,11 +244,9 @@ export function LanguageProvider({ children }) {
 
   function setLanguage(l) {
     if (!LANGS.includes(l)) return
+    setLang(l)
     try { localStorage.setItem('procuro_lang', l) } catch {}
-    setGoogleTranslateCookie(l)
-    // Reload so the Google Translate widget picks up the new cookie and
-    // translates the entire page in one pass (no per-render lag).
-    window.location.reload()
+    try { document.documentElement.lang = l } catch {}
   }
 
   function t(key) {

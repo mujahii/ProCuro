@@ -103,22 +103,3 @@
   }
 }
 
-/* Hide Google Translate UI (banner, tooltip, highlight) — we trigger translation via cookie */
-.goog-te-banner-frame,
-.goog-te-banner-frame.skiptranslate,
-.skiptranslate iframe {
-  display: none !important;
-  visibility: hidden !important;
-}
-body {
-  top: 0 !important;
-  position: static !important;
-}
-.goog-tooltip,
-.goog-tooltip:hover {
-  display: none !important;
-}
-.goog-text-highlight {
-  background-color: transparent !important;
-  box-shadow: none !important;
-}

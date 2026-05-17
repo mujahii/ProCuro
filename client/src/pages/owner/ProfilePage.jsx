@@ -915,11 +915,11 @@ export default function ProfilePage() {
               <Pencil className="w-3 h-3" />
             </button>
           </div>
-          <h2 className="font-bold text-slate-900 text-xl mt-3">{displayName || 'Restaurant Owner'}</h2>
-          <p className="text-sm text-slate-400 mt-0.5">{restaurantName || 'Restaurant'}</p>
+          <h2 className="font-bold text-slate-900 text-xl mt-3">{displayName || t('restaurantOwner')}</h2>
+          <p className="text-sm text-slate-400 mt-0.5">{restaurantName || t('restaurant')}</p>
           {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
           <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-herb-dark font-semibold hover:text-herb hover:underline">
-            Edit Profile
+            {t('editProfile')}
           </button>
         </div>
       </div>
@@ -931,26 +931,26 @@ export default function ProfilePage() {
           className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
         >
           <Package className="w-6 h-6 text-midnight" />
-          <span className="text-sm font-semibold text-slate-700">View My Orders</span>
+          <span className="text-sm font-semibold text-slate-700">{t('viewMyOrders')}</span>
         </button>
         <button
           onClick={() => navigate('/owner/analytics')}
           className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
         >
           <TrendingUp className="w-6 h-6 text-midnight" />
-          <span className="text-sm font-semibold text-slate-700">View Analysis</span>
+          <span className="text-sm font-semibold text-slate-700">{t('viewAnalysis')}</span>
         </button>
       </div>
 
       {/* Business Details */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
         <div className="flex items-center justify-between px-4 pt-5 pb-2">
-          <h3 className="font-bold text-slate-900 text-base">Business Details</h3>
+          <h3 className="font-bold text-slate-900 text-base">{t('businessDetails')}</h3>
           <button
             onClick={() => setShowBusinessInfoModal(true)}
             className="text-xs text-herb-dark font-semibold hover:text-herb hover:underline"
           >
-            Edit
+            {t('edit')}
           </button>
         </div>
         <div className="divide-y divide-slate-50">
@@ -958,12 +958,12 @@ export default function ProfilePage() {
           <div className="flex items-center gap-3 px-4 py-3">
             <Building2 className="w-4 h-4 text-slate-300 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Tax ID / VAT</p>
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">{t('taxIdVat')}</p>
               {businessInfo.tax_id ? (
                 <p className="text-sm font-semibold text-slate-900 mt-0.5">{businessInfo.tax_id}</p>
               ) : (
                 <button onClick={() => setShowBusinessInfoModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">
-                  Add Tax ID →
+                  {t('addTaxId')} →
                 </button>
               )}
             </div>
@@ -974,7 +974,7 @@ export default function ProfilePage() {
           <div className="flex items-start gap-3 px-4 py-3">
             <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-1.5">City</p>
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-1.5">{t('city')}</p>
               {businessInfo.city ? (
                 <div className="flex flex-wrap gap-1.5">
                   {businessInfo.city.split(',').map(c => c.trim()).filter(Boolean).map(c => (
@@ -982,7 +982,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
               ) : (
-                <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">Add address →</button>
+                <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">{t('addAddress')} →</button>
               )}
             </div>
           </div>
@@ -991,7 +991,7 @@ export default function ProfilePage() {
           <div className="flex items-start gap-3 px-4 py-3">
             <Tag className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-2">Cuisine / Type</p>
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-2">{t('cuisineType')}</p>
               {businessInfo.cuisine?.length > 0 ? (
                 <div className="flex flex-wrap gap-1.5">
                   {businessInfo.cuisine.map(c => (
@@ -999,7 +999,7 @@ export default function ProfilePage() {
                   ))}
                 </div>
               ) : (
-                <span className="text-sm text-slate-400">Not set</span>
+                <span className="text-sm text-slate-400">{t('notSet')}</span>
               )}
             </div>
           </div>
@@ -1009,10 +1009,10 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-slate-300" />
-                <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Bank Details</p>
+                <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">{t('bankDetails')}</p>
               </div>
               <button onClick={() => setShowBankModal(true)} className="text-xs text-herb-dark font-semibold hover:text-herb hover:underline">
-                {bankDetails ? 'Edit' : 'Add'}
+                {bankDetails ? t('edit') : t('add')}
               </button>
             </div>
             {bankDetails ? (
@@ -1053,13 +1053,13 @@ export default function ProfilePage() {
 
       {/* Account Settings */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <h3 className="font-bold text-slate-900 text-base px-4 pt-5 pb-2">Account Settings</h3>
+        <h3 className="font-bold text-slate-900 text-base px-4 pt-5 pb-2">{t('accountSettings')}</h3>
         <div className="divide-y divide-slate-100">
-          <SettingRow label="Change Email & Password" onClick={() => setShowPasswordModal(true)} />
-          <SettingRow label="Update Phone Number" onClick={() => setShowPhoneModal(true)} />
-          <SettingRow label="Manage My Addresses" onClick={() => setShowAddressModal(true)} />
+          <SettingRow label={t('changeEmailPassword')} onClick={() => setShowPasswordModal(true)} />
+          <SettingRow label={t('updatePhoneNumber')} onClick={() => setShowPhoneModal(true)} />
+          <SettingRow label={t('manageMyAddresses')} onClick={() => setShowAddressModal(true)} />
           <div className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm font-medium text-slate-700">Language / Sprache</span>
+            <span className="text-sm font-medium text-slate-700">{t('languageSprache')}</span>
             <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5">
               {LANGS.map(l => (
                 <button key={l} onClick={() => setLanguage(l)}
@@ -1078,7 +1078,7 @@ export default function ProfilePage() {
         className="w-full flex items-center justify-center gap-2 py-4 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors border border-red-100"
       >
         <LogOut className="w-5 h-5" />
-        Sign Out
+        {t('signOut')}
       </button>
 
       {/* Delete Account */}
@@ -1086,7 +1086,7 @@ export default function ProfilePage() {
         onClick={() => setShowDeleteModal(true)}
         className="w-full py-3 text-sm text-slate-400 hover:text-red-500 font-medium transition-colors"
       >
-        Delete Account
+        {t('deleteAccount')}
       </button>
 
       {/* Modals */}

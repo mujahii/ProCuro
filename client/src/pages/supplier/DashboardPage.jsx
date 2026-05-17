@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
 import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
 import ProductForm from '../../components/supplier/ProductForm'
-import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, X, CheckCircle, AlertCircle, Clock } from 'lucide-react'
+import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, X, CheckCircle, AlertCircle, Clock, MapPin } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
 
@@ -119,7 +119,7 @@ export default function SupplierDashboardPage() {
       )}
 
       {/* Certification status banner */}
-      {!loading && !user?.is_banned && (!supplierProfile?.is_verified || addresses.length === 0) && (
+      {!loading && !user?.is_banned && (!supplierProfile?.is_verified || addresses.length === 0 || !supplierProfile?.city?.trim()) && (
         <div className="bg-lionsmane border border-marigold-light rounded-xl p-4">
           <div className="flex items-start gap-3 mb-3">
             <AlertCircle className="w-5 h-5 text-marigold flex-shrink-0 mt-0.5" />
@@ -170,18 +170,31 @@ export default function SupplierDashboardPage() {
                 </button>
               )}
             </div>
+            <div className="flex items-center gap-2 text-sm">
+              {supplierProfile?.city?.trim()
+                ? <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />
+                : <MapPin className="w-4 h-4 text-red-400 flex-shrink-0" />}
+              <span className={supplierProfile?.city?.trim() ? 'text-midnight-dark font-medium' : 'text-slate-700'}>
+                City / Location {supplierProfile?.city?.trim() ? `— ${supplierProfile.city}` : '— Select at least one location'}
+              </span>
+              {!supplierProfile?.city?.trim() && (
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark ml-1">
+                  Go →
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {!loading && !user?.is_banned && supplierProfile?.is_verified && addresses.length > 0 && (
+      {!loading && !user?.is_banned && supplierProfile?.is_verified && addresses.length > 0 && supplierProfile?.city?.trim() && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+          <div className="w-9 h-9 rounded-full bg-emerald-400 flex items-center justify-center flex-shrink-0 shadow-sm">
             <CheckCircle className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-emerald-800">Account certified</p>
-            <p className="text-sm text-emerald-700">Your products are visible in the store.</p>
+            <p className="font-bold text-emerald-500">Account certified</p>
+            <p className="text-sm text-emerald-400">Your products are visible in the store.</p>
           </div>
         </div>
       )}

@@ -195,15 +195,28 @@ export default function LandingPage() {
         {/* Category Filter */}
         <section>
           <h2 className="text-lg font-bold text-slate-900 mb-4">Browse by Category</h2>
-          <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-hide">
-            {['All', ...CATEGORIES.map(c => c.name)].map(cat => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat === selectedCategory ? 'All' : cat)}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-colors ${selectedCategory === cat ? 'bg-midnight text-white' : 'bg-white border border-slate-200 text-slate-700 hover:border-celeste-dark'}`}
+          <div
+            className="flex overflow-x-auto pb-2 scrollbar-hide justify-between gap-2"
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            {[{ name: 'All', icon: Package }, ...CATEGORIES].map(({ name, icon: Icon }) => (
+              <div
+                key={name}
+                onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
+                className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0 outline-none select-none"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                {cat}
-              </button>
+                <div className={`w-20 h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
+                  selectedCategory === name
+                    ? 'bg-lionsmane border-herb shadow-md'
+                    : 'bg-white border-slate-100 group-hover:border-celeste-dark group-hover:shadow-md'
+                }`}>
+                  <Icon className={`w-9 h-9 ${selectedCategory === name ? 'text-midnight' : 'text-slate-400 group-hover:text-herb'}`} />
+                </div>
+                <span className={`text-xs font-medium whitespace-nowrap ${
+                  selectedCategory === name ? 'text-midnight-dark font-bold' : 'text-slate-600 group-hover:text-slate-900'
+                }`}>{name}</span>
+              </div>
             ))}
           </div>
         </section>

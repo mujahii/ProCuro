@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { ShoppingCart, Mail, Phone, Globe } from 'lucide-react'
+import { useLanguage, LANGS } from '../../context/LanguageContext'
 
 export default function Footer() {
+  const { lang, setLanguage } = useLanguage()
   return (
     <footer className="bg-midnight text-celeste py-12 mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
@@ -20,6 +22,22 @@ export default function Footer() {
             <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
             <li><Link to="/press" className="hover:text-white transition-colors">Press</Link></li>
           </ul>
+          <div className="mt-5">
+            <p className="text-[10px] uppercase tracking-wide opacity-60 mb-2">Language / Sprache</p>
+            <div className="inline-flex items-center gap-0.5 bg-white/10 rounded-lg p-0.5">
+              {LANGS.map(l => (
+                <button
+                  key={l}
+                  onClick={() => setLanguage(l)}
+                  className={`px-3 py-1 rounded-md text-xs font-bold uppercase transition-colors ${
+                    lang === l ? 'bg-white text-midnight shadow-sm' : 'text-celeste hover:text-white'
+                  }`}
+                >
+                  {l}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
         <div>
           <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wide">Resources</h4>

@@ -25,14 +25,14 @@ export async function askGemini(prompt, context, accessToken) {
   return data.response
 }
 
-export async function getAnalyticsSummary(context, accessToken) {
+export async function getAnalyticsSummary(context, accessToken, { force = false } = {}) {
   const res = await fetch(ANALYTICS_URL, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ context }),
+    body: JSON.stringify({ context, force }),
   })
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}))
@@ -41,5 +41,6 @@ export async function getAnalyticsSummary(context, accessToken) {
     throw new Error(`${errBody.error || `AI service error (${res.status})`}${detail}`)
   }
   const data = await res.json()
-  return data.summary
+  // Returns { summary, generated_at, cached, stale? }
+  return data
 }

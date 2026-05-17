@@ -1,11 +1,21 @@
 const express = require('express')
 const router = express.Router()
 const { GoogleGenerativeAI } = require('@google/generative-ai')
+const { createClient } = require('@supabase/supabase-js')
 const rateLimit = require('express-rate-limit')
 const verifySupabaseJWT = require('../middleware/verifySupabaseJWT')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+
+// Service-role client for cache reads/writes (bypasses RLS).
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+)
+
+const ANALYTICS_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
 const aiLimiter = rateLimit({
   windowMs: 60 * 1000,
@@ -53,7 +63,24 @@ router.post('/chat', verifySupabaseJWT, aiLimiter, async (req, res) => {
 
 // POST /api/ai/analytics-summary
 router.post('/analytics-summary', verifySupabaseJWT, aiLimiter, async (req, res) => {
-  const { context } = req.body
+  const { context, force } = req.body
+  const userId = req.user.id
+
+  // Cache hit: serve the previously-generated summary if it's under 24h old
+  // and the client didn't explicitly request a refresh.
+  if (userId && !force) {
+    const { data: cached } = await supabaseAdmin
+      .from('ai_insights_cache')
+      .select('summary, generated_at')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (cached?.summary) {
+      const age = Date.now() - new Date(cached.generated_at).getTime()
+      if (age < ANALYTICS_CACHE_TTL_MS) {
+        return res.json({ summary: cached.summary, generated_at: cached.generated_at, cached: true })
+      }
+    }
+  }
 
   const prompts = {
     restaurant_owner: `Analyze this restaurant owner's procurement data and provide a 3-sentence business insight plus one actionable recommendation:\n${JSON.stringify(context)}`,
@@ -65,9 +92,35 @@ router.post('/analytics-summary', verifySupabaseJWT, aiLimiter, async (req, res)
 
   try {
     const result = await model.generateContent(prompt)
-    res.json({ summary: result.response.text() })
+    const summary = result.response.text()
+    const generated_at = new Date().toISOString()
+
+    if (userId) {
+      await supabaseAdmin
+        .from('ai_insights_cache')
+        .upsert(
+          { user_id: userId, scope: 'analytics', summary, generated_at },
+          { onConflict: 'user_id' }
+        )
+    }
+
+    res.json({ summary, generated_at, cached: false })
   } catch (err) {
     console.error('Gemini analytics error:', err)
+
+    // If Gemini is rate-limited but we have a previous summary on file,
+    // serve the stale copy instead of erroring out.
+    if (userId) {
+      const { data: stale } = await supabaseAdmin
+        .from('ai_insights_cache')
+        .select('summary, generated_at')
+        .eq('user_id', userId)
+        .maybeSingle()
+      if (stale?.summary) {
+        return res.json({ summary: stale.summary, generated_at: stale.generated_at, cached: true, stale: true })
+      }
+    }
+
     res.status(503).json({ error: 'AI analysis is temporarily unavailable.' })
   }
 })

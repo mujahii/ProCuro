@@ -105,8 +105,22 @@ function AIText({ text }) {
   )
 }
 
+function timeAgo(iso) {
+  if (!iso) return ''
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.round(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.round(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.round(hours / 24)
+  return `${days}d ago`
+}
+
 export default function AnalyticsSummary({ context }) {
   const [summary, setSummary] = useState('')
+  const [generatedAt, setGeneratedAt] = useState(null)
+  const [stale, setStale] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -114,17 +128,19 @@ export default function AnalyticsSummary({ context }) {
   useEffect(() => {
     if (context && !hasGenerated.current) {
       hasGenerated.current = true
-      generate()
+      generate({ force: false })
     }
   }, [context])
 
-  async function generate() {
+  async function generate({ force = false } = {}) {
     setLoading(true)
     setError(null)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const text = await getAnalyticsSummary(context, session?.access_token ?? '')
-      setSummary(text)
+      const result = await getAnalyticsSummary(context, session?.access_token ?? '', { force })
+      setSummary(result.summary || '')
+      setGeneratedAt(result.generated_at || null)
+      setStale(Boolean(result.stale))
     } catch (err) {
       setError(err?.message || 'AI analysis is temporarily unavailable.')
     } finally {
@@ -142,14 +158,18 @@ export default function AnalyticsSummary({ context }) {
           </div>
           <div>
             <h3 className="font-bold text-white text-sm tracking-wide">AI Insights</h3>
-            <p className="text-xs text-white/60">Powered by Gemini</p>
+            <p className="text-xs text-white/60">
+              {generatedAt
+                ? <>Updated {timeAgo(generatedAt)}{stale ? ' · cached' : ''} · once / 24h</>
+                : 'Powered by Gemini'}
+            </p>
           </div>
         </div>
         <button
-          onClick={generate}
+          onClick={() => generate({ force: true })}
           disabled={loading}
           className="p-2 hover:bg-white/10 rounded-xl transition-colors group"
-          title="Refresh insights"
+          title="Force-regenerate (uses your Gemini quota)"
         >
           <RefreshCw className={`w-4 h-4 text-white/70 group-hover:text-white ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -176,7 +196,7 @@ export default function AnalyticsSummary({ context }) {
               <AlertTriangle className="w-5 h-5 text-red-400" />
             </div>
             <p className="text-sm text-slate-400 mb-3">{error}</p>
-            <button onClick={generate} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark underline underline-offset-2">
+            <button onClick={() => generate({ force: true })} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
               Try again
             </button>
           </div>
@@ -190,7 +210,7 @@ export default function AnalyticsSummary({ context }) {
             <p className="text-sm font-semibold text-slate-700 mb-1">Analyse your sales data</p>
             <p className="text-xs text-slate-400 mb-5 max-w-xs mx-auto">Get AI-powered insights on revenue, top products, and growth opportunities.</p>
             <button
-              onClick={generate}
+              onClick={() => generate({ force: false })}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors shadow-sm"
             >
               <Sparkles className="w-3.5 h-3.5" /> Generate Insights

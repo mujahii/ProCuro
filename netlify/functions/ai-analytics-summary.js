@@ -28,6 +28,10 @@ const supabase = createClient(
   }
 )
 
+// Same-user requests served from cache for this many ms (24h).
+// Only an explicit { force: true } from the UI bypasses the cache.
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000
+
 exports.handler = async (event) => {
   const headers = {
     'Content-Type': 'application/json',
@@ -45,19 +49,21 @@ exports.handler = async (event) => {
 
   // Authentication is optional - allow unauthenticated users with generic responses
   let profile = { role: 'default', full_name: null, is_banned: false }
+  let userId = null
 
   const authHeader = event.headers.authorization || event.headers.Authorization
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1]
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-    
+
     if (!authError && user) {
+      userId = user.id
       const { data: userProfile } = await supabase
         .from('users')
         .select('role, full_name, is_banned')
         .eq('id', user.id)
         .single()
-      
+
       if (userProfile) {
         profile = userProfile
       }
@@ -75,7 +81,30 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) }
   }
 
-  const { context } = body
+  const { context, force } = body
+
+  // Cache hit: signed-in user, not forcing, and the last summary is fresh.
+  if (userId && !force) {
+    const { data: cached } = await supabase
+      .from('ai_insights_cache')
+      .select('summary, generated_at')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (cached?.summary) {
+      const age = Date.now() - new Date(cached.generated_at).getTime()
+      if (age < CACHE_TTL_MS) {
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            summary: cached.summary,
+            generated_at: cached.generated_at,
+            cached: true,
+          }),
+        }
+      }
+    }
+  }
 
   // Upcoming Islamic and German events (relative to current date)
   const now = new Date()
@@ -122,13 +151,50 @@ Reply with exactly 3 bullet points (each ≤ 15 words):
 
   try {
     const summary = await generateWithFallback(prompt)
+    const generated_at = new Date().toISOString()
+
+    // Persist for this user so subsequent loads in the next 24h are served
+    // from cache without burning Gemini quota.
+    if (userId) {
+      await supabase
+        .from('ai_insights_cache')
+        .upsert(
+          { user_id: userId, scope: 'analytics', summary, generated_at },
+          { onConflict: 'user_id' }
+        )
+    }
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ summary }),
+      body: JSON.stringify({ summary, generated_at, cached: false }),
     }
   } catch (err) {
     console.error('Gemini analytics error:', err?.message || err, err?.stack)
+
+    // If Gemini is throttled / unavailable but we still have a cached summary,
+    // serve the stale copy instead of an error so the user keeps seeing
+    // something useful.
+    if (userId) {
+      const { data: stale } = await supabase
+        .from('ai_insights_cache')
+        .select('summary, generated_at')
+        .eq('user_id', userId)
+        .maybeSingle()
+      if (stale?.summary) {
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            summary: stale.summary,
+            generated_at: stale.generated_at,
+            cached: true,
+            stale: true,
+          }),
+        }
+      }
+    }
+
     return {
       statusCode: 503,
       headers,

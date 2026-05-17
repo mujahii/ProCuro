@@ -55,10 +55,10 @@ function StatItem({ target, suffix, label, decimal, started }) {
   const count = useCountUp(target, 1800, started, decimal)
   return (
     <div>
-      <p className="text-3xl font-black text-midnight">
+      <p className="text-2xl sm:text-3xl font-black text-midnight">
         {decimal ? count.toFixed(1) : count.toLocaleString()}{suffix}
       </p>
-      <p className="text-sm text-slate-500 mt-1">{label}</p>
+      <p className="text-xs sm:text-sm text-slate-500 mt-1">{label}</p>
     </div>
   )
 }
@@ -75,9 +75,9 @@ function StatsBar() {
     return () => observer.disconnect()
   }, [])
   return (
-    <section ref={ref} className="bg-white border-b border-slate-100 py-8">
+    <section ref={ref} className="bg-white border-b border-slate-100 py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
           {STAT_TARGETS.map((s) => (
             <StatItem key={s.labelKey} {...s} label={t(s.labelKey)} started={started} />
           ))}
@@ -148,41 +148,41 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Banner — pure frosted glass, no photo */}
-      <section className="relative min-h-[560px] flex items-center justify-center overflow-hidden bg-midnight">
+      <section className="relative min-h-[440px] sm:min-h-[560px] flex items-center justify-center overflow-hidden bg-midnight">
         {/* Deep frosted overlay — Navy base with Teal mid-tone + faint Gold warmth */}
         <div className="absolute inset-0 bg-gradient-to-br from-midnight/95 via-herb/40 to-marigold/20 backdrop-blur-3xl" />
         {/* Soft colour blobs */}
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-marigold/15 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-celeste/20 rounded-full blur-3xl" />
 
-        <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto pt-8 sm:pt-0 pb-10 sm:pb-0">
-          <span className="inline-flex items-center gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-            <CheckCircle className="w-4 h-4" /> {t('heroTagline')}
+        <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto pt-6 sm:pt-0 pb-8 sm:pb-0">
+          <span className="inline-flex items-center gap-1.5 sm:gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-6">
+            <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {t('heroTagline')}
           </span>
-          <h1 className="text-4xl sm:text-5xl font-black mb-4 leading-tight text-lionsmane">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black mb-3 sm:mb-4 leading-tight text-lionsmane">
             {t('heroTitle')}
           </h1>
-          <p className="text-lg text-celeste mb-8 max-w-xl mx-auto">
+          <p className="text-sm sm:text-lg text-celeste mb-6 sm:mb-8 max-w-xl mx-auto">
             {t('heroSubtitle')}
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+          <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center mb-6 sm:mb-8">
             <button
               onClick={() => navigate('/register')}
-              className="bg-marigold hover:bg-marigold-dark text-midnight font-bold px-8 py-4 rounded-xl text-lg shadow-lg transition-all"
+              className="bg-marigold hover:bg-marigold-dark text-midnight font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg shadow-lg transition-all"
             >
               {t('getStarted')}
             </button>
             <button
               onClick={() => navigate('/suppliers')}
-              className="border-2 border-lionsmane/60 text-lionsmane hover:bg-lionsmane/10 font-bold px-8 py-4 rounded-xl text-lg transition-all"
+              className="border-2 border-lionsmane/60 text-lionsmane hover:bg-lionsmane/10 font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg transition-all"
             >
               {t('browseSuppliers')}
             </button>
           </div>
-          <div className="flex items-center justify-center gap-6 text-sm text-celeste flex-wrap">
-            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> {t('gdprCompliant')}</span>
-            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> {t('halalVerifiedBadge')}</span>
-            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> {t('noHiddenFees')}</span>
+          <div className="flex items-center justify-center gap-x-4 gap-y-1.5 sm:gap-6 text-xs sm:text-sm text-celeste flex-wrap">
+            <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('gdprCompliant')}</span>
+            <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('halalVerifiedBadge')}</span>
+            <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('noHiddenFees')}</span>
           </div>
         </div>
       </section>
@@ -190,11 +190,11 @@ export default function LandingPage() {
       {/* Stats Bar — animated counters */}
       <StatsBar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 flex-grow w-full space-y-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex-grow w-full space-y-8 sm:space-y-12">
 
         {/* Category Filter */}
         <section>
-          <h2 className="text-lg font-bold text-slate-900 mb-4">{t('browseByCategory')}</h2>
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">{t('browseByCategory')}</h2>
           <div
             className="flex overflow-x-auto pb-2 scrollbar-hide justify-between gap-2"
             style={{ WebkitOverflowScrolling: 'touch' }}
@@ -203,17 +203,17 @@ export default function LandingPage() {
               <div
                 key={name}
                 onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
-                className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0 outline-none select-none"
+                className="flex flex-col items-center gap-1.5 sm:gap-2 cursor-pointer group flex-shrink-0 outline-none select-none"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                <div className={`w-20 h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
+                <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
                   selectedCategory === name
                     ? 'bg-lionsmane border-herb shadow-md'
                     : 'bg-white border-slate-100 group-hover:border-celeste-dark group-hover:shadow-md'
                 }`}>
-                  <Icon className={`w-9 h-9 ${selectedCategory === name ? 'text-midnight' : 'text-slate-400 group-hover:text-herb'}`} />
+                  <Icon className={`w-7 h-7 sm:w-9 sm:h-9 ${selectedCategory === name ? 'text-midnight' : 'text-slate-400 group-hover:text-herb'}`} />
                 </div>
-                <span className={`text-xs font-medium whitespace-nowrap ${
+                <span className={`text-[11px] sm:text-xs font-medium whitespace-nowrap ${
                   selectedCategory === name ? 'text-midnight-dark font-bold' : 'text-slate-600 group-hover:text-slate-900'
                 }`}>{t(labelKey)}</span>
               </div>
@@ -224,7 +224,7 @@ export default function LandingPage() {
         {/* Featured Products */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-900">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">
               {getCategoryLabel(selectedCategory)}
             </h2>
             <button onClick={() => navigate('/products')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">
@@ -291,7 +291,7 @@ export default function LandingPage() {
         {/* Verified Suppliers */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-bold text-slate-900">{t('featuredSuppliers')}</h2>
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('featuredSuppliers')}</h2>
             <button onClick={() => navigate('/suppliers')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">
               All <ChevronRight className="w-4 h-4" />
             </button>
@@ -329,19 +329,19 @@ export default function LandingPage() {
         </section>
 
         {/* How It Works */}
-        <section className="py-8">
-          <h2 className="text-2xl font-black text-slate-900 text-center mb-10">{t('howItWorks')}</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <section className="py-4 sm:py-8">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 text-center mb-6 sm:mb-10">{t('howItWorks')}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {HOW_IT_WORKS.map(({ icon: Icon, title, desc }, i) => (
               <div key={title} className="text-center">
-                <div className="relative inline-block mb-4">
-                  <div className="w-16 h-16 bg-celeste rounded-full flex items-center justify-center mx-auto">
-                    <Icon className="w-8 h-8 text-midnight" />
+                <div className="relative inline-block mb-3 sm:mb-4">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-celeste rounded-full flex items-center justify-center mx-auto">
+                    <Icon className="w-7 h-7 sm:w-8 sm:h-8 text-midnight" />
                   </div>
                   <span className="absolute -top-1 -right-1 w-6 h-6 bg-midnight text-white rounded-full flex items-center justify-center font-bold text-xs">{i + 1}</span>
                 </div>
-                <h3 className="font-bold text-slate-900 text-lg mb-2">{title}</h3>
-                <p className="text-slate-500 text-sm">{desc}</p>
+                <h3 className="font-bold text-slate-900 text-base sm:text-lg mb-1.5 sm:mb-2">{title}</h3>
+                <p className="text-slate-500 text-xs sm:text-sm">{desc}</p>
               </div>
             ))}
           </div>

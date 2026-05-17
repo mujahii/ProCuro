@@ -10,16 +10,16 @@ export default function TermsOfServicePage() {
   return (
     <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
-      <main className="max-w-3xl mx-auto px-4 py-12 flex-grow w-full">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-8 transition-colors">
+      <main className="max-w-3xl mx-auto px-4 py-8 sm:py-12 flex-grow w-full">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-6 sm:mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" /> {t('back')}
         </button>
 
         <div className="flex items-center gap-3 mb-2">
-          <FileText className="w-7 h-7 text-midnight" />
-          <h1 className="text-2xl font-black text-slate-900">{t('termsTitle')}</h1>
+          <FileText className="w-6 h-6 sm:w-7 sm:h-7 text-midnight" />
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900">{t('termsTitle')}</h1>
         </div>
-        <p className="text-slate-500 text-sm mb-4">{t('termsSubtitle')}</p>
+        <p className="text-slate-500 text-xs sm:text-sm mb-4">{t('termsSubtitle')}</p>
         {t('termsLegalNote') && (
           <div className="flex items-start gap-3 bg-celeste/10 border border-celeste/30 rounded-xl p-4 mb-6 text-sm text-midnight">
             <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-herb" />
@@ -27,7 +27,7 @@ export default function TermsOfServicePage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-8 text-sm text-slate-700 leading-relaxed">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6 sm:space-y-8 text-xs sm:text-sm text-slate-700 leading-relaxed">
 
           <section>
             <h2 className="font-bold text-slate-900 text-base mb-2">§ 1 Geltungsbereich und Vertragspartner</h2>

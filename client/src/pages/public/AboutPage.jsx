@@ -17,36 +17,36 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
-      <main className="max-w-3xl mx-auto px-4 py-12 flex-grow w-full">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-8 transition-colors">
+      <main className="max-w-3xl mx-auto px-4 py-8 sm:py-12 flex-grow w-full">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-6 sm:mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" /> {t('back')}
         </button>
 
-        <div className="flex items-center gap-3 mb-6">
-          <ShoppingCart className="w-8 h-8 text-midnight" />
-          <h1 className="text-3xl font-black text-slate-900">{t('aboutTitle')}</h1>
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <ShoppingCart className="w-7 h-7 sm:w-8 sm:h-8 text-midnight" />
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t('aboutTitle')}</h1>
         </div>
 
-        <p className="text-lg text-slate-600 leading-relaxed mb-8">
+        <p className="text-sm sm:text-lg text-slate-600 leading-relaxed mb-6 sm:mb-8">
           {t('aboutIntro')}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10">
           {cards.map(({ icon: Icon, titleKey, descKey }) => (
-            <div key={titleKey} className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
-              <Icon className="w-6 h-6 text-midnight mb-3" />
-              <h3 className="font-bold text-slate-900 mb-1">{t(titleKey)}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed">{t(descKey)}</p>
+            <div key={titleKey} className="bg-white rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm">
+              <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-midnight mb-2 sm:mb-3" />
+              <h3 className="font-bold text-slate-900 mb-1 text-sm sm:text-base">{t(titleKey)}</h3>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{t(descKey)}</p>
             </div>
           ))}
         </div>
 
-        <h2 className="text-xl font-bold text-slate-900 mb-3">{t('aboutOurStory')}</h2>
-        <p className="text-slate-600 leading-relaxed mb-4">{t('aboutStoryP1')}</p>
-        <p className="text-slate-600 leading-relaxed mb-8">{t('aboutStoryP2')}</p>
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">{t('aboutOurStory')}</h2>
+        <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-3 sm:mb-4">{t('aboutStoryP1')}</p>
+        <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-6 sm:mb-8">{t('aboutStoryP2')}</p>
 
-        <h2 className="text-xl font-bold text-slate-900 mb-3">{t('contactUs')}</h2>
-        <p className="text-slate-600">
+        <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">{t('contactUs')}</h2>
+        <p className="text-sm sm:text-base text-slate-600">
           Email: <a href="mailto:support@procuro.com" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">support@procuro.com</a><br />
           Phone: <a href="tel:+4915560608671" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">+49 155 6060 8671</a><br />
           {t('aboutLocation')}

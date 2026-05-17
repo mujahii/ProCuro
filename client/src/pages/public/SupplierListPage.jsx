@@ -209,7 +209,8 @@ export default function SupplierListPage() {
                     <h3 className="font-bold text-slate-900">{supplier.business_name}</h3>
                     {supplier.city && (
                       <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
-                        <MapPin className="w-3 h-3" />{supplier.city}
+                        <MapPin className="w-3 h-3" />
+                        {[...new Set(supplier.city.split(',').map(c => c.trim()).filter(Boolean))].join(', ')}
                         {distKm !== null && (
                           <span className="ml-1 text-midnight font-semibold">· {distKm < 1 ? `${Math.round(distKm * 1000)}m` : `${distKm.toFixed(1)}km`} away</span>
                         )}

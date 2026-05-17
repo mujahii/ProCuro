@@ -146,16 +146,27 @@ export default function SupplierProfilePage() {
             <h1 className="text-2xl font-black leading-tight">{supplier.business_name}</h1>
             <div className="flex items-center gap-2 text-sm mt-1.5 flex-wrap">
               {supplier.city && (() => {
+                const cities = supplier.city.split(',').map(c => c.trim()).filter(Boolean)
                 const firstAddr = addresses[0]
-                const mapsQ = firstAddr?.latitude && firstAddr?.longitude
+                const baseMaps = firstAddr?.latitude && firstAddr?.longitude
                   ? `${firstAddr.latitude},${firstAddr.longitude}`
-                  : encodeURIComponent(supplier.city)
+                  : null
                 return (
-                  <a href={`https://maps.google.com/?q=${mapsQ}`} target="_blank" rel="noopener noreferrer"
-                     className="flex items-center gap-1 hover:text-celeste transition-colors" onClick={e => e.stopPropagation()}>
+                  <span className="flex items-center gap-1.5 flex-wrap">
                     <MapPin className="w-3.5 h-3.5" />
-                    <span className="underline-offset-2 hover:underline">{supplier.city}</span>
-                  </a>
+                    {cities.map((c, i) => (
+                      <a
+                        key={`${c}-${i}`}
+                        href={`https://maps.google.com/?q=${i === 0 && baseMaps ? baseMaps : encodeURIComponent(c)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        className="bg-white/15 hover:bg-white/25 px-2 py-0.5 rounded-full text-xs underline-offset-2 hover:underline transition-colors"
+                      >
+                        {c}
+                      </a>
+                    ))}
+                  </span>
                 )
               })()}
               {supplier.phone && (

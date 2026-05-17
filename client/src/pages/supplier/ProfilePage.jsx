@@ -403,7 +403,7 @@ function AddressModal({ onClose, supplierProfileId }) {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {!addr.is_default && (
-                  <button onClick={() => handleSetDefault(addr.id)} className="text-xs text-midnight font-semibold hover:underline whitespace-nowrap">
+                  <button onClick={() => handleSetDefault(addr.id)} className="text-xs text-herb-dark font-semibold hover:text-herb hover:underline whitespace-nowrap">
                     Set Favorite
                   </button>
                 )}
@@ -423,7 +423,7 @@ function AddressModal({ onClose, supplierProfileId }) {
             type="button"
             onClick={detectGPS}
             disabled={gpsLoading}
-            className="flex items-center gap-1.5 text-xs text-midnight font-semibold hover:text-midnight-dark disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-herb-dark font-semibold hover:text-herb disabled:opacity-50 transition-colors"
           >
             {gpsLoading
               ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -588,7 +588,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
         matched = def ? [def] : [savedAddresses[0]]
       }
       const ids = matched.map(a => a.id)
-      const cities = [...new Set(matched.map(a => a.city).filter(Boolean))].join(', ')
+      const cities = matched.map(a => a.city).filter(Boolean).join(', ')
       const first = matched[0]
       setSelectedAddrIds(ids)
       setForm(f => ({ ...f, city: cities, latitude: first?.latitude || null, longitude: first?.longitude || null }))
@@ -600,7 +600,9 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
       ? selectedAddrIds.filter(x => x !== id)
       : [...selectedAddrIds, id]
     const selected = savedAddresses.filter(a => next.includes(a.id))
-    const cities = [...new Set(selected.map(a => a.city).filter(Boolean))].join(', ')
+    // Preserve one city entry per selected address so users see exactly the
+    // number of locations they picked, even when several share the same city.
+    const cities = selected.map(a => a.city).filter(Boolean).join(', ')
     const first = selected[0]
     setSelectedAddrIds(next)
     setForm(f => ({ ...f, city: cities, latitude: first?.latitude || null, longitude: first?.longitude || null }))
@@ -692,22 +694,26 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
         </div>
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide">City / Location</label>
-            <button type="button" onClick={() => setShowAddrModal(true)} className="text-xs text-midnight font-semibold hover:text-midnight-dark transition-colors">
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              City / Location {selectedAddrIds.length > 0 && (
+                <span className="ml-1 text-herb-dark normal-case tracking-normal">· {selectedAddrIds.length} selected</span>
+              )}
+            </label>
+            <button type="button" onClick={() => setShowAddrModal(true)} className="text-xs text-herb-dark font-semibold hover:text-herb transition-colors">
               + Manage Addresses
             </button>
           </div>
-          <p className="text-xs text-slate-400 mb-2">Select all locations to display on your profile</p>
+          <p className="text-xs text-slate-400 mb-2">Tap each location you want shown on your profile</p>
           {savedAddresses.length === 0 ? (
             <div className="p-4 border border-dashed border-slate-200 rounded-xl text-center">
               <p className="text-sm text-slate-400 mb-3">No locations added yet</p>
               <div className="flex items-center justify-center gap-3">
-                <button type="button" onClick={detectGPS} disabled={gpsLoading} className="flex items-center gap-1.5 text-sm text-midnight font-semibold hover:text-midnight-dark disabled:opacity-50 transition-colors">
+                <button type="button" onClick={detectGPS} disabled={gpsLoading} className="flex items-center gap-1.5 text-sm text-herb-dark font-semibold hover:text-herb disabled:opacity-50 transition-colors">
                   {gpsLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
                   Use GPS
                 </button>
                 <span className="text-slate-300">|</span>
-                <button type="button" onClick={() => setShowAddrModal(true)} className="text-sm text-midnight font-semibold hover:text-midnight-dark">
+                <button type="button" onClick={() => setShowAddrModal(true)} className="text-sm text-herb-dark font-semibold hover:text-herb">
                   Add Address
                 </button>
               </div>
@@ -1135,7 +1141,7 @@ export default function SupplierProfilePage() {
           <h2 className="font-bold text-slate-900 text-xl mt-3">{profile?.full_name || 'Supplier'}</h2>
           <p className="text-sm text-slate-400 mt-0.5">{businessName || 'Supplier'}</p>
           {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
-          <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-midnight font-semibold hover:underline">
+          <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-herb-dark font-semibold hover:text-herb hover:underline">
             Edit Profile
           </button>
         </div>
@@ -1165,7 +1171,7 @@ export default function SupplierProfilePage() {
           <h3 className="font-bold text-slate-900 text-base">Business Details</h3>
           <button
             onClick={() => setShowBusinessInfoModal(true)}
-            className="text-xs text-midnight font-semibold hover:underline"
+            className="text-xs text-herb-dark font-semibold hover:text-herb hover:underline"
           >
             Edit
           </button>
@@ -1228,7 +1234,7 @@ export default function SupplierProfilePage() {
                 <CreditCard className="w-4 h-4 text-slate-300" />
                 <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">Bank Details</p>
               </div>
-              <button onClick={() => setShowBankModal(true)} className="text-xs text-midnight font-semibold hover:underline">
+              <button onClick={() => setShowBankModal(true)} className="text-xs text-herb-dark font-semibold hover:text-herb hover:underline">
                 {bankDetails ? 'Edit' : 'Add'}
               </button>
             </div>
@@ -1319,7 +1325,7 @@ export default function SupplierProfilePage() {
           </h3>
           <button
             onClick={() => setShowCertUploadModal(true)}
-            className="text-xs text-midnight font-semibold hover:underline flex items-center gap-1"
+            className="text-xs text-herb-dark font-semibold hover:text-herb hover:underline flex items-center gap-1"
           >
             + Add
           </button>

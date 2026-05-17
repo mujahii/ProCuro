@@ -393,6 +393,19 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
               </div>
             </div>
           )}
+          {ownerInfo?.city && (
+            <div className="flex items-start gap-3 p-3 bg-lionsmane rounded-xl">
+              <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">Business Locations</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[...new Set(ownerInfo.city.split(',').map(c => c.trim()).filter(Boolean))].map(c => (
+                    <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-celeste text-midnight-dark">{c}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
           {deliveryAddress && (
             <div className="flex items-start gap-3 p-3 bg-lionsmane rounded-xl">
               <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
@@ -417,7 +430,7 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
               </a>
             </div>
           )}
-          {!ownerInfo?.bio && !ownerInfo?.phone && !deliveryAddress && (
+          {!ownerInfo?.bio && !ownerInfo?.phone && !ownerInfo?.city && !deliveryAddress && (
             <p className="text-sm text-slate-400 text-center py-2">No additional contact details available.</p>
           )}
         </div>

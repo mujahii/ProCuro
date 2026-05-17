@@ -31,17 +31,32 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 
-    <!-- Google Translate — translates the whole site between English and German -->
+    <!-- Google Translate — loaded async only when a non-English googtrans cookie is set.
+         This prevents the script from blocking page load on mobile networks. -->
     <script type="text/javascript">
-      function googleTranslateElementInit() {
+      window.googleTranslateElementInit = function () {
         new google.translate.TranslateElement({
           pageLanguage: 'en',
           includedLanguages: 'en,de',
           autoDisplay: false,
         }, 'google_translate_element');
-      }
+      };
+      (function loadGoogleTranslateIfNeeded() {
+        try {
+          var cookie = document.cookie || '';
+          var match = cookie.match(/googtrans=([^;]+)/);
+          var target = match ? decodeURIComponent(match[1]) : '';
+          // Format is "/src/dest" — only load the widget if destination is not English
+          var needsTranslate = /\/(?!en$)[a-z-]+$/i.test(target);
+          if (!needsTranslate) return;
+          var s = document.createElement('script');
+          s.async = true;
+          s.defer = true;
+          s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+          document.head.appendChild(s);
+        } catch (e) { /* fail silently — site still works without translation */ }
+      })();
     </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
   </head>
   <body>
     <div id="google_translate_element" style="display:none;"></div>

@@ -1,67 +1,69 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { AuthProvider } from './context/AuthContext'
+import { Loader2 } from 'lucide-react'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
 import { AddressProvider } from './context/AddressContext'
 import { LanguageProvider } from './context/LanguageContext'
 
-// Public pages
+// First-paint critical (eager)
 import LandingPage from './pages/public/LandingPage'
 import LoginPage from './pages/public/LoginPage'
 import RegisterOwnerPage from './pages/public/RegisterOwnerPage'
 import RegisterSupplierPage from './pages/public/RegisterSupplierPage'
-import SelectRolePage from './pages/public/SelectRolePage'
-import PublicSupplierProfilePage from './pages/public/SupplierProfilePage'
-import SupplierListPage from './pages/public/SupplierListPage'
-import ProductsListPage from './pages/public/ProductsListPage'
-import ResetPasswordPage from './pages/public/ResetPasswordPage'
-import AboutPage from './pages/public/AboutPage'
-import HelpCenterPage from './pages/public/HelpCenterPage'
-import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage'
-import TermsOfServicePage from './pages/public/TermsOfServicePage'
-import CareersPage from './pages/public/CareersPage'
-import PressPage from './pages/public/PressPage'
 
-// Admin pages
-import AdminLoginPage from './pages/admin/AdminLoginPage'
-import AdminDashboardPage from './pages/admin/DashboardPage'
-import AdminUsersPage from './pages/admin/UsersPage'
-import AdminSuppliersPage from './pages/admin/SuppliersPage'
-import AdminCertificatesPage from './pages/admin/CertificatesPage'
-import AdminProductsPage from './pages/admin/ProductsPage'
-import AdminOrdersPage from './pages/admin/OrdersPage'
-import AdminReportsPage from './pages/admin/ReportsPage'
-import AdminChatPage from './pages/admin/AdminChatPage'
-
-// Owner pages
+// Layouts + routing helpers (eager)
 import OwnerLayout from './components/layout/OwnerLayout'
-import OwnerStorePage from './pages/owner/StorePage'
-import AllProductsPage from './pages/owner/AllProductsPage'
-import OwnerCartPage from './pages/owner/CartPage'
-import OwnerOrdersPage from './pages/owner/OrdersPage'
-import OwnerAnalyticsPage from './pages/owner/AnalyticsPage'
-import OwnerProfilePage from './pages/owner/ProfilePage'
-
-// Supplier pages
 import SupplierLayout from './components/layout/SupplierLayout'
-import SupplierDashboardPage from './pages/supplier/DashboardPage'
-import SupplierProductsPage from './pages/supplier/ProductsPage'
-import SupplierOrdersPage from './pages/supplier/OrdersPage'
-import SupplierAnalyticsPage from './pages/supplier/AnalyticsPage'
-import SupplierCertificatesPage from './pages/supplier/CertificatesPage'
-import SupplierBankDetailsPage from './pages/supplier/BankDetailsPage'
-import SupplierProfilePage from './pages/supplier/ProfilePage'
-
-// Shared pages
-import ChatPage from './pages/shared/ChatPage'
-
-// Routing
+import AdminLayout from './components/layout/AdminLayout'
 import ProtectedRoute from './components/routing/ProtectedRoute'
 import PublicOnlyRoute from './components/routing/PublicOnlyRoute'
-import AdminLayout from './components/layout/AdminLayout'
 import ChatbotFAB from './components/ai/ChatbotFAB'
-import { useAuth } from './context/AuthContext'
-import { useLocation } from 'react-router-dom'
+
+// Secondary public pages
+const SelectRolePage = lazy(() => import('./pages/public/SelectRolePage'))
+const PublicSupplierProfilePage = lazy(() => import('./pages/public/SupplierProfilePage'))
+const SupplierListPage = lazy(() => import('./pages/public/SupplierListPage'))
+const ProductsListPage = lazy(() => import('./pages/public/ProductsListPage'))
+const ResetPasswordPage = lazy(() => import('./pages/public/ResetPasswordPage'))
+const AboutPage = lazy(() => import('./pages/public/AboutPage'))
+const HelpCenterPage = lazy(() => import('./pages/public/HelpCenterPage'))
+const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage'))
+const TermsOfServicePage = lazy(() => import('./pages/public/TermsOfServicePage'))
+const CareersPage = lazy(() => import('./pages/public/CareersPage'))
+const PressPage = lazy(() => import('./pages/public/PressPage'))
+
+// Admin
+const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'))
+const AdminDashboardPage = lazy(() => import('./pages/admin/DashboardPage'))
+const AdminUsersPage = lazy(() => import('./pages/admin/UsersPage'))
+const AdminSuppliersPage = lazy(() => import('./pages/admin/SuppliersPage'))
+const AdminCertificatesPage = lazy(() => import('./pages/admin/CertificatesPage'))
+const AdminProductsPage = lazy(() => import('./pages/admin/ProductsPage'))
+const AdminOrdersPage = lazy(() => import('./pages/admin/OrdersPage'))
+const AdminReportsPage = lazy(() => import('./pages/admin/ReportsPage'))
+const AdminChatPage = lazy(() => import('./pages/admin/AdminChatPage'))
+
+// Owner
+const OwnerStorePage = lazy(() => import('./pages/owner/StorePage'))
+const AllProductsPage = lazy(() => import('./pages/owner/AllProductsPage'))
+const OwnerCartPage = lazy(() => import('./pages/owner/CartPage'))
+const OwnerOrdersPage = lazy(() => import('./pages/owner/OrdersPage'))
+const OwnerAnalyticsPage = lazy(() => import('./pages/owner/AnalyticsPage'))
+const OwnerProfilePage = lazy(() => import('./pages/owner/ProfilePage'))
+
+// Supplier
+const SupplierDashboardPage = lazy(() => import('./pages/supplier/DashboardPage'))
+const SupplierProductsPage = lazy(() => import('./pages/supplier/ProductsPage'))
+const SupplierOrdersPage = lazy(() => import('./pages/supplier/OrdersPage'))
+const SupplierAnalyticsPage = lazy(() => import('./pages/supplier/AnalyticsPage'))
+const SupplierCertificatesPage = lazy(() => import('./pages/supplier/CertificatesPage'))
+const SupplierBankDetailsPage = lazy(() => import('./pages/supplier/BankDetailsPage'))
+const SupplierAccountPage = lazy(() => import('./pages/supplier/ProfilePage'))
+
+// Shared
+const ChatPage = lazy(() => import('./pages/shared/ChatPage'))
 
 function AuthenticatedChatbotFAB() {
   const { user } = useAuth()
@@ -69,6 +71,14 @@ function AuthenticatedChatbotFAB() {
   const isChatPage = pathname.includes('/chat')
   if (!user || isChatPage) return null
   return <ChatbotFAB />
+}
+
+function RouteFallback() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <Loader2 className="w-6 h-6 animate-spin text-herb" />
+    </div>
+  )
 }
 
 export default function App() {
@@ -90,6 +100,7 @@ export default function App() {
               },
             }}
           />
+          <Suspense fallback={<RouteFallback />}>
           <Routes>
             {/* Public */}
             <Route path="/" element={<LandingPage />} />
@@ -144,12 +155,13 @@ export default function App() {
               <Route path="certificates" element={<SupplierCertificatesPage />} />
               <Route path="bank-details" element={<SupplierBankDetailsPage />} />
               <Route path="chat" element={<ChatPage />} />
-              <Route path="profile" element={<SupplierProfilePage />} />
+              <Route path="profile" element={<SupplierAccountPage />} />
             </Route>
 
             {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </Suspense>
           <AuthenticatedChatbotFAB />
         </AddressProvider>
       </CartProvider>

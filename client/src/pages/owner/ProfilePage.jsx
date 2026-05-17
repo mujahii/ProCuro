@@ -12,85 +12,12 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { formatIBAN, handleIBANInput } from '../../lib/formatIBAN'
-import ModalPortal from '../../components/ui/ModalPortal'
-
-function Modal({ title, onClose, children, maxW = 'max-w-sm' }) {
-  return (
-    <ModalPortal>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-        <div className={`bg-white rounded-2xl shadow-xl w-full ${maxW} overflow-hidden max-h-[90vh] flex flex-col`}>
-          <div className="flex items-center justify-between p-5 border-b border-slate-100 flex-shrink-0">
-            <h3 className="font-bold text-slate-900 text-base">{title}</h3>
-            <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 transition-colors">
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-          <div className="p-5 overflow-y-auto">{children}</div>
-        </div>
-      </div>
-    </ModalPortal>
-  )
-}
-
-function AvatarModal({ userId, onClose, onSaved }) {
-  const [file, setFile] = useState(null)
-  const [preview, setPreview] = useState(null)
-  const [saving, setSaving] = useState(false)
-  const inputRef = useRef(null)
-
-  function handleFileChange(e) {
-    const f = e.target.files[0]
-    if (!f) return
-    if (f.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB'); return }
-    setFile(f)
-    setPreview(URL.createObjectURL(f))
-  }
-
-  async function handleSave() {
-    if (!file) { toast.error('Please select an image'); return }
-    setSaving(true)
-    try {
-      const ext = file.name.split('.').pop()
-      const path = `${userId}/avatar.${ext}`
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
-      if (uploadError) throw uploadError
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-      await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', userId)
-      onSaved(publicUrl)
-      onClose()
-      toast.success('Profile photo updated!')
-    } catch {
-      toast.error('Failed to upload photo')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Modal title="Update Profile Picture" onClose={onClose}>
-      <div
-        onClick={() => inputRef.current?.click()}
-        className="border-2 border-dashed border-celeste-dark rounded-xl bg-lionsmane p-10 flex items-center justify-center cursor-pointer hover:bg-celeste transition-colors mb-4"
-      >
-        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-        {preview ? (
-          <img src={preview} alt="Preview" className="w-24 h-24 rounded-full object-cover" />
-        ) : (
-          <span className="text-4xl text-herb-light font-light leading-none">+</span>
-        )}
-      </div>
-      <div className="flex gap-3">
-        <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
-          Cancel
-        </button>
-        <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-          Save
-        </button>
-      </div>
-    </Modal>
-  )
-}
+import Modal from '../../components/profile/Modal'
+import SettingRow from '../../components/profile/SettingRow'
+import AvatarModal from '../../components/profile/AvatarModal'
+import PasswordModal from '../../components/profile/PasswordModal'
+import PhoneModal from '../../components/profile/PhoneModal'
+import DeleteAccountModal from '../../components/profile/DeleteAccountModal'
 
 function EditProfileModal({ userId, currentName, currentRestaurantName, currentBio, onClose, onSaved }) {
   const [name, setName] = useState(currentName || '')
@@ -394,137 +321,6 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
   )
 }
 
-function PasswordModal({ onClose }) {
-  const [form, setForm] = useState({ email: '', password: '', confirm: '' })
-  const [showPw, setShowPw] = useState(false)
-  const [saving, setSaving] = useState(false)
-
-  async function handleSave() {
-    if (form.password && form.password !== form.confirm) {
-      toast.error('Passwords do not match')
-      return
-    }
-    if (form.password && form.password.length < 6) {
-      toast.error('Password must be at least 6 characters')
-      return
-    }
-    setSaving(true)
-    try {
-      const updates = {}
-      if (form.email) updates.email = form.email
-      if (form.password) updates.password = form.password
-      if (!Object.keys(updates).length) { toast.error('Nothing to update'); setSaving(false); return }
-      const { error } = await supabase.auth.updateUser(updates)
-      if (error) throw error
-      if (updates.email) {
-        const { data: { user } } = await supabase.auth.getUser()
-        await supabase.from('users').update({ email: form.email }).eq('id', user.id)
-      }
-      toast.success('Account updated!')
-      onClose()
-    } catch (err) {
-      toast.error(err.message)
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Modal title="Change Email & Password" onClose={onClose}>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">New Email (optional)</label>
-          <input
-            type="email"
-            value={form.email}
-            onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="new@email.com"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">New Password (optional)</label>
-          <div className="relative">
-            <input
-              type={showPw ? 'text' : 'password'}
-              value={form.password}
-              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              className="w-full px-4 py-3 pr-12 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-              placeholder="Min. 6 characters"
-            />
-            <button type="button" onClick={() => setShowPw(p => !p)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
-              {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Confirm Password</label>
-          <input
-            type={showPw ? 'text' : 'password'}
-            value={form.confirm}
-            onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="Repeat new password"
-          />
-        </div>
-        <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
-            Cancel
-          </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save
-          </button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
-
-function PhoneModal({ userId, currentPhone, onClose, onSaved }) {
-  const [phone, setPhone] = useState(currentPhone || '')
-  const [saving, setSaving] = useState(false)
-
-  async function handleSave() {
-    setSaving(true)
-    try {
-      await supabase.from('users').update({ phone }).eq('id', userId)
-      onSaved(phone)
-      onClose()
-      toast.success('Phone number updated!')
-    } catch {
-      toast.error('Failed to update phone number')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Modal title="Update Phone Number" onClose={onClose}>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={e => setPhone(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="+49 170 1234567"
-          />
-        </div>
-        <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
-            Cancel
-          </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save
-          </button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
 
 function AddressModal({ onClose, userId }) {
   const { addresses, addAddress, deleteAddress, setDefault, reload } = useAddresses()
@@ -683,59 +479,6 @@ function AddressModal({ onClose, userId }) {
   )
 }
 
-function DeleteAccountModal({ onClose, onDeleted }) {
-  const [input, setInput] = useState('')
-  const [deleting, setDeleting] = useState(false)
-
-  async function handleDelete() {
-    if (input !== 'delete') return
-    setDeleting(true)
-    try {
-      const { error } = await supabase.rpc('delete_own_account')
-      if (error) throw error
-      onDeleted()
-    } catch (err) {
-      toast.error(err.message || 'Failed to delete account')
-      setDeleting(false)
-    }
-  }
-
-  return (
-    <Modal title="Delete Account" onClose={onClose}>
-      <div className="space-y-4">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <p className="text-sm font-semibold text-red-700 mb-1">This action is permanent</p>
-          <p className="text-sm text-red-600">All your data, orders, and account information will be permanently deleted and cannot be recovered.</p>
-        </div>
-        <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">
-            Type <span className="font-mono text-red-600">delete</span> to confirm
-          </label>
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-            placeholder="delete"
-            autoComplete="off"
-          />
-        </div>
-        <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
-            Cancel
-          </button>
-          <button
-            onClick={handleDelete}
-            disabled={input !== 'delete' || deleting}
-            className="flex-1 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-          >
-            {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
-            Delete Account
-          </button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
 
 function BankModal({ userId, current, onClose, onSaved }) {
   const [form, setForm] = useState({
@@ -801,18 +544,6 @@ function BankModal({ userId, current, onClose, onSaved }) {
         </div>
       </div>
     </Modal>
-  )
-}
-
-function SettingRow({ label, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className="w-full flex items-center justify-between px-4 py-4 hover:bg-lionsmane transition-colors text-left"
-    >
-      <span className="text-sm font-medium text-slate-800">{label}</span>
-      <ChevronRight className="w-4 h-4 text-slate-400 flex-shrink-0" />
-    </button>
   )
 }
 
@@ -1086,7 +817,7 @@ export default function ProfilePage() {
 
       {/* Modals */}
       {showAvatarModal && (
-        <AvatarModal userId={user.id} onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
+        <AvatarModal userId={user.id} role="owner" onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
       )}
       {showEditModal && (
         <EditProfileModal
@@ -1102,6 +833,7 @@ export default function ProfilePage() {
       {showPhoneModal && (
         <PhoneModal
           userId={user.id}
+          role="owner"
           currentPhone={profile?.phone}
           onClose={() => setShowPhoneModal(false)}
           onSaved={phone => updateProfileState({ phone })}
@@ -1129,6 +861,7 @@ export default function ProfilePage() {
       )}
       {showDeleteModal && (
         <DeleteAccountModal
+          message="All your data, orders, and account information will be permanently deleted and cannot be recovered."
           onClose={() => setShowDeleteModal(false)}
           onDeleted={() => signOut()}
         />

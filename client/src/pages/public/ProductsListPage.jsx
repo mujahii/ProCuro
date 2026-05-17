@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, ChevronDown, Package, Plus } from 'lucide-react'
+import { Search, Filter, ChevronDown, Package, Plus, Share2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
+import toast from 'react-hot-toast'
 
 const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Vegetables', 'Fruits', 'Bakery', 'Beverages', 'Spices', 'Other']
 
@@ -167,6 +168,18 @@ export default function ProductsListPage() {
 
 function ProductCard({ product, onLogin }) {
   const imgUrl = getProductImageUrl(product.image_url)
+
+  async function handleShare(e) {
+    e.stopPropagation()
+    const url = `${window.location.origin}/supplier/${product.supplier_id}`
+    if (navigator.share) {
+      await navigator.share({ title: product.name, text: `${product.name} at ${product.supplier?.business_name} on ProCuro`, url })
+    } else {
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied!')
+    }
+  }
+
   return (
     <div
       onClick={onLogin}
@@ -191,6 +204,13 @@ function ProductCard({ product, onLogin }) {
             -{product.discount_percent}%
           </div>
         )}
+        <button
+          onClick={handleShare}
+          className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-slate-500 hover:text-midnight transition-colors"
+          title="Share product"
+        >
+          <Share2 className="w-3.5 h-3.5" />
+        </button>
       </div>
       <div className="p-4">
         <h3 className="font-bold text-slate-900 text-base mb-1">{product.name}</h3>

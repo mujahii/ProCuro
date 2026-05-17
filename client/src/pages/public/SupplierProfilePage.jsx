@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink, X } from 'lucide-react'
+import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink, X, Share2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import Navbar from '../../components/layout/Navbar'
@@ -59,6 +59,27 @@ export default function SupplierProfilePage() {
     setLoading(false)
   }
 
+  async function shareProfile() {
+    const url = window.location.href
+    if (navigator.share) {
+      await navigator.share({ title: supplier.business_name, text: `Check out ${supplier.business_name} on ProCuro`, url })
+    } else {
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied!')
+    }
+  }
+
+  async function shareProduct(e, product) {
+    e.stopPropagation()
+    const url = `${window.location.origin}/supplier/${supplier.id}`
+    if (navigator.share) {
+      await navigator.share({ title: product.name, text: `${product.name} at ${supplier.business_name} on ProCuro`, url })
+    } else {
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied!')
+    }
+  }
+
   async function viewCert(cert) {
     if (!user) {
       toast.error('Please log in to view this certificate')
@@ -111,14 +132,25 @@ export default function SupplierProfilePage() {
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
-          {profile?.role === 'restaurant_owner' && (
-            <button
-              onClick={() => setShowReportModal(true)}
-              className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
-            >
-              <Flag className="w-4 h-4" /> Report Supplier
-            </button>
-          )}
+          <div className="flex items-center gap-3">
+            {supplier && (
+              <button
+                onClick={shareProfile}
+                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-midnight transition-colors font-medium"
+                title="Share this supplier"
+              >
+                <Share2 className="w-4 h-4" /> Share
+              </button>
+            )}
+            {profile?.role === 'restaurant_owner' && (
+              <button
+                onClick={() => setShowReportModal(true)}
+                className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
+              >
+                <Flag className="w-4 h-4" /> Report Supplier
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Banner */}
@@ -275,14 +307,23 @@ export default function SupplierProfilePage() {
                         <p className="text-sm font-semibold text-midnight mt-0.5">
                           €{Number(product.price).toFixed(2)} / {product.unit_type}
                         </p>
-                        {profile?.role === 'restaurant_owner' && supplier.is_active && (
+                        <div className="flex items-center gap-2 mt-2">
+                          {profile?.role === 'restaurant_owner' && supplier.is_active && (
+                            <button
+                              onClick={e => { e.stopPropagation(); setSelectedProduct(product) }}
+                              className="text-xs bg-midnight text-white px-3 py-1 rounded-full hover:bg-midnight transition-colors"
+                            >
+                              Add
+                            </button>
+                          )}
                           <button
-                            onClick={e => { e.stopPropagation(); setSelectedProduct(product) }}
-                            className="mt-2 text-xs bg-midnight text-white px-3 py-1 rounded-full hover:bg-midnight transition-colors"
+                            onClick={e => shareProduct(e, product)}
+                            className="text-slate-400 hover:text-midnight transition-colors"
+                            title="Share product"
                           >
-                            Add
+                            <Share2 className="w-3.5 h-3.5" />
                           </button>
-                        )}
+                        </div>
                       </div>
                     </div>
                   )

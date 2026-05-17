@@ -121,6 +121,7 @@ export default function AnalyticsSummary({ context }) {
   const [summary, setSummary] = useState('')
   const [generatedAt, setGeneratedAt] = useState(null)
   const [stale, setStale] = useState(false)
+  const [fallback, setFallback] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -141,6 +142,7 @@ export default function AnalyticsSummary({ context }) {
       setSummary(result.summary || '')
       setGeneratedAt(result.generated_at || null)
       setStale(Boolean(result.stale))
+      setFallback(Boolean(result.fallback))
     } catch (err) {
       setError(err?.message || 'AI analysis is temporarily unavailable.')
     } finally {
@@ -160,7 +162,7 @@ export default function AnalyticsSummary({ context }) {
             <h3 className="font-bold text-white text-sm tracking-wide">AI Insights</h3>
             <p className="text-xs text-white/60">
               {generatedAt
-                ? <>Updated {timeAgo(generatedAt)}{stale ? ' · cached' : ''} · once / 24h</>
+                ? <>Updated {timeAgo(generatedAt)}{fallback ? ' · basic mode' : stale ? ' · cached' : ''} · once / 24h</>
                 : 'Powered by Gemini'}
             </p>
           </div>

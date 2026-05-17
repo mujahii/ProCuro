@@ -17,6 +17,40 @@ const supabaseAdmin = createClient(
 
 const ANALYTICS_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
+function buildFallbackSummary(role, context) {
+  const c = context || {}
+  if (role === 'supplier') {
+    const revenue = c.revenueThisPeriod ?? c.revenueThisMonth ?? '0'
+    const orders = c.ordersThisPeriod ?? c.ordersThisMonth ?? 0
+    const best = c.bestProduct ?? c.topProduct ?? '—'
+    const active = c.activeProducts ?? 0
+    return [
+      `• **Sales** — €${revenue} from ${orders} order${orders === 1 ? '' : 's'} this period`,
+      `• **Best seller** — ${best}`,
+      `• **Stock** — ${active} active product${active === 1 ? '' : 's'} live in your store`,
+      `• **Action** — AI quota exhausted; richer insights return tomorrow or on refresh`,
+    ].join('\n')
+  }
+  if (role === 'admin') {
+    return [
+      `• **Health** — Live platform overview available in the dashboard charts`,
+      `• **Action** — AI quota exhausted; the executive summary returns tomorrow or on refresh`,
+    ].join('\n')
+  }
+  const spend = c.totalSpendThisMonth ?? '0'
+  const orders = c.totalOrdersThisMonth ?? 0
+  const allTime = c.totalSpendAllTime
+  const cat = c.topCategory ?? '—'
+  const top = (c.topProducts && c.topProducts[0]) || '—'
+  return [
+    `• **Spending** — €${spend} across ${orders} order${orders === 1 ? '' : 's'} this month`,
+    allTime ? `• **All time** — €${allTime} spent overall` : null,
+    `• **Top category** — ${cat}`,
+    `• **Top pick** — ${top}`,
+    `• **Tip** — AI quota exhausted; richer insights return tomorrow or on refresh`,
+  ].filter(Boolean).join('\n')
+}
+
 const aiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
@@ -121,7 +155,14 @@ router.post('/analytics-summary', verifySupabaseJWT, aiLimiter, async (req, res)
       }
     }
 
-    res.status(503).json({ error: 'AI analysis is temporarily unavailable.' })
+    // No cache and Gemini failed — return a deterministic summary built from
+    // the context so the user never sees a hard error wall.
+    res.json({
+      summary: buildFallbackSummary(req.user?.role, context),
+      generated_at: new Date().toISOString(),
+      cached: false,
+      fallback: true,
+    })
   }
 })
 

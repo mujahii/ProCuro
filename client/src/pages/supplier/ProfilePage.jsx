@@ -1020,7 +1020,7 @@ function SettingRow({ label, onClick }) {
 export default function SupplierProfilePage() {
   const navigate = useNavigate()
   const { user, profile, signOut, updateProfileState } = useAuth()
-  const { addresses } = useAddresses()
+  const { addresses, addressesVersion } = useAddresses()
   const { lang, setLanguage, t } = useLanguage()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || null)
@@ -1067,7 +1067,28 @@ export default function SupplierProfilePage() {
           .maybeSingle()
           .then(({ data }) => setBankDetails(data || null))
       })
+  // Note: this effect intentionally only runs on user change. The lighter
+  // address-driven city/coords refresh lives in the effect below so that
+  // adding/deleting an address doesn't re-fetch certificates and bank data.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
+
+  // Keep the Business Details card aligned with the address book. When an
+  // address is added, edited, or deleted, AddressContext bumps
+  // addressesVersion after reconciling supplier_profiles.city — we re-read
+  // just the city/coords fields so the chips and map link stay in sync.
+  useEffect(() => {
+    if (!user || !supplierProfile?.id) return
+    supabase
+      .from('supplier_profiles')
+      .select('city, latitude, longitude')
+      .eq('id', supplierProfile.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data) return
+        setSupplierProfile(prev => prev ? { ...prev, ...data } : prev)
+      })
+  }, [addressesVersion, user, supplierProfile?.id])
 
   function handleSignOut() {
     signOut()

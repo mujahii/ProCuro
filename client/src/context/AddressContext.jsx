@@ -4,10 +4,49 @@ import { useAuth } from './AuthContext'
 
 const AddressContext = createContext(null)
 
+// Keep the user's denormalised business-card city list aligned with the set
+// of saved addresses. Cities the user no longer has any address for are
+// removed; matching counts are preserved (so deleting one of two "Sepang"
+// addresses keeps one Sepang chip). Returns null when nothing matches so
+// the profile card falls back to its "Add address →" empty state.
+function reconcileCities(profileCity, remainingAddresses) {
+  const counts = {}
+  for (const a of remainingAddresses) {
+    if (a.city) counts[a.city] = (counts[a.city] || 0) + 1
+  }
+  const list = (profileCity || '').split(',').map(c => c.trim()).filter(Boolean)
+  const filtered = []
+  for (const c of list) {
+    if ((counts[c] || 0) > 0) {
+      filtered.push(c)
+      counts[c] -= 1
+    }
+  }
+  return filtered.length > 0 ? filtered.join(', ') : null
+}
+
+async function syncProfileCity(userId, role, remainingAddresses) {
+  const table = role === 'supplier' ? 'supplier_profiles' : 'owner_profiles'
+  const { data } = await supabase.from(table).select('city, latitude, longitude').eq('user_id', userId).maybeSingle()
+  if (!data) return null
+  const nextCity = reconcileCities(data.city, remainingAddresses)
+  if (nextCity === data.city) return nextCity
+  // If we cleared the city entirely, also clear the cached lat/lng so the
+  // map link on the public profile doesn't point at a deleted location.
+  const patch = nextCity === null
+    ? { city: null, latitude: null, longitude: null }
+    : { city: nextCity }
+  await supabase.from(table).update(patch).eq('user_id', userId)
+  return nextCity
+}
+
 export function AddressProvider({ children }) {
-  const { user } = useAuth()
+  const { user, role, refreshProfile, updateProfileState } = useAuth()
   const [addresses, setAddresses] = useState([])
   const [selectedAddress, setSelectedAddress] = useState(null)
+  // Bumped on every mutation so consumers (e.g. the supplier ProfilePage,
+  // which keeps its own supplier_profile state) can refetch in sync.
+  const [addressesVersion, setAddressesVersion] = useState(0)
 
   useEffect(() => {
     if (user) {
@@ -64,10 +103,19 @@ export function AddressProvider({ children }) {
   async function deleteAddress(id) {
     const { error } = await supabase.from('addresses').delete().eq('id', id)
     if (error) throw error
-    setAddresses(prev => prev.filter(a => a.id !== id))
+    const remaining = addresses.filter(a => a.id !== id)
+    setAddresses(remaining)
     if (selectedAddress?.id === id) {
-      const remaining = addresses.filter(a => a.id !== id)
       setSelectedAddress(remaining[0] || null)
+    }
+    setAddressesVersion(v => v + 1)
+    // Keep the business-details card aligned with the address book.
+    if (user?.id) {
+      const nextCity = await syncProfileCity(user.id, role, remaining)
+      if (role !== 'supplier' && updateProfileState) {
+        updateProfileState({ city: nextCity })
+      }
+      if (refreshProfile) await refreshProfile()
     }
   }
 
@@ -79,7 +127,7 @@ export function AddressProvider({ children }) {
   }
 
   return (
-    <AddressContext.Provider value={{ addresses, selectedAddress, selectAddress, addAddress, updateAddress, deleteAddress, setDefault, reload: loadAddresses }}>
+    <AddressContext.Provider value={{ addresses, addressesVersion, selectedAddress, selectAddress, addAddress, updateAddress, deleteAddress, setDefault, reload: loadAddresses }}>
       {children}
     </AddressContext.Provider>
   )

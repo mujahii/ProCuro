@@ -579,12 +579,7 @@ function AddressModal({ onClose, userId }) {
 
   async function handleDelete(id) {
     try {
-      const addr = addresses.find(a => a.id === id)
       await deleteAddress(id)
-      // If deleting Business Location, clear lat/lng/city from owner_profiles too
-      if (addr?.label === 'Business Location' && userId) {
-        await supabase.from('owner_profiles').update({ latitude: null, longitude: null, city: null }).eq('user_id', userId)
-      }
       toast.success('Address removed')
     } catch {
       toast.error('Failed to remove address')

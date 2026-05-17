@@ -139,7 +139,7 @@ export default function SupplierDashboardPage() {
                 Halal Certificate {certStatus.hasApprovedCert ? '— Approved' : certStatus.certPending ? '— Pending review' : '— Upload required'}
               </span>
               {!certStatus.hasApprovedCert && (
-                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-midnight font-semibold hover:underline ml-1">
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark ml-1">
                   Go →
                 </button>
               )}
@@ -152,7 +152,7 @@ export default function SupplierDashboardPage() {
                 Bank Details {certStatus.hasBank ? '— Added' : '— Required'}
               </span>
               {!certStatus.hasBank && (
-                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-midnight font-semibold hover:underline ml-1">
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark ml-1">
                   Go →
                 </button>
               )}
@@ -165,7 +165,7 @@ export default function SupplierDashboardPage() {
                 Business Address {addresses.length > 0 ? '— Added' : '— Required'}
               </span>
               {addresses.length === 0 && (
-                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-midnight font-semibold hover:underline ml-1">
+                <button onClick={() => navigate('/supplier/profile')} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark ml-1">
                   Go →
                 </button>
               )}
@@ -175,11 +175,13 @@ export default function SupplierDashboardPage() {
       )}
 
       {!loading && !user?.is_banned && supplierProfile?.is_verified && addresses.length > 0 && (
-        <div className="bg-lionsmane border border-celeste rounded-xl p-4 flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-herb flex-shrink-0" />
+        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+            <CheckCircle className="w-5 h-5 text-white" />
+          </div>
           <div>
-            <p className="font-bold text-midnight">Account certified</p>
-            <p className="text-sm text-midnight-dark">Your products are visible in the store.</p>
+            <p className="font-bold text-emerald-800">Account certified</p>
+            <p className="text-sm text-emerald-700">Your products are visible in the store.</p>
           </div>
         </div>
       )}
@@ -241,7 +243,7 @@ export default function SupplierDashboardPage() {
               <h2 className="text-lg font-bold text-slate-900">My Products</h2>
               <button
                 onClick={() => navigate('/supplier/products')}
-                className="text-sm text-midnight font-semibold hover:text-midnight-dark transition-colors"
+                className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors"
               >
                 Manage All
               </button>
@@ -253,7 +255,7 @@ export default function SupplierDashboardPage() {
                 <p className="text-slate-400 text-sm">No products yet</p>
                 <button
                   onClick={() => navigate('/supplier/products')}
-                  className="mt-3 text-sm text-midnight font-semibold hover:underline"
+                  className="mt-3 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
                 >
                   Add your first product
                 </button>

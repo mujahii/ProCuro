@@ -386,7 +386,7 @@ export default function StorePage() {
           <div>
             <div className="flex justify-between items-end mb-4 px-1">
               <h2 className="text-lg font-bold text-slate-900">Recommended Suppliers</h2>
-              <button onClick={() => navigate('/suppliers')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">
+              <button onClick={() => navigate('/suppliers')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">
                 See All <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -439,7 +439,7 @@ export default function StorePage() {
               <h2 className="text-lg font-bold text-slate-900">
                 {selectedCategory !== 'All' ? selectedCategory : 'Recommended Orders'}
               </h2>
-              <button onClick={() => navigate('/owner/products')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">See All <ChevronRight className="w-4 h-4" /></button>
+              <button onClick={() => navigate('/owner/products')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">See All <ChevronRight className="w-4 h-4" /></button>
             </div>
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

@@ -486,12 +486,12 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
           ) : (
             <div className="space-y-3">
               {addresses.length > 0 && (
-                <button onClick={() => setShowForm(false)} className="text-sm text-midnight font-semibold hover:underline flex items-center gap-1">
+                <button onClick={() => setShowForm(false)} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">
                   ← Back to saved addresses
                 </button>
               )}
               <button type="button" onClick={detectGPS} disabled={gpsLoading}
-                className="flex items-center gap-1.5 text-xs text-midnight font-semibold hover:text-midnight-dark disabled:opacity-50">
+                className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark disabled:opacity-50">
                 {gpsLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Navigation className="w-3.5 h-3.5" />}
                 {gpsLoading ? 'Detecting...' : 'Use My Location'}
               </button>

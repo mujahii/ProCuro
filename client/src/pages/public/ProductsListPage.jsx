@@ -146,7 +146,7 @@ export default function ProductsListPage() {
             {(search || activeCategory) && (
               <button
                 onClick={() => { setSearch(''); setActiveCategory(null) }}
-                className="block mt-3 mx-auto text-sm text-midnight font-semibold hover:underline"
+                className="block mt-3 mx-auto text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
               >
                 Clear filters
               </button>

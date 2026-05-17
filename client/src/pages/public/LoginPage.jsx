@@ -104,7 +104,7 @@ export default function LoginPage() {
                   <p className="text-xs text-slate-400 mb-6">Click the link in the email to set a new password. The link expires in 1 hour.</p>
                   <button
                     onClick={() => { setForgotMode(false); setResetSent(false); setResetEmail('') }}
-                    className="text-sm text-midnight font-semibold hover:underline"
+                    className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
                   >
                     ← Back to login
                   </button>
@@ -166,7 +166,7 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setForgotMode(true)}
-                      className="text-xs text-midnight font-semibold hover:underline"
+                      className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
                     >
                       Forgot password?
                     </button>
@@ -220,7 +220,7 @@ export default function LoginPage() {
 
               <p className="text-center mt-8 text-sm text-slate-500">
                 Don't have an account?{' '}
-                <Link to="/register" className="text-midnight font-semibold hover:underline">Sign Up</Link>
+                <Link to="/register" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">Sign Up</Link>
               </p>
             </>
           )}

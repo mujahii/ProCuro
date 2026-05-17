@@ -170,7 +170,7 @@ function ActionModal({ report, onClose, onActionDone }) {
           )}
           <button
             onClick={() => { onClose(); navigate(`${report.type === 'supplier' ? '/admin/suppliers' : '/admin/products'}?id=${report.target_id}`) }}
-            className="flex items-center gap-1.5 text-xs text-midnight font-semibold hover:text-midnight-dark transition-colors mt-1"
+            className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors mt-1"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             View {report.type === 'supplier' ? 'Supplier' : 'Product'} in Admin Panel

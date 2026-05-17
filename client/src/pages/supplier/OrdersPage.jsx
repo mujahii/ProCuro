@@ -222,7 +222,7 @@ function PaymentReceiptDisplay({ path }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-1.5 text-sm text-midnight font-semibold hover:underline"
+      className="flex items-center gap-1.5 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
     >
       <ExternalLink className="w-4 h-4" /> View Payment Receipt
     </a>
@@ -354,28 +354,32 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
   const [showReport, setShowReport] = useState(false)
   const navigate = useNavigate()
   return (
-    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-midnight px-6 py-10 text-center relative">
-          <button onClick={onClose} className="absolute top-4 right-4 text-white/70 hover:text-white transition-colors">
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        {/* Compact header — avatar + name on a navy stripe, not a full block */}
+        <div className="bg-midnight px-5 py-5 flex items-center gap-4 relative flex-shrink-0">
+          <button onClick={onClose} className="absolute top-3 right-3 text-white/70 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
-          <div className="w-28 h-28 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4 overflow-hidden shadow-xl border-4 border-white/20">
+          <div className="w-14 h-14 rounded-full bg-white/15 flex items-center justify-center overflow-hidden flex-shrink-0 border-2 border-white/25">
             {ownerInfo?.avatar_url ? (
               <img src={ownerInfo.avatar_url} alt="avatar" className="w-full h-full object-cover" />
             ) : (
-              <Store className="w-14 h-14 text-white" />
+              <Store className="w-7 h-7 text-white" />
             )}
           </div>
-          <h2 className="text-2xl font-bold text-white">
-            {ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant'}
-          </h2>
-          {ownerInfo?.restaurant_name && ownerInfo?.full_name && (
-            <p className="text-celeste text-sm mt-1">{ownerInfo.full_name}</p>
-          )}
+          <div className="min-w-0 flex-1 pr-6">
+            <h2 className="text-lg font-bold text-white truncate">
+              {ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant'}
+            </h2>
+            {ownerInfo?.restaurant_name && ownerInfo?.full_name && (
+              <p className="text-celeste text-xs truncate">{ownerInfo.full_name}</p>
+            )}
+          </div>
         </div>
 
-        <div className="p-5 space-y-3">
+        {/* Scrollable body */}
+        <div className="p-4 space-y-2.5 overflow-y-auto flex-1">
           {ownerInfo?.bio && (
             <div className="p-3 bg-lionsmane rounded-xl">
               <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">About</p>
@@ -387,7 +391,7 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
               <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
               <div>
                 <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">Phone</p>
-                <a href={`tel:${ownerInfo.phone}`} className="text-sm font-medium text-slate-800 hover:underline">
+                <a href={`tel:${ownerInfo.phone}`} className="text-sm font-medium text-herb hover:text-herb-dark hover:underline">
                   {fmtPhone(ownerInfo.phone)}
                 </a>
               </div>
@@ -397,10 +401,10 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
             <div className="flex items-start gap-3 p-3 bg-lionsmane rounded-xl">
               <MapPin className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1">Business Locations</p>
+                <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-1.5">Business Locations</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {[...new Set(ownerInfo.city.split(',').map(c => c.trim()).filter(Boolean))].map(c => (
-                    <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-celeste text-midnight-dark">{c}</span>
+                  {ownerInfo.city.split(',').map(c => c.trim()).filter(Boolean).map((c, i) => (
+                    <span key={`${c}-${i}`} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-celeste text-midnight-dark">{c}</span>
                   ))}
                 </div>
               </div>
@@ -424,7 +428,7 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
                 href={`https://maps.google.com/?q=${deliveryAddress.latitude ? `${deliveryAddress.latitude},${deliveryAddress.longitude}` : encodeURIComponent([deliveryAddress.street, deliveryAddress.city].filter(Boolean).join(', '))}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-400 hover:text-midnight flex-shrink-0 mt-0.5 transition-colors"
+                className="text-herb hover:text-herb-dark flex-shrink-0 mt-0.5 transition-colors"
               >
                 <ExternalLink className="w-4 h-4" />
               </a>
@@ -435,7 +439,8 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
           )}
         </div>
 
-        <div className="px-5 pb-5 space-y-2">
+        {/* Footer actions — pinned, single primary CTA */}
+        <div className="px-4 pb-4 pt-2 space-y-2 flex-shrink-0 border-t border-slate-100 bg-white">
           {ownerId && (
             <button
               onClick={() => { onClose(); navigate(`/supplier/chat?owner_id=${ownerId}`) }}
@@ -444,18 +449,12 @@ function OwnerProfileModal({ ownerInfo, ownerId, deliveryAddress, onClose }) {
               <MessageSquare className="w-4 h-4" /> Message Owner
             </button>
           )}
-          <button
-            onClick={onClose}
-            className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors"
-          >
-            Close
-          </button>
           {ownerId && (
             <button
               onClick={() => setShowReport(true)}
-              className="w-full py-2.5 flex items-center justify-center gap-2 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
+              className="w-full py-2 flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-red-500 transition-colors font-medium"
             >
-              <Flag className="w-4 h-4" /> Report Restaurant Owner
+              <Flag className="w-3.5 h-3.5" /> Report Restaurant Owner
             </button>
           )}
         </div>
@@ -522,7 +521,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Delivery To</p>
           <button
             onClick={handleChatWithOwner}
-            className="flex items-center gap-1.5 text-xs text-midnight font-semibold hover:text-midnight-dark transition-colors"
+            className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors"
           >
             <MessageSquare className="w-3.5 h-3.5" /> Chat with Owner
           </button>

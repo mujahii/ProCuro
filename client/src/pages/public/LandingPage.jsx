@@ -214,7 +214,7 @@ export default function LandingPage() {
             <h2 className="text-lg font-bold text-slate-900">
               {selectedCategory !== 'All' ? selectedCategory : t('featuredProducts')}
             </h2>
-            <button onClick={() => navigate('/products')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">
+            <button onClick={() => navigate('/products')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">
               All <ChevronRight className="w-4 h-4" />
             </button>
           </div>
@@ -279,7 +279,7 @@ export default function LandingPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900">{t('featuredSuppliers')}</h2>
-            <button onClick={() => navigate('/suppliers')} className="text-sm text-midnight font-semibold hover:text-midnight-dark flex items-center gap-1">
+            <button onClick={() => navigate('/suppliers')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">
               All <ChevronRight className="w-4 h-4" />
             </button>
           </div>

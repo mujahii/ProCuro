@@ -174,7 +174,7 @@ export default function SupplierListPage() {
             {(search || activeCategory) && (
               <button
                 onClick={() => { setSearch(''); setActiveCategory(null) }}
-                className="mt-3 text-sm text-midnight font-semibold hover:underline"
+                className="mt-3 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
               >
                 Clear filters
               </button>

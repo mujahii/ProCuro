@@ -108,7 +108,7 @@ export default function HelpCenterPage() {
               </button>
             </div>
             <p className="text-xs text-slate-400 text-center">
-              Or email us directly at <a href="mailto:support@procuro.com" className="text-midnight font-semibold hover:underline">support@procuro.com</a>
+              Or email us directly at <a href="mailto:support@procuro.com" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">support@procuro.com</a>
             </p>
           </form>
         )}

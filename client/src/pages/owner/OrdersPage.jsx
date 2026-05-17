@@ -145,7 +145,7 @@ function RefundReceiptDisplay({ path }) {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 text-sm text-midnight font-semibold hover:underline"
+      className="flex items-center gap-2 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
     >
       <ExternalLink className="w-4 h-4" /> View Refund Receipt
     </a>

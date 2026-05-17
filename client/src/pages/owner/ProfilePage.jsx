@@ -302,7 +302,7 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
                 <span className="ml-1 text-herb-dark normal-case tracking-normal">· {selectedAddrIds.length} selected</span>
               )}
             </label>
-            <button type="button" onClick={() => setShowAddrModal(true)} className="text-xs text-herb-dark font-semibold hover:text-herb transition-colors">
+            <button type="button" onClick={() => setShowAddrModal(true)} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors">
               + Manage Addresses
             </button>
           </div>
@@ -311,12 +311,12 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
             <div className="p-4 border border-dashed border-slate-200 rounded-xl text-center">
               <p className="text-sm text-slate-400 mb-3">No locations added yet</p>
               <div className="flex items-center justify-center gap-3">
-                <button type="button" onClick={detectGPS} disabled={gpsLoading} className="flex items-center gap-1.5 text-sm text-herb-dark font-semibold hover:text-herb disabled:opacity-50 transition-colors">
+                <button type="button" onClick={detectGPS} disabled={gpsLoading} className="flex items-center gap-1.5 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark disabled:opacity-50 transition-colors">
                   {gpsLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
                   Use GPS
                 </button>
                 <span className="text-slate-300">|</span>
-                <button type="button" onClick={() => setShowAddrModal(true)} className="text-sm text-herb-dark font-semibold hover:text-herb">
+                <button type="button" onClick={() => setShowAddrModal(true)} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
                   Add Address
                 </button>
               </div>
@@ -618,7 +618,7 @@ function AddressModal({ onClose, userId }) {
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {!addr.is_default && (
-                  <button onClick={() => handleSetDefault(addr.id)} className="text-xs text-herb-dark font-semibold hover:text-herb hover:underline whitespace-nowrap">
+                  <button onClick={() => handleSetDefault(addr.id)} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark whitespace-nowrap">
                     Set Favorite
                   </button>
                 )}
@@ -638,7 +638,7 @@ function AddressModal({ onClose, userId }) {
             type="button"
             onClick={detectGPS}
             disabled={gpsLoading}
-            className="flex items-center gap-1.5 text-xs text-herb-dark font-semibold hover:text-herb disabled:opacity-50 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark disabled:opacity-50 transition-colors"
           >
             {gpsLoading
               ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -913,7 +913,7 @@ export default function ProfilePage() {
           <h2 className="font-bold text-slate-900 text-xl mt-3">{displayName || t('restaurantOwner')}</h2>
           <p className="text-sm text-slate-400 mt-0.5">{restaurantName || t('restaurant')}</p>
           {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
-          <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-herb-dark font-semibold hover:text-herb hover:underline">
+          <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
             {t('editProfile')}
           </button>
         </div>
@@ -943,7 +943,7 @@ export default function ProfilePage() {
           <h3 className="font-bold text-slate-900 text-base">{t('businessDetails')}</h3>
           <button
             onClick={() => setShowBusinessInfoModal(true)}
-            className="text-xs text-herb-dark font-semibold hover:text-herb hover:underline"
+            className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
           >
             {t('edit')}
           </button>
@@ -1006,7 +1006,7 @@ export default function ProfilePage() {
                 <CreditCard className="w-4 h-4 text-slate-300" />
                 <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">{t('bankDetails')}</p>
               </div>
-              <button onClick={() => setShowBankModal(true)} className="text-xs text-herb-dark font-semibold hover:text-herb hover:underline">
+              <button onClick={() => setShowBankModal(true)} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
                 {bankDetails ? t('edit') : t('add')}
               </button>
             </div>

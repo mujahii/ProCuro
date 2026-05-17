@@ -172,7 +172,7 @@ export default function Navbar({ onMenuClick }) {
                             type="button"
                             onClick={detectGPS}
                             disabled={gpsLoading}
-                            className="flex items-center gap-1 text-xs text-midnight font-semibold hover:text-midnight-dark"
+                            className="flex items-center gap-1 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
                           >
                             {gpsLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Navigation className="w-3 h-3" />}
                             {gpsLoading ? 'Detecting...' : 'Use My Location'}

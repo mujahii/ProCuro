@@ -71,7 +71,7 @@ export default function CareersPage() {
 
         <div className="bg-slate-100 rounded-xl p-5 text-center">
           <p className="text-sm text-slate-600 mb-1">Don't see your role? We'd still love to hear from you.</p>
-          <a href="mailto:support@procuro.com?subject=Spontaneous Application" className="text-midnight font-semibold hover:underline text-sm">
+          <a href="mailto:support@procuro.com?subject=Spontaneous Application" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark text-sm">
             Send a spontaneous application →
           </a>
         </div>

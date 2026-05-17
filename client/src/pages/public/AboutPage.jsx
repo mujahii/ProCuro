@@ -46,8 +46,8 @@ export default function AboutPage() {
 
         <h2 className="text-xl font-bold text-slate-900 mb-3">Contact Us</h2>
         <p className="text-slate-600">
-          Email: <a href="mailto:support@procuro.com" className="text-midnight font-semibold hover:underline">support@procuro.com</a><br />
-          Phone: <a href="tel:+4915560608671" className="text-midnight font-semibold hover:underline">+49 155 6060 8671</a><br />
+          Email: <a href="mailto:support@procuro.com" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">support@procuro.com</a><br />
+          Phone: <a href="tel:+4915560608671" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">+49 155 6060 8671</a><br />
           Location: Paderborn, North Rhine-Westphalia, Germany
         </p>
       </main>

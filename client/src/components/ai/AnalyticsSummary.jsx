@@ -176,7 +176,7 @@ export default function AnalyticsSummary({ context }) {
               <AlertTriangle className="w-5 h-5 text-red-400" />
             </div>
             <p className="text-sm text-slate-400 mb-3">{error}</p>
-            <button onClick={generate} className="text-xs text-midnight font-semibold hover:text-midnight-dark underline underline-offset-2">
+            <button onClick={generate} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark underline underline-offset-2">
               Try again
             </button>
           </div>

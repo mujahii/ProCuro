@@ -92,7 +92,7 @@ export default function SupplierProfilePage() {
         <Navbar />
         <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
           <p className="text-slate-400 mb-4">Supplier not found</p>
-          <button onClick={() => navigate('/suppliers')} className="text-midnight font-semibold hover:underline">Browse all suppliers</button>
+          <button onClick={() => navigate('/suppliers')} className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">Browse all suppliers</button>
         </div>
       </div>
     )
@@ -220,7 +220,7 @@ export default function SupplierProfilePage() {
               {filteredProducts.length > INITIAL_LIMIT && (
                 <button
                   onClick={() => setShowAll(v => !v)}
-                  className="text-sm text-midnight font-semibold hover:text-midnight-dark transition-colors"
+                  className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors"
                 >
                   {showAll ? 'Show Less' : `See All (${filteredProducts.length})`}
                 </button>

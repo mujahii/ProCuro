@@ -148,41 +148,41 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Banner — pure frosted glass, no photo */}
-      <section className="relative min-h-[440px] sm:min-h-[560px] flex items-center justify-center overflow-hidden bg-midnight">
+      <section className="relative min-h-[620px] sm:min-h-[640px] flex items-center justify-center overflow-hidden bg-midnight">
         {/* Deep frosted overlay — Navy base with Teal mid-tone + faint Gold warmth */}
         <div className="absolute inset-0 bg-gradient-to-br from-midnight/95 via-herb/40 to-marigold/20 backdrop-blur-3xl" />
         {/* Soft colour blobs */}
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-marigold/15 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-celeste/20 rounded-full blur-3xl" />
 
-        <div className="relative z-10 text-center text-white px-4 max-w-3xl mx-auto pt-6 sm:pt-0 pb-8 sm:pb-0">
-          <span className="inline-flex items-center gap-1.5 sm:gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-xs sm:text-sm font-medium px-3 sm:px-4 py-1 sm:py-1.5 rounded-full mb-4 sm:mb-6">
+        <div className="relative z-10 text-center text-white px-6 max-w-3xl mx-auto py-16 sm:py-0">
+          <span className="inline-flex items-center gap-1.5 sm:gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 rounded-full mb-6 sm:mb-7">
             <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {t('heroTagline')}
           </span>
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black mb-3 sm:mb-4 leading-tight text-lionsmane">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black mb-5 sm:mb-5 leading-tight text-lionsmane">
             {t('heroTitle')}
           </h1>
-          <p className="text-sm sm:text-lg text-celeste mb-6 sm:mb-8 max-w-xl mx-auto">
+          <p className="text-sm sm:text-lg text-celeste mb-8 sm:mb-8 max-w-xl mx-auto leading-relaxed">
             {t('heroSubtitle')}
           </p>
-          <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 justify-center mb-6 sm:mb-8">
+          <div className="flex flex-row gap-3 justify-center mb-8 sm:mb-8">
             <button
               onClick={() => navigate('/register')}
-              className="bg-marigold hover:bg-marigold-dark text-midnight font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg shadow-lg transition-all"
+              className="bg-marigold hover:bg-marigold-dark text-midnight font-bold px-5 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg shadow-lg transition-all"
             >
               {t('getStarted')}
             </button>
             <button
               onClick={() => navigate('/suppliers')}
-              className="border-2 border-lionsmane/60 text-lionsmane hover:bg-lionsmane/10 font-bold px-6 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg transition-all"
+              className="border-2 border-lionsmane/60 text-lionsmane hover:bg-lionsmane/10 font-bold px-5 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg transition-all"
             >
               {t('browseSuppliers')}
             </button>
           </div>
-          <div className="flex items-center justify-center gap-x-4 gap-y-1.5 sm:gap-6 text-xs sm:text-sm text-celeste flex-wrap">
-            <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('gdprCompliant')}</span>
-            <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('halalVerifiedBadge')}</span>
-            <span className="flex items-center gap-1"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('noHiddenFees')}</span>
+          <div className="flex flex-col items-center gap-2.5 sm:flex-row sm:justify-center sm:gap-6 text-xs sm:text-sm text-celeste">
+            <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('gdprCompliant')}</span>
+            <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('halalVerifiedBadge')}</span>
+            <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('noHiddenFees')}</span>
           </div>
         </div>
       </section>

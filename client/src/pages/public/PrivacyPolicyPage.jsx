@@ -1,23 +1,31 @@
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Shield } from 'lucide-react'
+import { ArrowLeft, Shield, Info } from 'lucide-react'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function PrivacyPolicyPage() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   return (
     <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-12 flex-grow w-full">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-8 transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Back
+          <ArrowLeft className="w-4 h-4" /> {t('back')}
         </button>
 
         <div className="flex items-center gap-3 mb-2">
           <Shield className="w-7 h-7 text-midnight" />
-          <h1 className="text-2xl font-black text-slate-900">Datenschutzerklärung</h1>
+          <h1 className="text-2xl font-black text-slate-900">{t('privacyTitle')}</h1>
         </div>
-        <p className="text-slate-500 text-sm mb-8">Privacy Policy — Zuletzt aktualisiert: Mai 2025</p>
+        <p className="text-slate-500 text-sm mb-4">{t('privacySubtitle')}</p>
+        {t('privacyLegalNote') && (
+          <div className="flex items-start gap-3 bg-celeste/10 border border-celeste/30 rounded-xl p-4 mb-6 text-sm text-midnight">
+            <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-herb" />
+            {t('privacyLegalNote')}
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-8 text-sm text-slate-700 leading-relaxed">
 

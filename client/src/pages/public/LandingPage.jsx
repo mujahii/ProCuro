@@ -15,36 +15,23 @@ function getProductImageUrl(path) {
 }
 
 const CATEGORIES = [
-  { name: 'Meat', icon: Beef },
-  { name: 'Poultry', icon: Drumstick },
-  { name: 'Seafood', icon: Fish },
-  { name: 'Dairy', icon: Milk },
-  { name: 'Vegetables', icon: Leaf },
-  { name: 'Fruits', icon: Apple },
-  { name: 'Bakery', icon: Wheat },
-  { name: 'Beverages', icon: Coffee },
-  { name: 'Spices', icon: Flame },
-  { name: 'Other', icon: Package },
-]
-
-const STATS = [
-  { number: '28+', label: 'Restaurants' },
-  { number: '12+', label: 'Verified Suppliers' },
-  { number: '850+', label: 'Orders Placed' },
-  { number: '4.9★', label: 'Average Rating' },
-]
-
-const HOW_IT_WORKS = [
-  { icon: Shield, title: 'Create Your Account', desc: 'Sign up as a restaurant owner or supplier in minutes. No hidden fees.' },
-  { icon: Package, title: 'Browse & Order', desc: 'Browse verified Halal suppliers and place orders with a single click.' },
-  { icon: Truck, title: 'Track Delivery', desc: 'Track your delivery in real-time and manage all orders from one place.' },
+  { name: 'Meat', icon: Beef, labelKey: 'catMeat' },
+  { name: 'Poultry', icon: Drumstick, labelKey: 'catPoultry' },
+  { name: 'Seafood', icon: Fish, labelKey: 'catSeafood' },
+  { name: 'Dairy', icon: Milk, labelKey: 'catDairy' },
+  { name: 'Vegetables', icon: Leaf, labelKey: 'catVegetables' },
+  { name: 'Fruits', icon: Apple, labelKey: 'catFruits' },
+  { name: 'Bakery', icon: Wheat, labelKey: 'catBakery' },
+  { name: 'Beverages', icon: Coffee, labelKey: 'catBeverages' },
+  { name: 'Spices', icon: Flame, labelKey: 'catSpices' },
+  { name: 'Other', icon: Package, labelKey: 'catOther' },
 ]
 
 const STAT_TARGETS = [
-  { target: 28, suffix: '+', label: 'Restaurants' },
-  { target: 12, suffix: '+', label: 'Verified Suppliers' },
-  { target: 850, suffix: '+', label: 'Orders Placed' },
-  { target: 4.9, suffix: '★', label: 'Average Rating', decimal: true },
+  { target: 28, suffix: '+', labelKey: 'statsRestaurants' },
+  { target: 12, suffix: '+', labelKey: 'statsVerifiedSuppliers' },
+  { target: 850, suffix: '+', labelKey: 'statsOrdersPlaced' },
+  { target: 4.9, suffix: '★', labelKey: 'statsAverageRating', decimal: true },
 ]
 
 function useCountUp(target, duration = 1800, start = false, decimal = false) {
@@ -77,6 +64,7 @@ function StatItem({ target, suffix, label, decimal, started }) {
 }
 
 function StatsBar() {
+  const { t } = useLanguage()
   const ref = useRef(null)
   const [started, setStarted] = useState(false)
   useEffect(() => {
@@ -91,7 +79,7 @@ function StatsBar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {STAT_TARGETS.map((s) => (
-            <StatItem key={s.label} {...s} started={started} />
+            <StatItem key={s.labelKey} {...s} label={t(s.labelKey)} started={started} />
           ))}
         </div>
       </div>
@@ -104,6 +92,18 @@ export default function LandingPage() {
   const { user, authUser, role, loading } = useAuth()
   const { t } = useLanguage()
   const [selectedCategory, setSelectedCategory] = useState('All')
+
+  const HOW_IT_WORKS = [
+    { icon: Shield, title: t('howItWorksStep1Title'), desc: t('howItWorksStep1Desc') },
+    { icon: Package, title: t('howItWorksStep2Title'), desc: t('howItWorksStep2Desc') },
+    { icon: Truck, title: t('howItWorksStep3Title'), desc: t('howItWorksStep3Desc') },
+  ]
+
+  function getCategoryLabel(name) {
+    if (name === 'All') return t('featuredProducts')
+    const cat = CATEGORIES.find(c => c.name === name)
+    return cat ? t(cat.labelKey) : name
+  }
   const [products, setProducts] = useState([])
   const [suppliers, setSuppliers] = useState([])
 
@@ -180,9 +180,9 @@ export default function LandingPage() {
             </button>
           </div>
           <div className="flex items-center justify-center gap-6 text-sm text-celeste flex-wrap">
-            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> GDPR Compliant</span>
-            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> Halal Verified Suppliers</span>
-            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> No Hidden Fees</span>
+            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> {t('gdprCompliant')}</span>
+            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> {t('halalVerifiedBadge')}</span>
+            <span className="flex items-center gap-1"><CheckCircle className="w-4 h-4 text-marigold" /> {t('noHiddenFees')}</span>
           </div>
         </div>
       </section>
@@ -194,12 +194,12 @@ export default function LandingPage() {
 
         {/* Category Filter */}
         <section>
-          <h2 className="text-lg font-bold text-slate-900 mb-4">Browse by Category</h2>
+          <h2 className="text-lg font-bold text-slate-900 mb-4">{t('browseByCategory')}</h2>
           <div
             className="flex overflow-x-auto pb-2 scrollbar-hide justify-between gap-2"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
-            {[{ name: 'All', icon: Package }, ...CATEGORIES].map(({ name, icon: Icon }) => (
+            {[{ name: 'All', icon: Package, labelKey: 'catAll' }, ...CATEGORIES].map(({ name, icon: Icon, labelKey }) => (
               <div
                 key={name}
                 onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
@@ -215,7 +215,7 @@ export default function LandingPage() {
                 </div>
                 <span className={`text-xs font-medium whitespace-nowrap ${
                   selectedCategory === name ? 'text-midnight-dark font-bold' : 'text-slate-600 group-hover:text-slate-900'
-                }`}>{name}</span>
+                }`}>{t(labelKey)}</span>
               </div>
             ))}
           </div>
@@ -225,7 +225,7 @@ export default function LandingPage() {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-slate-900">
-              {selectedCategory !== 'All' ? selectedCategory : t('featuredProducts')}
+              {getCategoryLabel(selectedCategory)}
             </h2>
             <button onClick={() => navigate('/products')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">
               All <ChevronRight className="w-4 h-4" />
@@ -249,7 +249,7 @@ export default function LandingPage() {
                       </div>
                     )}
                     {!product.is_active && (
-                      <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500">Out of Stock</div>
+                      <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500">{t('outOfStock')}</div>
                     )}
                     <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold shadow-sm text-slate-700">
                       {product.category}
@@ -283,7 +283,7 @@ export default function LandingPage() {
               )
             })}
             {products.length === 0 && (
-              <p className="text-slate-400 text-sm py-4">No products found. Be the first supplier to list products!</p>
+              <p className="text-slate-400 text-sm py-4">{t('noProductsFound')}</p>
             )}
           </div>
         </section>
@@ -318,19 +318,19 @@ export default function LandingPage() {
                   </div>
                 )}
                 <div className="mt-2 flex items-center gap-1 bg-lionsmane text-midnight-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-celeste">
-                  <CheckCircle className="w-3 h-3" /> Halal Certified
+                  <CheckCircle className="w-3 h-3" /> {t('halalCertified')}
                 </div>
               </div>
             ))}
             {suppliers.length === 0 && (
-              <p className="text-slate-400 text-sm py-4">No verified suppliers yet.</p>
+              <p className="text-slate-400 text-sm py-4">{t('noSuppliersYet')}</p>
             )}
           </div>
         </section>
 
         {/* How It Works */}
         <section className="py-8">
-          <h2 className="text-2xl font-black text-slate-900 text-center mb-10">How It Works</h2>
+          <h2 className="text-2xl font-black text-slate-900 text-center mb-10">{t('howItWorks')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {HOW_IT_WORKS.map(({ icon: Icon, title, desc }, i) => (
               <div key={title} className="text-center">

@@ -85,6 +85,36 @@ export function AddressProvider({ children }) {
     if (error) throw error
     setAddresses(prev => [...prev, data])
     if (isFirst) setSelectedAddress(data)
+    setAddressesVersion(v => v + 1)
+
+    // If the user's business card currently has no location, seed it with
+    // this new address so the card reflects the address book straight away.
+    // (When the card already has cities the multi-city selection stays an
+    // explicit choice via the Business Details modal.)
+    if (user?.id && data.city) {
+      const table = role === 'supplier' ? 'supplier_profiles' : 'owner_profiles'
+      const { data: prof } = await supabase
+        .from(table)
+        .select('city')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (prof && !prof.city) {
+        await supabase.from(table).update({
+          city: data.city,
+          latitude: data.latitude || null,
+          longitude: data.longitude || null,
+        }).eq('user_id', user.id)
+        if (role !== 'supplier' && updateProfileState) {
+          updateProfileState({
+            city: data.city,
+            latitude: data.latitude || null,
+            longitude: data.longitude || null,
+          })
+        }
+        if (refreshProfile) await refreshProfile()
+      }
+    }
+
     return data
   }
 

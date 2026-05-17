@@ -1297,18 +1297,22 @@ export default function SupplierProfilePage() {
           <div className="px-4 pb-4 pt-3">
             {(() => {
               const hasAddress = addresses.length > 0
-              const isVerified = supplierProfile?.is_verified && hasAddress
+              const hasCitySelected = !!supplierProfile?.city?.trim()
+              const isVerified = supplierProfile?.is_verified && hasAddress && hasCitySelected
               return (
                 <div className={`p-3 rounded-xl border text-sm font-medium flex items-center gap-2 ${
                   isVerified ? 'bg-lionsmane border-celeste text-midnight-dark'
                   : !hasAddress ? 'bg-red-50 border-red-200 text-red-700'
+                  : !hasCitySelected ? 'bg-red-50 border-red-200 text-red-700'
                   : 'bg-lionsmane border-marigold-light text-marigold-dark'
                 }`}>
                   {isVerified
                     ? <><CheckCircle className="w-4 h-4 flex-shrink-0" /> Verified — visible to restaurant owners as Halal Certified</>
                     : !hasAddress
                       ? <><XCircle className="w-4 h-4 flex-shrink-0" /> Add a business address to complete your profile</>
-                      : <><Clock className="w-4 h-4 flex-shrink-0" /> Not verified — upload your Halal certificate to get certified</>
+                      : !hasCitySelected
+                        ? <><XCircle className="w-4 h-4 flex-shrink-0" /> Select at least one city in your business card</>
+                        : <><Clock className="w-4 h-4 flex-shrink-0" /> Not verified — upload your Halal certificate to get certified</>
                   }
                 </div>
               )

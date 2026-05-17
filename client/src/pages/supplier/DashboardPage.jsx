@@ -188,13 +188,13 @@ export default function SupplierDashboardPage() {
       )}
 
       {!loading && !user?.is_banned && supplierProfile?.is_verified && addresses.length > 0 && supplierProfile?.city?.trim() && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-emerald-400 flex items-center justify-center flex-shrink-0 shadow-sm">
+        <div className="bg-herb/10 border border-herb/20 rounded-xl p-4 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-herb flex items-center justify-center flex-shrink-0 shadow-sm">
             <CheckCircle className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-emerald-500">Account certified</p>
-            <p className="text-sm text-emerald-400">Your products are visible in the store.</p>
+            <p className="font-bold text-herb-dark">Account certified</p>
+            <p className="text-sm text-herb">Your products are visible in the store.</p>
           </div>
         </div>
       )}

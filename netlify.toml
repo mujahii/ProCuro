@@ -1,7 +1,7 @@
 [build]
   command = "npm run install:all && npm run build"
   publish = "client/dist"
-  environment = { NODE_VERSION = "18.17.0" }
+  environment = { NODE_VERSION = "20" }
 
 [functions]
   directory = "netlify/functions"

@@ -372,38 +372,24 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
   })
   const [saving, setSaving] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
-  const { addresses: savedAddresses, addAddress, setDefault: setDefaultAddr } = useAddresses()
+  const { addresses: savedAddresses, addAddress } = useAddresses()
   const [showAddrModal, setShowAddrModal] = useState(false)
-  const [selectedAddrIds, setSelectedAddrIds] = useState([])
 
+  // Cities are auto-derived from every saved address (one entry per address,
+  // so multiple Berlin shops still show as two locations). The primary coords
+  // come from the default address, falling back to the first one. Users edit
+  // the list via the "+ Manage Addresses" button — no checkboxes to maintain.
   useEffect(() => {
-    if (selectedAddrIds.length === 0 && savedAddresses.length > 0) {
-      const savedCities = (current.city || '').split(',').map(c => c.trim()).filter(Boolean)
-      let matched = savedAddresses.filter(a => savedCities.includes(a.city))
-      if (matched.length === 0) {
-        const def = savedAddresses.find(a => a.is_default)
-        matched = def ? [def] : [savedAddresses[0]]
-      }
-      const ids = matched.map(a => a.id)
-      const cities = matched.map(a => a.city).filter(Boolean).join(', ')
-      const first = matched[0]
-      setSelectedAddrIds(ids)
-      setForm(f => ({ ...f, city: cities, latitude: first?.latitude || null, longitude: first?.longitude || null }))
-    }
+    if (savedAddresses.length === 0) return
+    const cities = savedAddresses.map(a => a.city).filter(Boolean).join(', ')
+    const primary = savedAddresses.find(a => a.is_default) || savedAddresses[0]
+    setForm(f => ({
+      ...f,
+      city: cities,
+      latitude: primary?.latitude ?? f.latitude,
+      longitude: primary?.longitude ?? f.longitude,
+    }))
   }, [savedAddresses])
-
-  function toggleAddrSelection(id) {
-    const next = selectedAddrIds.includes(id)
-      ? selectedAddrIds.filter(x => x !== id)
-      : [...selectedAddrIds, id]
-    const selected = savedAddresses.filter(a => next.includes(a.id))
-    // Preserve one city entry per selected address so users see exactly the
-    // number of locations they picked, even when several share the same city.
-    const cities = selected.map(a => a.city).filter(Boolean).join(', ')
-    const first = selected[0]
-    setSelectedAddrIds(next)
-    setForm(f => ({ ...f, city: cities, latitude: first?.latitude || null, longitude: first?.longitude || null }))
-  }
 
   async function detectGPS() {
     if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
@@ -415,7 +401,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
           const data = await reverseGeocode(lat, lng)
           const a = data.address || {}
           const city = a.city || a.town || a.village || a.suburb || ''
-          const newAddr = await addAddress({
+          await addAddress({
             label: 'Business Location',
             street: [a.road, a.house_number].filter(Boolean).join(' ') || '',
             postal_code: a.postcode || '',
@@ -424,7 +410,6 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
             latitude: lat,
             longitude: lng,
           })
-          setSelectedAddrIds([newAddr.id])
           setForm(f => ({ ...f, city, latitude: lat, longitude: lng }))
           toast.success('Location saved!')
         } catch {
@@ -460,8 +445,6 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
         website: form.website.trim() || null,
       }).eq('id', supplierProfileId)
 
-      if (selectedAddrIds.length > 0) await setDefaultAddr(selectedAddrIds[0])
-
       onSaved({ ...form, category: form.categories })
       onClose()
       toast.success('Business info saved!')
@@ -492,15 +475,15 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
         <div>
           <div className="flex items-center justify-between mb-2">
             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide">
-              City / Location {selectedAddrIds.length > 0 && (
-                <span className="ml-1 text-herb-dark normal-case tracking-normal">· {selectedAddrIds.length} selected</span>
+              Cities {savedAddresses.length > 0 && (
+                <span className="ml-1 text-herb-dark normal-case tracking-normal">· {savedAddresses.length} from your addresses</span>
               )}
             </label>
             <button type="button" onClick={() => setShowAddrModal(true)} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors">
               + Manage Addresses
             </button>
           </div>
-          <p className="text-xs text-slate-400 mb-2">Tap each location you want shown on your profile</p>
+          <p className="text-xs text-slate-400 mb-2">Every saved address adds its city to your profile automatically.</p>
           {savedAddresses.length === 0 ? (
             <div className="p-4 border border-dashed border-slate-200 rounded-xl text-center">
               <p className="text-sm text-slate-400 mb-3">No locations added yet</p>
@@ -517,29 +500,19 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
             </div>
           ) : (
             <div className="space-y-2">
-              {savedAddresses.map(addr => {
-                const isSelected = selectedAddrIds.includes(addr.id)
-                return (
-                  <button
-                    key={addr.id}
-                    type="button"
-                    onClick={() => toggleAddrSelection(addr.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 transition-colors text-left ${
-                      isSelected ? 'border-herb bg-lionsmane' : 'border-slate-200 bg-white hover:border-slate-300'
-                    }`}
-                  >
-                    <div className={`w-4 h-4 rounded flex-shrink-0 border-2 flex items-center justify-center transition-colors ${isSelected ? 'bg-midnight border-midnight' : 'border-slate-300'}`}>
-                      {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
-                    </div>
-                    <MapPin className={`w-4 h-4 flex-shrink-0 ${isSelected ? 'text-midnight' : 'text-slate-400'}`} />
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-semibold truncate ${isSelected ? 'text-midnight-dark' : 'text-slate-900'}`}>{addr.label || addr.city}</p>
-                      <p className="text-xs text-slate-500 truncate">{[addr.street, [addr.postal_code, addr.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>
-                    </div>
-                    {addr.is_default && <span className="text-xs bg-celeste text-midnight-dark px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Main</span>}
-                  </button>
-                )
-              })}
+              {savedAddresses.map(addr => (
+                <div
+                  key={addr.id}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-slate-200 bg-lionsmane text-left"
+                >
+                  <MapPin className="w-4 h-4 flex-shrink-0 text-midnight" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate text-midnight-dark">{addr.label || addr.city}</p>
+                    <p className="text-xs text-slate-500 truncate">{[addr.street, [addr.postal_code, addr.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')}</p>
+                  </div>
+                  {addr.is_default && <span className="text-xs bg-celeste text-midnight-dark px-2 py-0.5 rounded-full font-semibold flex-shrink-0">Main</span>}
+                </div>
+              ))}
             </div>
           )}
           {showAddrModal && <AddressModal supplierProfileId={supplierProfileId} onClose={() => setShowAddrModal(false)} />}

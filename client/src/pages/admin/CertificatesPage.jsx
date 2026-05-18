@@ -170,24 +170,39 @@ export default function AdminCertificatesPage() {
         .eq('id', certId)
       if (certErr) throw certErr
 
+      // Only un-verify the supplier if no OTHER approved cert remains.
+      // A supplier with at least one approved cert stays verified + active.
+      const { count: remainingApproved } = await supabase
+        .from('halal_certificates')
+        .select('id', { count: 'exact', head: true })
+        .eq('supplier_id', cert.supplier_id)
+        .eq('status', 'approved')
+        .neq('id', certId)
+
+      const stillVerified = (remainingApproved || 0) > 0
       const { error: spErr } = await supabase
         .from('supplier_profiles')
-        .update({ is_verified: false, is_active: false })
+        .update({ is_verified: stillVerified, is_active: stillVerified })
         .eq('id', cert.supplier_id)
       if (spErr) throw spErr
 
       if (cert.supplier?.user_id) {
+        const message = stillVerified
+          ? `One of your Halal certificates was rejected. Reason: ${reason}. Your account remains verified via your other approved certificate.`
+          : `Your Halal certificate has been rejected. Reason: ${reason}. Please upload a new valid certificate to restore your profile visibility.`
         await supabase.from('notifications').insert({
           user_id: cert.supplier.user_id,
           title: 'Halal Certificate Rejected',
-          message: `Your Halal certificate has been rejected. Reason: ${reason}. Please upload a new valid certificate to restore your profile visibility.`,
+          message,
           type: 'certificate_reviewed',
           link: '/supplier/profile',
         })
       }
 
       setCerts(prev => prev.map(c => c.id === certId ? { ...c, status: 'rejected', rejection_reason: reason } : c))
-      toast.success('Certificate rejected. Supplier has been notified.')
+      toast.success(stillVerified
+        ? 'Certificate rejected. Supplier remains verified via another approved certificate.'
+        : 'Certificate rejected. Supplier has been notified.')
       setSelected(null)
     } catch (err) {
       toast.error(err.message || 'Failed to reject certificate')

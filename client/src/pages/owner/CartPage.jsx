@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X, Navigation, AlertTriangle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
-import { reverseGeocode } from '../../lib/geocode'
+import { reverseGeocode, forwardGeocode } from '../../lib/geocode'
+import { haversineKm } from '../../lib/haversine'
 import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import { usePlaceOrder } from '../../hooks/usePlaceOrder'
@@ -29,8 +30,63 @@ export default function CartPage() {
   const [bankDetails, setBankDetails] = useState({})
   const [orderIds, setOrderIds] = useState([])
   const [showAddressPicker, setShowAddressPicker] = useState(false)
+  const [deliveryFees, setDeliveryFees] = useState({})
+  const [deliveryRecalcLoading, setDeliveryRecalcLoading] = useState(false)
 
   const groups = Object.entries(groupedBySupplier)
+  const supplierIdsKey = useMemo(() => groups.map(([id]) => id).sort().join(','), [groups])
+
+  // Recompute delivery fee per supplier whenever the selected delivery address changes
+  // so the cart total always matches the actual distance from the chosen address.
+  useEffect(() => {
+    let cancelled = false
+    async function recalcAll() {
+      if (groups.length === 0) return
+      if (!selectedAddress) {
+        if (!cancelled) setDeliveryFees({})
+        return
+      }
+      setDeliveryRecalcLoading(true)
+      try {
+        let ownerLat = selectedAddress.latitude || null
+        let ownerLng = selectedAddress.longitude || null
+        if (!ownerLat && (selectedAddress.city || selectedAddress.postal_code)) {
+          const query = [selectedAddress.postal_code, selectedAddress.city].filter(Boolean).join(' ')
+          try {
+            const geo = await forwardGeocode(query)
+            if (geo) { ownerLat = parseFloat(geo.lat); ownerLng = parseFloat(geo.lon) }
+          } catch {}
+        }
+
+        const supplierIds = groups.map(([id]) => id)
+        const [{ data: suppliers }, { data: rules }] = await Promise.all([
+          supabase.from('supplier_profiles').select('id, latitude, longitude').in('id', supplierIds),
+          supabase.from('delivery_fee_rules').select('*').order('min_km', { ascending: true }),
+        ])
+        const fees = {}
+        for (const sid of supplierIds) {
+          const sp = (suppliers || []).find(s => s.id === sid)
+          if (!ownerLat || !ownerLng || !sp?.latitude || !sp?.longitude) {
+            fees[sid] = 0
+            continue
+          }
+          const km = haversineKm(ownerLat, ownerLng, sp.latitude, sp.longitude)
+          const rule = (rules || []).find(r => km >= r.min_km && (r.max_km === null || km < r.max_km))
+          fees[sid] = rule ? Number(rule.fee) : 0
+        }
+        if (!cancelled) setDeliveryFees(fees)
+      } finally {
+        if (!cancelled) setDeliveryRecalcLoading(false)
+      }
+    }
+    recalcAll()
+    return () => { cancelled = true }
+  }, [selectedAddress?.id, selectedAddress?.latitude, selectedAddress?.longitude, supplierIdsKey])
+
+  function feeFor(supplierId, group) {
+    if (deliveryFees[supplierId] != null) return Number(deliveryFees[supplierId])
+    return Number(group.items[0]?.product?.delivery_fee || 0)
+  }
 
   useEffect(() => {
     if (step === 2) {
@@ -208,17 +264,14 @@ export default function CartPage() {
           disabled={!selectedPayment || loading}
           className="w-full py-4 text-lg bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : `Place Order — €${(total + groups.reduce((s, [, g]) => s + Number(g.items[0]?.product?.delivery_fee || 0), 0)).toFixed(2)}`}
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : `Place Order — €${(total + groups.reduce((s, [sid, g]) => s + feeFor(sid, g), 0)).toFixed(2)}`}
         </button>
       </div>
     )
   }
 
   /* Step 1 — Cart */
-  const totalDelivery = groups.reduce((sum, [, group]) => {
-    const fee = group.items[0]?.product?.delivery_fee || 0
-    return sum + Number(fee)
-  }, 0)
+  const totalDelivery = groups.reduce((sum, [sid, group]) => sum + feeFor(sid, group), 0)
   const grandTotal = total + totalDelivery
 
   return (
@@ -271,7 +324,7 @@ export default function CartPage() {
       {/* Cart items grouped by supplier */}
       <div className="space-y-3">
         {groups.map(([supplierId, group]) => {
-          const deliveryFee = Number(group.items[0]?.product?.delivery_fee || 0)
+          const deliveryFee = feeFor(supplierId, group)
           return (
             <div key={supplierId} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
               <div className="bg-lionsmane px-5 py-3 border-b border-slate-100">
@@ -343,7 +396,7 @@ export default function CartPage() {
         <h3 className="font-bold text-slate-900 mb-4">Order Summary</h3>
         <div className="space-y-2 mb-3">
           {groups.map(([supplierId, group]) => {
-            const fee = Number(group.items[0]?.product?.delivery_fee || 0)
+            const fee = feeFor(supplierId, group)
             return (
               <div key={supplierId} className="flex justify-between text-sm text-slate-500">
                 <span className="truncate mr-2">{group.supplier?.business_name || 'Supplier'}</span>
@@ -359,7 +412,14 @@ export default function CartPage() {
           </div>
           <div className="flex justify-between text-sm text-slate-500">
             <span className="flex items-center gap-1"><Truck className="w-3.5 h-3.5" /> Total delivery</span>
-            <span>{totalDelivery > 0 ? `€${totalDelivery.toFixed(2)}` : <span className="text-midnight font-medium">Free</span>}</span>
+            <span>
+              {deliveryRecalcLoading
+                ? <span className="text-slate-400 inline-flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Updating…</span>
+                : totalDelivery > 0
+                  ? `€${totalDelivery.toFixed(2)}`
+                  : <span className="text-midnight font-medium">Free</span>
+              }
+            </span>
           </div>
           <div className="border-t border-slate-100 pt-2 flex justify-between font-bold text-lg text-slate-900">
             <span>Grand Total</span>
@@ -373,9 +433,10 @@ export default function CartPage() {
       )}
       <button
         onClick={() => setStep(2)}
-        disabled={!!profile?.is_banned || !selectedAddress}
-        className="w-full py-4 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base disabled:opacity-40 disabled:cursor-not-allowed"
+        disabled={!!profile?.is_banned || !selectedAddress || deliveryRecalcLoading}
+        className="w-full py-4 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
+        {deliveryRecalcLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         Continue to Payment — €{grandTotal.toFixed(2)}
       </button>
     </div>

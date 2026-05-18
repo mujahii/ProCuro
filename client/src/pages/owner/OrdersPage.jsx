@@ -65,6 +65,62 @@ const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_fo
 const COMPLETED = ['delivered', 'completed', 'cancelled']
 const CANCELLABLE = ['pending_payment', 'pending_confirmation', 'confirmed']
 
+function NotReceivedModal({ split, onConfirm, onClose }) {
+  const [reason, setReason] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit() {
+    if (!reason.trim()) { toast.error('Please describe what happened'); return }
+    setLoading(true)
+    await onConfirm(split.id, reason.trim())
+    setLoading(false)
+  }
+
+  return (
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="flex items-center gap-3 mb-4">
+          <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+          <h3 className="font-bold text-slate-900 text-lg">Report Non-Delivery</h3>
+        </div>
+        <p className="text-sm text-slate-600 mb-4">
+          The supplier will be notified and asked to respond. Please tell them what happened —
+          for example: "The driver never arrived" or "Only half of the items were delivered."
+        </p>
+        <div className="mb-5">
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+            Reason *
+          </label>
+          <textarea
+            value={reason}
+            onChange={e => setReason(e.target.value)}
+            rows={4}
+            className="w-full p-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-midnight resize-none"
+            placeholder="What happened?"
+          />
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            disabled={loading}
+            className="flex-1 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-lionsmane disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={loading || !reason.trim()}
+            className="flex-1 py-3 bg-orange-600 text-white font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+            Send Report
+          </button>
+        </div>
+      </div>
+    </div></ModalPortal>
+  )
+}
+
 function CancelModal({ split, onCancel, onClose }) {
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
@@ -393,7 +449,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
               Mark as Delivered
             </button>
             <button
-              onClick={() => { onMarkNotDelivered(split.id); onBack() }}
+              onClick={() => onMarkNotDelivered(split)}
               className="py-3.5 bg-orange-50 text-orange-600 font-bold rounded-xl hover:bg-orange-100 transition-colors border border-orange-200 text-sm"
             >
               I Didn't Receive It
@@ -474,6 +530,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [cancelTarget, setCancelTarget] = useState(null)
+  const [notReceivedTarget, setNotReceivedTarget] = useState(null)
   const [ratingTarget, setRatingTarget] = useState(null)
 
   useEffect(() => {
@@ -521,13 +578,15 @@ export default function OrdersPage() {
     setRatingTarget(null)
   }
 
-  async function markNotDelivered(splitId) {
+  async function markNotDelivered(splitId, reason) {
     const { error } = await supabase.rpc('update_order_split_status', {
       p_split_id: splitId,
       p_status: 'delivery_dispute',
+      p_dispute_message: reason,
     })
     if (error) { toast.error(error.message); return }
     toast.success('Report sent to supplier. They will respond shortly.')
+    setNotReceivedTarget(null)
     fetchOrders()
   }
 
@@ -573,7 +632,7 @@ export default function OrdersPage() {
         profile={profile}
         onBack={() => { setSelectedOrder(null); fetchOrders() }}
         onMarkDelivered={markDelivered}
-        onMarkNotDelivered={markNotDelivered}
+        onMarkNotDelivered={(splitToReport) => setNotReceivedTarget(splitToReport)}
         onCancelRequest={cancelOrder}
         onConfirmRefund={confirmRefund}
       />
@@ -699,6 +758,13 @@ export default function OrdersPage() {
         </div>
       )}
 
+      {notReceivedTarget && (
+        <NotReceivedModal
+          split={notReceivedTarget}
+          onConfirm={markNotDelivered}
+          onClose={() => setNotReceivedTarget(null)}
+        />
+      )}
       {cancelTarget && (
         <CancelModal
           split={cancelTarget}

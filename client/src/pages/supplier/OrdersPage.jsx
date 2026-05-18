@@ -915,6 +915,14 @@ export default function SupplierOrdersPage() {
       {cancelTarget && (
         <CancelModal split={cancelTarget} onCancel={cancelOrder} onClose={() => setCancelTarget(null)} />
       )}
+      {disputeTarget && (
+        <DisputeResponseModal
+          split={disputeTarget}
+          onResend={resendOrder}
+          onCancel={cancelFromDispute}
+          onClose={() => setDisputeTarget(null)}
+        />
+      )}
     </div>
   )
 }

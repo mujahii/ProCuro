@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, AlertCircle, Navigation, X, Loader2, Share2 } from 'lucide-react'
+import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, AlertCircle, Navigation, X, Loader2, Share2, CheckCircle } from 'lucide-react'
 import HalalBadge from '../../components/ui/HalalBadge'
 import { reverseGeocode } from '../../lib/geocode'
 import { useProducts } from '../../hooks/useProducts'
@@ -390,7 +390,7 @@ export default function StorePage() {
                 {t('seeAll')} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
+            <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
               {suppliers.length === 0 ? (
                 <p className="text-sm text-slate-400 py-2">{t('noSuppliersYetStore')}</p>
               ) : suppliers.map(supplier => {
@@ -402,28 +402,32 @@ export default function StorePage() {
                   <div
                     key={supplier.id}
                     onClick={() => navigate(`/supplier/${supplier.id}`)}
-                    className="min-w-[180px] cursor-pointer bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow"
+                    className="flex-shrink-0 min-w-[180px] max-w-[180px] cursor-pointer bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow"
                   >
-                    <div className="w-16 h-16 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
                       {avatarUrl ? (
                         <img src={avatarUrl} alt={supplier.business_name} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-2xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
+                        <span className="text-xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
                       )}
                     </div>
-                    <h3 className="font-bold text-slate-900 text-sm">{supplier.business_name}</h3>
-                    {supplier.city && <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{supplier.city}</p>}
+                    <h3 className="font-bold text-slate-900 text-sm truncate w-full">{supplier.business_name}</h3>
+                    {supplier.city && (
+                      <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate w-full justify-center">
+                        <MapPin className="w-3 h-3 flex-shrink-0" />{supplier.city}
+                      </p>
+                    )}
                     {supplier.rating > 0 && (
                       <div className="flex items-center gap-1 mt-1 text-xs text-marigold">
                         <span>★</span> {Number(supplier.rating).toFixed(1)}
                       </div>
                     )}
                     {isVerified ? (
-                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-midnight text-white">
-                        <HalalBadge status="approved" size={12} /> Halal Certified
+                      <div className="mt-2 flex items-center gap-1 bg-lionsmane text-midnight-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-celeste">
+                        <CheckCircle className="w-3 h-3" /> {t('halalCertified')}
                       </div>
                     ) : isPending ? (
-                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-marigold/20 text-marigold-dark border border-marigold-light">
+                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-marigold/20 text-marigold-dark border border-marigold-light">
                         <HalalBadge status="pending" size={12} /> Pending Review
                       </div>
                     ) : null}

@@ -4,15 +4,10 @@ import { useAuth } from '../../context/AuthContext'
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
 import { SkeletonCard } from '../../components/ui/Skeleton'
+import DateRangeFilter, { rangeFromKey } from '../../components/ui/DateRangeFilter'
 import { Euro, ShoppingBag, Package, TrendingUp } from 'lucide-react'
 
 const COLORS = ['#1B4332', '#D4A017', '#2D6A4F', '#40916C', '#52B788', '#74C69D']
-
-const RANGES = [
-  { label: 'This Week', value: 'week' },
-  { label: 'This Month', value: 'month' },
-  { label: 'This Year', value: 'year' },
-]
 
 function StatCard({ label, value, icon: Icon, color, bg }) {
   return (
@@ -30,7 +25,7 @@ function StatCard({ label, value, icon: Icon, color, bg }) {
 
 export default function SupplierAnalyticsPage() {
   const { user } = useAuth()
-  const [range, setRange] = useState('month')
+  const [range, setRange] = useState(() => rangeFromKey('month'))
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ revenue: 0, orders: 0, bestProduct: '—', activeProducts: 0 })
@@ -57,20 +52,25 @@ export default function SupplierAnalyticsPage() {
     }
   }
 
-  function getRangeStart() {
-    const now = new Date()
-    if (range === 'week') return new Date(now.setDate(now.getDate() - 7))
-    if (range === 'month') return new Date(now.getFullYear(), now.getMonth(), 1)
-    return new Date(now.getFullYear(), 0, 1)
-  }
-
   async function loadData(supplierId) {
     setLoading(true)
-    const rangeStart = getRangeStart().toISOString()
+    const rangeStart = range.from ? range.from.toISOString() : null
+    const rangeEnd = range.to ? range.to.toISOString() : null
+
+    let splitsQuery = supabase.from('order_splits').select('*').eq('supplier_id', supplierId)
+    let itemsQuery = supabase.from('order_items').select('*, product:products(name, category), order_split:order_splits!inner(supplier_id, created_at)').eq('order_split.supplier_id', supplierId)
+    if (rangeStart) {
+      splitsQuery = splitsQuery.gte('created_at', rangeStart)
+      itemsQuery = itemsQuery.gte('order_split.created_at', rangeStart)
+    }
+    if (rangeEnd) {
+      splitsQuery = splitsQuery.lte('created_at', rangeEnd)
+      itemsQuery = itemsQuery.lte('order_split.created_at', rangeEnd)
+    }
 
     const [splitsRes, itemsRes, productCountRes] = await Promise.all([
-      supabase.from('order_splits').select('*').eq('supplier_id', supplierId).gte('created_at', rangeStart),
-      supabase.from('order_items').select('*, product:products(name, category), order_split:order_splits!inner(supplier_id, created_at)').eq('order_split.supplier_id', supplierId).gte('order_split.created_at', rangeStart),
+      splitsQuery,
+      itemsQuery,
       supabase.from('products').select('*', { count: 'exact', head: true }).eq('supplier_id', supplierId).eq('is_active', true),
     ])
 
@@ -83,7 +83,7 @@ export default function SupplierAnalyticsPage() {
     // Monthly revenue trend
     const monthMap = {}
     splits.forEach(s => {
-      const key = new Date(s.created_at).toLocaleDateString('de-DE', { month: 'short', year: range === 'year' ? '2-digit' : undefined })
+      const key = new Date(s.created_at).toLocaleDateString('de-DE', { month: 'short', year: range.key === 'year' ? '2-digit' : undefined })
       monthMap[key] = (monthMap[key] || 0) + Number(s.subtotal)
     })
     setRevenueByMonth(Object.entries(monthMap).map(([month, revenue]) => ({ month, revenue })))
@@ -127,24 +127,14 @@ export default function SupplierAnalyticsPage() {
     ordersThisPeriod: stats.orders,
     bestProduct: stats.bestProduct,
     activeProducts: stats.activeProducts,
-    range,
+    range: range.key,
   } : null
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h1 className="text-2xl font-black text-gray-900">Analytics</h1>
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl">
-          {RANGES.map(r => (
-            <button
-              key={r.value}
-              onClick={() => setRange(r.value)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${range === r.value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+        <DateRangeFilter value={range} onChange={setRange} />
       </div>
 
       {loading ? (

@@ -148,28 +148,32 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Banner */}
-      <section className="relative min-h-[600px] sm:min-h-[640px] flex flex-col overflow-hidden bg-midnight">
+      <section className="relative min-h-[600px] sm:min-h-[640px] flex flex-col overflow-hidden" style={{ background: '#052532' }}>
         <style>{`
           @keyframes riseBlob {
-            0%   { transform: translateY(700px); opacity: 0; }
-            8%   { opacity: 0.22; }
-            92%  { opacity: 0.14; }
-            100% { transform: translateY(-700px); opacity: 0; }
+            0%   { transform: translateY(680px); opacity: 0; }
+            14%  { opacity: 1; }
+            86%  { opacity: 0.85; }
+            100% { transform: translateY(-680px); opacity: 0; }
           }
         `}</style>
 
-        {/* Static base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-midnight via-[#0d2535] to-midnight" />
+        {/* Rising brand-colour orbs — large, blurred, clearly visible */}
+        {/* Marigold / warm gold — left */}
+        <div className="absolute left-[4%] top-0 w-[26rem] h-[26rem] rounded-full pointer-events-none"
+          style={{ background: '#A58D66', filter: 'blur(80px)', animation: 'riseBlob 15s linear infinite', animationDelay: '0s' }} />
+        {/* Celeste / light teal — right-center */}
+        <div className="absolute left-[54%] top-0 w-[22rem] h-[22rem] rounded-full pointer-events-none"
+          style={{ background: '#C0D5D6', filter: 'blur(72px)', animation: 'riseBlob 15s linear infinite', animationDelay: '-3.75s' }} />
+        {/* Herb / mid teal-green — center */}
+        <div className="absolute left-[28%] top-0 w-[20rem] h-[20rem] rounded-full pointer-events-none"
+          style={{ background: '#5E96A4', filter: 'blur(64px)', animation: 'riseBlob 15s linear infinite', animationDelay: '-7.5s' }} />
+        {/* Lionsmane / warm cream — far right */}
+        <div className="absolute left-[70%] top-0 w-[24rem] h-[24rem] rounded-full pointer-events-none"
+          style={{ background: '#BFA988', filter: 'blur(80px)', animation: 'riseBlob 15s linear infinite', animationDelay: '-11.25s' }} />
 
-        {/* 4 blobs staggered 4 s apart — always one visible, rising bottom → top */}
-        <div className="absolute left-[10%] top-0 w-80 h-80 bg-marigold/25 rounded-full blur-3xl pointer-events-none"
-          style={{ animation: 'riseBlob 16s linear infinite', animationDelay: '0s' }} />
-        <div className="absolute left-[52%] top-0 w-72 h-72 bg-celeste/20 rounded-full blur-3xl pointer-events-none"
-          style={{ animation: 'riseBlob 16s linear infinite', animationDelay: '-4s' }} />
-        <div className="absolute left-[30%] top-0 w-64 h-64 bg-herb/20 rounded-full blur-3xl pointer-events-none"
-          style={{ animation: 'riseBlob 16s linear infinite', animationDelay: '-8s' }} />
-        <div className="absolute left-[68%] top-0 w-80 h-80 bg-marigold/15 rounded-full blur-3xl pointer-events-none"
-          style={{ animation: 'riseBlob 16s linear infinite', animationDelay: '-12s' }} />
+        {/* Dark overlay so text stays readable */}
+        <div className="absolute inset-0 bg-[#052532]/60 pointer-events-none" />
 
         {/* 4 zones spread top-to-bottom with justify-between */}
         <div className="relative z-10 flex-1 flex flex-col justify-between text-center text-white px-6 max-w-3xl mx-auto w-full py-8 sm:py-10">

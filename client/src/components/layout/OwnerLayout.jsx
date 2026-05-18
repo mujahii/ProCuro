@@ -1,22 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { ShoppingBag, ShoppingCart, Package, BarChart3, User, MessageSquare, ChevronLeft, ChevronRight, X, AlertCircle } from 'lucide-react'
+import { ShoppingBag, ShoppingCart, Package, BarChart3, User, MessageSquare, ChevronLeft, ChevronRight, X, AlertCircle, LogOut } from 'lucide-react'
 import Navbar from './Navbar'
 import CookieConsent from '../ui/CookieConsent'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-
-const navItems = [
-  { to: '/owner/store', icon: ShoppingBag, label: 'Store' },
-  { to: '/owner/cart', icon: ShoppingCart, label: 'Cart' },
-  { to: '/owner/orders', icon: Package, label: 'Orders' },
-  { to: '/owner/analytics', icon: BarChart3, label: 'Analytics' },
-  { to: '/owner/chat', icon: MessageSquare, label: 'Messages' },
-  { to: '/owner/profile', icon: User, label: 'Profile' },
-]
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function OwnerLayout() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
@@ -83,18 +76,29 @@ export default function OwnerLayout() {
           </button>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={() => setDrawerOpen(false)}
-              className={navLinkClass}
-            >
+          {[
+            { to: '/owner/store', icon: ShoppingBag, key: 'navStore' },
+            { to: '/owner/cart', icon: ShoppingCart, key: 'navCart' },
+            { to: '/owner/orders', icon: Package, key: 'navOrders' },
+            { to: '/owner/analytics', icon: BarChart3, key: 'navAnalytics' },
+            { to: '/owner/chat', icon: MessageSquare, key: 'navMessages' },
+            { to: '/owner/profile', icon: User, key: 'navProfile' },
+          ].map(({ to, icon: Icon, key }) => (
+            <NavLink key={to} to={to} onClick={() => setDrawerOpen(false)} className={navLinkClass}>
               <Icon className="w-4 h-4 flex-shrink-0" />
-              {label}
+              {t(key)}
             </NavLink>
           ))}
         </nav>
+        <div className="px-3 pb-6 border-t border-slate-100 pt-3">
+          <button
+            onClick={() => { setDrawerOpen(false); signOut() }}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium w-full text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <LogOut className="w-4 h-4 flex-shrink-0" />
+            {t('signOut')}
+          </button>
+        </div>
       </aside>
 
       <div className={`flex ${isActive ? 'pt-16' : 'pt-[104px] sm:pt-[104px]'}`}>
@@ -105,11 +109,18 @@ export default function OwnerLayout() {
           } ${isActive ? 'top-16' : 'top-[104px]'}`}
         >
           <nav className="flex-1 px-2 py-4 space-y-1">
-            {navItems.map(({ to, icon: Icon, label }) => (
+            {[
+              { to: '/owner/store', icon: ShoppingBag, key: 'navStore' },
+              { to: '/owner/cart', icon: ShoppingCart, key: 'navCart' },
+              { to: '/owner/orders', icon: Package, key: 'navOrders' },
+              { to: '/owner/analytics', icon: BarChart3, key: 'navAnalytics' },
+              { to: '/owner/chat', icon: MessageSquare, key: 'navMessages' },
+              { to: '/owner/profile', icon: User, key: 'navProfile' },
+            ].map(({ to, icon: Icon, key }) => (
               <NavLink
                 key={to}
                 to={to}
-                title={collapsed ? label : undefined}
+                title={collapsed ? t(key) : undefined}
                 className={({ isActive }) =>
                   `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     collapsed ? 'justify-center px-0' : 'gap-3 px-3'
@@ -117,7 +128,7 @@ export default function OwnerLayout() {
                 }
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                {!collapsed && <span>{label}</span>}
+                {!collapsed && <span>{t(key)}</span>}
               </NavLink>
             ))}
           </nav>

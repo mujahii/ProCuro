@@ -3,7 +3,7 @@ import { ShoppingCart, Mail, Phone, Globe } from 'lucide-react'
 import { useLanguage, LANGS } from '../../context/LanguageContext'
 
 export default function Footer() {
-  const { lang, setLanguage } = useLanguage()
+  const { lang, setLanguage, t } = useLanguage()
   return (
     <footer className="bg-midnight text-celeste py-8 sm:py-12 mt-8 sm:mt-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8">
@@ -12,27 +12,27 @@ export default function Footer() {
             <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-herb-light" /> ProCuro
           </h3>
           <p className="text-xs sm:text-sm opacity-70 leading-relaxed">
-            Empowering Halal businesses with seamless procurement and inventory solutions across Germany.
+            {t('footerTagline')}
           </p>
         </div>
         <div>
-          <h4 className="text-white font-bold mb-3 sm:mb-4 text-xs sm:text-sm uppercase tracking-wide">Company</h4>
+          <h4 className="text-white font-bold mb-3 sm:mb-4 text-xs sm:text-sm uppercase tracking-wide">{t('footerCompany')}</h4>
           <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-            <li><Link to="/about" className="hover:text-white transition-colors">About Us</Link></li>
-            <li><Link to="/careers" className="hover:text-white transition-colors">Careers</Link></li>
-            <li><Link to="/press" className="hover:text-white transition-colors">Press</Link></li>
+            <li><Link to="/about" className="hover:text-white transition-colors">{t('footerAboutUs')}</Link></li>
+            <li><Link to="/careers" className="hover:text-white transition-colors">{t('footerCareers')}</Link></li>
+            <li><Link to="/press" className="hover:text-white transition-colors">{t('footerPress')}</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="text-white font-bold mb-3 sm:mb-4 text-xs sm:text-sm uppercase tracking-wide">Resources</h4>
+          <h4 className="text-white font-bold mb-3 sm:mb-4 text-xs sm:text-sm uppercase tracking-wide">{t('footerResources')}</h4>
           <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
-            <li><Link to="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-            <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-            <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+            <li><Link to="/help" className="hover:text-white transition-colors">{t('footerHelpCenter')}</Link></li>
+            <li><Link to="/privacy" className="hover:text-white transition-colors">{t('footerPrivacyPolicy')}</Link></li>
+            <li><Link to="/terms" className="hover:text-white transition-colors">{t('footerTermsOfService')}</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="text-white font-bold mb-3 sm:mb-4 text-xs sm:text-sm uppercase tracking-wide">Contact</h4>
+          <h4 className="text-white font-bold mb-3 sm:mb-4 text-xs sm:text-sm uppercase tracking-wide">{t('footerContact')}</h4>
           <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
             <li className="flex items-center gap-2">
               <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-herb-light flex-shrink-0" />
@@ -66,7 +66,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-slate-800 text-center text-[11px] sm:text-xs opacity-50">
-        © 2026 ProCuro GmbH. All rights reserved.
+        {t('footerCopyright')}
       </div>
     </footer>
   )

@@ -1,21 +1,23 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Package, ShoppingBag, User, BarChart3, MessageSquare, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, User, BarChart3, MessageSquare, ChevronLeft, ChevronRight, X, LogOut } from 'lucide-react'
 import Navbar from './Navbar'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { supabase } from '../../lib/supabase'
 
-const navItems = [
-  { to: '/supplier/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/supplier/products', icon: Package, label: 'Products' },
-  { to: '/supplier/orders', icon: ShoppingBag, label: 'Orders' },
-  { to: '/supplier/analytics', icon: BarChart3, label: 'Analytics' },
-  { to: '/supplier/chat', icon: MessageSquare, label: 'Messages' },
-  { to: '/supplier/profile', icon: User, label: 'Profile' },
+const supplierNavItems = [
+  { to: '/supplier/dashboard', icon: LayoutDashboard, key: 'navDashboard' },
+  { to: '/supplier/products', icon: Package, key: 'navProducts' },
+  { to: '/supplier/orders', icon: ShoppingBag, key: 'navOrders' },
+  { to: '/supplier/analytics', icon: BarChart3, key: 'navAnalytics' },
+  { to: '/supplier/chat', icon: MessageSquare, key: 'navMessages' },
+  { to: '/supplier/profile', icon: User, key: 'navProfile' },
 ]
 
 export default function SupplierLayout() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const location = useLocation()
   const [certStatus, setCertStatus] = useState(null)
@@ -115,18 +117,22 @@ export default function SupplierLayout() {
           </button>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navItems.map(({ to, icon: Icon, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              onClick={() => setDrawerOpen(false)}
-              className={navLinkClass}
-            >
+          {supplierNavItems.map(({ to, icon: Icon, key }) => (
+            <NavLink key={to} to={to} onClick={() => setDrawerOpen(false)} className={navLinkClass}>
               <Icon className="w-4 h-4 flex-shrink-0" />
-              {label}
+              {t(key)}
             </NavLink>
           ))}
         </nav>
+        <div className="px-3 pb-6 border-t border-slate-100 pt-3">
+          <button
+            onClick={() => { setDrawerOpen(false); signOut() }}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium w-full text-red-500 hover:bg-red-50 transition-colors"
+          >
+            <LogOut className="w-4 h-4 flex-shrink-0" />
+            {t('signOut')}
+          </button>
+        </div>
       </aside>
 
       <div className={`flex ${showBanner ? 'pt-[132px] sm:pt-[104px]' : 'pt-16'}`}>
@@ -137,11 +143,11 @@ export default function SupplierLayout() {
           } ${showBanner ? 'top-[104px]' : 'top-16'}`}
         >
           <nav className="flex-1 px-2 py-4 space-y-1">
-            {navItems.map(({ to, icon: Icon, label }) => (
+            {supplierNavItems.map(({ to, icon: Icon, key }) => (
               <NavLink
                 key={to}
                 to={to}
-                title={collapsed ? label : undefined}
+                title={collapsed ? t(key) : undefined}
                 className={({ isActive }) =>
                   `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     collapsed ? 'justify-center px-0' : 'gap-3 px-3'
@@ -149,7 +155,7 @@ export default function SupplierLayout() {
                 }
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                {!collapsed && <span>{label}</span>}
+                {!collapsed && <span>{t(key)}</span>}
               </NavLink>
             ))}
           </nav>

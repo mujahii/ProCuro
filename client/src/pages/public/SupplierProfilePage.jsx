@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink, X, Share2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import AddToCartModal from '../../components/store/AddToCartModal'
@@ -28,6 +29,7 @@ export default function SupplierProfilePage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { profile, user } = useAuth()
+  const { t } = useLanguage()
   const [supplier, setSupplier] = useState(null)
   const [products, setProducts] = useState([])
   const [certificates, setCertificates] = useState([])
@@ -130,7 +132,7 @@ export default function SupplierProfilePage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back
+            <ArrowLeft className="w-4 h-4" /> {t('back')}
           </button>
           <div className="flex items-center gap-3">
             {supplier && (
@@ -139,7 +141,7 @@ export default function SupplierProfilePage() {
                 className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-midnight transition-colors font-medium"
                 title="Share this supplier"
               >
-                <Share2 className="w-4 h-4" /> Share
+                <Share2 className="w-4 h-4" /> {t('shareProfile')}
               </button>
             )}
             {profile?.role === 'restaurant_owner' && (
@@ -147,7 +149,7 @@ export default function SupplierProfilePage() {
                 onClick={() => setShowReportModal(true)}
                 className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
               >
-                <Flag className="w-4 h-4" /> Report Supplier
+                <Flag className="w-4 h-4" /> {t('reportSupplier')}
               </button>
             )}
           </div>
@@ -248,7 +250,7 @@ export default function SupplierProfilePage() {
           <div className="md:col-span-2">
             {/* Header + See All */}
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-bold text-slate-900">Products</h2>
+              <h2 className="text-xl font-bold text-slate-900">{t('supplierProducts')}</h2>
               {filteredProducts.length > INITIAL_LIMIT && (
                 <button
                   onClick={() => setShowAll(v => !v)}
@@ -281,7 +283,7 @@ export default function SupplierProfilePage() {
             {products.length === 0 ? (
               <div className="bg-white rounded-xl border border-slate-100 p-12 text-center">
                 <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">No products listed yet</p>
+                <p className="text-slate-400 text-sm">{t('noProductsListed')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -348,11 +350,11 @@ export default function SupplierProfilePage() {
             <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
               {/* About */}
               <div className="p-5">
-                <h3 className="font-bold text-slate-900 mb-2">About</h3>
+                <h3 className="font-bold text-slate-900 mb-2">{t('supplierAbout')}</h3>
                 {supplier.description ? (
                   <p className="text-sm text-slate-600 leading-relaxed">{supplier.description}</p>
                 ) : (
-                  <p className="text-sm text-slate-400 italic">No description provided</p>
+                  <p className="text-sm text-slate-400 italic">{t('noDescriptionProvided')}</p>
                 )}
                 {supplier.category?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-3">
@@ -369,7 +371,7 @@ export default function SupplierProfilePage() {
               )}
               {addresses.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-slate-100">
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Locations</p>
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">{t('supplierLocations')}</p>
                   <div className="space-y-1.5">
                     {addresses.map(addr => {
                       const q = addr.latitude && addr.longitude
@@ -394,9 +396,9 @@ export default function SupplierProfilePage() {
 
               {/* Certifications */}
               <div className="p-5">
-                <h3 className="font-bold text-slate-900 mb-3">Certifications</h3>
+                <h3 className="font-bold text-slate-900 mb-3">{t('supplierCertifications')}</h3>
                 {certificates.length === 0 ? (
-                  <p className="text-sm text-slate-400 italic">No certificates available</p>
+                  <p className="text-sm text-slate-400 italic">{t('noCertificatesAvailable')}</p>
                 ) : (
                   <div className="space-y-2">
                     {certificates.map(cert => (
@@ -422,14 +424,14 @@ export default function SupplierProfilePage() {
                 onClick={() => navigate('/login')}
                 className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
               >
-                Order from this Supplier
+                {t('orderFromSupplier')}
               </button>
             ) : profile.role === 'restaurant_owner' ? (
               <button
                 onClick={() => navigate(`/owner/chat?supplier_id=${supplier.id}`)}
                 className="w-full py-3 bg-white border-2 border-slate-200 text-slate-900 font-bold rounded-xl hover:border-herb-light hover:text-midnight-dark transition-colors flex items-center justify-center gap-2"
               >
-                <MessageSquare className="w-5 h-5" /> Message Supplier
+                <MessageSquare className="w-5 h-5" /> {t('messageSupplier')}
               </button>
             ) : null}
           </div>

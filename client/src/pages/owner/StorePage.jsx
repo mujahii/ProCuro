@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, AlertCircle, Navigation, X, Loader2 } from 'lucide-react'
+import { Search, Filter, Drumstick, Beef, Leaf, Coffee, Apple, Package, MapPin, ChevronRight, ChevronDown, Fish, Milk, Flame, Wheat, Plus, AlertCircle, Navigation, X, Loader2, Share2 } from 'lucide-react'
 import HalalBadge from '../../components/ui/HalalBadge'
 import { reverseGeocode } from '../../lib/geocode'
 import { useProducts } from '../../hooks/useProducts'
@@ -9,6 +9,7 @@ import { useGeolocation } from '../../hooks/useGeolocation'
 import AddToCartModal from '../../components/store/AddToCartModal'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 
 const CATEGORIES = [
@@ -34,6 +35,7 @@ const SORT_OPTIONS = [
 export default function StorePage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState('')
@@ -219,16 +221,16 @@ export default function StorePage() {
         <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-marigold flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-marigold-dark">Complete your profile to place orders</p>
+            <p className="text-sm font-bold text-marigold-dark">{t('completeProfileWarning')}</p>
             <p className="text-xs text-marigold-dark mt-0.5">
-              Missing: {missingFields.join(', ')}
+              {t('missingLabel')}: {missingFields.join(', ')}
             </p>
           </div>
           <button
             onClick={() => navigate('/owner/profile')}
             className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-marigold-dark transition-colors flex-shrink-0"
           >
-            Complete Profile
+            {t('completeProfileBtn')}
           </button>
         </div>
       )}
@@ -238,8 +240,8 @@ export default function StorePage() {
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
           <Navigation className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-blue-900">Allow location for accurate delivery fees</p>
-            <p className="text-xs text-blue-700 mt-0.5">We use your location to calculate the delivery fee from each supplier.</p>
+            <p className="text-sm font-bold text-blue-900">{t('allowLocationTitle')}</p>
+            <p className="text-xs text-blue-700 mt-0.5">{t('locationDesc')}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
@@ -248,7 +250,7 @@ export default function StorePage() {
               className="text-xs bg-blue-600 text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1"
             >
               {locationSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Navigation className="w-3 h-3" />}
-              Allow
+              {t('allowLocation')}
             </button>
             <button onClick={dismissLocationBanner} className="text-blue-400 hover:text-blue-600 transition-colors">
               <X className="w-4 h-4" />
@@ -260,14 +262,12 @@ export default function StorePage() {
         <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 flex items-start gap-3">
           <MapPin className="w-5 h-5 text-marigold flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-marigold-dark">Location blocked in browser settings</p>
-            <p className="text-xs text-marigold-dark mt-0.5">
-              Enable location for this site in your browser settings, or enter your address manually in your profile.
-            </p>
+            <p className="text-sm font-bold text-marigold-dark">{t('locationBlocked')}</p>
+            <p className="text-xs text-marigold-dark mt-0.5">{t('locationBlockedDesc')}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             <button onClick={() => navigate('/owner/profile')} className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-marigold-dark transition-colors whitespace-nowrap">
-              Add Manually
+              {t('addManually')}
             </button>
             <button onClick={dismissLocationBanner} className="text-marigold-light hover:text-marigold transition-colors">
               <X className="w-4 h-4" />
@@ -355,7 +355,7 @@ export default function StorePage() {
         <>
           {/* Categories */}
           <div>
-            <h2 className="text-lg font-bold text-slate-900 mb-4 px-1">Categories</h2>
+            <h2 className="text-lg font-bold text-slate-900 mb-4 px-1">{t('categoriesLabel')}</h2>
             <div
               className="flex overflow-x-auto pb-2 scrollbar-hide justify-between gap-2"
               style={{ WebkitOverflowScrolling: 'touch' }}
@@ -385,14 +385,14 @@ export default function StorePage() {
           {/* Recommended Suppliers */}
           <div>
             <div className="flex justify-between items-end mb-4 px-1">
-              <h2 className="text-lg font-bold text-slate-900">Recommended Suppliers</h2>
+              <h2 className="text-lg font-bold text-slate-900">{t('recommendedSuppliers')}</h2>
               <button onClick={() => navigate('/suppliers')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">
-                See All <ChevronRight className="w-4 h-4" />
+                {t('seeAll')} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
             <div className="flex overflow-x-auto gap-4 pb-4 scrollbar-hide">
               {suppliers.length === 0 ? (
-                <p className="text-sm text-slate-400 py-2">No suppliers yet.</p>
+                <p className="text-sm text-slate-400 py-2">{t('noSuppliersYetStore')}</p>
               ) : suppliers.map(supplier => {
                 const avatarUrl = supplier.avatar_url
                 const certs = supplier.halal_certificates || []
@@ -419,11 +419,11 @@ export default function StorePage() {
                       </div>
                     )}
                     {isVerified ? (
-                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-lionsmane text-midnight-dark border-celeste">
+                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-midnight text-white">
                         <HalalBadge status="approved" size={12} /> Halal Certified
                       </div>
                     ) : isPending ? (
-                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-lionsmane text-marigold-dark border-marigold-light">
+                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-marigold/20 text-marigold-dark border border-marigold-light">
                         <HalalBadge status="pending" size={12} /> Pending Review
                       </div>
                     ) : null}
@@ -437,9 +437,9 @@ export default function StorePage() {
           <div>
             <div className="flex justify-between items-end mb-4 px-1">
               <h2 className="text-lg font-bold text-slate-900">
-                {selectedCategory !== 'All' ? selectedCategory : 'Recommended Orders'}
+                {selectedCategory !== 'All' ? selectedCategory : t('recommendedOrders')}
               </h2>
-              <button onClick={() => navigate('/owner/products')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">See All <ChevronRight className="w-4 h-4" /></button>
+              <button onClick={() => navigate('/owner/products')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">{t('seeAll')} <ChevronRight className="w-4 h-4" /></button>
             </div>
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -478,6 +478,18 @@ function getProductImageUrl(path) {
 
 function ProductCard({ product, onAddToCart }) {
   const imgUrl = getProductImageUrl(product.image_url)
+
+  async function handleShare(e) {
+    e.stopPropagation()
+    const url = `${window.location.origin}/supplier/${product.supplier_id}`
+    if (navigator.share) {
+      await navigator.share({ title: product.name, text: `${product.name} at ${product.supplier?.business_name} on ProCuro`, url })
+    } else {
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied!')
+    }
+  }
+
   return (
     <div
       onClick={onAddToCart}
@@ -502,13 +514,20 @@ function ProductCard({ product, onAddToCart }) {
             -{product.discount_percent}%
           </div>
         )}
+        <button
+          onClick={handleShare}
+          className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-slate-500 hover:text-midnight transition-colors"
+          title="Share product"
+        >
+          <Share2 className="w-3.5 h-3.5" />
+        </button>
       </div>
       <div className="p-4">
         <h3 className="font-bold text-slate-900 text-base mb-1">{product.name}</h3>
         {product.description && (
           <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
         )}
-        <p className="text-xs font-bold text-midnight-dark mb-3">{product.supplier?.business_name}</p>
+        <p className="text-xs text-slate-400 mb-3">{product.supplier?.business_name}</p>
         <div className="flex items-center justify-between">
           <div>
             <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>

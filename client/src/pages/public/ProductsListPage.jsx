@@ -217,7 +217,7 @@ function ProductCard({ product, onLogin }) {
         {product.description && (
           <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
         )}
-        <p className="text-xs font-bold text-midnight-dark mb-3">{product.supplier?.business_name}</p>
+        <p className="text-xs text-slate-400 mb-3">{product.supplier?.business_name}</p>
         <div className="flex items-center justify-between">
           <div>
             <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>

@@ -6,6 +6,7 @@ import { haversineKm } from '../../lib/haversine'
 import HalalBadge from '../../components/ui/HalalBadge'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
+import { useLanguage } from '../../context/LanguageContext'
 
 const SORT_OPTIONS = [
   { value: '', label: 'Recommended' },
@@ -17,6 +18,7 @@ const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Vegetables', 'Fruits
 
 export default function SupplierListPage() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [suppliers, setSuppliers] = useState([])
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState(null)
@@ -93,8 +95,8 @@ export default function SupplierListPage() {
       <Navbar />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-slate-900">All Suppliers</h1>
-          <span className="text-sm text-slate-400">{filtered.length} supplier{filtered.length !== 1 ? 's' : ''}</span>
+          <h1 className="text-2xl font-bold text-slate-900">{t('allSuppliersTitle')}</h1>
+          <span className="text-sm text-slate-400">{filtered.length} {filtered.length !== 1 ? t('allSuppliersTitle').toLowerCase() : t('supplier').toLowerCase()}</span>
         </div>
 
         {/* Search + Near Me + Sort */}
@@ -103,7 +105,7 @@ export default function SupplierListPage() {
             <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
             <input
               type="text"
-              placeholder="Search suppliers by name or city..."
+              placeholder={t('searchSuppliersPlaceholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="bg-transparent border-none outline-none focus:outline-none ring-0 focus:ring-0 w-full text-sm"
@@ -120,7 +122,7 @@ export default function SupplierListPage() {
             ) : (
               <Navigation className="w-4 h-4" />
             )}
-            <span className="hidden sm:inline">Near Me</span>
+            <span className="hidden sm:inline">{t('nearMe')}</span>
           </button>
           <div className="relative" ref={filterRef}>
             <button
@@ -128,7 +130,7 @@ export default function SupplierListPage() {
               className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy && sortBy !== 'nearest' ? 'bg-midnight text-white border-midnight' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
             >
               <Filter className="w-4 h-4" />
-              <span className="hidden sm:inline">{sortBy && sortBy !== 'nearest' ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Sort'}</span>
+              <span className="hidden sm:inline">{sortBy && sortBy !== 'nearest' ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : t('sortLabel')}</span>
               <ChevronDown className="w-3 h-3" />
             </button>
             {filterOpen && (
@@ -176,7 +178,7 @@ export default function SupplierListPage() {
                 onClick={() => { setSearch(''); setActiveCategory(null) }}
                 className="mt-3 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
               >
-                Clear filters
+                {t('clearFilters')}
               </button>
             )}
           </div>
@@ -227,12 +229,12 @@ export default function SupplierListPage() {
                       </div>
                     )}
                     {isVerified ? (
-                      <div className="mt-2 inline-flex items-center gap-1 bg-lionsmane text-midnight-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-celeste">
-                        <HalalBadge status="approved" size={12} /> Halal Certified
+                      <div className="mt-2 inline-flex items-center gap-1 bg-midnight text-white px-2 py-0.5 rounded-full text-[10px] font-semibold">
+                        <HalalBadge status="approved" size={12} /> {t('halalCertifiedBadge')}
                       </div>
                     ) : isPending ? (
-                      <div className="mt-2 inline-flex items-center gap-1 bg-lionsmane text-marigold-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-marigold-light">
-                        Pending Review
+                      <div className="mt-2 inline-flex items-center gap-1 bg-marigold/20 text-marigold-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-marigold-light">
+                        {t('pendingReview')}
                       </div>
                     ) : null}
                   </div>

@@ -19,7 +19,7 @@ const T = {
     // Landing page
     heroTagline: 'Halal Certified Suppliers Only',
     heroTitle: 'The Smarter Way to Stock Your Halal Kitchen',
-    heroSubtitle: 'Connect with verified Halal suppliers and order everything your restaurant needs — track, manage, and optimize, all from ProCuro.',
+    heroSubtitle: 'Connect with verified Halal suppliers and order everything your restaurant needs track, manage, and optimize, all from ProCuro.',
     getStarted: 'Get Started Free',
     browseSuppliers: 'Browse Suppliers',
     trustedBy: 'Trusted by Halal restaurants across Germany',
@@ -374,7 +374,7 @@ const T = {
     // Landing page
     heroTagline: 'Nur Halal-zertifizierte Lieferanten',
     heroTitle: 'Der clevere Weg, Ihre Halal-Küche zu versorgen',
-    heroSubtitle: 'Verbinden Sie sich mit geprüften Halal-Lieferanten und bestellen Sie alles, was Ihr Restaurant braucht — verfolgen, verwalten und optimieren, alles mit ProCuro.',
+    heroSubtitle: 'Verbinden Sie sich mit geprüften Halal-Lieferanten und bestellen Sie alles, was Ihr Restaurant braucht verfolgen, verwalten und optimieren, alles mit ProCuro.',
     getStarted: 'Kostenlos starten',
     browseSuppliers: 'Lieferanten entdecken',
     trustedBy: 'Vertraut von Halal-Restaurants in ganz Deutschland',

@@ -428,8 +428,10 @@ export default function ChatPage() {
     if (convId === 'admin') { deleteAdminConv(); setDeleteModalConvId(null); return }
     const id = convId || selectedConv?.id
     if (!id) return
-    const col = role === 'restaurant_owner' ? 'deleted_for_owner_at' : 'deleted_for_supplier_at'
-    const { error } = await supabase.from('conversations').update({ [col]: new Date().toISOString() }).eq('id', id)
+    // Hard delete: removes the conversation and (via FK CASCADE) every message
+    // in it, for both sides. The other party will see the chat disappear in
+    // real time via the conversations realtime subscription.
+    const { error } = await supabase.from('conversations').delete().eq('id', id)
     if (error) { toast.error('Failed to delete chat'); return }
     setConversations(prev => prev.filter(c => c.id !== id))
     if (selectedConv?.id === id) { setSelectedConv(null); setMessages([]) }
@@ -437,7 +439,7 @@ export default function ChatPage() {
     setDeleteListConvId(null)
     setDeleteModalConvId(null)
     setMenuOpenId(null)
-    toast.success('Chat removed from your inbox')
+    toast.success('Chat deleted')
   }
 
   async function togglePin(convId) {

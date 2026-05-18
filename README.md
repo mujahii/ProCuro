@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-18 21:03 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-19 06:16 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -688,8 +688,8 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | AllProductsPage | `/owner/products` | Browse all products with category/search filter |
 | CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout |
 | OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation; dispute filing |
-| ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, addresses, bank details, account settings |
-| AnalyticsPage | `/owner/analytics` | Monthly spend chart, top categories, AI summary |
+| ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings |
+| AnalyticsPage | `/owner/analytics` | Spending trend, top products, **pie chart** of spending by category, top categories bar chart, AI summary at the bottom; week/month/year + custom date-range filter |
 
 ### Supplier (`/supplier/`)
 
@@ -700,15 +700,15 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | OrdersPage | `/supplier/orders` | Incoming order management: confirm, ship, deliver, cancel, upload refund |
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
 | BankDetailsPage | `/supplier/bank` | IBAN, BIC, account holder management |
-| ProfilePage | `/supplier/profile` | Business profile: avatar, bio, categories, cities, website, phone, account settings |
-| AnalyticsPage | `/supplier/analytics` | Revenue chart, category breakdown, top products, AI summary |
+| ProfilePage | `/supplier/profile` | Business profile: avatar, bio, categories, cities (auto-populated from saved addresses — no manual checkbox), website, phone, account settings |
+| AnalyticsPage | `/supplier/analytics` | Revenue trend, category breakdown, top products, top clients, AI summary; week/month/year + custom date-range filter |
 
 ### Admin (`/admin/`)
 
 | Page | Route | Description |
 |---|---|---|
 | AdminLoginPage | `/admin/login` | Separate admin login page |
-| DashboardPage | `/admin/dashboard` | Platform KPIs: GMV, user count, order count, charts |
+| DashboardPage | `/admin/dashboard` | Platform KPIs: GMV, user count, order count. Charts: Platform GMV Over Time (filtered), Orders by Status, **User Growth** (cumulative, fed by real `users.created_at` data), **Payment Type** (COD vs Bank Transfer donut, replaces old Certificate Status), **City Comparison Radar** (suppliers vs owners per top city), **Germany Dot Map** (per-city dots, one colour per role), AI summary. Week/month/year + custom date-range filter on all charts. |
 | UsersPage | `/admin/users` | List all users; ban/unban; delete; view details; deleted accounts log |
 | SuppliersPage | `/admin/suppliers` | List suppliers; verify/unverify; activate/deactivate |
 | OrdersPage | `/admin/orders` | Platform-wide order list with status filters |
@@ -756,12 +756,15 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - `ProductForm` — Add/edit product form with image upload
 
 ### Charts (Recharts)
-- `RevenueChart` — Monthly revenue line chart
-- `CategorySalesChart` — Category revenue bar chart
+- `RevenueChart` — Monthly revenue area chart (also used as Platform GMV Over Time, owner Spending Trend, supplier Revenue Trend); buckets by day for ≤ 60-day ranges, by month for longer ones
+- `CategorySalesChart` — Category revenue horizontal bar chart
 - `TopProductsChart` — Top products by revenue
-- `OrdersByStatusChart` — Order split status distribution (admin)
-- `UserGrowthChart` — New users per month (admin)
-- `SupplierVerificationChart` — Verified vs pending suppliers (admin)
+- `OrdersByStatusChart` — Donut showing order-split status distribution (admin)
+- `UserGrowthChart` — Cumulative line chart of owners + suppliers, fed by `users.created_at` grouped by month and filtered by the active date range (admin)
+- `PaymentTypeChart` — Donut + breakdown card showing Bank Transfer vs Cash on Delivery counts and GMV (admin) — replaced the old Certificate Status card
+- `CityComparisonRadar` — Polar/radar chart with one axis per top city, two overlaid series (Suppliers + Owners). Intentionally a different chart family from everything else on the dashboard.
+- `GermanyDotMap` — Custom SVG of Germany with two coloured dots per city (one supplier, one owner). Dot radius scales with user count; lat/lng → SVG projection uses the Germany bounding box.
+- `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages.
 
 ### AI
 - `AnalyticsSummary` — AI insight card with cache indicator and force-refresh button
@@ -863,7 +866,8 @@ ProCuro/
 │       ├── components/
 │       │   ├── ai/             AnalyticsSummary, ChatbotFAB, ChatbotDrawer
 │       │   ├── charts/         RevenueChart, CategorySalesChart, TopProductsChart,
-│       │   │                   OrdersByStatusChart, UserGrowthChart, SupplierVerificationChart
+│       │   │                   OrdersByStatusChart, UserGrowthChart, PaymentTypeChart,
+│       │   │                   CityComparisonRadar, GermanyDotMap
 │       │   ├── layout/         Navbar, Footer, OwnerLayout, SupplierLayout, AdminLayout
 │       │   ├── profile/        AvatarModal, DeleteAccountModal, Modal, OwnerProfileModal,
 │       │   │                   PasswordModal, PhoneModal, SettingRow, SupplierProfileModal

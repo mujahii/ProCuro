@@ -35,7 +35,7 @@ export default function PWAInstallPrompt() {
   return (
     <div className="fixed bottom-4 left-4 right-4 z-[999] bg-midnight text-white rounded-2xl shadow-2xl p-4 flex items-start gap-3 border border-white/10">
       <div className="w-10 h-10 rounded-xl bg-marigold/20 flex items-center justify-center flex-shrink-0">
-        <img src="/Picture1.png" alt="ProCuro" className="w-7 h-7 rounded-lg object-cover" />
+        <img src="/ProCuroIcon.png" alt="ProCuro" className="w-7 h-7 rounded-lg object-cover" />
       </div>
 
       <div className="flex-1 min-w-0">

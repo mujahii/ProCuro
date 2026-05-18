@@ -6,7 +6,21 @@ const rateLimit = require('express-rate-limit')
 const verifySupabaseJWT = require('../middleware/verifySupabaseJWT')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
-const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+const MODEL_FALLBACKS = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-2.0-flash-lite']
+
+async function generateWithFallback(prompt) {
+  const errors = []
+  for (const name of MODEL_FALLBACKS) {
+    try {
+      const m = genAI.getGenerativeModel({ model: name })
+      const r = await m.generateContent(prompt)
+      return r.response.text()
+    } catch (err) {
+      errors.push(`${name}: ${err?.message?.split('\n')[0] || err}`)
+    }
+  }
+  throw new Error(`All Gemini models failed → ${errors.join(' | ')}`)
+}
 
 // Service-role client for cache reads/writes (bypasses RLS).
 const supabaseAdmin = createClient(
@@ -87,8 +101,8 @@ router.post('/chat', verifySupabaseJWT, aiLimiter, async (req, res) => {
   try {
     const systemContext = buildSystemContext(req.user.role, context)
     const fullPrompt = `${systemContext}\n\nUser: ${prompt}`
-    const result = await model.generateContent(fullPrompt)
-    res.json({ response: result.response.text() })
+    const response = await generateWithFallback(fullPrompt)
+    res.json({ response })
   } catch (err) {
     console.error('Gemini error:', err)
     res.status(503).json({ error: 'AI assistant is temporarily unavailable.' })
@@ -125,8 +139,7 @@ router.post('/analytics-summary', verifySupabaseJWT, aiLimiter, async (req, res)
   const prompt = prompts[req.user.role] || prompts.restaurant_owner
 
   try {
-    const result = await model.generateContent(prompt)
-    const summary = result.response.text()
+    const summary = await generateWithFallback(prompt)
     const generated_at = new Date().toISOString()
 
     if (userId) {

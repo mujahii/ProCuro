@@ -546,7 +546,7 @@ Serverless equivalents of the AI routes, deployed to production alongside the Vi
 
 | Function | Trigger | Description |
 |---|---|---|
-| `ai-chat.js` | `POST /.netlify/functions/ai-chat` | Proxies to Gemini 1.5 Flash; verifies Supabase JWT; rate-limited |
+| `ai-chat.js` | `POST /.netlify/functions/ai-chat` | Proxies to Gemini 2.5 Flash (with 2.5-flash-lite → 2.0-flash-lite fallback chain); verifies Supabase JWT; rate-limited |
 | `ai-analytics-summary.js` | `POST /.netlify/functions/ai-analytics-summary` | Generates AI analytics summary; checks `ai_insights_cache` (24h TTL); falls back to a deterministic text summary if Gemini quota is exceeded |
 
 ---
@@ -838,7 +838,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | State / data | Supabase JS SDK (Postgres + Auth + Storage + Realtime), React Context |
 | Backend | Express on Node (`server/`) for local dev; Netlify Functions for production AI endpoints |
 | Database | Supabase (PostgreSQL 17.6) with Row-Level Security on all tables |
-| AI | Google Gemini 1.5 Flash (`@google/generative-ai`) |
+| AI | Google Gemini 2.5 Flash (`@google/generative-ai`) — with automatic fallback chain |
 | Hosting | Netlify (frontend + serverless functions) |
 | Notifications | `react-hot-toast` for toast UX; Postgres-backed in-app notifications |
 | PDF | Client-side invoice generation |

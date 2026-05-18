@@ -149,9 +149,27 @@ export default function LandingPage() {
 
       {/* Hero Banner */}
       <section className="relative min-h-[600px] sm:min-h-[640px] flex flex-col overflow-hidden bg-midnight">
-        <div className="absolute inset-0 bg-gradient-to-br from-midnight/95 via-herb/40 to-marigold/20 backdrop-blur-3xl" />
-        <div className="absolute -top-20 -right-20 w-96 h-96 bg-marigold/15 rounded-full blur-3xl" />
-        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-celeste/20 rounded-full blur-3xl" />
+        <style>{`
+          @keyframes riseBlob {
+            0%   { transform: translateY(700px); opacity: 0; }
+            8%   { opacity: 0.22; }
+            92%  { opacity: 0.14; }
+            100% { transform: translateY(-700px); opacity: 0; }
+          }
+        `}</style>
+
+        {/* Static base gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-midnight via-[#0d2535] to-midnight" />
+
+        {/* 4 blobs staggered 4 s apart — always one visible, rising bottom → top */}
+        <div className="absolute left-[10%] top-0 w-80 h-80 bg-marigold/25 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'riseBlob 16s linear infinite', animationDelay: '0s' }} />
+        <div className="absolute left-[52%] top-0 w-72 h-72 bg-celeste/20 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'riseBlob 16s linear infinite', animationDelay: '-4s' }} />
+        <div className="absolute left-[30%] top-0 w-64 h-64 bg-herb/20 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'riseBlob 16s linear infinite', animationDelay: '-8s' }} />
+        <div className="absolute left-[68%] top-0 w-80 h-80 bg-marigold/15 rounded-full blur-3xl pointer-events-none"
+          style={{ animation: 'riseBlob 16s linear infinite', animationDelay: '-12s' }} />
 
         {/* 4 zones spread top-to-bottom with justify-between */}
         <div className="relative z-10 flex-1 flex flex-col justify-between text-center text-white px-6 max-w-3xl mx-auto w-full py-8 sm:py-10">

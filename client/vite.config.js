@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['ProCuroIcon.png', 'og-image.png'],
+      includeAssets: ['apple-touch-icon.png', 'og-image.png'],
       manifest: {
         name: 'ProCuro — Halal Supply Chain',
         short_name: 'ProCuro',
@@ -21,13 +21,13 @@ export default defineConfig({
         categories: ['food', 'shopping', 'business'],
         icons: [
           {
-            src: '/ProCuroIcon.png',
+            src: '/apple-touch-icon.png',
             sizes: '1024x1024',
             type: 'image/png',
             purpose: 'any'
           },
           {
-            src: '/ProCuroIcon.png',
+            src: '/apple-touch-icon.png',
             sizes: '1024x1024',
             type: 'image/png',
             purpose: 'maskable'

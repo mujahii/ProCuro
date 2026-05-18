@@ -1,5 +1,5 @@
-# Claude Code local settings (contains machine-specific paths and permissions)
-.claude/settings.local.json
+# Claude Code local settings & worktrees (machine-specific)
+.claude/
 
 # MCP config (contains Supabase project ref and other service URLs)
 .mcp.json

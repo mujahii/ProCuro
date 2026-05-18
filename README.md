@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-18 19:42 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-18 19:48 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -678,6 +678,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | HelpCenterPage | `/help` | Help center and FAQs |
 | PrivacyPolicyPage | `/privacy` | Privacy policy |
 | TermsOfServicePage | `/terms` | Terms of service |
+| AccountDeletedPage | `/account-deleted` | Farewell page shown after successful account deletion; bilingual (EN/DE) with a warm goodbye message and a back-to-homepage button |
 
 ### Owner (`/owner/`)
 
@@ -855,7 +856,8 @@ ProCuro/
 │       │   │                   Certificates, Reports, Chat
 │       │   ├── public/         Landing, Login, Register (Owner/Supplier), SelectRole,
 │       │   │                   ResetPassword, SupplierList, SupplierProfile, ProductsList,
-│       │   │                   About, Careers, Press, HelpCenter, PrivacyPolicy, Terms
+│       │   │                   About, Careers, Press, HelpCenter, PrivacyPolicy, Terms,
+│       │   │                   AccountDeleted
 │       │   └── shared/         Chat
 │       ├── components/
 │       │   ├── ai/             AnalyticsSummary, ChatbotFAB, ChatbotDrawer

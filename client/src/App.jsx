@@ -35,6 +35,7 @@ const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage'))
 const TermsOfServicePage = lazy(() => import('./pages/public/TermsOfServicePage'))
 const CareersPage = lazy(() => import('./pages/public/CareersPage'))
 const PressPage = lazy(() => import('./pages/public/PressPage'))
+const AccountDeletedPage = lazy(() => import('./pages/public/AccountDeletedPage'))
 
 // Admin
 const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'))
@@ -122,6 +123,7 @@ export default function App() {
             <Route path="/terms" element={<TermsOfServicePage />} />
             <Route path="/careers" element={<CareersPage />} />
             <Route path="/press" element={<PressPage />} />
+            <Route path="/account-deleted" element={<AccountDeletedPage />} />
 
             {/* Admin (separate, not linked from public login) */}
             <Route path="/admin/login" element={<AdminLoginPage />} />

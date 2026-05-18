@@ -863,7 +863,7 @@ export default function ProfilePage() {
         <DeleteAccountModal
           message="All your data, orders, and account information will be permanently deleted and cannot be recovered."
           onClose={() => setShowDeleteModal(false)}
-          onDeleted={() => signOut()}
+          onDeleted={async () => { await supabase.auth.signOut(); navigate('/account-deleted') }}
         />
       )}
       {avatarLightbox && avatarUrl && (

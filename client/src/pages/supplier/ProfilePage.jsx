@@ -1185,7 +1185,7 @@ export default function SupplierAccountPage() {
         <DeleteAccountModal
           message="All your data, products, and order history will be permanently deleted and cannot be recovered."
           onClose={() => setShowDeleteModal(false)}
-          onDeleted={() => signOut()}
+          onDeleted={async () => { await supabase.auth.signOut(); navigate('/account-deleted') }}
         />
       )}
       {showCertUploadModal && supplierProfile && (

@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-18 19:29 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-18 20:15 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -177,7 +177,7 @@ One row per supplier within an order. This is the unit of fulfilment, status tra
 **Order split status lifecycle:**
 
 ```
-pending_confirmation → confirmed → out_for_delivery → delivered
+pending_confirmation → confirmed → shipped → out_for_delivery → delivered
                     ↘ cancelled
                     ↘ cancellation_requested → cancelled
 pending_payment     → pending_confirmation (after receipt upload)
@@ -832,7 +832,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | Frontend | React 18, Vite 5, React Router 6, TailwindCSS 3, Lucide icons, Recharts |
 | State / data | Supabase JS SDK (Postgres + Auth + Storage + Realtime), React Context |
 | Backend | Express on Node (`server/`) for local dev; Netlify Functions for production AI endpoints |
-| Database | Supabase (PostgreSQL 15) with Row-Level Security on all tables |
+| Database | Supabase (PostgreSQL 17.6) with Row-Level Security on all tables |
 | AI | Google Gemini 1.5 Flash (`@google/generative-ai`) |
 | Hosting | Netlify (frontend + serverless functions) |
 | Notifications | `react-hot-toast` for toast UX; Postgres-backed in-app notifications |

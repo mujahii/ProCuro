@@ -172,7 +172,7 @@ export default function LandingPage() {
 
           {/* Zone 3 — Subtitle + buttons, grouped together */}
           <div>
-            <p className="text-sm sm:text-xl text-celeste mb-6 sm:mb-7 max-w-xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base text-celeste mb-6 sm:mb-7 max-w-2xl mx-auto leading-relaxed">
               {t('heroSubtitle')}
             </p>
             <div className="flex flex-row gap-3 justify-center">

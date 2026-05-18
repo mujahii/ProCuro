@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import PWAInstallPrompt from './components/ui/PWAInstallPrompt'
 import { Loader2 } from 'lucide-react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { CartProvider } from './context/CartContext'
@@ -100,6 +101,7 @@ export default function App() {
               },
             }}
           />
+          <PWAInstallPrompt />
           <Suspense fallback={<RouteFallback />}>
           <Routes>
             {/* Public */}

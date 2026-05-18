@@ -51,7 +51,7 @@ A separate card groups every authentication and preference action:
 - **Manage my addresses** — full CRUD over the address book, including setting a favourite and deleting safely (Business Location deletions also clear the linked profile coordinates).
 - **Language / Sprache toggle** — instant in-app translation between **English** and **Deutsch** via a React-based dictionary. No reload, no third-party widget, no flicker. The chosen language persists in `localStorage` and also sets `<html lang>` for screen readers and OS-level integrations.
 - **Sign out** — global Supabase session signout, clears the local cart, redirects to the public landing page.
-- **Delete account** — confirmation-gated, irreversibly removes the user and all owned rows via a SECURITY DEFINER RPC.
+- **Delete account** — confirmation-gated, irreversibly removes the user and all owned rows via a SECURITY DEFINER RPC. Self-deletions are recorded to a `deleted_accounts` audit table and surfaced in the admin panel. Associated chats are hard-deleted from the database (previously soft-deleted).
 
 ### Brand polish
 
@@ -80,11 +80,15 @@ ProCuro/
 ├── client/                     React + Vite frontend
 │   └── src/
 │       ├── pages/
-│       │   ├── owner/          Restaurant-owner pages (Profile, Orders, Store, Analytics, …)
-│       │   ├── supplier/       Supplier pages (Profile, Orders, Products, Analytics, …)
-│       │   ├── admin/          Admin console (users, suppliers, certificates, reports)
-│       │   ├── public/         Landing, supplier list & detail, products list
-│       │   └── shared/         Chat, notifications, etc.
+│       │   ├── owner/          Profile, Orders, Store, Cart, AllProducts, Analytics
+│       │   ├── supplier/       Profile, Dashboard, Orders, Products, Analytics,
+│       │   │                   Certificates, BankDetails
+│       │   ├── admin/          Login, Dashboard, Users, Suppliers, Orders, Products,
+│       │   │                   Certificates, Reports, Chat
+│       │   ├── public/         Landing, Login, Register (Owner/Supplier), SelectRole,
+│       │   │                   ResetPassword, SupplierList, SupplierProfile, ProductsList,
+│       │   │                   About, Careers, Press, HelpCenter, PrivacyPolicy, Terms
+│       │   └── shared/         Chat
 │       ├── components/         Reusable UI, layout, AI insights, store cards
 │       ├── context/            AuthContext, AddressContext, CartContext, LanguageContext
 │       └── lib/                Supabase client, IBAN formatter, geocoding, Gemini wrappers

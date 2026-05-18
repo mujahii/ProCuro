@@ -25,8 +25,7 @@ export default function AdminChatPage() {
   const [userProfiles, setUserProfiles] = useState({})
   const [profileModal, setProfileModal] = useState(null)
   const [unreadMap, setUnreadMap] = useState({})
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [deleteListConvId, setDeleteListConvId] = useState(null)
+  const [deleteModalConvId, setDeleteModalConvId] = useState(null)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -47,7 +46,6 @@ export default function AdminChatPage() {
   useEffect(() => {
     if (!selectedConv) return
     loadMessages(selectedConv.id)
-    setConfirmDelete(false)
 
     const channel = supabase
       .channel(`admin-conv-${selectedConv.id}`)
@@ -127,7 +125,6 @@ export default function AdminChatPage() {
 
   function handleSelectConv(conv) {
     setSelectedConv(conv)
-    setConfirmDelete(false)
     setUnreadMap(prev => ({ ...prev, [conv.id]: 0 }))
   }
 
@@ -251,14 +248,12 @@ export default function AdminChatPage() {
   }
 
   async function deleteConversation(convId) {
-    const id = convId || selectedConv?.id
-    if (!id) return
-    const { error } = await supabase.from('admin_conversations').delete().eq('id', id)
+    if (!convId) return
+    const { error } = await supabase.from('admin_conversations').delete().eq('id', convId)
     if (error) { toast.error('Failed to delete chat'); return }
-    setConversations(prev => prev.filter(c => c.id !== id))
-    if (selectedConv?.id === id) { setSelectedConv(null); setMessages([]) }
-    setConfirmDelete(false)
-    setDeleteListConvId(null)
+    setConversations(prev => prev.filter(c => c.id !== convId))
+    if (selectedConv?.id === convId) { setSelectedConv(null); setMessages([]) }
+    setDeleteModalConvId(null)
     toast.success('Chat deleted')
   }
 
@@ -327,7 +322,6 @@ export default function AdminChatPage() {
             ) : filtered.map(conv => {
               const p = userProfiles[conv.user_id]
               const unread = unreadMap[conv.id] || 0
-              const isDeleting = deleteListConvId === conv.id
               return (
                 <div
                   key={conv.id}
@@ -358,20 +352,13 @@ export default function AdminChatPage() {
                       )}
                     </div>
                   </button>
-                  {isDeleting ? (
-                    <div className="flex items-center gap-1 pr-2 flex-shrink-0">
-                      <button onClick={() => deleteConversation(conv.id)} className="px-2 py-1 text-[10px] bg-red-600 text-white rounded font-semibold hover:bg-red-700">Del</button>
-                      <button onClick={() => setDeleteListConvId(null)} className="px-2 py-1 text-[10px] bg-gray-100 text-gray-700 rounded font-semibold">✕</button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={e => { e.stopPropagation(); setDeleteListConvId(conv.id) }}
-                      className="opacity-0 group-hover:opacity-100 p-2 mr-1 hover:bg-red-50 rounded-lg flex-shrink-0 transition-all"
-                      title="Delete conversation"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
-                    </button>
-                  )}
+                  <button
+                    onClick={e => { e.stopPropagation(); setDeleteModalConvId(conv.id) }}
+                    className="opacity-0 group-hover:opacity-100 p-2 mr-1 hover:bg-red-50 rounded-lg flex-shrink-0 transition-all"
+                    title="Delete conversation"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
+                  </button>
                 </div>
               )
             })}
@@ -404,17 +391,9 @@ export default function AdminChatPage() {
                 </div>
               </button>
 
-              {confirmDelete ? (
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className="text-xs text-gray-500 hidden sm:block">Delete chat?</span>
-                  <button onClick={deleteConversation} className="px-2.5 py-1 text-xs bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700">Delete</button>
-                  <button onClick={() => setConfirmDelete(false)} className="px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200">Cancel</button>
-                </div>
-              ) : (
-                <button onClick={() => setConfirmDelete(true)} className="p-2 hover:bg-gray-100 rounded-lg flex-shrink-0 group" title="Delete conversation">
-                  <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" />
-                </button>
-              )}
+              <button onClick={() => setDeleteModalConvId(selectedConv.id)} className="p-2 hover:bg-gray-100 rounded-lg flex-shrink-0 group" title="Delete conversation">
+                <Trash2 className="w-4 h-4 text-gray-400 group-hover:text-red-500 transition-colors" />
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-lionsmane">
@@ -511,6 +490,37 @@ export default function AdminChatPage() {
           </div>
         )}
       </div>
+
+      {/* Delete confirmation modal */}
+      {deleteModalConvId && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                <Trash2 className="w-5 h-5 text-red-500" />
+              </div>
+              <div>
+                <h3 className="font-bold text-gray-900">Delete conversation?</h3>
+                <p className="text-sm text-gray-500">This will permanently delete all messages.</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteModalConvId(null)}
+                className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => deleteConversation(deleteModalConvId)}
+                className="flex-1 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Profile modal */}
       {profileModal && (

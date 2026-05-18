@@ -8,6 +8,7 @@
     --color-accent: #A58D66;
     --color-surface: #E5E1DD;
     --color-text: #083A4F;
+    --sat: env(safe-area-inset-top, 0px);
   }
 
   * {

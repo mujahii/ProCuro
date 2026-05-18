@@ -40,7 +40,7 @@ export default function OwnerLayout() {
 
       {/* Account deactivated banner */}
       {!isActive && (
-        <div className="fixed top-16 left-0 right-0 z-20 bg-red-500 text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap">
+        <div className="fixed left-0 right-0 z-20 bg-red-500 text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap" style={{ top: 'calc(4rem + var(--sat))' }}>
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span>Your account has been deactivated by the admin. Please contact support.</span>
           <button
@@ -101,12 +101,16 @@ export default function OwnerLayout() {
         </div>
       </aside>
 
-      <div className={`flex ${isActive ? 'pt-16' : 'pt-[104px] sm:pt-[104px]'}`}>
+      <div
+        className="flex"
+        style={{ paddingTop: isActive ? 'calc(4rem + var(--sat))' : 'calc(6.5rem + var(--sat))' }}
+      >
         {/* Desktop collapsible sidebar */}
         <aside
           className={`hidden lg:flex flex-col bg-white border-r border-slate-100 fixed left-0 bottom-0 z-20 transition-all duration-200 ${
             collapsed ? 'w-14' : 'w-56'
-          } ${isActive ? 'top-16' : 'top-[104px]'}`}
+          }`}
+          style={{ top: isActive ? 'calc(4rem + var(--sat))' : 'calc(6.5rem + var(--sat))' }}
         >
           <nav className="flex-1 px-2 py-4 space-y-1">
             {[

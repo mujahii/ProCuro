@@ -104,7 +104,7 @@ export default function Navbar({ onMenuClick }) {
   const initials = profile?.full_name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
 
   return (
-    <nav className="bg-white border-b border-slate-200 fixed top-0 left-0 right-0 z-30 w-full">
+    <nav className="bg-white border-b border-slate-200 fixed top-0 left-0 right-0 z-30 w-full" style={{ paddingTop: 'var(--sat)' }}>
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
 

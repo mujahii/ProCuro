@@ -76,7 +76,7 @@ export default function SupplierLayout() {
 
       {/* Setup / verification banner — disappears when profile complete + certificate uploaded */}
       {!bannerLoading && (profileIncomplete || certStatus !== 'approved') && (
-        <div className="fixed top-16 left-0 right-0 z-20 bg-marigold text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap">
+        <div className="fixed left-0 right-0 z-20 bg-marigold text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap" style={{ top: 'calc(4rem + var(--sat))' }}>
           <span>
             {profileIncomplete
               ? '⚠️ Complete your business details (business name + tax ID) to start selling.'
@@ -135,12 +135,16 @@ export default function SupplierLayout() {
         </div>
       </aside>
 
-      <div className={`flex ${showBanner ? 'pt-[132px] sm:pt-[104px]' : 'pt-16'}`}>
+      <div
+        className="flex"
+        style={{ paddingTop: showBanner ? 'calc(8.25rem + var(--sat))' : 'calc(4rem + var(--sat))' }}
+      >
         {/* Desktop collapsible sidebar */}
         <aside
           className={`hidden lg:flex flex-col bg-white border-r border-slate-100 fixed left-0 bottom-0 z-20 transition-all duration-200 ${
             collapsed ? 'w-14' : 'w-56'
-          } ${showBanner ? 'top-[104px]' : 'top-16'}`}
+          }`}
+          style={{ top: showBanner ? 'calc(6.5rem + var(--sat))' : 'calc(4rem + var(--sat))' }}
         >
           <nav className="flex-1 px-2 py-4 space-y-1">
             {supplierNavItems.map(({ to, icon: Icon, key }) => (

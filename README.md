@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-18 19:48 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-18 21:03 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -715,13 +715,13 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | ProductsPage | `/admin/products` | All products across all suppliers; activate/deactivate |
 | CertificatesPage | `/admin/certificates` | Certificate review queue: approve or reject with reason |
 | ReportsPage | `/admin/reports` | Abuse report queue: review, record action, dismiss |
-| AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations) |
+| AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations); per-conversation delete via modal overlay (same pattern as ChatPage) |
 
 ### Shared
 
 | Page | Route | Description |
 |---|---|---|
-| ChatPage | `/chat` | Supplier–owner real-time messaging |
+| ChatPage | `/chat` | Supplier–owner real-time messaging; per-conversation delete via modal overlay with pin/unpin |
 
 ---
 
@@ -823,6 +823,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 - `PWAInstallPrompt` component intercepts the browser's `beforeinstallprompt` event and shows a custom install CTA.
 - Allows users to add ProCuro to their home screen on Android and desktop Chrome.
+- **iOS safe area**: `index.html` sets `viewport-fit=cover` so the app extends edge-to-edge on notched iPhones. `apple-mobile-web-app-status-bar-style: black-translucent` makes the status bar transparent. The `<nav>` element receives `padding-top: var(--sat)` (where `--sat = env(safe-area-inset-top, 0px)` defined in `index.css`) so the navbar content always sits below the notch/Dynamic Island. All layout offset values in `OwnerLayout` and `SupplierLayout` (`paddingTop`, sidebar `top`) use `calc(Xrem + var(--sat))` inline styles to stay flush regardless of device.
 
 ---
 

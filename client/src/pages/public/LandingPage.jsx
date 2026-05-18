@@ -147,43 +147,57 @@ export default function LandingPage() {
     <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
       <Navbar />
 
-      {/* Hero Banner — pure frosted glass, no photo */}
-      <section className="relative min-h-[720px] sm:min-h-[760px] flex items-center justify-center overflow-hidden bg-midnight">
-        {/* Deep frosted overlay — Navy base with Teal mid-tone + faint Gold warmth */}
+      {/* Hero Banner */}
+      <section className="relative min-h-[600px] sm:min-h-[640px] flex flex-col overflow-hidden bg-midnight">
         <div className="absolute inset-0 bg-gradient-to-br from-midnight/95 via-herb/40 to-marigold/20 backdrop-blur-3xl" />
-        {/* Soft colour blobs */}
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-marigold/15 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-celeste/20 rounded-full blur-3xl" />
 
-        <div className="relative z-10 text-center text-white px-6 max-w-3xl mx-auto py-24 sm:py-20">
-          <span className="inline-flex items-center gap-1.5 sm:gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 rounded-full mb-10 sm:mb-12">
-            <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {t('heroTagline')}
-          </span>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black mb-6 sm:mb-7 leading-tight text-lionsmane">
-            {t('heroTitle')}
-          </h1>
-          <p className="text-sm sm:text-xl text-celeste mb-8 sm:mb-10 max-w-xl mx-auto leading-relaxed">
-            {t('heroSubtitle')}
-          </p>
-          <div className="flex flex-row gap-3 justify-center mb-14 sm:mb-16">
-            <button
-              onClick={() => navigate('/register')}
-              className="bg-marigold hover:bg-marigold-dark text-midnight font-bold px-5 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg shadow-lg transition-all"
-            >
-              {t('getStarted')}
-            </button>
-            <button
-              onClick={() => navigate('/suppliers')}
-              className="border-2 border-lionsmane/60 text-lionsmane hover:bg-lionsmane/10 font-bold px-5 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg transition-all"
-            >
-              {t('browseSuppliers')}
-            </button>
+        {/* 4 zones spread top-to-bottom with justify-between */}
+        <div className="relative z-10 flex-1 flex flex-col justify-between text-center text-white px-6 max-w-3xl mx-auto w-full py-8 sm:py-10">
+
+          {/* Zone 1 — Badge, pinned near top */}
+          <div>
+            <span className="inline-flex items-center gap-1.5 sm:gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 rounded-full">
+              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {t('heroTagline')}
+            </span>
           </div>
+
+          {/* Zone 2 — Main title, focal point */}
+          <div>
+            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black leading-tight text-lionsmane">
+              {t('heroTitle')}
+            </h1>
+          </div>
+
+          {/* Zone 3 — Subtitle + buttons, grouped together */}
+          <div>
+            <p className="text-sm sm:text-xl text-celeste mb-6 sm:mb-7 max-w-xl mx-auto leading-relaxed">
+              {t('heroSubtitle')}
+            </p>
+            <div className="flex flex-row gap-3 justify-center">
+              <button
+                onClick={() => navigate('/register')}
+                className="bg-marigold hover:bg-marigold-dark text-midnight font-bold px-5 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg shadow-lg transition-all"
+              >
+                {t('getStarted')}
+              </button>
+              <button
+                onClick={() => navigate('/suppliers')}
+                className="border-2 border-lionsmane/60 text-lionsmane hover:bg-lionsmane/10 font-bold px-5 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg transition-all"
+              >
+                {t('browseSuppliers')}
+              </button>
+            </div>
+          </div>
+
+          {/* Zone 4 — Trust badges, pinned to bottom */}
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-8 text-xs sm:text-sm text-celeste/80">
             <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('gdprCompliant')}</span>
             <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('halalVerifiedBadge')}</span>
             <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('noHiddenFees')}</span>
           </div>
+
         </div>
       </section>
 

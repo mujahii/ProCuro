@@ -141,7 +141,6 @@ export default function ChatPage() {
         .from('conversations')
         .select('*, supplier:supplier_profiles(id, business_name, avatar_url, city)')
         .eq('owner_id', user.id)
-        .is('deleted_for_owner_at', null)
         .order('last_message_at', { ascending: false })
       const convIds = (data || []).map(c => c.id)
       if (convIds.length > 0) {
@@ -161,7 +160,6 @@ export default function ChatPage() {
         .from('conversations')
         .select('*')
         .eq('supplier_id', supplierId)
-        .is('deleted_for_supplier_at', null)
         .order('created_at', { ascending: false })
       const convIds = (convs || []).map(c => c.id)
       const ownerIds = [...new Set((convs || []).map(c => c.owner_id).filter(Boolean))]

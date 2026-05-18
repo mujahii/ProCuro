@@ -1,5 +1,7 @@
 # ProCuro
 
+**Last Updated:** 2026-05-18 20:00 (Europe/Berlin)
+
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
 ProCuro lets restaurants browse verified Halal suppliers, place multi-supplier orders in a single cart, and track every delivery from confirmation through to payment. Suppliers manage their catalog, certifications, and incoming orders from one dashboard, with AI-powered sales insights powered by Google Gemini. An admin console governs the entire platform: user management, certificate review, reports, analytics, and direct messaging with any user.

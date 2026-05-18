@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Truck, Package, Flag, MapPin, Loader2 } from 'lucide-react'
+import { X, Truck, Package, Flag, MapPin, Loader2, Share2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
@@ -117,6 +117,16 @@ export default function AddToCartModal({ product, onClose }) {
     }
   }
 
+  async function handleShare() {
+    const url = `${window.location.origin}/supplier/${product.supplier_id}`
+    if (navigator.share) {
+      await navigator.share({ title: product.name, text: `${product.name} at ${product.supplier?.business_name} on ProCuro`, url })
+    } else {
+      await navigator.clipboard.writeText(url)
+      toast.success('Link copied!')
+    }
+  }
+
   function handleAdd() {
     addItem({ ...product, delivery_fee: deliveryFee ?? 0 }, qty)
     toast.success(`${product.name} added to cart`)
@@ -141,6 +151,13 @@ export default function AddToCartModal({ product, onClose }) {
             className="absolute top-4 right-4 bg-white/50 backdrop-blur-md p-2 rounded-full hover:bg-white transition-colors"
           >
             <X className="w-5 h-5 text-slate-700" />
+          </button>
+          <button
+            onClick={handleShare}
+            className="absolute top-4 left-4 bg-white/50 backdrop-blur-md p-2 rounded-full hover:bg-white transition-colors"
+            title="Share product"
+          >
+            <Share2 className="w-5 h-5 text-slate-700" />
           </button>
         </div>
 

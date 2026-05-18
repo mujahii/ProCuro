@@ -148,28 +148,24 @@ export default function LandingPage() {
       <Navbar />
 
       {/* Hero Banner — pure frosted glass, no photo */}
-      <section className="relative min-h-[820px] sm:min-h-[860px] flex items-center justify-center overflow-hidden bg-midnight">
+      <section className="relative min-h-[720px] sm:min-h-[760px] flex items-center justify-center overflow-hidden bg-midnight">
         {/* Deep frosted overlay — Navy base with Teal mid-tone + faint Gold warmth */}
         <div className="absolute inset-0 bg-gradient-to-br from-midnight/95 via-herb/40 to-marigold/20 backdrop-blur-3xl" />
         {/* Soft colour blobs */}
         <div className="absolute -top-20 -right-20 w-96 h-96 bg-marigold/15 rounded-full blur-3xl" />
         <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-celeste/20 rounded-full blur-3xl" />
 
-        <div className="relative z-10 w-full max-w-4xl mx-auto px-8 sm:px-12 py-32 sm:py-28 text-center md:text-left text-white">
-          {/* Badge — sits high with a large gap below it */}
-          <span className="inline-flex items-center gap-1.5 sm:gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 rounded-full mb-16 sm:mb-18">
+        <div className="relative z-10 text-center text-white px-6 max-w-3xl mx-auto py-24 sm:py-20">
+          <span className="inline-flex items-center gap-1.5 sm:gap-2 bg-marigold/20 border border-marigold/40 text-marigold-light text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 rounded-full mb-10 sm:mb-12">
             <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {t('heroTagline')}
           </span>
-          {/* Title — focal point */}
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black mb-8 sm:mb-10 leading-tight text-lionsmane">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black mb-6 sm:mb-7 leading-tight text-lionsmane">
             {t('heroTitle')}
           </h1>
-          {/* Subtitle */}
-          <p className="text-sm sm:text-xl text-celeste mb-12 sm:mb-14 max-w-xl mx-auto md:mx-0 leading-relaxed">
+          <p className="text-sm sm:text-xl text-celeste mb-8 sm:mb-10 max-w-xl mx-auto leading-relaxed">
             {t('heroSubtitle')}
           </p>
-          {/* CTA buttons */}
-          <div className="flex flex-row gap-3 justify-center md:justify-start mb-20 sm:mb-24">
+          <div className="flex flex-row gap-3 justify-center mb-14 sm:mb-16">
             <button
               onClick={() => navigate('/register')}
               className="bg-marigold hover:bg-marigold-dark text-midnight font-bold px-5 sm:px-8 py-3 sm:py-4 rounded-xl text-sm sm:text-lg shadow-lg transition-all"
@@ -183,8 +179,7 @@ export default function LandingPage() {
               {t('browseSuppliers')}
             </button>
           </div>
-          {/* Trust badges — pushed well below the buttons */}
-          <div className="flex flex-col items-center gap-5 sm:flex-row sm:justify-center md:justify-start sm:gap-10 text-xs sm:text-sm text-celeste/80">
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center sm:gap-8 text-xs sm:text-sm text-celeste/80">
             <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('gdprCompliant')}</span>
             <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('halalVerifiedBadge')}</span>
             <span className="flex items-center gap-1.5"><CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-marigold" /> {t('noHiddenFees')}</span>

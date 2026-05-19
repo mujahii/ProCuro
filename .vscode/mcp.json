@@ -1,26 +1,35 @@
 {
 	"servers": {
-		"io.github.github/github-mcp-server": {
-			"type": "stdio",
-			"command": "docker",
+		"github": {
+			"type": "http",
+			"url": "https://api.githubcopilot.com/mcp/"
+		},
+		"filesystem": {
+			"command": "npx",
 			"args": [
-				"run",
-				"-i",
-				"--rm",
-				"-e",
-				"GITHUB_PERSONAL_ACCESS_TOKEN=${input:token}",
-				"ghcr.io/github/github-mcp-server:1.0.4"
-			],
-			"gallery": "https://api.mcp.github.com",
-			"version": "1.0.4"
+				"-y",
+				"@modelcontextprotocol/server-filesystem",
+				"/Users/muja/Documents/vs code/ProCuro"
+			]
+		},
+		"playwright": {
+			"command": "npx",
+			"args": ["-y", "@playwright/mcp"]
+		},
+		"memory": {
+			"command": "npx",
+			"args": ["-y", "@modelcontextprotocol/server-memory"],
+			"env": {
+				"MEMORY_FILE_PATH": "/Users/muja/Documents/vs code/ProCuro/.claude/memory.jsonl"
+			}
+		},
+		"supabase": {
+			"command": "npx",
+			"args": ["-y", "@supabase/mcp-server-postgrest"],
+			"env": {
+				"SUPABASE_URL": "https://rexngdtweiivdyzrpfud.supabase.co",
+				"SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleG5nZHR3ZWlpdmR5enJwZnVkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Nzk4OTM1OSwiZXhwIjoyMDkzNTY1MzU5fQ.BC88zeqBtUjuv7qpvh-ovMRueehPiAIrxyxF1mhPcpk"
+			}
 		}
-	},
-	"inputs": [
-		{
-			"id": "token",
-			"type": "promptString",
-			"description": "",
-			"password": true
-		}
-	]
+	}
 }

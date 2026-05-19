@@ -7,6 +7,18 @@
 
 ---
 
+## 🔐 TEST CREDENTIALS
+
+**Use these accounts for testing ProCuro:**
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | `procuro@admin.com` | `Md@121212` |
+| Owner | `1999mud@gmail.com` | `Md@121212` |
+| Supplier | `mariam.diallo@dialloherbs.de` | `Halal@2024` |
+
+---
+
 ## 1. Executive Summary
 
 ProCuro implements a clean, modern B2B e-commerce interface with bilingual support (English/German) targeting the German Halal supply chain market. The UI demonstrates:

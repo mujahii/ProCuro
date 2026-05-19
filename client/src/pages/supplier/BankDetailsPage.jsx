@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { Loader2, CreditCard, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function SupplierBankDetailsPage() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [form, setForm] = useState({ bank_name: '', account_holder: '', iban: '', bic: '' })
   const [loading, setLoading] = useState(true)
@@ -28,8 +30,8 @@ export default function SupplierBankDetailsPage() {
 
   function validateIban(iban) {
     const cleaned = iban.replace(/\s/g, '')
-    if (cleaned.length < 15 || cleaned.length > 34) return 'IBAN must be between 15 and 34 characters'
-    if (!/^[A-Z]{2}/i.test(cleaned)) return 'IBAN must start with a 2-letter country code'
+    if (cleaned.length < 15 || cleaned.length > 34) return t('ibanLengthError')
+    if (!/^[A-Z]{2}/i.test(cleaned)) return t('ibanCountryCodeError')
     return ''
   }
 
@@ -50,7 +52,7 @@ export default function SupplierBankDetailsPage() {
     }
   }
 
-  if (loading) return <div className="px-4 sm:px-6 lg:px-8 py-6 text-sm text-gray-400">Loading...</div>
+  if (loading) return <div className="px-4 sm:px-6 lg:px-8 py-6 text-sm text-gray-400">{t('loading')}</div>
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-xl">
@@ -59,23 +61,23 @@ export default function SupplierBankDetailsPage() {
           <CreditCard className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-gray-900">Bank Details</h1>
-          <p className="text-sm text-gray-500">Shown to restaurant owners who choose Bank Transfer</p>
+          <h1 className="text-2xl font-black text-gray-900">{t('bankDetails')}</h1>
+          <p className="text-sm text-gray-500">{t('bankDetailsSubtitle')}</p>
         </div>
       </div>
 
       <div className="card p-6">
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="label">Bank Name</label>
+            <label className="label">{t('bankNameLabel')}</label>
             <input value={form.bank_name} onChange={e => setForm(f => ({ ...f, bank_name: e.target.value }))} className="input" placeholder="Deutsche Bank" />
           </div>
           <div>
-            <label className="label">Account Holder Name</label>
+            <label className="label">{t('accountHolderLabel')}</label>
             <input value={form.account_holder} onChange={e => setForm(f => ({ ...f, account_holder: e.target.value }))} className="input" placeholder="Al-Nour Meats GmbH" />
           </div>
           <div>
-            <label className="label">IBAN</label>
+            <label className="label">{t('ibanLabel')}</label>
             <input
               value={form.iban}
               onChange={e => { setForm(f => ({ ...f, iban: e.target.value })); setIbanError('') }}
@@ -85,13 +87,13 @@ export default function SupplierBankDetailsPage() {
             {ibanError && <p className="text-xs text-red-600 mt-1">{ibanError}</p>}
           </div>
           <div>
-            <label className="label">BIC / SWIFT</label>
+            <label className="label">{t('bicSwiftLabel')}</label>
             <input value={form.bic} onChange={e => setForm(f => ({ ...f, bic: e.target.value }))} className="input font-mono" placeholder="COBADEFFXXX" />
           </div>
 
           <button type="submit" disabled={saving} className="btn-primary w-full flex items-center justify-center gap-2">
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-            Save Bank Details
+            {t('saveBankDetailsBtn')}
           </button>
         </form>
       </div>

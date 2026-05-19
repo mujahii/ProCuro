@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
-// SVG viewBox matches /public/germany.svg (1001 × 1198 displayed, 10010 × 11980 vb).
-const VB = { w: 10010, h: 11980 }
+// SVG viewBox matches /public/Deutschland.svg (443 × 599 displayed).
+const VB = { w: 443, h: 599 }
 
 // Germany's real geographic bounds (extrema of the mainland).
 // Combined with Mercator projection these match the aspect of the supplied SVG
@@ -29,10 +29,8 @@ function project(lat, lng) {
   return { x, y }
 }
 
-// Dot radii scaled for the new (10010-unit) viewBox. Roughly equivalent to
-// 3–9 px in the old 340-unit one.
 function dotRadius(count) {
-  return Math.max(90, Math.min(260, 90 + count * 30))
+  return Math.max(4, Math.min(12, 4 + count * 1.3))
 }
 
 export default function GermanyDotMap({ data = [], title = 'Users Across Germany' }) {
@@ -50,21 +48,19 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
       </div>
       <div className="relative">
         <svg viewBox={`0 0 ${VB.w} ${VB.h}`} className="w-full h-72" preserveAspectRatio="xMidYMid meet">
-          {/* Real Germany outline served from /public/germany.svg */}
-          <image href="/germany.svg" x="0" y="0" width={VB.w} height={VB.h} preserveAspectRatio="xMidYMid meet" />
+          <image href="/Deutschland.svg" x="0" y="0" width={VB.w} height={VB.h} preserveAspectRatio="xMidYMid meet" />
 
           {valid.map((d, i) => {
             const { x, y } = project(d.lat, d.lng)
-            // Offset the supplier and owner dots horizontally so they don't overlap exactly.
-            const sx = x - 110
-            const ox = x + 110
+            const sx = x - 5
+            const ox = x + 5
             return (
               <g key={`${d.city}-${i}`} onMouseEnter={() => setHover(d)} onMouseLeave={() => setHover(null)}>
                 {d.suppliers > 0 && (
-                  <circle cx={sx} cy={y} r={dotRadius(d.suppliers)} fill="#083A4F" fillOpacity="0.85" stroke="#fff" strokeWidth="45" />
+                  <circle cx={sx} cy={y} r={dotRadius(d.suppliers)} fill="#083A4F" fillOpacity="0.85" stroke="#fff" strokeWidth="2" />
                 )}
                 {d.owners > 0 && (
-                  <circle cx={ox} cy={y} r={dotRadius(d.owners)} fill="#D4A017" fillOpacity="0.85" stroke="#fff" strokeWidth="45" />
+                  <circle cx={ox} cy={y} r={dotRadius(d.owners)} fill="#D4A017" fillOpacity="0.85" stroke="#fff" strokeWidth="2" />
                 )}
               </g>
             )

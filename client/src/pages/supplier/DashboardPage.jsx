@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
+import { useLanguage } from '../../context/LanguageContext'
 import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
 import ProductForm from '../../components/supplier/ProductForm'
 import { Euro, ShoppingBag, TrendingUp, Package, ChevronLeft, ChevronRight, X, CheckCircle, AlertCircle, Clock, MapPin } from 'lucide-react'
@@ -22,6 +23,7 @@ export default function SupplierDashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const { addresses } = useAddresses()
+  const { t } = useLanguage()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [stats, setStats] = useState(null)
   const [products, setProducts] = useState([])
@@ -105,15 +107,15 @@ export default function SupplierDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-slate-900">{t('navDashboard')}</h1>
 
       {/* Suspended banner — highest priority */}
       {!loading && user?.is_banned && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="font-bold text-red-800">Account suspended</p>
-            <p className="text-sm text-red-700 mt-0.5">Your account has been suspended by the admin. Your profile and products are no longer visible in the store. If you believe this is a mistake, please <a href="/supplier/chat" className="font-semibold underline underline-offset-2 hover:text-red-900 inline-flex items-center gap-0.5">chat with the admin →</a></p>
+            <p className="font-bold text-red-800">{t('accountSuspendedTitle')}</p>
+            <p className="text-sm text-red-700 mt-0.5">{t('accountSuspendedDesc')} <a href="/supplier/chat" className="font-semibold underline underline-offset-2 hover:text-red-900 inline-flex items-center gap-0.5">{t('accountSuspendedChatLink')}</a></p>
           </div>
         </div>
       )}
@@ -124,8 +126,8 @@ export default function SupplierDashboardPage() {
           <div className="flex items-start gap-3 mb-3">
             <AlertCircle className="w-5 h-5 text-marigold flex-shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-marigold-dark">Account not certified yet</p>
-              <p className="text-sm text-marigold-dark mt-0.5">Your products are hidden from the store until you complete the steps below.</p>
+              <p className="font-bold text-marigold-dark">{t('accountNotCertifiedTitle')}</p>
+              <p className="text-sm text-marigold-dark mt-0.5">{t('accountNotCertifiedDesc')}</p>
             </div>
           </div>
           <div className="space-y-2 ml-8">
@@ -136,7 +138,7 @@ export default function SupplierDashboardPage() {
                   ? <Clock className="w-4 h-4 text-marigold flex-shrink-0" />
                   : <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
               <span className={certStatus.hasApprovedCert ? 'text-midnight-dark font-medium' : 'text-slate-700'}>
-                Halal Certificate {certStatus.hasApprovedCert ? '— Approved' : certStatus.certPending ? '— Pending review' : '— Upload required'}
+                {t('halalCertLabel')} {certStatus.hasApprovedCert ? t('certApprovedStatus') : certStatus.certPending ? t('certPendingStatus') : t('certUploadRequired')}
               </span>
               {!certStatus.hasApprovedCert && (
                 <button onClick={() => navigate('/supplier/profile')} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark ml-1">
@@ -149,7 +151,7 @@ export default function SupplierDashboardPage() {
                 ? <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />
                 : <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
               <span className={certStatus.hasBank ? 'text-midnight-dark font-medium' : 'text-slate-700'}>
-                Bank Details {certStatus.hasBank ? '— Added' : '— Required'}
+                {t('bankDetails')} {certStatus.hasBank ? t('bankDetailsAddedStatus') : t('bankDetailsRequiredStatus')}
               </span>
               {!certStatus.hasBank && (
                 <button onClick={() => navigate('/supplier/profile')} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark ml-1">
@@ -162,7 +164,7 @@ export default function SupplierDashboardPage() {
                 ? <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />
                 : <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />}
               <span className={addresses.length > 0 ? 'text-midnight-dark font-medium' : 'text-slate-700'}>
-                Business Address {addresses.length > 0 ? '— Added' : '— Required'}
+                {t('businessAddressLabel')} {addresses.length > 0 ? t('bankDetailsAddedStatus') : t('bankDetailsRequiredStatus')}
               </span>
               {addresses.length === 0 && (
                 <button onClick={() => navigate('/supplier/profile')} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark ml-1">
@@ -175,7 +177,7 @@ export default function SupplierDashboardPage() {
                 ? <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />
                 : <MapPin className="w-4 h-4 text-red-400 flex-shrink-0" />}
               <span className={supplierProfile?.city?.trim() ? 'text-midnight-dark font-medium' : 'text-slate-700'}>
-                City / Location {supplierProfile?.city?.trim() ? `— ${supplierProfile.city}` : '— Select at least one location'}
+                {t('cityLocation')} {supplierProfile?.city?.trim() ? `— ${supplierProfile.city}` : t('selectAtLeastOneLocation')}
               </span>
               {!supplierProfile?.city?.trim() && (
                 <button onClick={() => navigate('/supplier/profile')} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark ml-1">
@@ -193,8 +195,8 @@ export default function SupplierDashboardPage() {
             <CheckCircle className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-bold text-herb-dark">Account certified</p>
-            <p className="text-sm text-herb">Your products are visible in the store.</p>
+            <p className="font-bold text-herb-dark">{t('accountCertifiedTitle')}</p>
+            <p className="text-sm text-herb">{t('accountCertifiedDesc')}</p>
           </div>
         </div>
       )}
@@ -211,12 +213,12 @@ export default function SupplierDashboardPage() {
             <div className="bg-gradient-to-br from-midnight to-slate-800 text-white p-6 rounded-xl shadow-md">
               <div className="flex items-center gap-2 mb-3">
                 <Euro className="w-5 h-5 text-herb-light" />
-                <p className="text-slate-300 text-sm font-medium">Total Revenue</p>
+                <p className="text-slate-300 text-sm font-medium">{t('totalRevenueLabel')}</p>
               </div>
               <p className="text-3xl font-black">€{stats.totalRevenue.toFixed(2)}</p>
               <div className="flex items-center gap-1 mt-2">
                 <TrendingUp className="w-3.5 h-3.5 text-herb-light" />
-                <p className="text-xs text-herb-light font-medium">€{stats.monthRevenue.toFixed(2)} this month</p>
+                <p className="text-xs text-herb-light font-medium">€{stats.monthRevenue.toFixed(2)} {t('thisMonthLabel')}</p>
               </div>
             </div>
 
@@ -227,10 +229,10 @@ export default function SupplierDashboardPage() {
             >
               <div className="flex items-center gap-2 mb-3">
                 <ShoppingBag className="w-5 h-5 text-blue-500" />
-                <p className="text-slate-500 text-sm font-medium">Active Orders</p>
+                <p className="text-slate-500 text-sm font-medium">{t('activeOrdersLabel')}</p>
               </div>
               <p className="text-3xl font-black text-slate-900">{stats.activeOrders}</p>
-              <p className="text-xs text-slate-400 mt-2">{stats.pendingOrders} awaiting confirmation</p>
+              <p className="text-xs text-slate-400 mt-2">{stats.pendingOrders} {t('awaitingConfirmationLabel')}</p>
             </div>
 
             {/* Analytics link */}
@@ -240,10 +242,10 @@ export default function SupplierDashboardPage() {
             >
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-5 h-5 text-midnight" />
-                <p className="text-slate-500 text-sm font-medium">Analytics</p>
+                <p className="text-slate-500 text-sm font-medium">{t('analytics')}</p>
               </div>
-              <p className="text-lg font-bold text-slate-900">See Full Analysis</p>
-              <p className="text-xs text-slate-400 mt-2">Charts, trends & AI insights</p>
+              <p className="text-lg font-bold text-slate-900">{t('seeFullAnalysis')}</p>
+              <p className="text-xs text-slate-400 mt-2">{t('chartsTrendsAI')}</p>
             </div>
           </div>
 
@@ -253,24 +255,24 @@ export default function SupplierDashboardPage() {
           {/* Products */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-slate-900">My Products</h2>
+              <h2 className="text-lg font-bold text-slate-900">{t('myProductsTitle')}</h2>
               <button
                 onClick={() => navigate('/supplier/products')}
                 className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors"
               >
-                Manage All
+                {t('manageAll')}
               </button>
             </div>
 
             {products.length === 0 ? (
               <div className="text-center py-12 bg-white rounded-xl border border-slate-100">
                 <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">No products yet</p>
+                <p className="text-slate-400 text-sm">{t('noProductsYetSupplier')}</p>
                 <button
                   onClick={() => navigate('/supplier/products')}
                   className="mt-3 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
                 >
-                  Add your first product
+                  {t('addFirstProduct')}
                 </button>
               </div>
             ) : (
@@ -295,14 +297,14 @@ export default function SupplierDashboardPage() {
                         )}
                         {!product.is_active && (
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-[9px] font-bold text-slate-600 bg-white/80 px-1 py-0.5 rounded">Out of Stock</span>
+                            <span className="text-[9px] font-bold text-slate-600 bg-white/80 px-1 py-0.5 rounded">{t('outOfStockText')}</span>
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-slate-900 text-sm truncate">{product.name}</p>
                         <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5 ${product.is_active ? 'bg-lionsmane text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
-                          {product.is_active ? 'In Stock' : 'Out of Stock'}
+                          {product.is_active ? t('inStock') : t('outOfStockText')}
                         </span>
                         <p className="text-sm font-bold text-slate-900 mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">/ {product.unit_type}</span></p>
                       </div>
@@ -345,7 +347,7 @@ export default function SupplierDashboardPage() {
         <ModalPortal><div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl my-6 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h2 className="text-xl font-bold text-slate-900">Edit Product</h2>
+              <h2 className="text-xl font-bold text-slate-900">{t('editProductBtn')}</h2>
               <button
                 onClick={() => setEditProduct(null)}
                 className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-500"

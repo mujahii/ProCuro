@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import Badge from '../../components/ui/Badge'
 import { Upload, CheckCircle, Loader2, Award, ExternalLink, Pencil, Trash2, X, FileText } from 'lucide-react'
 import { format } from 'date-fns'
@@ -25,6 +26,7 @@ function Modal({ title, onClose, children }) {
 
 export default function SupplierCertificatesPage() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [certs, setCerts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -81,20 +83,20 @@ export default function SupplierCertificatesPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-2xl">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black text-gray-900">Halal Certificates</h1>
+        <h1 className="text-2xl font-black text-gray-900">{t('halalCertificatesTitle')}</h1>
         <button onClick={() => setShowUpload(true)} className="btn-primary flex items-center gap-2 text-sm">
-          <Upload className="w-4 h-4" /> Add Certificate
+          <Upload className="w-4 h-4" /> {t('addCertBtn')}
         </button>
       </div>
 
       {loading ? (
-        <p className="text-sm text-gray-400 text-center py-4">Loading...</p>
+        <p className="text-sm text-gray-400 text-center py-4">{t('loading')}</p>
       ) : certs.length === 0 ? (
         <div className="text-center py-12">
           <Award className="w-10 h-10 text-gray-200 mx-auto mb-2" />
-          <p className="text-sm text-gray-400 mb-4">No certificates uploaded yet</p>
+          <p className="text-sm text-gray-400 mb-4">{t('noCertsUploaded')}</p>
           <button onClick={() => setShowUpload(true)} className="btn-primary flex items-center gap-2 mx-auto">
-            <Upload className="w-4 h-4" /> Upload your first certificate
+            <Upload className="w-4 h-4" /> {t('uploadFirstCert')}
           </button>
         </div>
       ) : (
@@ -110,10 +112,10 @@ export default function SupplierCertificatesPage() {
                       <p className="font-semibold text-slate-900 truncate">{displayName}</p>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <Badge status={cert.status} />
-                        <p className="text-xs text-gray-500">Uploaded {format(new Date(cert.uploaded_at), 'dd MMM yyyy')}</p>
+                        <p className="text-xs text-gray-500">{t('uploadedLabel')} {format(new Date(cert.uploaded_at), 'dd MMM yyyy')}</p>
                       </div>
                       {cert.status === 'rejected' && cert.rejection_reason && (
-                        <p className="text-xs text-red-600 mt-1 bg-red-50 rounded px-2 py-1">Reason: {cert.rejection_reason}</p>
+                        <p className="text-xs text-red-600 mt-1 bg-red-50 rounded px-2 py-1">{t('certRejectedReason')} {cert.rejection_reason}</p>
                       )}
                     </div>
                   </div>
@@ -159,12 +161,12 @@ export default function SupplierCertificatesPage() {
       )}
 
       {confirmDeleteCert && (
-        <Modal title="Delete Certificate" onClose={() => setConfirmDeleteCert(null)}>
+        <Modal title={t('deleteCertTitle')} onClose={() => setConfirmDeleteCert(null)}>
           <div className="space-y-4">
             <div className="bg-red-50 border border-red-100 rounded-xl p-4">
-              <p className="text-sm font-semibold text-red-700 mb-1">Are you sure?</p>
+              <p className="text-sm font-semibold text-red-700 mb-1">{t('areYouSure')}</p>
               <p className="text-sm text-red-600">
-                "<span className="font-semibold">{confirmDeleteCert.file_name || 'This certificate'}</span>" will be permanently deleted and cannot be recovered.
+                "<span className="font-semibold">{confirmDeleteCert.file_name || t('noCertificatesAvailable')}</span>" {t('certDeleteWarning')}
               </p>
             </div>
             <div className="flex gap-3">
@@ -172,13 +174,13 @@ export default function SupplierCertificatesPage() {
                 onClick={() => setConfirmDeleteCert(null)}
                 className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 onClick={() => { handleDelete(confirmDeleteCert); setConfirmDeleteCert(null) }}
                 className="flex-1 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
               >
-                Delete
+                {t('delete')}
               </button>
             </div>
           </div>
@@ -189,6 +191,7 @@ export default function SupplierCertificatesPage() {
 }
 
 function UploadModal({ supplierProfile, onClose, onUploaded }) {
+  const { t } = useLanguage()
   const [file, setFile] = useState(null)
   const [label, setLabel] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -221,21 +224,21 @@ function UploadModal({ supplierProfile, onClose, onUploaded }) {
   }
 
   return (
-    <Modal title="Upload Certificate" onClose={onClose}>
+    <Modal title={t('uploadCertTitle')} onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-            Certificate Name <span className="text-red-500">*</span>
+            {t('certNameLabel')} <span className="text-red-500">*</span>
           </label>
           <input
             value={label}
             onChange={e => setLabel(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="e.g. Chicken Halal Certificate"
+            placeholder={t('certNamePlaceholder')}
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">File</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('productLabel')}</label>
           <div
             onClick={() => inputRef.current?.click()}
             className="border-2 border-dashed border-celeste-dark rounded-xl bg-lionsmane p-6 flex flex-col items-center gap-2 cursor-pointer hover:bg-celeste transition-colors"
@@ -255,10 +258,10 @@ function UploadModal({ supplierProfile, onClose, onUploaded }) {
           </div>
         </div>
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">Cancel</button>
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">{t('cancel')}</button>
           <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
-            Upload
+            {t('uploadBtn')}
           </button>
         </div>
       </div>
@@ -267,6 +270,7 @@ function UploadModal({ supplierProfile, onClose, onUploaded }) {
 }
 
 function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
+  const { t } = useLanguage()
   const [label, setLabel] = useState(cert.file_name || '')
   const [newFile, setNewFile] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -326,19 +330,19 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
   }
 
   return (
-    <Modal title="Edit Certificate" onClose={onClose}>
+    <Modal title={t('editCertTitle')} onClose={onClose}>
       <div className="space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Certificate Name</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('certNameLabel')}</label>
           <input
             value={label}
             onChange={e => setLabel(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="e.g. Meat Halal Certificate"
+            placeholder={t('certEditNamePlaceholder')}
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Replace File (optional)</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('replaceFileLabel')}</label>
           <div
             onClick={() => inputRef.current?.click()}
             className="border-2 border-dashed border-slate-200 rounded-xl bg-lionsmane p-5 flex flex-col items-center gap-2 cursor-pointer hover:border-celeste-dark hover:bg-lionsmane transition-colors"
@@ -352,16 +356,16 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
             ) : (
               <>
                 <Upload className="w-6 h-6 text-slate-400" />
-                <p className="text-xs text-slate-400">Click to choose a new file</p>
+                <p className="text-xs text-slate-400">{t('clickChooseNewFile')}</p>
               </>
             )}
           </div>
         </div>
         <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">Cancel</button>
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">{t('cancel')}</button>
           <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save Changes
+            {t('saveChanges')}
           </button>
         </div>
       </div>

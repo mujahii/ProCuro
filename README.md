@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-19 17:29 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-19 22:22 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -707,7 +707,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | `OwnerProfileModal` (used by Supplier OrdersPage when viewing an order's owner card, and by ChatPage when tapping the owner avatar) | Fetches `users.is_banned`; if true, shows a red "Banned" pill under the owner's name + a red banner row inside the modal with the banned message |
 | `ChatPage` (supplier side) | When the open conversation's owner has `is_banned = true`, shows a red strip above the message list: "This restaurant owner's account has been banned. Past orders remain accessible but no new orders can be placed." Chat remains usable so the supplier can still communicate |
 
-**Germany Dot Map — real outline**: The previous hand-traced 47-point SVG path was replaced with a high-resolution real-world SVG of Germany at `client/public/germany.svg` (viewBox `0 0 10010 11980`, ~365 KB). The component renders it as an `<image>` element inside its own SVG and projects city dots onto it using Mercator-vertical + equirectangular-horizontal projection with mainland bounds `lat 47.27–55.06, lng 5.87–15.04` (matches the supplied SVG's aspect ratio). Dot radius and stroke width scale to the new 10010-unit viewBox.
+**Germany Dot Map — real outline**: The map SVG was updated to `client/public/Deutschland.svg` (443 × 599 px, viewBox `0 0 443 599`). The component renders it as an `<image>` element inside its own SVG and projects city dots onto it using Mercator-vertical + equirectangular-horizontal projection with mainland bounds `lat 47.27–55.06, lng 5.87–15.04`. Dot radius (`4–12 units`) and stroke width (`2 units`) are scaled to the 443-unit viewBox.
 
 ### Supplier (`/supplier/`)
 
@@ -781,7 +781,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `UserGrowthChart` — Cumulative line chart of owners + suppliers, fed by `users.created_at` grouped by month and filtered by the active date range (admin)
 - `PaymentTypeChart` — Donut + breakdown card showing Bank Transfer vs Cash on Delivery counts and GMV (admin) — replaced the old Certificate Status card
 - `CityComparisonRadar` — Polar/radar chart with one axis per top city, two overlaid series (Suppliers + Owners). Intentionally a different chart family from everything else on the dashboard. **Domain is dynamic**: computed as `Math.ceil(max(all series values) × 1.15)` so the radar shape proportionally reflects actual differences rather than being artificially scaled.
-- `GermanyDotMap` — Custom SVG of Germany with two coloured dots per city (one supplier, one owner). Dot radius scales with user count; lat/lng → SVG projection uses the Germany bounding box (`lng 5.5–15.2`, `lat 47.0–55.1`, viewBox 340×340). The SVG outline path uses ~47 real-world border waypoints traced clockwise from the NW corner (Dutch border → North Sea coast → Danish border → Baltic coast → Polish Oder-Neisse border → Czech border → Austrian Alps → Swiss Rhine → French Palatinate → Luxembourg/Belgian/Dutch border back north).
+- `GermanyDotMap` — Germany outline loaded from `/public/Deutschland.svg` (443 × 599 px) as an `<image>` inside an SVG. Two coloured dots per city (supplier = midnight, owner = marigold); dot radius scales with user count (4–12 units). lat/lng → SVG coordinates via Mercator-vertical + equirectangular-horizontal projection using mainland bounds `lat 47.27–55.06, lng 5.87–15.04`, scaled to the 443-unit viewBox.
 - `SupplierVerificationChart` — Defined but currently **unused** (not imported by any page). Intended to show verified vs unverified supplier breakdown; the analytics RPC it was built for (`get_supplier_verification_breakdown`) was dropped in migration 017.
 - `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages.
 
@@ -838,7 +838,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - Language is toggled in the Account Settings card and persisted in `localStorage`.
 - On toggle, `<html lang>` is updated for screen readers and OS integrations.
 - No page reload; no third-party library.
-- **Coverage:** Every user-facing string is translated including: Login/Register/Role-select flows, Navbar address dropdown (Delivered to, Select Address, form placeholders), Owner store (search, categories, sort), AllProducts (categories, sort, product card), AddToCartModal (delivery fee states, quantity, discount), Owner Orders (full lifecycle: modals, rating, dispute, refund), Owner Analytics (all chart titles and KPI labels), Supplier Analytics (all chart titles and KPI labels), Supplier Orders (full lifecycle: Cancel/RefundSection/DisputeResponse modals, detail view, list page), Supplier Products (table headers, add/edit modal, delivery fee table), SupplierListPage (categories, sort), Notifications bell.
+- **Coverage:** Every user-facing string across all pages is translated including: Login/Register/Role-select flows, Reset Password page, Navbar address dropdown (Delivered to, Select Address, form placeholders), Owner store (search, categories, sort), AllProducts (categories, sort, product card), Public Products List (search, categories, sort, empty states), AddToCartModal (delivery fee states, quantity, discount), Owner Orders (full lifecycle: modals, rating, dispute, refund), Owner Analytics (all chart titles and KPI labels), Supplier Dashboard (certification status banners, KPI cards), Supplier Analytics (all chart titles and KPI labels), Supplier Orders (full lifecycle: Cancel/RefundSection/DisputeResponse modals, detail view, list page), Supplier Products (table headers, add/edit modal, delivery fee table), Supplier Bank Details (labels, validation errors), Supplier Certificates (upload/edit/delete modals), SupplierListPage (categories, sort), Notifications bell. Dictionary has **300+ keys** (EN+DE).
 
 ---
 

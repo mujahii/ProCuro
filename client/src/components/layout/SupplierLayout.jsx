@@ -47,7 +47,7 @@ export default function SupplierLayout() {
             .from('halal_certificates')
             .select('status')
             .eq('supplier_id', sp.id)
-            .order('created_at', { ascending: false })
+            .order('uploaded_at', { ascending: false })
             .limit(1)
             .then(({ data }) => {
               setCertStatus(data?.[0]?.status || 'none')

@@ -646,7 +646,7 @@ STAGE 7: ITEM CREATION (Blue)
 - For each product in split:
   - INSERT into order_items
   - product_id, quantity, price_at_time (frozen)
-- Triggers: Update product.stock_quantity via RPC
+- Triggers: Update product.stock_quantity via PostgreSQL trigger
 - Database: Decrement inventory
 
 STAGE 8: SUPPLIER NOTIFICATION (Orange background)
@@ -708,7 +708,7 @@ STAGE 14: COMPLETION (Dark purple)
 DATA TRANSFORMATIONS:
 - Cart (localStorage) → Order (database)
 - Product prices → Frozen price_at_time
-- Product stock → Decremented via RPC
+- Product stock → Decremented via PostgreSQL trigger on order_items insert
 - Supplier availability → Order split status
 - Delivery → Rating + Notification
 - Ratings → Supplier average rating

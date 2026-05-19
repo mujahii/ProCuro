@@ -331,7 +331,7 @@ User Registration
 │   └── Supabase creates auth.users row
 ├── 3. Trigger: on_auth_user_created fires
 │   └── Creates public.users row via trigger function
-├── 4. Call create_profile_from_oauth() RPC
+├── 4. Server-side profile creation (Express.js endpoint)
 │   └── Sets role, creates supplier_profiles/owner_profiles
 └── 5. AuthContext updates state (user + profile)
 
@@ -739,7 +739,7 @@ Step 8: CREATE ORDER_ITEMS
 │  │  └─ price_at_time: product.price (frozen)
 │  │ }
 │  └─ RLS: order_items_insert policy
-└─ Decrement: product.stock_quantity via RPC
+└─ Decrement: product.stock_quantity via PostgreSQL trigger
 
 Step 9: SUPPLIER FULFILLMENT
 ├─ Supplier views: /supplier/orders
@@ -1196,6 +1196,143 @@ ProCuro uses **hard deletion with selective audit trails**, NOT soft deletes:
 - **Limit:** 20 requests per 60 seconds per user (Express middleware)
 - **Response:** HTTP 429 if exceeded
 - **Rationale:** Prevent quota exhaustion; encourage cache usage
+
+---
+
+
+---
+
+## Appendix E: Testable Acceptance Criteria & Verifiable Claims
+
+### Overview
+
+This appendix catalogs all quantitative claims in the SDD and specifies acceptance criteria for verification.
+
+### Performance Claims (Require Benchmarking)
+
+| Claim | Source | Status | Verification Method |
+|---|---|---|---|
+| Gemini model fallback chain adds <100ms latency | SDD 4.8 | ⚠️ Unverified | Load test 100 concurrent requests, measure p95 response time |
+| Cache hit rate: 70-80% (24h TTL) | Assumption | ⚠️ Unverified | Monitor ai_insights_cache table; calculate (hits)/(hits+misses) |
+| PostgREST queries: <50ms median (includes RLS) | Architecture | ⚠️ Unverified | Profile with pg_stat_statements; measure SELECT latency |
+| Page load (admin dashboard): <2 seconds | UX target | ⚠️ Unverified | Synthetic monitoring (Lighthouse, WebPageTest) |
+
+### Cost Claims (Require Google Pricing Validation)
+
+| Claim | Status | Verification Method |
+|---|---|---|
+| Gemini 2.5 Flash = 35% cost reduction vs 1.5 Flash | ⚠️ External (Google) | Cross-reference Google API pricing pages |
+| 24h cache saves 70% of Gemini quota | ⚠️ Assumption | Monitor token usage before/after cache implementation |
+| Netlify Functions: ~$0.20 per 1M invocations | ⚠️ External (Netlify) | Verify against Netlify pricing docs |
+
+### Internationalization (i18n) Coverage
+
+| Requirement | Status | Test Coverage |
+|---|---|---|
+| **German (de) translations:** 100% UI strings | ⚠️ Claimed | Lint test: Extract translatable keys, count de vs en |
+| **English (en) translations:** 100% UI strings | ✅ Default language | No additional test required |
+| **Support for RTL languages:** No (out of scope) | N/A | N/A |
+| **Date/time formatting:** Locale-aware (de_DE) | ⚠️ Unverified | Test with DateFormatter.format() in German locale |
+| **Currency formatting:** EUR with German conventions (€ suffix) | ⚠️ Unverified | Test price display: `€150,50` (comma as decimal) |
+| **Phone number formatting:** German format (+49...) | ⚠️ Unverified | Test formatPhone() with German numbers |
+
+### Database Constraints (Require Schema Audit)
+
+| Constraint | Status | Verification SQL |
+|---|---|---|
+| All 21 tables have RLS enabled | ✅ Documented in Appendix A | `SELECT schemaname, tablename FROM pg_tables WHERE schemaname='public' AND NOT EXISTS (SELECT 1 FROM information_schema.constraint_column_usage WHERE table_name = tablename AND constraint_name LIKE '%rls%')` |
+| 40+ RLS policies exist | ⚠️ Unverified | `SELECT COUNT(*) FROM pg_policies WHERE schemaname='public'` |
+| 3 RESTRICT FKs protect order data | ✅ Documented in Appendix C | `SELECT * FROM information_schema.referential_constraints WHERE constraint_name LIKE '%order%' AND delete_rule='RESTRICT'` |
+| All CASCADE deletes verified for data safety | ⚠️ Unverified | Manual code review of migrations 001-019 |
+
+### AI Analytics Acceptance Criteria
+
+**Gemini Summary Quality:**
+
+- [ ] Test: Natural language summaries generated for owner dashboard contain at least 3 business insights
+- [ ] Test: Summary JSON/markdown parses without errors
+- [ ] Test: Model fallback chain exhausts with graceful error message (all 4 models fail)
+- [ ] Test: Rate limiting kicks in at 21st request in 60s window
+
+**Cache Strategy:**
+
+- [ ] Test: Cache hit returns within <50ms (memory I/O only, no Gemini call)
+- [ ] Test: Cache expires after 24h (generate fresh summary on day 2)
+- [ ] Test: Explicit refresh button clears cache and regenerates immediately
+- [ ] Test: Cache key uniqueness: two different users see different cached summaries
+
+### Compliance Claims (Require Legal/Technical Review)
+
+| Requirement | Status | Evidence |
+|---|---|---|
+| GDPR right-to-delete: User deletion cascades all personal data | ✅ Appendix C | FK constraints with CASCADE delete |
+| Data residency: Germany (EU region only) | ✅ Supabase config | Supabase project settings: Region = Germany |
+| PII handling: Encrypted at rest | ⚠️ Claimed | Supabase encryption docs (AES-256) |
+| Audit trail: Deleted accounts tracked | ✅ Documented | deleted_accounts table with user_id, deleted_at, deleted_by_admin_id |
+
+### Acceptance Test Checklist
+
+- [ ] **Performance:** Admin dashboard loads in <2s (p95 latency)
+- [ ] **Cache:** 70%+ hit rate on ai_insights_cache (measure over 7 days)
+- [ ] **Internationalization:** German locale active for all user-facing strings (test German login → German dashboard)
+- [ ] **Deletion:** Hard-delete order preserves order_items frozen prices (RESTRICT FK blocks deletion)
+- [ ] **RLS Security:** Non-admin user cannot query other user's orders (RLS policy enforcement)
+- [ ] **Gemini Fallback:** All 4 models fail → graceful error message (not 500 error)
+- [ ] **Audit Logging:** Admin can view deleted_accounts entries (RLS allows admin read)
+
+---
+
+## Appendix F: Critical Security Reminders & Best Practices
+
+### Known Vulnerabilities & Mitigations
+
+**1. XSS (Cross-Site Scripting) via User Input**
+
+- **Attack Vector:** Malicious user submits `<script>alert('xss')</script>` in product description
+- **Current Mitigation:** React auto-escapes in JSX; DOMPurify recommended for user-generated HTML
+- **Status:** ✅ Lower risk (client-side escaping works for stored content)
+
+**2. RLS Policy Bypass via Custom JWT**
+
+- **Attack Vector:** Attacker crafts JWT with fake role='admin'
+- **Current Mitigation:** JWT verified via Supabase (signed token, cannot be forged without secret)
+- **Status:** ✅ Secure (JWT signature validation prevents forgery)
+
+**3. SQL Injection via PostgREST**
+
+- **Attack Vector:** Attacker passes `'; DROP TABLE users; --` in filter parameter
+- **Current Mitigation:** PostgREST parameterizes queries (no string concatenation)
+- **Status:** ✅ Secure (parameterized queries prevent injection)
+
+**4. Service-Role Key Exposure**
+
+- **Attack Vector:** Attacker obtains SUPABASE_SERVICE_ROLE_KEY and bypasses RLS
+- **Current Mitigation:** Key stored in .env (not in git); server-side only (never sent to client)
+- **Status:** ⚠️ **Critical:** Audit rotation of service-role key (recommend every 90 days)
+
+**5. Rate Limiting Bypass**
+
+- **Attack Vector:** Attacker uses multiple IP addresses to bypass 20 req/60s limit
+- **Current Mitigation:** Express rate-limiter keyed by user_id (not IP)
+- **Status:** ✅ Secure (user-based limiting prevents multi-IP bypass)
+
+### Recommended Security Hardening (Future)
+
+1. **Add Request Signing:** Hash request body + timestamp to prevent replay attacks
+2. **Enable 2FA:** Optional 2-factor authentication for admin accounts
+3. **IP Whitelisting:** Restrict admin panel to known office IPs (optional)
+4. **CORS Tightening:** Remove localhost:5173 from production (dev-only)
+5. **HTTPS-Only:** Enforce Secure flag on all cookies
+6. **Log Aggregation:** Centralize auth/API logs to external service (e.g., LogRocket, DataDog)
+
+### Security Audit Checklist
+
+- [ ] Service-role key last rotated: _____ (target: every 90 days)
+- [ ] No .env files in git history: `git log --all --pretty=format: --name-only | sort -u | grep -E '\\.env'`
+- [ ] All API responses use Content-Security-Policy headers: `curl -I https://procuro.netlify.app | grep CSP`
+- [ ] RLS policies tested with role=restaurant_owner + supplier + admin roles
+- [ ] JWT expiry: 60 minutes (verify `exp` claim in token)
+- [ ] Rate limiting: 20 req/60s per user (load test with sequential requests)
 
 ---
 

@@ -44,7 +44,7 @@
 - **Key Columns:** supplier_id (FK CASCADE), name, description, price (NUMERIC ≥0), unit_type (kg|package|piece|liter), category (10 enum), stock_quantity, is_active, image_url
 - **Security:** RLS public if active, suppliers see own, admin all
 - **Indexes:** supplier_id, category, is_active
-- **Triggers:** Stock decrement on order fulfillment (RPC)
+- **Triggers:** Stock decrement on order fulfillment (PostgreSQL trigger, not RPC)
 
 #### **halal_certificates**
 - **Purpose:** Halal certification document management (admin review required)

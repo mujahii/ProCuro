@@ -10,12 +10,10 @@ import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
 
 const DELIVERY_TIERS = [
-  { range: '0 – 5 km',    fee: '€2.00' },
-  { range: '5 – 15 km',   fee: '€4.50' },
-  { range: '15 – 30 km',  fee: '€7.50' },
-  { range: '30 – 75 km',  fee: '€13.00' },
-  { range: '75 – 150 km', fee: '€20.00' },
-  { range: '150+ km',     fee: '€28.00' },
+  { range: '0 – 50 km',   fee: '€5.00' },
+  { range: '50 – 100 km', fee: '€9.00' },
+  { range: '100 – 200 km', fee: '€14.00' },
+  { range: '200+ km',     fee: '€20.00' },
 ]
 
 function DeliveryFeeTable() {

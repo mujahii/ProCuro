@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-19 16:50 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-19 17:01 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -424,15 +424,7 @@ All functions are `SECURITY DEFINER` with `SET search_path = public` to prevent 
 
 ### Analytics
 
-| Function | Signature | Description |
-|---|---|---|
-| `get_supplier_monthly_revenue` | `(supplier_id) → TABLE(month, revenue)` | Last 12 months of delivered revenue |
-| `get_owner_monthly_spend` | `(owner_id) → TABLE(month, spend)` | Last 12 months of delivered spend |
-| `get_platform_gmv_monthly` | `() → TABLE(month, gmv)` | Platform-wide GMV last 12 months (admin only, enforced in server layer) |
-| `get_category_sales_breakdown` | `(supplier_id) → TABLE(category, revenue)` | Revenue by product category |
-| `get_top_products` | `(supplier_id, limit) → TABLE(product_name, units_sold, revenue)` | Best-selling products |
-| `get_user_growth_monthly` | `() → TABLE(month, new_users)` | User registration count by month (admin) |
-| `get_supplier_verification_breakdown` | `() → TABLE(status, count)` | Verified vs pending suppliers (admin) |
+> **Note:** All seven dedicated analytics RPCs (`get_supplier_monthly_revenue`, `get_owner_monthly_spend`, `get_platform_gmv_monthly`, `get_category_sales_breakdown`, `get_top_products`, `get_user_growth_monthly`, `get_supplier_verification_breakdown`) were **dropped in migration 017** as dead code. Analytics are now computed entirely client-side via direct Supabase queries to `order_splits`, `order_items`, `owner_profiles`, and `users` within each analytics page component.
 
 ### Chat
 
@@ -453,6 +445,7 @@ All functions are `SECURITY DEFINER` with `SET search_path = public` to prevent 
 | `admin_delete_user` | `(target_user_id) → void` | Admin-only; hard-deletes from `public.users` and `auth.users` |
 | `admin_set_owner_active` | `(user_id, is_active) → void` | Admin-only; upserts `owner_profiles.is_active` |
 | `delete_own_account` | `() → void` | Self-deletion: captures identity, writes to `deleted_accounts` (NULL `deleted_by_admin_id`), then hard-deletes from `auth.users` which cascades everywhere |
+| `rls_auto_enable` | `() → void` | Internal utility (SECURITY DEFINER); automatically enables RLS on newly created tables |
 
 ---
 
@@ -666,11 +659,11 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | LandingPage | `/` | Marketing homepage with hero, features, and CTA |
 | LoginPage | `/login` | Email/password login; Google OAuth button |
 | SelectRolePage | `/select-role` | Role picker for new users (owner vs supplier) |
-| RegisterOwnerPage | `/register/owner` | Owner registration form |
+| RegisterOwnerPage | `/register` | Owner registration form |
 | RegisterSupplierPage | `/register/supplier` | Supplier registration form with business fields |
 | ResetPasswordPage | `/reset-password` | Supabase Auth password reset |
 | SupplierListPage | `/suppliers` | Browseable list of verified suppliers with distance, rating, categories |
-| SupplierProfilePage | `/suppliers/:id` | Full supplier profile: bio, cities, Halal badge, products |
+| SupplierProfilePage | `/supplier/:id` | Full supplier profile: bio, cities, Halal badge, products |
 | ProductsListPage | `/products` | All active products across all verified suppliers |
 | AboutPage | `/about` | Company information |
 | CareersPage | `/careers` | Careers page |
@@ -701,7 +694,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock |
 | OrdersPage | `/supplier/orders` | Incoming order management: confirm, ship, deliver, cancel, upload refund |
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
-| BankDetailsPage | `/supplier/bank` | IBAN, BIC, account holder management |
+| BankDetailsPage | `/supplier/bank-details` | IBAN, BIC, account holder management |
 | ProfilePage | `/supplier/profile` | Business profile: avatar, bio, categories, cities (auto-populated from saved addresses — no manual checkbox), website, phone, account settings |
 | AnalyticsPage | `/supplier/analytics` | Revenue trend, category breakdown, top products, top clients, AI summary; week/month/year + custom date-range filter. **Top Restaurant Clients** bar chart: labels are angled (−35°) with truncation at 14 chars; Y-axis uses integer ticks only (`allowDecimals={false}`). **Date bucketing**: span ≤ 60 days → daily (YYYY-MM-DD) buckets; span > 60 days → monthly (YYYY-MM) buckets — so Week and Month views show per-day bars, Year view shows per-month bars. |
 
@@ -723,7 +716,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 | Page | Route | Description |
 |---|---|---|
-| ChatPage | `/chat` | Supplier–owner real-time messaging; per-conversation delete via modal overlay with pin/unpin |
+| ChatPage | `/owner/chat` and `/supplier/chat` | Supplier–owner real-time messaging; shared component rendered inside OwnerLayout and SupplierLayout respectively; per-conversation delete via modal overlay with pin/unpin |
 
 ---
 
@@ -766,6 +759,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - `PaymentTypeChart` — Donut + breakdown card showing Bank Transfer vs Cash on Delivery counts and GMV (admin) — replaced the old Certificate Status card
 - `CityComparisonRadar` — Polar/radar chart with one axis per top city, two overlaid series (Suppliers + Owners). Intentionally a different chart family from everything else on the dashboard. **Domain is dynamic**: computed as `Math.ceil(max(all series values) × 1.15)` so the radar shape proportionally reflects actual differences rather than being artificially scaled.
 - `GermanyDotMap` — Custom SVG of Germany with two coloured dots per city (one supplier, one owner). Dot radius scales with user count; lat/lng → SVG projection uses the Germany bounding box (`lng 5.5–15.2`, `lat 47.0–55.1`, viewBox 340×340). The SVG outline path uses ~47 real-world border waypoints traced clockwise from the NW corner (Dutch border → North Sea coast → Danish border → Baltic coast → Polish Oder-Neisse border → Czech border → Austrian Alps → Swiss Rhine → French Palatinate → Luxembourg/Belgian/Dutch border back north).
+- `SupplierVerificationChart` — Defined but currently **unused** (not imported by any page). Intended to show verified vs unverified supplier breakdown; the analytics RPC it was built for (`get_supplier_verification_breakdown`) was dropped in migration 017.
 - `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages.
 
 ### AI

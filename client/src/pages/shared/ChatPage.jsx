@@ -168,10 +168,10 @@ export default function ChatPage() {
       let ownerMap = {}
       if (ownerIds.length > 0) {
         const [{ data: ownerUsers }, { data: ownerProfiles }] = await Promise.all([
-          supabase.from('users').select('id, full_name, email, avatar_url').in('id', ownerIds),
+          supabase.from('users').select('id, full_name, email, avatar_url, is_banned').in('id', ownerIds),
           supabase.from('owner_profiles').select('user_id, restaurant_name, city').in('user_id', ownerIds),
         ])
-        ;(ownerUsers || []).forEach(u => { ownerMap[u.id] = { ...ownerMap[u.id], id: u.id, full_name: u.full_name, email: u.email, avatar_url: u.avatar_url } })
+        ;(ownerUsers || []).forEach(u => { ownerMap[u.id] = { ...ownerMap[u.id], id: u.id, full_name: u.full_name, email: u.email, avatar_url: u.avatar_url, is_banned: u.is_banned } })
         ;(ownerProfiles || []).forEach(op => { ownerMap[op.user_id] = { ...ownerMap[op.user_id], restaurant_name: op.restaurant_name, city: op.city } })
       }
       if (convIds.length > 0) {
@@ -803,6 +803,12 @@ export default function ChatPage() {
               <div className="bg-red-50 border-b border-red-200 px-4 py-2.5 flex items-start gap-2">
                 <Ban className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-red-700">{t('supplierBannedChatNotice')}</p>
+              </div>
+            )}
+            {role === 'supplier' && selectedConv.owner?.is_banned === true && (
+              <div className="bg-red-50 border-b border-red-200 px-4 py-2.5 flex items-start gap-2">
+                <Ban className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-red-700">{t('ownerBannedChatNotice')}</p>
               </div>
             )}
 

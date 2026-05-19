@@ -1,49 +1,41 @@
 import { useState } from 'react'
 
-// Germany border traced from real lat/lng waypoints projected into the SVG viewBox.
-// Projection: x = (lng - 5.5) / 9.7 * 340,  y = 340 - (lat - 47.0) / 8.1 * 340
-// ~47 waypoints covering the full land border clockwise from the NW corner.
-const GERMANY_PATH = [
-  // NW: Dutch-German border, heading north
-  [53,81],[55,67],[61,59],
-  // North Sea coast going east
-  [84,58],[101,42],[112,31],
-  // Schleswig-Holstein peninsula going north
-  [119,13],[138,2],
-  // Danish border (west → east)
-  [140,11],[158,12],[193,12],[250,12],
-  // Baltic coast going south-east
-  [260,24],[281,30],[299,42],[306,51],[312,53],
-  // Polish border — Oder-Neisse going south
-  [319,67],[317,95],[317,116],[322,130],[333,154],[328,171],[325,175],
-  // Czech border going west through Erzgebirge to Bohemian Forest
-  [298,186],[280,198],[240,211],[271,253],[279,274],
-  // Austrian border going west (Inn → Alps → Lindau)
-  [257,291],[263,306],[262,314],[231,312],[196,320],[146,317],
-  // Swiss border going west to Basel
-  [129,312],[110,311],[74,317],
-  // French border going north — Rhine then Palatinate Forest
-  [74,296],[79,275],[94,258],[86,254],[53,246],
-  // Luxembourg → Belgian borders
-  [31,237],[22,207],[18,183],[18,170],
-  // Dutch border going north then east back to coast
-  [21,152],[21,141],[25,137],[43,122],[53,109],[53,86],
-].map(([x, y]) => `${x},${y}`).join(' L ')
-  .replace(/^/, 'M ') + ' Z'
+// SVG viewBox matches /public/germany.svg (1001 × 1198 displayed, 10010 × 11980 vb).
+const VB = { w: 10010, h: 11980 }
 
-// Project (lng, lat) → (x, y) inside the SVG viewBox (340x340).
-// Germany's bounding box: lng ~5.8–15.05, lat ~47.27–55.06.
-const VB = { w: 340, h: 340 }
-const LNG_MIN = 5.5, LNG_MAX = 15.2
-const LAT_MIN = 47.0, LAT_MAX = 55.1
+// Germany's real geographic bounds (extrema of the mainland).
+// Combined with Mercator projection these match the aspect of the supplied SVG
+// (ratio ≈ 0.83). Tweak only if dots land outside the country outline.
+const BOUNDS = {
+  top: 55.06,    // List, Sylt — northernmost point
+  bottom: 47.27, // Haldenwanger Eck — southernmost point
+  left: 5.87,    // Isenbruch — westernmost point
+  right: 15.04,  // Deschka, Saxony — easternmost point
+}
+
+function mercatorY(lat) {
+  return Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360))
+}
+
+const Y_TOP_M = mercatorY(BOUNDS.top)
+const Y_BOTTOM_M = mercatorY(BOUNDS.bottom)
+
+// Project (lat, lng) → (x, y) inside the SVG viewBox using Mercator vertical
+// and equirectangular horizontal — same projection family Wikimedia uses for
+// its Germany location-map SVGs.
 function project(lat, lng) {
-  const x = ((lng - LNG_MIN) / (LNG_MAX - LNG_MIN)) * VB.w
-  const y = VB.h - ((lat - LAT_MIN) / (LAT_MAX - LAT_MIN)) * VB.h
+  const x = ((lng - BOUNDS.left) / (BOUNDS.right - BOUNDS.left)) * VB.w
+  const y = ((Y_TOP_M - mercatorY(lat)) / (Y_TOP_M - Y_BOTTOM_M)) * VB.h
   return { x, y }
 }
 
+// Dot radii scaled for the new (10010-unit) viewBox. Roughly equivalent to
+// 3–9 px in the old 340-unit one.
+function dotRadius(count) {
+  return Math.max(90, Math.min(260, 90 + count * 30))
+}
+
 export default function GermanyDotMap({ data = [], title = 'Users Across Germany' }) {
-  // data: [{ city, lat, lng, suppliers, owners }]
   const [hover, setHover] = useState(null)
   const valid = data.filter(d => d.lat != null && d.lng != null)
 
@@ -57,27 +49,22 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
         </div>
       </div>
       <div className="relative">
-        <svg viewBox={`0 0 ${VB.w} ${VB.h}`} className="w-full h-72">
-          <defs>
-            <linearGradient id="germanyFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#E5E1DD" />
-              <stop offset="100%" stopColor="#dcd7d0" />
-            </linearGradient>
-          </defs>
-          <path d={GERMANY_PATH} fill="url(#germanyFill)" stroke="#94a3b8" strokeWidth="1.2" strokeLinejoin="round" />
+        <svg viewBox={`0 0 ${VB.w} ${VB.h}`} className="w-full h-72" preserveAspectRatio="xMidYMid meet">
+          {/* Real Germany outline served from /public/germany.svg */}
+          <image href="/germany.svg" x="0" y="0" width={VB.w} height={VB.h} preserveAspectRatio="xMidYMid meet" />
 
           {valid.map((d, i) => {
             const { x, y } = project(d.lat, d.lng)
-            // Offset the two dots so they don't overlap exactly.
-            const sx = x - 4
-            const ox = x + 4
+            // Offset the supplier and owner dots horizontally so they don't overlap exactly.
+            const sx = x - 110
+            const ox = x + 110
             return (
               <g key={`${d.city}-${i}`} onMouseEnter={() => setHover(d)} onMouseLeave={() => setHover(null)}>
                 {d.suppliers > 0 && (
-                  <circle cx={sx} cy={y} r={Math.max(3, Math.min(9, 3 + d.suppliers))} fill="#083A4F" fillOpacity="0.85" stroke="#fff" strokeWidth="1.5" />
+                  <circle cx={sx} cy={y} r={dotRadius(d.suppliers)} fill="#083A4F" fillOpacity="0.85" stroke="#fff" strokeWidth="45" />
                 )}
                 {d.owners > 0 && (
-                  <circle cx={ox} cy={y} r={Math.max(3, Math.min(9, 3 + d.owners))} fill="#D4A017" fillOpacity="0.85" stroke="#fff" strokeWidth="1.5" />
+                  <circle cx={ox} cy={y} r={dotRadius(d.owners)} fill="#D4A017" fillOpacity="0.85" stroke="#fff" strokeWidth="45" />
                 )}
               </g>
             )

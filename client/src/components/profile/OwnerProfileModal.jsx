@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Phone, Store, X, ExternalLink, MessageSquare, Flag, Loader2 } from 'lucide-react'
+import { MapPin, Phone, Store, X, ExternalLink, MessageSquare, Flag, Loader2, Ban } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { fmtPhone } from '../../lib/formatPhone'
+import { useLanguage } from '../../context/LanguageContext'
 import ModalPortal from '../ui/ModalPortal'
 import ReportModal from '../ui/ReportModal'
 
@@ -14,15 +15,24 @@ export default function OwnerProfileModal({
   showMessageButton = true,
 }) {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [showReport, setShowReport] = useState(false)
   const [ownerInfo, setOwnerInfo] = useState(initialOwnerInfo || null)
   const [loading, setLoading] = useState(!initialOwnerInfo)
+  const [isBanned, setIsBanned] = useState(initialOwnerInfo?.is_banned === true)
 
   useEffect(() => {
-    if (initialOwnerInfo || !ownerId) return
+    if (!ownerId) return
     let cancelled = false
+    // Always re-fetch is_banned even when initialOwnerInfo was passed,
+    // because the parent may not have included that field.
+    if (initialOwnerInfo) {
+      supabase.from('users').select('is_banned').eq('id', ownerId).maybeSingle()
+        .then(({ data }) => { if (!cancelled) setIsBanned(data?.is_banned === true) })
+      return () => { cancelled = true }
+    }
     Promise.all([
-      supabase.from('users').select('full_name, email, avatar_url, phone').eq('id', ownerId).single(),
+      supabase.from('users').select('full_name, email, avatar_url, phone, is_banned').eq('id', ownerId).single(),
       supabase.from('owner_profiles').select('restaurant_name, bio, city').eq('user_id', ownerId).maybeSingle(),
     ]).then(([{ data: u }, { data: op }]) => {
       if (cancelled) return
@@ -35,6 +45,7 @@ export default function OwnerProfileModal({
         bio: op?.bio,
         city: op?.city,
       })
+      setIsBanned(u?.is_banned === true)
       setLoading(false)
     })
     return () => { cancelled = true }
@@ -62,8 +73,20 @@ export default function OwnerProfileModal({
               {ownerInfo?.restaurant_name && ownerInfo?.full_name && (
                 <p className="text-celeste text-xs truncate">{ownerInfo.full_name}</p>
               )}
+              {isBanned && (
+                <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold uppercase tracking-wide bg-red-600 text-white px-2 py-0.5 rounded-full">
+                  <Ban className="w-3 h-3" /> {t('ownerBannedShort')}
+                </span>
+              )}
             </div>
           </div>
+
+          {isBanned && (
+            <div className="bg-red-50 border-b border-red-200 px-5 py-3 flex items-start gap-2">
+              <Ban className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-700">{t('ownerBannedBanner')}</p>
+            </div>
+          )}
 
           <div className="p-4 space-y-2.5 overflow-y-auto flex-1">
             {loading ? (

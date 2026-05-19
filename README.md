@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-19 17:10 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-19 17:29 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -699,6 +699,15 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | `SupplierProfileModal` | Same as profile page — fetches `users.is_banned`, shows red badge + banner inline |
 
 All ban checks read `supplier_profiles → users(is_banned)` via Supabase's foreign-key embedding syntax (`users:user_id(is_banned)`), so the ban state propagates automatically once the admin toggles `users.is_banned`.
+
+**Banned restaurant owners — supplier view (mirror)**: When a restaurant owner has `users.is_banned = true`, the supplier sees the ban surfaced in two places:
+
+| Surface | Behaviour |
+|---|---|
+| `OwnerProfileModal` (used by Supplier OrdersPage when viewing an order's owner card, and by ChatPage when tapping the owner avatar) | Fetches `users.is_banned`; if true, shows a red "Banned" pill under the owner's name + a red banner row inside the modal with the banned message |
+| `ChatPage` (supplier side) | When the open conversation's owner has `is_banned = true`, shows a red strip above the message list: "This restaurant owner's account has been banned. Past orders remain accessible but no new orders can be placed." Chat remains usable so the supplier can still communicate |
+
+**Germany Dot Map — real outline**: The previous hand-traced 47-point SVG path was replaced with a high-resolution real-world SVG of Germany at `client/public/germany.svg` (viewBox `0 0 10010 11980`, ~365 KB). The component renders it as an `<image>` element inside its own SVG and projects city dots onto it using Mercator-vertical + equirectangular-horizontal projection with mainland bounds `lat 47.27–55.06, lng 5.87–15.04` (matches the supplied SVG's aspect ratio). Dot radius and stroke width scale to the new 10010-unit viewBox.
 
 ### Supplier (`/supplier/`)
 

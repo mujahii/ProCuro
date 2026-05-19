@@ -562,6 +562,12 @@ const T = {
     supplierBannedChatNotice: 'This supplier\'s account has been banned. Past orders remain accessible but new orders cannot be placed.',
     supplierBannedCartNotice: 'This supplier has been banned. Please remove their items to continue checkout.',
     supplierBannedCannotAdd: 'Cannot add — supplier is banned',
+
+    // Owner banned (visible to suppliers)
+    ownerBannedTitle: 'This restaurant account is banned',
+    ownerBannedBanner: 'This restaurant owner has been banned by an administrator for violating our terms. Their previous orders remain visible, but they can no longer place new orders.',
+    ownerBannedShort: 'Banned',
+    ownerBannedChatNotice: 'This restaurant owner\'s account has been banned. Past orders remain accessible but no new orders can be placed.',
   },
   de: {
     // Navbar
@@ -1120,6 +1126,12 @@ const T = {
     supplierBannedChatNotice: 'Das Konto dieses Lieferanten wurde gesperrt. Frühere Bestellungen bleiben einsehbar, neue Bestellungen sind nicht möglich.',
     supplierBannedCartNotice: 'Dieser Lieferant wurde gesperrt. Bitte entfernen Sie seine Artikel, um mit der Kasse fortzufahren.',
     supplierBannedCannotAdd: 'Hinzufügen nicht möglich — Lieferant gesperrt',
+
+    // Owner banned (visible to suppliers)
+    ownerBannedTitle: 'Dieses Restaurant-Konto ist gesperrt',
+    ownerBannedBanner: 'Dieser Restaurantbesitzer wurde von einem Administrator wegen Verstoßes gegen unsere Nutzungsbedingungen gesperrt. Frühere Bestellungen bleiben sichtbar, neue Bestellungen sind nicht mehr möglich.',
+    ownerBannedShort: 'Gesperrt',
+    ownerBannedChatNotice: 'Das Konto dieses Restaurantbesitzers wurde gesperrt. Frühere Bestellungen bleiben einsehbar, neue Bestellungen sind nicht möglich.',
   },
 }
 

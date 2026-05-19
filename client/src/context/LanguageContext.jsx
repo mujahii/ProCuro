@@ -549,6 +549,11 @@ const T = {
     ordersStatLabel: 'Orders',
     bestProductStatLabel: 'Best Product',
     activeProductsStatLabel: 'Active Products',
+
+    // Account banned
+    accountBannedBanner: 'Your account has been banned. Contact support to appeal.',
+    accountBannedTitle: 'Account Banned',
+    accountBannedContent: 'Your account has been suspended by an administrator. Only the chat feature is available to contact support.',
   },
   de: {
     // Navbar
@@ -1094,6 +1099,11 @@ const T = {
     ordersStatLabel: 'Bestellungen',
     bestProductStatLabel: 'Bestes Produkt',
     activeProductsStatLabel: 'Aktive Produkte',
+
+    // Account banned
+    accountBannedBanner: 'Ihr Konto wurde gesperrt. Kontaktieren Sie den Support.',
+    accountBannedTitle: 'Konto gesperrt',
+    accountBannedContent: 'Ihr Konto wurde von einem Administrator gesperrt. Nur der Chat steht Ihnen zur Kontaktaufnahme mit dem Support zur Verfügung.',
   },
 }
 

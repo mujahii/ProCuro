@@ -5,6 +5,9 @@ import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend, 
 // suppliers and owners are two overlaid series.
 export default function CityComparisonRadar({ data = [], title = 'Suppliers vs Owners by City' }) {
   const top = data.slice(0, 8)
+  const allValues = top.flatMap(d => [d.suppliers ?? 0, d.owners ?? 0])
+  const dataMax = Math.max(...allValues, 1)
+  const domainMax = Math.ceil(dataMax * 1.15)
   return (
     <div className="card p-5">
       <h3 className="font-bold text-gray-900 mb-1">{title}</h3>
@@ -16,7 +19,7 @@ export default function CityComparisonRadar({ data = [], title = 'Suppliers vs O
           <RadarChart data={top}>
             <PolarGrid stroke="#e5e7eb" />
             <PolarAngleAxis dataKey="city" tick={{ fontSize: 10, fill: '#6b7280' }} />
-            <PolarRadiusAxis tick={{ fontSize: 9, fill: '#9ca3af' }} />
+            <PolarRadiusAxis tick={{ fontSize: 9, fill: '#9ca3af' }} domain={[0, domainMax]} />
             <Radar name="Suppliers" dataKey="suppliers" stroke="#083A4F" fill="#083A4F" fillOpacity={0.35} />
             <Radar name="Owners" dataKey="owners" stroke="#D4A017" fill="#D4A017" fillOpacity={0.35} />
             <Tooltip />

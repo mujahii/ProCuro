@@ -1,41 +1,33 @@
 import { useState } from 'react'
 
-// Germany border traced from real lat/lng waypoints projected into the same
-// coordinate space as project() below.
-// x = (lng - 5.5) / 9.7 * 340,  y = 340 - (lat - 47.0) / 8.1 * 340
+// Germany border traced from real lat/lng waypoints projected into the SVG viewBox.
+// Projection: x = (lng - 5.5) / 9.7 * 340,  y = 340 - (lat - 47.0) / 8.1 * 340
+// ~47 waypoints covering the full land border clockwise from the NW corner.
 const GERMANY_PATH = [
-  // Dutch/German coast border (starting point)
-  [53,70],
+  // NW: Dutch-German border, heading north
+  [53,81],[55,67],[61,59],
   // North Sea coast going east
-  [60,67],[78,60],[113,52],[140,48],
-  // West coast of Schleswig-Holstein going north
-  [124,26],
-  // Danish land border (west end → Flensburg)
-  [108,12],[138,13],
-  // South into Schleswig-Holstein peninsula
-  [142,25],[162,33],
-  // Baltic coast east (Lübeck → Wismar → Rostock → Stralsund → Wolgast)
-  [188,43],[208,42],[231,39],[269,28],[290,51],
-  // Polish border — Oder river going south
-  [304,58],[313,78],[317,116],
-  // Cottbus / Görlitz eastward bulge
-  [310,140],[332,166],[326,176],
-  // Czech / Erzgebirge border going west
-  [281,193],[235,205],
-  // Bavarian Forest south to Passau
-  [244,238],[269,251],[280,274],
-  // Alpine border west (Berchtesgaden → Garmisch → Lindau)
-  [262,314],[197,319],[147,317],
-  // Swiss border / Rhine at Basel
-  [73,317],
-  // Alsace / Rhine going north to Palatinate Forest
-  [65,309],[82,274],[95,257],
-  // Saarbrücken → Trier → Luxembourg border
-  [52,246],[40,225],[22,209],
-  // Belgian border → Aachen corner
-  [17,182],[13,170],
-  // Dutch border south → north back to coast
-  [21,137],[52,109],[53,70],
+  [84,58],[101,42],[112,31],
+  // Schleswig-Holstein peninsula going north
+  [119,13],[138,2],
+  // Danish border (west → east)
+  [140,11],[158,12],[193,12],[250,12],
+  // Baltic coast going south-east
+  [260,24],[281,30],[299,42],[306,51],[312,53],
+  // Polish border — Oder-Neisse going south
+  [319,67],[317,95],[317,116],[322,130],[333,154],[328,171],[325,175],
+  // Czech border going west through Erzgebirge to Bohemian Forest
+  [298,186],[280,198],[240,211],[271,253],[279,274],
+  // Austrian border going west (Inn → Alps → Lindau)
+  [257,291],[263,306],[262,314],[231,312],[196,320],[146,317],
+  // Swiss border going west to Basel
+  [129,312],[110,311],[74,317],
+  // French border going north — Rhine then Palatinate Forest
+  [74,296],[79,275],[94,258],[86,254],[53,246],
+  // Luxembourg → Belgian borders
+  [31,237],[22,207],[18,183],[18,170],
+  // Dutch border going north then east back to coast
+  [21,152],[21,141],[25,137],[43,122],[53,109],[53,86],
 ].map(([x, y]) => `${x},${y}`).join(' L ')
   .replace(/^/, 'M ') + ' Z'
 

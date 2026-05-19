@@ -691,6 +691,8 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings |
 | AnalyticsPage | `/owner/analytics` | Spending trend, top products, **pie chart** of spending by category, top categories bar chart, AI summary at the bottom; week/month/year + custom date-range filter |
 
+**Ban enforcement in OwnerLayout**: When `users.is_banned = true`, a dark red banner appears at the top of every owner dashboard page. All sidebar navigation links (Store, Cart, Orders, Analytics, Profile) are replaced with greyed-out non-clickable spans. The main content area is replaced with a "Account Banned" message and a button directing the user to Chat — the only feature that remains accessible. The layout adjusts its top padding dynamically based on how many banners (deactivated + banned) are visible simultaneously.
+
 ### Supplier (`/supplier/`)
 
 | Page | Route | Description |
@@ -701,7 +703,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
 | BankDetailsPage | `/supplier/bank` | IBAN, BIC, account holder management |
 | ProfilePage | `/supplier/profile` | Business profile: avatar, bio, categories, cities (auto-populated from saved addresses — no manual checkbox), website, phone, account settings |
-| AnalyticsPage | `/supplier/analytics` | Revenue trend, category breakdown, top products, top clients, AI summary; week/month/year + custom date-range filter |
+| AnalyticsPage | `/supplier/analytics` | Revenue trend, category breakdown, top products, top clients, AI summary; week/month/year + custom date-range filter. **Top Restaurant Clients** bar chart: labels are angled (−35°) with truncation at 14 chars; Y-axis uses integer ticks only (`allowDecimals={false}`). **Date bucketing**: span ≤ 60 days → daily (YYYY-MM-DD) buckets; span > 60 days → monthly (YYYY-MM) buckets — so Week and Month views show per-day bars, Year view shows per-month bars. |
 
 ### Admin (`/admin/`)
 
@@ -762,8 +764,8 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - `OrdersByStatusChart` — Donut showing order-split status distribution (admin)
 - `UserGrowthChart` — Cumulative line chart of owners + suppliers, fed by `users.created_at` grouped by month and filtered by the active date range (admin)
 - `PaymentTypeChart` — Donut + breakdown card showing Bank Transfer vs Cash on Delivery counts and GMV (admin) — replaced the old Certificate Status card
-- `CityComparisonRadar` — Polar/radar chart with one axis per top city, two overlaid series (Suppliers + Owners). Intentionally a different chart family from everything else on the dashboard.
-- `GermanyDotMap` — Custom SVG of Germany with two coloured dots per city (one supplier, one owner). Dot radius scales with user count; lat/lng → SVG projection uses the Germany bounding box.
+- `CityComparisonRadar` — Polar/radar chart with one axis per top city, two overlaid series (Suppliers + Owners). Intentionally a different chart family from everything else on the dashboard. **Domain is dynamic**: computed as `Math.ceil(max(all series values) × 1.15)` so the radar shape proportionally reflects actual differences rather than being artificially scaled.
+- `GermanyDotMap` — Custom SVG of Germany with two coloured dots per city (one supplier, one owner). Dot radius scales with user count; lat/lng → SVG projection uses the Germany bounding box (`lng 5.5–15.2`, `lat 47.0–55.1`, viewBox 340×340). The SVG outline path uses ~47 real-world border waypoints traced clockwise from the NW corner (Dutch border → North Sea coast → Danish border → Baltic coast → Polish Oder-Neisse border → Czech border → Austrian Alps → Swiss Rhine → French Palatinate → Luxembourg/Belgian/Dutch border back north).
 - `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages.
 
 ### AI

@@ -269,11 +269,18 @@ export default function SupplierAnalyticsPage() {
               {topClients.length === 0 ? (
                 <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
               ) : (
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={topClients} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart data={topClients} margin={{ top: 0, right: 10, left: -10, bottom: 55 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#9ca3af' }} />
-                    <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} />
+                    <XAxis
+                      dataKey="name"
+                      interval={0}
+                      tick={{ fontSize: 10, fill: '#6b7280' }}
+                      angle={-35}
+                      textAnchor="end"
+                      tickFormatter={v => v.length > 14 ? v.slice(0, 13) + '…' : v}
+                    />
+                    <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                     <Tooltip formatter={(v) => [v, 'Orders']} />
                     <Bar dataKey="orders" fill="#D4A017" radius={[4, 4, 0, 0]} />
                   </BarChart>

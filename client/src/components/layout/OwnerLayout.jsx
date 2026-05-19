@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { ShoppingBag, ShoppingCart, Package, BarChart3, User, MessageSquare, ChevronLeft, ChevronRight, X, AlertCircle, LogOut } from 'lucide-react'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { ShoppingBag, ShoppingCart, Package, BarChart3, User, MessageSquare, ChevronLeft, ChevronRight, X, AlertCircle, LogOut, Ban } from 'lucide-react'
 import Navbar from './Navbar'
 import CookieConsent from '../ui/CookieConsent'
 import { supabase } from '../../lib/supabase'
@@ -11,17 +11,26 @@ export default function OwnerLayout() {
   const { user, signOut } = useAuth()
   const { t } = useLanguage()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('ownerSidebarCollapsed') === 'true'
   )
   const [isActive, setIsActive] = useState(true)
+  const isBanned = user?.is_banned ?? false
 
   useEffect(() => {
     if (!user) return
     supabase.from('owner_profiles').select('is_active').eq('user_id', user.id).maybeSingle()
       .then(({ data }) => { if (data) setIsActive(data.is_active ?? true) })
   }, [user])
+
+  const bannerCount = (!isActive ? 1 : 0) + (isBanned ? 1 : 0)
+  const topOffset = bannerCount === 0
+    ? 'calc(4rem + var(--sat))'
+    : bannerCount === 1
+      ? 'calc(6.5rem + var(--sat))'
+      : 'calc(9rem + var(--sat))'
 
   function toggleCollapsed() {
     const next = !collapsed
@@ -48,6 +57,23 @@ export default function OwnerLayout() {
             className="bg-white text-red-600 font-bold px-3 py-0.5 rounded-full text-xs hover:bg-red-50 transition-colors whitespace-nowrap"
           >
             Contact Admin →
+          </button>
+        </div>
+      )}
+
+      {/* Account banned banner */}
+      {isBanned && (
+        <div
+          className="fixed left-0 right-0 z-20 bg-red-800 text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap"
+          style={{ top: !isActive ? 'calc(6.5rem + var(--sat))' : 'calc(4rem + var(--sat))' }}
+        >
+          <Ban className="w-4 h-4 flex-shrink-0" />
+          <span>{t('accountBannedBanner')}</span>
+          <button
+            onClick={() => navigate('/owner/chat')}
+            className="bg-white text-red-800 font-bold px-3 py-0.5 rounded-full text-xs hover:bg-red-50 transition-colors whitespace-nowrap"
+          >
+            {t('navMessages')} →
           </button>
         </div>
       )}
@@ -83,12 +109,20 @@ export default function OwnerLayout() {
             { to: '/owner/analytics', icon: BarChart3, key: 'navAnalytics' },
             { to: '/owner/chat', icon: MessageSquare, key: 'navMessages' },
             { to: '/owner/profile', icon: User, key: 'navProfile' },
-          ].map(({ to, icon: Icon, key }) => (
-            <NavLink key={to} to={to} onClick={() => setDrawerOpen(false)} className={navLinkClass}>
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              {t(key)}
-            </NavLink>
-          ))}
+          ].map(({ to, icon: Icon, key }) => {
+            const blockedByBan = isBanned && to !== '/owner/chat'
+            return blockedByBan ? (
+              <span key={to} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 cursor-not-allowed select-none">
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                {t(key)}
+              </span>
+            ) : (
+              <NavLink key={to} to={to} onClick={() => setDrawerOpen(false)} className={navLinkClass}>
+                <Icon className="w-4 h-4 flex-shrink-0" />
+                {t(key)}
+              </NavLink>
+            )
+          })}
         </nav>
         <div className="px-3 pb-6 border-t border-slate-100 pt-3">
           <button
@@ -103,14 +137,14 @@ export default function OwnerLayout() {
 
       <div
         className="flex"
-        style={{ paddingTop: isActive ? 'calc(4rem + var(--sat))' : 'calc(6.5rem + var(--sat))' }}
+        style={{ paddingTop: topOffset }}
       >
         {/* Desktop collapsible sidebar */}
         <aside
           className={`hidden lg:flex flex-col bg-white border-r border-slate-100 fixed left-0 bottom-0 z-20 transition-all duration-200 ${
             collapsed ? 'w-14' : 'w-56'
           }`}
-          style={{ top: isActive ? 'calc(4rem + var(--sat))' : 'calc(6.5rem + var(--sat))' }}
+          style={{ top: topOffset }}
         >
           <nav className="flex-1 px-2 py-4 space-y-1">
             {[
@@ -120,21 +154,33 @@ export default function OwnerLayout() {
               { to: '/owner/analytics', icon: BarChart3, key: 'navAnalytics' },
               { to: '/owner/chat', icon: MessageSquare, key: 'navMessages' },
               { to: '/owner/profile', icon: User, key: 'navProfile' },
-            ].map(({ to, icon: Icon, key }) => (
-              <NavLink
-                key={to}
-                to={to}
-                title={collapsed ? t(key) : undefined}
-                className={({ isActive }) =>
-                  `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                    collapsed ? 'justify-center px-0' : 'gap-3 px-3'
-                  } ${isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'}`
-                }
-              >
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {!collapsed && <span>{t(key)}</span>}
-              </NavLink>
-            ))}
+            ].map(({ to, icon: Icon, key }) => {
+              const blockedByBan = isBanned && to !== '/owner/chat'
+              return blockedByBan ? (
+                <span
+                  key={to}
+                  title={collapsed ? t(key) : undefined}
+                  className={`flex items-center py-2.5 rounded-lg text-sm font-medium text-slate-300 cursor-not-allowed select-none ${collapsed ? 'justify-center px-0' : 'gap-3 px-3'}`}
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {!collapsed && <span>{t(key)}</span>}
+                </span>
+              ) : (
+                <NavLink
+                  key={to}
+                  to={to}
+                  title={collapsed ? t(key) : undefined}
+                  className={({ isActive }) =>
+                    `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      collapsed ? 'justify-center px-0' : 'gap-3 px-3'
+                    } ${isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'}`
+                  }
+                >
+                  <Icon className="w-4 h-4 flex-shrink-0" />
+                  {!collapsed && <span>{t(key)}</span>}
+                </NavLink>
+              )
+            })}
           </nav>
 
           {/* Collapse toggle */}
@@ -159,7 +205,20 @@ export default function OwnerLayout() {
           }`}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <Outlet />
+            {isBanned && !pathname.startsWith('/owner/chat') ? (
+              <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
+                <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                  <Ban className="w-8 h-8 text-red-600" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-900 mb-2">{t('accountBannedTitle')}</h2>
+                <p className="text-gray-500 max-w-sm mb-6">{t('accountBannedContent')}</p>
+                <button onClick={() => navigate('/owner/chat')} className="btn-primary flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" /> {t('navMessages')}
+                </button>
+              </div>
+            ) : (
+              <Outlet />
+            )}
           </div>
         </main>
       </div>

@@ -1,6 +1,6 @@
 # ProCuro Supabase Database Schema Analysis
 
-**Database:** `rexngdtweiivdyzrpfud`  
+**Database:** `<SUPABASE_PROJECT_REF>`  
 **Type:** PostgreSQL (Supabase)  
 **Tables:** 21  
 **Last Updated:** May 19, 2026  
@@ -536,7 +536,7 @@ DATABASE METADATA:
 
 Name: ProCuro
 Type: PostgreSQL
-Provider: Supabase (https://rexngdtweiivdyzrpfud.supabase.co)
+Provider: Supabase (https://<SUPABASE_PROJECT_REF>.supabase.co)
 Region: Germany (EU)
 Version: 2026-05-19
 

@@ -1038,7 +1038,7 @@ PRODUCTION ENVIRONMENT
 │  ├─ /.netlify/functions/ai-chat
 │  └─ /.netlify/functions/ai-analytics-summary
 │
-├─ Database: Supabase (rexngdtweiivdyzrpfud.supabase.co)
+├─ Database: Supabase (<SUPABASE_PROJECT_REF>.supabase.co)
 │  ├─ PostgreSQL in Germany
 │  ├─ Automatic daily backups (PITR available)
 │  └─ 99.9% uptime SLA

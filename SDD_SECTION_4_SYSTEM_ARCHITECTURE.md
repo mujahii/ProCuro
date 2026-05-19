@@ -121,7 +121,7 @@ Netlify (Frontend + Serverless Functions)
 ```
 Supabase Cloud (PostgreSQL-based)
 │
-├── Project: rexngdtweiivdyzrpfud
+├── Project: <SUPABASE_PROJECT_REF>
 ├── Region: Germany (EU compliance)
 ├── Database
 │   ├── 21 tables with CASCADE/RESTRICT FKs

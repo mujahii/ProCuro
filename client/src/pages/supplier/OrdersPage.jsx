@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import StatusBadge from '../../components/ui/StatusBadge'
 import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, ExternalLink, MessageSquare, Flag } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
@@ -15,6 +16,7 @@ const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_fo
 const COMPLETED = ['delivered', 'cancelled', 'refund_uploaded', 'completed']
 
 function CancelModal({ split, onCancel, onClose }) {
+  const { t } = useLanguage()
   const [reason, setReason] = useState('')
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -34,30 +36,30 @@ function CancelModal({ split, onCancel, onClose }) {
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <h3 className="font-bold text-slate-900 text-lg">Cancel Order</h3>
+          <h3 className="font-bold text-slate-900 text-lg">{t('cancelOrderTitle')}</h3>
         </div>
 
         {isBankTransfer && (
           <div className="bg-lionsmane border border-marigold-light rounded-xl p-3 mb-4">
-            <p className="text-sm font-semibold text-marigold-dark">Bank transfer order</p>
-            <p className="text-xs text-marigold-dark mt-1">You must upload proof of the returned payment before this cancellation can be submitted.</p>
+            <p className="text-sm font-semibold text-marigold-dark">{t('bankTransferOrderLabel')}</p>
+            <p className="text-xs text-marigold-dark mt-1">{t('bankTransferCancelNote')}</p>
           </div>
         )}
 
         <div className="mb-4">
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Cancellation Reason *</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('reasonForCancellationLabel')}</label>
           <textarea
             value={reason}
             onChange={e => setReason(e.target.value)}
             className="w-full px-4 py-3 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-red-400 h-24 resize-none"
-            placeholder="Out of stock, delivery not possible, etc."
+            placeholder={t('cancelReasonPlaceholder')}
             autoFocus
           />
         </div>
 
         {isBankTransfer && (
           <div className="mb-5">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Refund Receipt *</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('refundReceipt')} *</label>
             <input ref={inputRef} type="file" className="hidden" accept="image/*,.pdf" onChange={e => setFile(e.target.files[0])} />
             <button
               type="button"
@@ -67,14 +69,14 @@ function CancelModal({ split, onCancel, onClose }) {
               }`}
             >
               {file ? <CheckCircle className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
-              {file ? file.name : 'Upload refund proof (image or PDF)'}
+              {file ? file.name : t('uploadRefundProof')}
             </button>
           </div>
         )}
 
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors">
-            Keep Order
+            {t('keepOrderBtn')}
           </button>
           <button
             onClick={handleCancel}
@@ -82,7 +84,7 @@ function CancelModal({ split, onCancel, onClose }) {
             className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-            Cancel Order
+            {t('cancelOrder')}
           </button>
         </div>
       </div>
@@ -91,6 +93,7 @@ function CancelModal({ split, onCancel, onClose }) {
 }
 
 function RefundSection({ split, supplierId, onUploaded }) {
+  const { t } = useLanguage()
   const [ownerBank, setOwnerBank] = useState(null)
   const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -138,8 +141,8 @@ function RefundSection({ split, supplierId, onUploaded }) {
       <div className="bg-lionsmane border border-celeste rounded-xl p-4 flex items-center gap-3">
         <CheckCircle className="w-5 h-5 text-herb flex-shrink-0" />
         <div>
-          <p className="text-sm font-bold text-midnight">Refund receipt uploaded</p>
-          <p className="text-xs text-midnight-dark mt-0.5">Waiting for the restaurant owner to confirm.</p>
+          <p className="text-sm font-bold text-midnight">{t('refundReceiptUploadedMsg')}</p>
+          <p className="text-xs text-midnight-dark mt-0.5">{t('waitingOwnerConfirmRefund')}</p>
         </div>
       </div>
     )
@@ -147,7 +150,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
 
   return (
     <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 space-y-3">
-      <p className="text-sm font-bold text-marigold-dark">Bank Transfer Refund Required</p>
+      <p className="text-sm font-bold text-marigold-dark">{t('bankTransferRefundRequired')}</p>
       <p className="text-xs text-marigold-dark">Please return the payment to the restaurant owner and upload your refund receipt.</p>
       {ownerBank ? (
         <div className="bg-white rounded-lg p-3 border border-marigold-light space-y-2">
@@ -188,7 +191,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
           className="w-full py-2.5 border-2 border-dashed border-marigold-light rounded-lg text-sm text-marigold-dark font-medium hover:bg-marigold-light transition-colors flex items-center justify-center gap-2"
         >
           <Upload className="w-4 h-4" />
-          {file ? file.name : 'Select Refund Receipt'}
+          {file ? file.name : t('selectRefundReceipt')}
         </button>
         {file && (
           <button
@@ -197,7 +200,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
             className="w-full py-2.5 bg-marigold hover:bg-marigold-dark text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
           >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-            Upload & Notify Owner
+            {t('uploadAndNotifyOwner')}
           </button>
         )}
       </div>
@@ -206,6 +209,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
 }
 
 function PaymentReceiptDisplay({ path }) {
+  const { t } = useLanguage()
   const [url, setUrl] = useState(null)
 
   useEffect(() => {
@@ -225,12 +229,13 @@ function PaymentReceiptDisplay({ path }) {
       rel="noopener noreferrer"
       className="flex items-center gap-1.5 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
     >
-      <ExternalLink className="w-4 h-4" /> View Payment Receipt
+      <ExternalLink className="w-4 h-4" /> {t('viewPaymentReceipt')}
     </a>
   )
 }
 
 function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
+  const { t } = useLanguage()
   const [message, setMessage] = useState('')
   const [action, setAction] = useState(null)
   const [file, setFile] = useState(null)
@@ -255,13 +260,13 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-          <h3 className="font-bold text-slate-900 text-lg">Respond to Delivery Dispute</h3>
+          <h3 className="font-bold text-slate-900 text-lg">{t('respondToDisputeTitle')}</h3>
         </div>
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 space-y-1.5">
-          <p className="text-sm font-semibold text-orange-800">The restaurant owner reported they did not receive this order.</p>
+          <p className="text-sm font-semibold text-orange-800">{t('ownerReportedNonDelivery')}</p>
           {split.dispute_message ? (
             <>
-              <p className="text-xs text-orange-600 font-semibold uppercase tracking-wide">Owner's message:</p>
+              <p className="text-xs text-orange-600 font-semibold uppercase tracking-wide">{t('ownersMessageLabel')}</p>
               <p className="text-sm text-orange-700 italic">"{split.dispute_message}"</p>
             </>
           ) : (
@@ -280,14 +285,14 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
         </div>
         {action === null && (
           <div className="space-y-2 mb-4">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Choose Resolution</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">{t('chooseResolution')}</p>
             <button
               onClick={() => setAction('resend')}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-celeste bg-lionsmane hover:bg-celeste transition-colors text-left"
             >
               <Truck className="w-4 h-4 text-midnight flex-shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-midnight">Re-send Order</p>
+                <p className="text-sm font-semibold text-midnight">{t('resendOrder')}</p>
                 <p className="text-xs text-midnight">Mark out for delivery again — owner will be notified</p>
               </div>
             </button>
@@ -297,7 +302,7 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
             >
               <XCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-red-700">Cancel Order</p>
+                <p className="text-sm font-semibold text-red-700">{t('cancelOrder')}</p>
                 <p className="text-xs text-red-500">{isBankTransfer ? 'You must upload a refund receipt' : 'Order will be cancelled and owner notified'}</p>
               </div>
             </button>
@@ -305,7 +310,7 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
         )}
         {action === 'cancel' && isBankTransfer && (
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Refund Receipt *</label>
+            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('refundReceipt')} *</label>
             <input ref={inputRef} type="file" className="hidden" accept="image/*,.pdf" onChange={e => setFile(e.target.files[0])} />
             <button
               type="button"
@@ -315,14 +320,14 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
               }`}
             >
               {file ? <CheckCircle className="w-4 h-4" /> : <Upload className="w-4 h-4" />}
-              {file ? file.name : 'Upload refund proof (image or PDF)'}
+              {file ? file.name : t('uploadRefundProof')}
             </button>
           </div>
         )}
         {action !== null ? (
           <div className="flex gap-3">
             <button onClick={() => { setAction(null); setFile(null) }} className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors">
-              Back
+              {t('back')}
             </button>
             <button
               onClick={handleSubmit}
@@ -332,12 +337,12 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
               }`}
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : action === 'resend' ? <Truck className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
-              {action === 'resend' ? 'Re-send Order' : 'Cancel Order'}
+              {action === 'resend' ? t('resendOrder') : t('cancelOrder')}
             </button>
           </div>
         ) : (
           <button onClick={onClose} className="w-full py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors">
-            Close
+            {t('close')}
           </button>
         )}
       </div>
@@ -348,6 +353,7 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
 
 function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload, onDispute }) {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [ownerInfo, setOwnerInfo] = useState(null)
   const [ownerDefaultAddress, setOwnerDefaultAddress] = useState(null)
   const [showOwnerModal, setShowOwnerModal] = useState(false)
@@ -383,22 +389,22 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Orders
+        <ArrowLeft className="w-4 h-4" /> {t('backToOrders')}
       </button>
       <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-bold text-slate-900">Order Details</h2>
+        <h2 className="text-2xl font-bold text-slate-900">{t('orderDetailsTitle')}</h2>
         <StatusBadge status={split.status} />
       </div>
 
       {/* Restaurant owner card */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Delivery To</p>
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{t('deliveryToLabel')}</p>
           <button
             onClick={handleChatWithOwner}
             className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors"
           >
-            <MessageSquare className="w-3.5 h-3.5" /> Chat with Owner
+            <MessageSquare className="w-3.5 h-3.5" /> {t('chatWithOwnerBtn')}
           </button>
         </div>
         <div className="flex items-start gap-3">
@@ -448,7 +454,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
             ) : (
               <div className="flex items-center gap-1.5 text-sm text-slate-400">
                 <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>No delivery address on file</span>
+                <span>{t('noDeliveryAddress')}</span>
               </div>
             )}
           </div>
@@ -458,15 +464,15 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Order ID</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">{t('orderIdLabel')}</p>
             <p className="font-bold text-slate-900">#{split.id.slice(0, 8).toUpperCase()}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Date Placed</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">{t('datePlacedLabel')}</p>
             <p className="font-semibold text-slate-900">{format(new Date(split.created_at), 'dd MMM yyyy, HH:mm')}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Payment</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">{t('paymentMethod')}</p>
             <p className="font-semibold text-slate-900 capitalize">{split.payment_method?.replace(/_/g, ' ')}</p>
             {split.payment_method === 'bank_transfer' && split.receipt_url && (
               <div className="mt-1">
@@ -475,12 +481,12 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
             )}
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Status</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">{t('statusLabel')}</p>
             <StatusBadge status={split.status} />
           </div>
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-900 mb-3">Items Ordered</p>
+          <p className="text-sm font-bold text-slate-900 mb-3">{t('itemsOrderedLabel')}</p>
           <div className="bg-lionsmane p-4 rounded-xl space-y-2">
             {split.order_items?.map(item => (
               <div key={item.id} className="flex justify-between text-sm">
@@ -491,7 +497,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           </div>
         </div>
         <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
-          <span className="text-xl font-bold text-slate-900">Total</span>
+          <span className="text-xl font-bold text-slate-900">{t('totalLabel')}</span>
           <span className="text-2xl font-bold text-midnight">€{Number(split.subtotal).toFixed(2)}</span>
         </div>
       </div>
@@ -502,31 +508,31 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-bold text-orange-800">Cancellation Requested by Owner</p>
-              <p className="text-xs text-orange-700 mt-0.5">The restaurant owner wants to cancel this order.</p>
+              <p className="text-sm font-bold text-orange-800">{t('cancellationRequestedByOwner')}</p>
+              <p className="text-xs text-orange-700 mt-0.5">{t('ownerWantsCancelNote')}</p>
             </div>
           </div>
           {split.cancellation_reason && (
             <div className="bg-white rounded-lg p-3 border border-orange-200">
-              <p className="text-[10px] uppercase tracking-wide font-semibold text-orange-400 mb-1">Owner's Reason</p>
+              <p className="text-[10px] uppercase tracking-wide font-semibold text-orange-400 mb-1">{t('ownersReasonLabel')}</p>
               <p className="text-sm text-slate-700 italic">"{split.cancellation_reason}"</p>
             </div>
           )}
           {split.payment_method === 'bank_transfer' ? (
-            <p className="text-xs text-orange-700">Paid via bank transfer — upload the refund proof below to accept this cancellation.</p>
+            <p className="text-xs text-orange-700">{t('paidViaBankTransferCancelNote')}</p>
           ) : (
             <div className="flex gap-2">
               <button
                 onClick={() => { onUpdateStatus(split.id, 'cancelled'); onBack() }}
                 className="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
               >
-                <CheckCircle className="w-4 h-4" /> Accept
+                <CheckCircle className="w-4 h-4" /> {t('acceptBtn')}
               </button>
               <button
                 onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }}
                 className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
               >
-                <XCircle className="w-4 h-4" /> Reject
+                <XCircle className="w-4 h-4" /> {t('rejectBtn')}
               </button>
             </div>
           )}
@@ -536,7 +542,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
       {split.status === 'cancelled' && (split.cancellation_reason || split.cancelled_by) && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
           <p className="font-semibold mb-1">
-            Cancelled by: {split.cancelled_by === 'supplier' ? 'You' : split.cancelled_by === 'owner' ? 'Restaurant Owner' : split.cancelled_by === 'admin' ? 'ProCuro Admin' : 'Unknown'}
+            {t('cancelledByLabel')} {split.cancelled_by === 'supplier' ? t('cancelledByYouText') : split.cancelled_by === 'owner' ? t('restaurantOwner') : split.cancelled_by === 'admin' ? 'ProCuro Admin' : 'Unknown'}
           </p>
           {split.cancellation_reason && <p className="text-red-500">{split.cancellation_reason}</p>}
         </div>
@@ -553,8 +559,8 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         <div className="bg-lionsmane border border-celeste rounded-xl p-4 flex items-center gap-3">
           <CheckCircle className="w-5 h-5 text-herb flex-shrink-0" />
           <div>
-            <p className="text-sm font-bold text-midnight">Refund receipt uploaded</p>
-            <p className="text-xs text-midnight-dark mt-0.5">Waiting for the restaurant owner to confirm the refund.</p>
+            <p className="text-sm font-bold text-midnight">{t('refundReceiptUploadedMsg')}</p>
+            <p className="text-xs text-midnight-dark mt-0.5">{t('waitingOwnerConfirmRefund')}</p>
           </div>
         </div>
       )}
@@ -564,12 +570,12 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-sm font-bold text-orange-800">Delivery Not Received</p>
+              <p className="text-sm font-bold text-orange-800">{t('deliveryNotReceived')}</p>
               {split.dispute_message && (
                 <p className="text-xs text-orange-700 mt-1 italic">Owner's note: "{split.dispute_message}"</p>
               )}
               {!split.dispute_message && (
-                <p className="text-xs text-orange-700 mt-0.5">The restaurant owner reported they did not receive this order. You must respond.</p>
+                <p className="text-xs text-orange-700 mt-0.5">{t('ownerReportedNonDelivery')}</p>
               )}
             </div>
           </div>
@@ -577,7 +583,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
             onClick={() => onDispute(split)}
             className="w-full py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
           >
-            <AlertTriangle className="w-4 h-4" /> Respond to Dispute
+            <AlertTriangle className="w-4 h-4" /> {t('respondToDisputeBtn')}
           </button>
         </div>
       )}
@@ -585,26 +591,26 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
       <div className="flex gap-3">
         {split.status === 'pending_payment' && !split.receipt_url && (
           <div className="flex-1 py-3 bg-lionsmane rounded-xl text-marigold-dark text-sm text-center font-medium border border-marigold-light">
-            Waiting for restaurant owner to upload payment receipt
+            {t('waitingForOwnerReceipt')}
           </div>
         )}
         {(split.status === 'pending_confirmation' || (split.status === 'pending_payment' && split.receipt_url)) && (
           <>
             <button onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }} className="flex-1 py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
-              <CheckCircle className="w-4 h-4" /> Confirm Order
+              <CheckCircle className="w-4 h-4" /> {t('confirmOrderBtn')}
             </button>
             <button onClick={() => onCancel(split)} className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors">
-              Cancel
+              {t('cancel')}
             </button>
           </>
         )}
         {split.status === 'confirmed' && (
           <>
             <button onClick={() => { onUpdateStatus(split.id, 'out_for_delivery'); onBack() }} className="flex-1 py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
-              <Truck className="w-4 h-4" /> Mark Out for Delivery
+              <Truck className="w-4 h-4" /> {t('outForDeliveryBtn')}
             </button>
             <button onClick={() => onCancel(split)} className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors">
-              Cancel
+              {t('cancel')}
             </button>
           </>
         )}
@@ -615,7 +621,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           onClick={() => setShowReportModal(true)}
           className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
         >
-          <Flag className="w-4 h-4" /> Report this Order
+          <Flag className="w-4 h-4" /> {t('reportThisOrder')}
         </button>
       </div>
 
@@ -641,6 +647,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
 
 export default function SupplierOrdersPage() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [splits, setSplits] = useState([])
   const [tab, setTab] = useState('ongoing')
@@ -797,22 +804,22 @@ export default function SupplierOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">Orders</h1>
+      <h1 className="text-2xl font-bold text-slate-900">{t('orders')}</h1>
 
       <div className="flex gap-4 border-b border-slate-200">
         {[
-          { id: 'ongoing', label: 'Ongoing Orders', count: ongoing.length },
-          { id: 'completed', label: 'Completed Orders', count: completed.length },
-        ].map(t => (
+          { id: 'ongoing', label: t('ongoingOrdersTab'), count: ongoing.length },
+          { id: 'completed', label: t('completedOrdersTab'), count: completed.length },
+        ].map(tab_ => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === t.id ? 'text-midnight border-b-2 border-midnight' : 'text-slate-400 hover:text-slate-600'}`}
+            key={tab_.id}
+            onClick={() => setTab(tab_.id)}
+            className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === tab_.id ? 'text-midnight border-b-2 border-midnight' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            {t.label}
-            {t.count > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === t.id ? 'bg-celeste text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
-                {t.count}
+            {tab_.label}
+            {tab_.count > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === tab_.id ? 'bg-celeste text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
+                {tab_.count}
               </span>
             )}
           </button>
@@ -828,7 +835,7 @@ export default function SupplierOrdersPage() {
           <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="w-8 h-8 text-slate-400" />
           </div>
-          <p className="text-slate-500 font-medium">No {tab} orders</p>
+          <p className="text-slate-500 font-medium">{t('noTabOrders')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -844,22 +851,22 @@ export default function SupplierOrdersPage() {
                     <span className="font-bold text-lg text-slate-900">#{split.id.slice(0, 8).toUpperCase()}</span>
                     <StatusBadge status={split.status} />
                   </div>
-                  <p className="text-sm text-slate-600 font-medium">Restaurant Owner</p>
+                  <p className="text-sm text-slate-600 font-medium">{t('restaurantOwner')}</p>
                   <p className="text-xs text-slate-400 mt-0.5">{format(new Date(split.created_at), 'dd MMM yyyy, HH:mm')}</p>
                   {split.status === 'cancellation_requested' && split.cancellation_reason && (
                     <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Owner wants to cancel: {split.cancellation_reason}
+                      <AlertTriangle className="w-3 h-3 flex-shrink-0" /> {t('cancellationRequestedByOwner')}: {split.cancellation_reason}
                     </p>
                   )}
                   {split.status === 'cancelled' && (
                     <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">
-                      Cancelled by {split.cancelled_by === 'supplier' ? 'you' : split.cancelled_by === 'owner' ? 'owner' : 'admin'}
+                      {t('cancelledByLabel')} {split.cancelled_by === 'supplier' ? t('cancelledByYouText') : split.cancelled_by === 'owner' ? t('restaurantOwner') : 'admin'}
                       {split.cancellation_reason ? `: ${split.cancellation_reason}` : ''}
                     </p>
                   )}
                   {split.status === 'delivery_dispute' && (
                     <p className="text-xs text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3 flex-shrink-0" /> Owner reported delivery not received
+                      <AlertTriangle className="w-3 h-3 flex-shrink-0" /> {t('ownerReportedDeliveryDispute')}
                     </p>
                   )}
                 </div>
@@ -870,14 +877,14 @@ export default function SupplierOrdersPage() {
                       onClick={() => setSelectedSplit(split)}
                       className="flex items-center gap-1 px-3 py-1.5 border-2 border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-lionsmane transition-colors"
                     >
-                      View Details <ChevronRight className="w-4 h-4" />
+                      {t('viewDetails')} <ChevronRight className="w-4 h-4" />
                     </button>
                     {(split.status === 'pending_confirmation' || (split.status === 'pending_payment' && split.receipt_url)) && (
                       <button
                         onClick={() => updateStatus(split.id, 'confirmed')}
                         className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
                       >
-                        <CheckCircle className="w-3.5 h-3.5" /> Confirm
+                        <CheckCircle className="w-3.5 h-3.5" /> {t('confirm')}
                       </button>
                     )}
                     {split.status === 'delivery_dispute' && (
@@ -885,7 +892,7 @@ export default function SupplierOrdersPage() {
                         onClick={() => { setDisputeTarget(split) }}
                         className="px-3 py-1.5 bg-orange-500 text-white text-sm font-semibold rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-1 justify-center"
                       >
-                        <AlertTriangle className="w-3.5 h-3.5" /> Respond
+                        <AlertTriangle className="w-3.5 h-3.5" /> {t('respondToDisputeBtn')}
                       </button>
                     )}
                     {split.status === 'confirmed' && (
@@ -893,7 +900,7 @@ export default function SupplierOrdersPage() {
                         onClick={() => updateStatus(split.id, 'out_for_delivery')}
                         className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
                       >
-                        <Truck className="w-3.5 h-3.5" /> Out for Delivery
+                        <Truck className="w-3.5 h-3.5" /> {t('outForDeliveryBtn')}
                       </button>
                     )}
                     {(split.status === 'pending_confirmation' || split.status === 'confirmed') && (
@@ -901,7 +908,7 @@ export default function SupplierOrdersPage() {
                         onClick={() => setCancelTarget(split)}
                         className="px-3 py-1.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors"
                       >
-                        Cancel
+                        {t('cancel')}
                       </button>
                     )}
                   </div>

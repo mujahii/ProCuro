@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, ChevronRight } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 
 export default function SelectRolePage() {
   const { user, authUser, role, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [selecting, setSelecting] = useState(false)
 
   // Already has a role — go straight to their dashboard
@@ -68,10 +70,10 @@ export default function SelectRolePage() {
           <div className="mb-2">
             <span className="text-2xl">🎉</span>
           </div>
-          <h2 className="text-xl font-black text-slate-900 mb-2">Welcome to ProCuro!</h2>
+          <h2 className="text-xl font-black text-slate-900 mb-2">{t('welcomeToProcuro')}</h2>
           <p className="text-sm text-slate-500 leading-relaxed">
-            Your account is ready. Now choose how you'll use ProCuro.{' '}
-            <span className="font-semibold text-slate-700">This choice is permanent and cannot be changed.</span>
+            {t('accountReadyDesc')}{' '}
+            <span className="font-semibold text-slate-700">{t('choiceIsPermanent')}</span>
           </p>
         </div>
 
@@ -83,8 +85,8 @@ export default function SelectRolePage() {
           >
             <span className="text-3xl">🍽️</span>
             <div className="flex-1">
-              <p className="font-bold text-slate-900 text-base">Restaurant Owner</p>
-              <p className="text-xs text-slate-500 mt-0.5">Browse and order from verified Halal suppliers</p>
+              <p className="font-bold text-slate-900 text-base">{t('restaurantOwner')}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{t('roleOwnerDesc')}</p>
             </div>
             <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-herb transition-colors flex-shrink-0" />
           </button>
@@ -96,15 +98,15 @@ export default function SelectRolePage() {
           >
             <span className="text-3xl">🏪</span>
             <div className="flex-1">
-              <p className="font-bold text-slate-900 text-base">Supplier</p>
-              <p className="text-xs text-slate-500 mt-0.5">Sell your Halal products to restaurants across Germany</p>
+              <p className="font-bold text-slate-900 text-base">{t('supplier')}</p>
+              <p className="text-xs text-slate-500 mt-0.5">{t('roleSupplierDesc')}</p>
             </div>
             <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-herb transition-colors flex-shrink-0" />
           </button>
         </div>
 
         {selecting && (
-          <p className="text-center text-sm text-slate-500 mt-5">Setting up your account...</p>
+          <p className="text-center text-sm text-slate-500 mt-5">{t('settingUpAccount')}</p>
         )}
       </div>
     </div>

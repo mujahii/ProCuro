@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
 import { useAddresses } from '../../context/AddressContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { supabase } from '../../lib/supabase'
 import { forwardGeocode } from '../../lib/geocode'
 import ModalPortal from '../ui/ModalPortal'
@@ -30,6 +31,7 @@ export default function AddToCartModal({ product, onClose }) {
   const { addItem } = useCart()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { t } = useLanguage()
   const { selectedAddress, addresses } = useAddresses()
   const [qty, setQty] = useState(1)
   const [discountCode, setDiscountCode] = useState('')
@@ -110,10 +112,10 @@ export default function AddToCartModal({ product, onClose }) {
   function handleApplyDiscount() {
     if (discountCode.toUpperCase() === 'HALAL10') {
       setAppliedDiscount(0.1)
-      setDiscountMessage('10% Discount Applied!')
+      setDiscountMessage(t('discountApplied'))
     } else {
       setAppliedDiscount(0)
-      setDiscountMessage('Code is not correct')
+      setDiscountMessage(t('discountInvalid'))
     }
   }
 
@@ -174,7 +176,7 @@ export default function AddToCartModal({ product, onClose }) {
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-slate-900">€{price.toFixed(2)}</p>
-              <p className="text-xs text-slate-400">per {product.unit_type}</p>
+              <p className="text-xs text-slate-400">{t('perUnit')} {product.unit_type}</p>
             </div>
           </div>
 
@@ -186,20 +188,20 @@ export default function AddToCartModal({ product, onClose }) {
           <div className="flex items-center gap-2 text-sm mb-6">
             <Truck className="w-4 h-4 text-slate-400 flex-shrink-0" />
             {deliveryLoading ? (
-              <span className="text-slate-400 flex items-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin" /> Calculating delivery fee…</span>
+              <span className="text-slate-400 flex items-center gap-1"><Loader2 className="w-3.5 h-3.5 animate-spin" /> {t('calculatingDeliveryFee')}</span>
             ) : !ownerHasLocation ? (
               <button
                 onClick={() => { onClose(); navigate('/owner/profile') }}
                 className="text-marigold font-semibold hover:underline flex items-center gap-1"
               >
-                <MapPin className="w-3.5 h-3.5" /> Add an address to see delivery fee
+                <MapPin className="w-3.5 h-3.5" /> {t('addAddressForDelivery')}
               </button>
             ) : deliveryFee === null ? (
-              <span className="text-slate-400">Delivery fee unavailable</span>
+              <span className="text-slate-400">{t('deliveryFeeUnavailable')}</span>
             ) : deliveryFee === 0 ? (
-              <span className="text-midnight font-semibold">Free delivery</span>
+              <span className="text-midnight font-semibold">{t('freeDelivery')}</span>
             ) : (
-              <span className="text-slate-600">Delivery: <span className="font-semibold text-slate-800">€{deliveryFee.toFixed(2)}</span></span>
+              <span className="text-slate-600">{t('deliveryLabelText')} <span className="font-semibold text-slate-800">€{deliveryFee.toFixed(2)}</span></span>
             )}
           </div>
 
@@ -207,7 +209,7 @@ export default function AddToCartModal({ product, onClose }) {
             <div className="space-y-4 mb-6">
               {/* Quantity */}
               <div className="flex items-center gap-4 p-4 bg-lionsmane rounded-xl">
-                <span className="font-bold text-slate-700">Quantity</span>
+                <span className="font-bold text-slate-700">{t('quantity')}</span>
                 <div className="flex items-center gap-4 ml-auto">
                   <button
                     onClick={() => setQty(q => Math.max(1, q - 1))}
@@ -228,13 +230,13 @@ export default function AddToCartModal({ product, onClose }) {
                     type="text"
                     value={discountCode}
                     onChange={e => { setDiscountCode(e.target.value); setDiscountMessage(''); setAppliedDiscount(0) }}
-                    placeholder="Discount Code"
+                    placeholder={t('discountCode')}
                     className="flex-1 p-3 border border-slate-200 rounded-lg outline-none text-sm focus:ring-2 focus:ring-herb focus:border-transparent"
                   />
                   <button
                     onClick={handleApplyDiscount}
                     className="px-4 py-2 border-2 border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-lionsmane transition-colors"
-                  >Apply</button>
+                  >{t('apply')}</button>
                 </div>
                 {discountMessage && (
                   <p className={`text-xs mt-1 ${discountMessage.includes('Applied') ? 'text-midnight' : 'text-red-500'}`}>
@@ -245,7 +247,7 @@ export default function AddToCartModal({ product, onClose }) {
             </div>
           ) : (
             <div className="p-4 bg-red-50 text-red-600 font-bold text-center rounded-xl mb-6">
-              Currently Out of Stock
+              {t('currentlyOutOfStock')}
             </div>
           )}
 
@@ -254,13 +256,13 @@ export default function AddToCartModal({ product, onClose }) {
             <button
               onClick={onClose}
               className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors"
-            >Close</button>
+            >{t('close')}</button>
             <button
               onClick={handleAdd}
               disabled={!inStock}
               className="flex-[2] py-3 bg-midnight text-white font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {inStock ? `Add to Cart - €${total.toFixed(2)}` : 'Unavailable'}
+              {inStock ? `${t('addToCart')} - €${total.toFixed(2)}` : t('unavailable')}
             </button>
           </div>
 
@@ -269,7 +271,7 @@ export default function AddToCartModal({ product, onClose }) {
             onClick={() => setShowReport(true)}
             className="mt-3 flex items-center gap-1.5 text-xs text-slate-400 hover:text-red-500 transition-colors mx-auto"
           >
-            <Flag className="w-3.5 h-3.5" /> Report this product
+            <Flag className="w-3.5 h-3.5" /> {t('reportThisProduct')}
           </button>
         </div>
       </div>

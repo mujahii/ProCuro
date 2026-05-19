@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ShoppingCart, ArrowLeft, Mail, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 
 const GoogleLogo = () => (
@@ -23,6 +24,7 @@ const AppleLogo = () => (
 export default function LoginPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -89,7 +91,7 @@ export default function LoginPage() {
               <ShoppingCart className="w-8 h-8 text-midnight" />
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
-            <p className="text-slate-500 text-sm">The Halal Procurement Platform</p>
+            <p className="text-slate-500 text-sm">{t('loginTagline')}</p>
           </div>
 
           {forgotMode ? (
@@ -98,15 +100,15 @@ export default function LoginPage() {
               {resetSent ? (
                 <div className="text-center py-4">
                   <CheckCircle className="w-14 h-14 text-herb mx-auto mb-4" />
-                  <h2 className="text-lg font-bold text-slate-900 mb-2">Check your email</h2>
-                  <p className="text-sm text-slate-500 mb-1">We sent a password reset link to:</p>
+                  <h2 className="text-lg font-bold text-slate-900 mb-2">{t('checkYourEmail')}</h2>
+                  <p className="text-sm text-slate-500 mb-1">{t('resetLinkSentTo')}</p>
                   <p className="text-sm font-semibold text-slate-800 mb-4">{resetEmail}</p>
-                  <p className="text-xs text-slate-400 mb-6">Click the link in the email to set a new password. The link expires in 1 hour.</p>
+                  <p className="text-xs text-slate-400 mb-6">{t('resetLinkExpiry')}</p>
                   <button
                     onClick={() => { setForgotMode(false); setResetSent(false); setResetEmail('') }}
                     className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
                   >
-                    ← Back to login
+                    {t('backToLoginBtn')}
                   </button>
                 </div>
               ) : (
@@ -115,13 +117,13 @@ export default function LoginPage() {
                     onClick={() => setForgotMode(false)}
                     className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 mb-5 transition-colors"
                   >
-                    <ArrowLeft className="w-4 h-4" /> Back to login
+                    <ArrowLeft className="w-4 h-4" /> {t('backToLoginBtn')}
                   </button>
-                  <h2 className="text-xl font-bold text-slate-900 mb-1">Forgot your password?</h2>
-                  <p className="text-sm text-slate-500 mb-5">Enter your email and we'll send you a reset link.</p>
+                  <h2 className="text-xl font-bold text-slate-900 mb-1">{t('forgotPasswordTitle')}</h2>
+                  <p className="text-sm text-slate-500 mb-5">{t('forgotPasswordDesc')}</p>
                   <form onSubmit={handleForgotPassword} className="space-y-4">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
+                      <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">{t('emailAddressLabel')}</label>
                       <div className="relative">
                         <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                         <input
@@ -140,7 +142,7 @@ export default function LoginPage() {
                       disabled={resetLoading}
                       className="w-full py-3 bg-midnight text-white font-bold rounded-lg hover:bg-midnight-dark transition-colors text-base shadow-md disabled:opacity-60"
                     >
-                      {resetLoading ? 'Sending...' : 'Send Reset Link'}
+                      {resetLoading ? t('sending') : t('sendResetLink')}
                     </button>
                   </form>
                 </>
@@ -151,7 +153,7 @@ export default function LoginPage() {
             <>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
+                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">{t('emailAddressLabel')}</label>
                   <input
                     type="email"
                     value={email}
@@ -162,13 +164,13 @@ export default function LoginPage() {
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">Password</label>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide">{t('passwordLabel')}</label>
                     <button
                       type="button"
                       onClick={() => setForgotMode(true)}
                       className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
                     >
-                      Forgot password?
+                      {t('forgotPassword')}
                     </button>
                   </div>
                   <div className="relative">
@@ -189,7 +191,7 @@ export default function LoginPage() {
                   disabled={loading}
                   className="w-full py-3 bg-midnight text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60"
                 >
-                  {loading ? 'Logging in...' : 'Log In'}
+                  {loading ? t('loggingIn') : t('logIn')}
                 </button>
               </form>
 
@@ -197,7 +199,7 @@ export default function LoginPage() {
               <div className="mt-6">
                 <div className="flex items-center mb-4">
                   <div className="flex-1 border-t border-slate-200" />
-                  <span className="px-3 text-xs text-slate-400 font-medium">OR CONTINUE WITH</span>
+                  <span className="px-3 text-xs text-slate-400 font-medium">{t('orContinueWith')}</span>
                   <div className="flex-1 border-t border-slate-200" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -219,8 +221,8 @@ export default function LoginPage() {
               </div>
 
               <p className="text-center mt-8 text-sm text-slate-500">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">Sign Up</Link>
+                {t('dontHaveAccount')}{' '}
+                <Link to="/register" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">{t('signUp')}</Link>
               </p>
             </>
           )}

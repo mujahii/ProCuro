@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ShoppingCart, Check } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 
 const GoogleLogo = () => (
@@ -31,6 +32,7 @@ function getPasswordStrength(pass) {
 export default function RegisterPage() {
   const { signIn } = useAuth()
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [form, setForm] = useState({ fullName: '', email: '', password: '', confirmPassword: '' })
   const [showPw, setShowPw] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -39,11 +41,11 @@ export default function RegisterPage() {
 
   const strength = getPasswordStrength(form.password)
   const strengthInfo = [
-    { label: '', color: 'bg-slate-200' },
-    { label: 'Weak', color: 'bg-red-500' },
-    { label: 'Good', color: 'bg-marigold' },
-    { label: 'Strong', color: 'bg-herb' },
-  ][strength] || { label: '', color: 'bg-slate-200' }
+    { labelKey: '', color: 'bg-slate-200' },
+    { labelKey: 'pwStrengthWeak', color: 'bg-red-500' },
+    { labelKey: 'pwStrengthGood', color: 'bg-marigold' },
+    { labelKey: 'pwStrengthStrong', color: 'bg-herb' },
+  ][strength] || { labelKey: '', color: 'bg-slate-200' }
 
   function update(field, val) {
     setForm(f => ({ ...f, [field]: val }))
@@ -60,8 +62,8 @@ export default function RegisterPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
-    if (form.password !== form.confirmPassword) return setError('Passwords do not match')
-    if (form.password.length < 6) return setError('Password must be at least 6 characters')
+    if (form.password !== form.confirmPassword) return setError(t('passwordsNoMatch'))
+    if (form.password.length < 6) return setError(t('passwordTooShort'))
     setLoading(true)
     try {
       const { error: regError } = await supabase.rpc('register_basic', {
@@ -90,7 +92,7 @@ export default function RegisterPage() {
               <ShoppingCart className="w-7 h-7 text-midnight" />
               <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
-            <p className="text-slate-500 text-sm">Create your free account</p>
+            <p className="text-slate-500 text-sm">{t('createFreeAccount')}</p>
           </div>
 
           {/* Email form */}
@@ -99,19 +101,19 @@ export default function RegisterPage() {
               <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">{error}</div>
             )}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Full Name</label>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">{t('fullNameLabel')}</label>
               <input type="text" required value={form.fullName} onChange={e => update('fullName', e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors"
-                placeholder="Your name" />
+                placeholder={t('yourName')} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Email Address</label>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">{t('emailAddressLabel')}</label>
               <input type="email" required value={form.email} onChange={e => update('email', e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors"
                 placeholder="you@example.com" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Password</label>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">{t('passwordLabel')}</label>
               <div className="relative">
                 <input type={showPw ? 'text' : 'password'} required value={form.password} onChange={e => update('password', e.target.value)}
                   className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors pr-10"
@@ -123,17 +125,17 @@ export default function RegisterPage() {
               {form.password.length > 0 && (
                 <div className="mt-2 space-y-2">
                   <div className="flex justify-between text-xs">
-                    <span className="text-slate-500">Strength</span>
-                    <span className={`font-bold ${strength === 1 ? 'text-red-500' : strength === 2 ? 'text-marigold' : 'text-herb'}`}>{strengthInfo.label}</span>
+                    <span className="text-slate-500">{t('passwordStrengthLabel')}</span>
+                    <span className={`font-bold ${strength === 1 ? 'text-red-500' : strength === 2 ? 'text-marigold' : 'text-herb'}`}>{strengthInfo.labelKey ? t(strengthInfo.labelKey) : ''}</span>
                   </div>
                   <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                     <div className={`h-full transition-all duration-300 ${strengthInfo.color}`} style={{ width: `${(strength / 3) * 100}%` }} />
                   </div>
                   <div className="space-y-1 bg-lionsmane p-3 rounded-lg border border-slate-100">
                     {[
-                      [form.password.length > 8, 'Over 8 characters'],
-                      [/[A-Z]/.test(form.password), 'One uppercase letter'],
-                      [/[@#$%^&+=!]/.test(form.password), 'Special character (@#$%...)'],
+                      [form.password.length > 8, t('pwReqLength')],
+                      [/[A-Z]/.test(form.password), t('pwReqUppercase')],
+                      [/[@#$%^&+=!]/.test(form.password), t('pwReqSpecial')],
                     ].map(([ok, label]) => (
                       <div key={label} className={`flex items-center gap-2 text-xs ${ok ? 'text-midnight font-medium' : 'text-slate-400'}`}>
                         <Check className="w-3 h-3" /> {label}
@@ -144,7 +146,7 @@ export default function RegisterPage() {
               )}
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">Confirm Password</label>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">{t('confirmPasswordLabel')}</label>
               <div className="relative">
                 <input type={showConfirm ? 'text' : 'password'} required value={form.confirmPassword} onChange={e => update('confirmPassword', e.target.value)}
                   className="w-full px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-herb focus:border-transparent transition-colors pr-10"
@@ -156,7 +158,7 @@ export default function RegisterPage() {
             </div>
             <button type="submit" disabled={loading}
               className="w-full py-3 bg-midnight text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60">
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? t('creatingAccount') : t('createAccountBtn')}
             </button>
           </form>
 
@@ -164,7 +166,7 @@ export default function RegisterPage() {
           <div className="mt-6">
             <div className="flex items-center mb-4">
               <div className="flex-1 border-t border-slate-200" />
-              <span className="px-3 text-xs text-slate-400 font-medium">OR CONTINUE WITH</span>
+              <span className="px-3 text-xs text-slate-400 font-medium">{t('orContinueWith')}</span>
               <div className="flex-1 border-t border-slate-200" />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -180,8 +182,8 @@ export default function RegisterPage() {
           </div>
 
           <p className="text-center mt-6 text-sm text-slate-500">
-            Already have an account?{' '}
-            <Link to="/login" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">Log In</Link>
+            {t('alreadyHaveAccount')}{' '}
+            <Link to="/login" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">{t('logIn')}</Link>
           </p>
         </div>
       </div>

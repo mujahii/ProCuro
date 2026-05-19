@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-19 06:16 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-19 11:30 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -767,7 +767,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages.
 
 ### AI
-- `AnalyticsSummary` — AI insight card with cache indicator and force-refresh button
+- `AnalyticsSummary` — AI insight card with cache indicator and force-refresh button; refresh is disabled (dimmed) for 24 hours after the last generation — the button re-enables only once the `ai_insights_cache` TTL expires
 - `ChatbotFAB` — Floating action button that opens the AI assistant
 - `ChatbotDrawer` — Slide-in chat drawer for AI assistant
 
@@ -815,10 +815,11 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 ## Internationalisation (i18n)
 
 - Two languages: **English** (`en`) and **German** (`de`).
-- Dictionary-based: `LanguageContext` holds a key–value map; all UI strings use `t('key')`.
+- Dictionary-based: `LanguageContext` holds a key–value map (~200+ keys); all UI strings use `t('key')`.
 - Language is toggled in the Account Settings card and persisted in `localStorage`.
 - On toggle, `<html lang>` is updated for screen readers and OS integrations.
 - No page reload; no third-party library.
+- **Coverage:** Every user-facing string is translated including: Login/Register/Role-select flows, Navbar address dropdown (Delivered to, Select Address, form placeholders), Owner store (search, categories, sort), AllProducts (categories, sort, product card), AddToCartModal (delivery fee states, quantity, discount), Owner Orders (full lifecycle: modals, rating, dispute, refund), Owner Analytics (all chart titles and KPI labels), Supplier Analytics (all chart titles and KPI labels), Supplier Orders (full lifecycle: Cancel/RefundSection/DisputeResponse modals, detail view, list page), Supplier Products (table headers, add/edit modal, delivery fee table), SupplierListPage (categories, sort), Notifications bell.
 
 ---
 

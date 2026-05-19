@@ -4,16 +4,28 @@ import { Search, Filter, ChevronDown, Package, Plus, ArrowLeft } from 'lucide-re
 import { useProducts } from '../../hooks/useProducts'
 import { useAddresses } from '../../context/AddressContext'
 import { useGeolocation } from '../../hooks/useGeolocation'
+import { useLanguage } from '../../context/LanguageContext'
 import AddToCartModal from '../../components/store/AddToCartModal'
 import { supabase } from '../../lib/supabase'
 
-const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Vegetables', 'Fruits', 'Bakery', 'Beverages', 'Spices', 'Other']
+const CATEGORY_KEYS = [
+  { value: 'Meat', key: 'catMeat' },
+  { value: 'Poultry', key: 'catPoultry' },
+  { value: 'Seafood', key: 'catSeafood' },
+  { value: 'Dairy', key: 'catDairy' },
+  { value: 'Vegetables', key: 'catVegetables' },
+  { value: 'Fruits', key: 'catFruits' },
+  { value: 'Bakery', key: 'catBakery' },
+  { value: 'Beverages', key: 'catBeverages' },
+  { value: 'Spices', key: 'catSpices' },
+  { value: 'Other', key: 'catOther' },
+]
 
-const SORT_OPTIONS = [
-  { value: '', label: 'Recommended' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'name_asc', label: 'Name A–Z' },
+const SORT_OPTION_KEYS = [
+  { value: '', key: 'sortRecommended' },
+  { value: 'price_asc', key: 'sortPriceAsc' },
+  { value: 'price_desc', key: 'sortPriceDesc' },
+  { value: 'name_asc', key: 'sortNameAZ' },
 ]
 
 function getProductImageUrl(path) {
@@ -25,6 +37,7 @@ function getProductImageUrl(path) {
 
 export default function AllProductsPage() {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState(null)
   const [sortBy, setSortBy] = useState('')
@@ -43,6 +56,8 @@ export default function AllProductsPage() {
     userLat,
     userLng,
   })
+
+  const SORT_OPTIONS = SORT_OPTION_KEYS.map(o => ({ value: o.value, label: t(o.key) }))
 
   const sortedProducts = [...(products || [])].sort((a, b) => {
     if (sortBy === 'price_asc') return a.price - b.price
@@ -66,7 +81,7 @@ export default function AllProductsPage() {
         <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </button>
-        <h1 className="text-xl font-bold text-slate-900">All Products</h1>
+        <h1 className="text-xl font-bold text-slate-900">{t('allProductsTitle')}</h1>
       </div>
 
       {/* Search + Sort */}
@@ -75,7 +90,7 @@ export default function AllProductsPage() {
           <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder={t('searchProductsPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="bg-transparent border-none outline-none focus:outline-none ring-0 focus:ring-0 w-full text-sm"
@@ -87,7 +102,7 @@ export default function AllProductsPage() {
             className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-midnight text-white border-midnight' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
           >
             <Filter className="w-4 h-4" />
-            <span className="hidden sm:inline">{sortBy ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Sort'}</span>
+            <span className="hidden sm:inline">{sortBy ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : t('sortLabel')}</span>
             <ChevronDown className="w-3 h-3" />
           </button>
           {filterOpen && (
@@ -108,17 +123,17 @@ export default function AllProductsPage() {
 
       {/* Category chips */}
       <div className="flex flex-wrap gap-2">
-        {CATEGORIES.map(cat => (
+        {CATEGORY_KEYS.map(({ value, key }) => (
           <button
-            key={cat}
-            onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+            key={value}
+            onClick={() => setActiveCategory(activeCategory === value ? null : value)}
             className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-              activeCategory === cat
+              activeCategory === value
                 ? 'bg-midnight text-white'
                 : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
             }`}
           >
-            {cat}
+            {t(key)}
           </button>
         ))}
       </div>
@@ -132,7 +147,7 @@ export default function AllProductsPage() {
         </div>
       ) : sortedProducts.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
-          No products found{activeCategory ? ` in ${activeCategory}` : ''}
+          {t('noProductsFoundSearch')}{activeCategory ? ` in ${t(CATEGORY_KEYS.find(c => c.value === activeCategory)?.key || activeCategory)}` : ''}
         </div>
       ) : (
         <>
@@ -148,7 +163,7 @@ export default function AllProductsPage() {
               disabled={loading}
               className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-lionsmane transition-colors disabled:opacity-50"
             >
-              {loading ? 'Loading...' : 'Load More'}
+              {loading ? t('loading') : t('seeAll')}
             </button>
           )}
         </>
@@ -162,6 +177,7 @@ export default function AllProductsPage() {
 }
 
 function ProductCard({ product, onAddToCart }) {
+  const { t } = useLanguage()
   const imgUrl = getProductImageUrl(product.image_url)
   return (
     <div
@@ -177,7 +193,7 @@ function ProductCard({ product, onAddToCart }) {
           </div>
         )}
         {!product.is_active && (
-          <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500">Out of Stock</div>
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500">{t('outOfStockText')}</div>
         )}
         <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold shadow-sm text-slate-700">
           {product.category}

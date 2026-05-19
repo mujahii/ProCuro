@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
 import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, ShoppingBag, Tag, Star, MessageSquare, Flag } from 'lucide-react'
@@ -19,6 +20,7 @@ function getProductImageUrl(path) {
 }
 
 function ProductCardModal({ item, onClose }) {
+  const { t } = useLanguage()
   const img = getProductImageUrl(item.product?.image_url)
   const unitPrice = item.price_at_time
   return (
@@ -38,22 +40,22 @@ function ProductCardModal({ item, onClose }) {
           )}
           <div className="flex items-center justify-between pt-2 border-t border-slate-100">
             <div>
-              <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Unit Price</p>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">{t('unitPrice')}</p>
               <p className="text-base font-bold text-slate-900">€{Number(unitPrice).toFixed(2)} / {item.product?.unit_type || 'unit'}</p>
             </div>
             <div className="text-right">
-              <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">Qty Ordered</p>
+              <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold">{t('qtyOrdered')}</p>
               <p className="text-base font-bold text-midnight">{item.quantity}×</p>
             </div>
           </div>
           <div className="flex justify-between items-center pt-2 border-t border-slate-100">
-            <p className="text-sm font-semibold text-slate-500">Subtotal</p>
+            <p className="text-sm font-semibold text-slate-500">{t('subtotalText')}</p>
             <p className="text-lg font-bold text-slate-900">€{(unitPrice * item.quantity).toFixed(2)}</p>
           </div>
         </div>
         <div className="px-5 pb-5">
           <button onClick={onClose} className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors">
-            Close
+            {t('close')}
           </button>
         </div>
       </div>
@@ -66,6 +68,7 @@ const COMPLETED = ['delivered', 'completed', 'cancelled']
 const CANCELLABLE = ['pending_payment', 'pending_confirmation', 'confirmed']
 
 function NotReceivedModal({ split, onConfirm, onClose }) {
+  const { t } = useLanguage()
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -81,22 +84,19 @@ function NotReceivedModal({ split, onConfirm, onClose }) {
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-          <h3 className="font-bold text-slate-900 text-lg">Report Non-Delivery</h3>
+          <h3 className="font-bold text-slate-900 text-lg">{t('reportNonDeliveryTitle')}</h3>
         </div>
-        <p className="text-sm text-slate-600 mb-4">
-          The supplier will be notified and asked to respond. Please tell them what happened —
-          for example: "The driver never arrived" or "Only half of the items were delivered."
-        </p>
+        <p className="text-sm text-slate-600 mb-4">{t('reportNonDeliveryDesc')}</p>
         <div className="mb-5">
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-            Reason *
+            {t('reasonRequiredLabel')}
           </label>
           <textarea
             value={reason}
             onChange={e => setReason(e.target.value)}
             rows={4}
             className="w-full p-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-midnight resize-none"
-            placeholder="What happened?"
+            placeholder={t('whatHappenedPlaceholder')}
           />
         </div>
         <div className="flex gap-3">
@@ -105,7 +105,7 @@ function NotReceivedModal({ split, onConfirm, onClose }) {
             disabled={loading}
             className="flex-1 py-3 border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-lionsmane disabled:opacity-50"
           >
-            Cancel
+            {t('cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -113,7 +113,7 @@ function NotReceivedModal({ split, onConfirm, onClose }) {
             className="flex-1 py-3 bg-orange-600 text-white font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-            Send Report
+            {t('sendReport')}
           </button>
         </div>
       </div>
@@ -122,6 +122,7 @@ function NotReceivedModal({ split, onConfirm, onClose }) {
 }
 
 function CancelModal({ split, onCancel, onClose }) {
+  const { t } = useLanguage()
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
   const isBankTransfer = split.payment_method === 'bank_transfer'
@@ -138,27 +139,25 @@ function CancelModal({ split, onCancel, onClose }) {
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <h3 className="font-bold text-slate-900 text-lg">Cancel Order</h3>
+          <h3 className="font-bold text-slate-900 text-lg">{t('cancelOrderTitle')}</h3>
         </div>
 
         {isBankTransfer && (
           <div className="bg-lionsmane border border-marigold-light rounded-xl p-3 mb-4">
-            <p className="text-sm font-semibold text-marigold-dark">Bank transfer order</p>
-            <p className="text-xs text-marigold-dark mt-1">
-              Your cancellation will be sent to the supplier for review. Once they agree, they will upload proof of the returned payment.
-            </p>
+            <p className="text-sm font-semibold text-marigold-dark">{t('bankTransferOrderLabel')}</p>
+            <p className="text-xs text-marigold-dark mt-1">{t('bankTransferCancelNote')}</p>
           </div>
         )}
 
         <div className="mb-5">
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
-            Reason for cancellation *
+            {t('reasonForCancellationLabel')}
           </label>
           <textarea
             value={reason}
             onChange={e => setReason(e.target.value)}
             className="w-full px-4 py-3 rounded-lg border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-red-400 h-24 resize-none"
-            placeholder="e.g. Changed my mind, ordered by mistake, found another supplier..."
+            placeholder={t('cancelReasonPlaceholder')}
             autoFocus
           />
         </div>
@@ -168,7 +167,7 @@ function CancelModal({ split, onCancel, onClose }) {
             onClick={onClose}
             className="flex-1 py-3 border-2 border-slate-200 text-slate-700 font-bold rounded-lg hover:bg-lionsmane transition-colors"
           >
-            Keep Order
+            {t('keepOrderBtn')}
           </button>
           <button
             onClick={handleSubmit}
@@ -176,7 +175,7 @@ function CancelModal({ split, onCancel, onClose }) {
             className="flex-1 flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50 min-w-0"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" /> : <XCircle className="w-4 h-4 flex-shrink-0" />}
-            <span className="truncate">{isBankTransfer ? 'Request Cancellation' : 'Cancel Order'}</span>
+            <span className="truncate">{isBankTransfer ? t('requestCancellationBtn') : t('cancelOrderTitle')}</span>
           </button>
         </div>
       </div>
@@ -197,6 +196,7 @@ function RefundReceiptDisplay({ path }) {
 
   if (!url) return null
 
+  const { t } = useLanguage()
   return (
     <a
       href={url}
@@ -204,13 +204,14 @@ function RefundReceiptDisplay({ path }) {
       rel="noopener noreferrer"
       className="flex items-center gap-2 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
     >
-      <ExternalLink className="w-4 h-4" /> View Refund Receipt
+      <ExternalLink className="w-4 h-4" /> {t('viewRefundReceiptLink')}
     </a>
   )
 }
 
 
 function RatingModal({ split, onSubmit, onSkip }) {
+  const { t } = useLanguage()
   const [hovered, setHovered] = useState(0)
   const [selected, setSelected] = useState(0)
   const [loading, setLoading] = useState(false)
@@ -243,9 +244,9 @@ function RatingModal({ split, onSubmit, onSkip }) {
             <CheckCircle className="w-4 h-4 text-white" />
           </div>
         </div>
-        <h3 className="text-lg font-bold text-slate-900 mb-1">Order Delivered!</h3>
+        <h3 className="text-lg font-bold text-slate-900 mb-1">{t('ratingOrderDelivered')}</h3>
         <p className="text-sm text-slate-500 mb-5">
-          How would you rate <span className="font-semibold text-slate-700">{split.supplier?.business_name}</span>?
+          {t('ratingHowWouldYouRate')} <span className="font-semibold text-slate-700">{split.supplier?.business_name}</span>?
         </p>
 
         <div className="flex items-center justify-center gap-2 mb-6">
@@ -269,13 +270,13 @@ function RatingModal({ split, onSubmit, onSkip }) {
 
         {selected > 0 && (
           <p className="text-sm font-semibold text-marigold mb-4">
-            {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][selected]}
+            {['', t('ratingPoor'), t('ratingFair'), t('ratingGoodLabel'), t('ratingVeryGood'), t('ratingExcellent')][selected]}
           </p>
         )}
 
         <div className="flex gap-3">
           <button onClick={onSkip} className="flex-1 py-2.5 border-2 border-slate-200 text-slate-600 font-semibold rounded-xl text-sm hover:bg-lionsmane transition-colors">
-            Skip
+            {t('skipBtn')}
           </button>
           <button
             onClick={handleSubmit}
@@ -283,7 +284,7 @@ function RatingModal({ split, onSubmit, onSkip }) {
             className="flex-1 py-2.5 bg-midnight text-white font-bold rounded-xl text-sm hover:bg-slate-800 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            Submit Rating
+            {t('submitRating')}
           </button>
         </div>
       </div>
@@ -293,6 +294,7 @@ function RatingModal({ split, onSubmit, onSkip }) {
 
 function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDelivered, onCancelRequest, onConfirmRefund }) {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showSupplierModal, setShowSupplierModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -309,19 +311,19 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Orders
+        <ArrowLeft className="w-4 h-4" /> {t('backToOrders')}
       </button>
 
       <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-bold text-slate-900">Order Details</h2>
+        <h2 className="text-2xl font-bold text-slate-900">{t('orderDetailsTitle')}</h2>
         <StatusBadge status={split.status} />
       </div>
 
       {/* Cancellation requested banner */}
       {split.status === 'cancellation_requested' && (
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-          <p className="text-sm font-bold text-orange-800">Cancellation Pending</p>
-          <p className="text-xs text-orange-700 mt-1">Your cancellation request has been sent to the supplier. They will review and process the refund.</p>
+          <p className="text-sm font-bold text-orange-800">{t('cancellationPendingTitle')}</p>
+          <p className="text-xs text-orange-700 mt-1">{t('cancellationPendingDesc')}</p>
           {split.cancellation_reason && (
             <p className="text-xs text-orange-600 mt-2 italic">"{split.cancellation_reason}"</p>
           )}
@@ -331,15 +333,15 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Order ID</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">{t('orderIdLabel')}</p>
             <p className="font-bold text-slate-900">#{split.order.id.slice(0, 8).toUpperCase()}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Date</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">{t('dateLabel')}</p>
             <p className="font-semibold text-slate-900">{format(new Date(split.order.created_at), 'dd MMM yyyy, HH:mm')}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Supplier</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">{t('supplierNameLabel')}</p>
             <button
               onClick={() => setShowSupplierModal(true)}
               className="font-semibold text-midnight-dark hover:text-midnight transition-colors text-left underline-offset-2 hover:underline"
@@ -348,13 +350,13 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
             </button>
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium mb-1">Payment</p>
+            <p className="text-xs text-slate-500 font-medium mb-1">{t('paymentLabel')}</p>
             <p className="font-semibold text-slate-900 capitalize">{split.payment_method?.replace(/_/g, ' ')}</p>
           </div>
         </div>
 
         <div>
-          <p className="text-sm font-bold text-slate-900 mb-3">Items Ordered</p>
+          <p className="text-sm font-bold text-slate-900 mb-3">{t('itemsOrderedLabel')}</p>
           <div className="bg-lionsmane rounded-xl divide-y divide-slate-100 overflow-hidden">
             {split.order_items?.map(item => {
               const img = getProductImageUrl(item.product?.image_url)
@@ -386,7 +388,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
         </div>
 
         <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
-          <span className="text-xl font-bold text-slate-900">Total</span>
+          <span className="text-xl font-bold text-slate-900">{t('totalLabel')}</span>
           <span className="text-2xl font-bold text-midnight">€{Number(split.subtotal).toFixed(2)}</span>
         </div>
       </div>
@@ -394,10 +396,10 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
       {split.cancellation_reason && (split.status === 'cancelled' || split.status === 'refund_uploaded' || split.status === 'completed') && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
           <p className="font-semibold mb-1">
-            Order Cancelled
+            {t('orderCancelledTitle')}
             {split.cancelled_by && (
               <span className="font-normal text-red-400 ml-2">
-                — by {split.cancelled_by === 'supplier' ? 'Supplier' : 'You'}
+                — {split.cancelled_by === 'supplier' ? t('cancelledBySupplierText') : t('cancelledByYouText')}
               </span>
             )}
           </p>
@@ -407,14 +409,14 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
 
       {split.status === 'refund_uploaded' && (
         <div className="bg-lionsmane border border-marigold-light rounded-xl p-4 space-y-3">
-          <p className="text-sm font-bold text-marigold-dark">Refund Receipt Uploaded</p>
-          <p className="text-xs text-marigold-dark">The supplier has uploaded proof of refund. Please verify and confirm below.</p>
+          <p className="text-sm font-bold text-marigold-dark">{t('refundReceiptUploadedTitle')}</p>
+          <p className="text-xs text-marigold-dark">{t('refundReceiptUploadedDesc')}</p>
           {split.refund_receipt_url && <RefundReceiptDisplay path={split.refund_receipt_url} />}
           <button
             onClick={() => { onConfirmRefund(split.id); onBack() }}
             className="w-full py-3 bg-midnight hover:bg-midnight-dark text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md"
           >
-            <CheckCircle className="w-4 h-4" /> Confirm Refund Received
+            <CheckCircle className="w-4 h-4" /> {t('confirmRefundReceivedBtn')}
           </button>
         </div>
       )}
@@ -422,9 +424,9 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
       {split.status === 'delivery_dispute' && (
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
           <p className="text-sm font-bold text-orange-800 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4" /> Dispute Pending
+            <AlertTriangle className="w-4 h-4" /> {t('disputePendingTitle')}
           </p>
-          <p className="text-xs text-orange-700 mt-1">Your report has been sent to the supplier. They will respond shortly.</p>
+          <p className="text-xs text-orange-700 mt-1">{t('disputePendingDesc')}</p>
         </div>
       )}
 
@@ -432,9 +434,9 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
       {split.dispute_message && split.status !== 'delivery_dispute' && (
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-1.5">
           <p className="text-sm font-bold text-orange-800 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0" /> Dispute Resolution
+            <AlertTriangle className="w-4 h-4 flex-shrink-0" /> {t('disputeResolutionTitle')}
           </p>
-          <p className="text-xs text-orange-500 font-medium uppercase tracking-wide">Supplier's response:</p>
+          <p className="text-xs text-orange-500 font-medium uppercase tracking-wide">{t('suppliersResponseLabel')}</p>
           <p className="text-sm text-orange-700 italic">"{split.dispute_message}"</p>
         </div>
       )}
@@ -446,13 +448,13 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
               onClick={() => { onMarkDelivered(split.id); onBack() }}
               className="py-3.5 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-sm"
             >
-              Mark as Delivered
+              {t('markAsDeliveredBtn')}
             </button>
             <button
               onClick={() => onMarkNotDelivered(split)}
               className="py-3.5 bg-orange-50 text-orange-600 font-bold rounded-xl hover:bg-orange-100 transition-colors border border-orange-200 text-sm"
             >
-              I Didn't Receive It
+              {t('didntReceiveItBtn')}
             </button>
           </div>
         )}
@@ -461,20 +463,20 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
             onClick={() => setShowCancelModal(true)}
             className="w-full py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors"
           >
-            Cancel Order
+            {t('cancelOrderTitle')}
           </button>
         )}
         <button
           onClick={handleChatWithSupplier}
           className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-lionsmane transition-colors text-sm"
         >
-          <MessageSquare className="w-4 h-4 text-midnight" /> Chat with Supplier
+          <MessageSquare className="w-4 h-4 text-midnight" /> {t('chatWithSupplierBtn')}
         </button>
         <button
           onClick={() => generateInvoice(split.order, [split], profile)}
           className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-lionsmane transition-colors text-sm"
         >
-          <Download className="w-4 h-4" /> Download Invoice
+          <Download className="w-4 h-4" /> {t('downloadInvoice')}
         </button>
       </div>
 
@@ -483,7 +485,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
           onClick={() => setShowReportModal(true)}
           className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-red-500 transition-colors font-medium"
         >
-          <Flag className="w-4 h-4" /> Report this Order
+          <Flag className="w-4 h-4" /> {t('reportThisOrder')}
         </button>
       </div>
 
@@ -525,6 +527,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
 
 export default function OrdersPage() {
   const { user, profile } = useAuth()
+  const { t } = useLanguage()
   const [tab, setTab] = useState('ongoing')
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -641,22 +644,22 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">My Orders</h1>
+      <h1 className="text-2xl font-bold text-slate-900">{t('myOrders')}</h1>
 
       <div className="flex gap-4 border-b border-slate-200">
         {[
-          { id: 'ongoing', label: 'Ongoing Orders', count: ongoingSplits.length },
-          { id: 'completed', label: 'Completed Orders', count: completedSplits.length },
-        ].map(t => (
+          { id: 'ongoing', label: t('ongoingOrdersTab'), count: ongoingSplits.length },
+          { id: 'completed', label: t('completedOrdersTab'), count: completedSplits.length },
+        ].map(tab_ => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === t.id ? 'text-midnight border-b-2 border-midnight' : 'text-slate-400 hover:text-slate-600'}`}
+            key={tab_.id}
+            onClick={() => setTab(tab_.id)}
+            className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === tab_.id ? 'text-midnight border-b-2 border-midnight' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            {t.label}
-            {t.count > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === t.id ? 'bg-celeste text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
-                {t.count}
+            {tab_.label}
+            {tab_.count > 0 && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === tab_.id ? 'bg-celeste text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
+                {tab_.count}
               </span>
             )}
           </button>
@@ -674,7 +677,7 @@ export default function OrdersPage() {
           <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="w-8 h-8 text-slate-400" />
           </div>
-          <p className="text-slate-500 font-medium">No {tab} orders</p>
+          <p className="text-slate-500 font-medium">{t('noTabOrders')}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -697,20 +700,20 @@ export default function OrdersPage() {
               {/* Status notes */}
               {split.cancellation_reason && (
                 <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded-lg">
-                  {split.status === 'cancellation_requested' ? 'Cancellation pending: ' : `Cancelled by ${split.cancelled_by === 'supplier' ? 'supplier' : 'you'}: `}
-                  {split.cancellation_reason}
+                  {split.status === 'cancellation_requested' ? t('cancelledPendingLabel') : (split.cancelled_by === 'supplier' ? t('cancelledBySupplierLabel') : t('cancelledByYouLabel'))}
+                  {' '}{split.cancellation_reason}
                 </p>
               )}
               {split.status === 'delivery_dispute' && (
                 <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-                  Dispute pending — awaiting supplier response
+                  {t('disputePendingAwaitSupplier')}
                 </p>
               )}
               {split.dispute_message && split.status !== 'delivery_dispute' && (
                 <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-                  Dispute resolved: "{split.dispute_message}"
+                  {t('disputeResolvedLabel')} "{split.dispute_message}"
                 </p>
               )}
 
@@ -725,14 +728,14 @@ export default function OrdersPage() {
                     onClick={() => setSelectedOrder(split)}
                     className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 text-slate-700 text-sm font-semibold rounded-lg hover:bg-lionsmane transition-colors"
                   >
-                    View Details <ChevronRight className="w-4 h-4" />
+                    {t('viewDetails')} <ChevronRight className="w-4 h-4" />
                   </button>
                   {split.status === 'out_for_delivery' && (
                     <button
                       onClick={e => { e.stopPropagation(); markDelivered(split.id) }}
                       className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors"
                     >
-                      Mark Delivered
+                      {t('markDeliveredBtn')}
                     </button>
                   )}
                   {split.status === 'refund_uploaded' && (
@@ -740,7 +743,7 @@ export default function OrdersPage() {
                       onClick={e => { e.stopPropagation(); confirmRefund(split.id) }}
                       className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-midnight-dark transition-colors flex items-center gap-1"
                     >
-                      <CheckCircle className="w-3.5 h-3.5" /> Confirm Refund
+                      <CheckCircle className="w-3.5 h-3.5" /> {t('confirmRefundBtn')}
                     </button>
                   )}
                   {CANCELLABLE.includes(split.status) && (
@@ -748,7 +751,7 @@ export default function OrdersPage() {
                       onClick={e => { e.stopPropagation(); setCancelTarget(split) }}
                       className="px-3 py-1.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors"
                     >
-                      Cancel
+                      {t('cancel')}
                     </button>
                   )}
                 </div>

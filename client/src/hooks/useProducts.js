@@ -24,21 +24,25 @@ export function useProducts({ category, search, sortBy, userLat, userLng, city }
   async function fetchProducts() {
     setLoading(true)
     try {
+      // !inner forces an INNER JOIN so products without a matching verified+active
+      // supplier profile are excluded at the database level, preventing the
+      // client-side filter from wiping the whole result when the join returns null.
       let query = supabase
         .from('products')
-        .select('*, supplier:supplier_profiles(id, business_name, city, latitude, longitude, is_verified, is_active)')
+        .select('*, supplier:supplier_profiles!inner(id, business_name, city, latitude, longitude, is_verified, is_active)')
         .eq('is_active', true)
+        .eq('supplier_profiles.is_verified', true)
+        .eq('supplier_profiles.is_active', true)
 
       if (category && category !== 'All') query = query.eq('category', category)
       if (search) query = query.ilike('name', `%${search}%`)
-      if (city) query = query.eq('supplier.city', city)
 
       query = query.range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1)
 
       const { data, error: fetchError } = await query
       if (fetchError) throw fetchError
 
-      let result = (data || []).filter(p => p.supplier?.is_verified === true && p.supplier?.is_active === true)
+      let result = data || []
 
       if (sortBy === 'nearest' && userLat && userLng) {
         result = result.sort((a, b) => {

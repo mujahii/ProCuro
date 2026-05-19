@@ -133,17 +133,17 @@ export default function Navbar({ onMenuClick }) {
                   onClick={() => setAddrOpen(o => !o)}
                   className="flex flex-col items-start text-xs text-slate-500 hover:text-midnight"
                 >
-                  <span>Delivered to</span>
+                  <span>{t('deliveredTo')}</span>
                   <span className="font-bold text-slate-900 flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
                     {selectedAddress
                       ? `${selectedAddress.street || selectedAddress.label || selectedAddress.city}`
-                      : 'Select Address'}
+                      : t('selectAddress')}
                   </span>
                 </button>
                 {addrOpen && (
                   <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-slate-100 z-50 p-2">
-                    <p className="text-xs font-bold text-slate-400 uppercase mb-2 px-2">Saved Addresses</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase mb-2 px-2">{t('savedAddresses')}</p>
                     {addresses.map(addr => (
                       <button
                         key={addr.id}
@@ -162,12 +162,12 @@ export default function Navbar({ onMenuClick }) {
                         onClick={() => { setAddingAddr(true); detectGPS() }}
                         className="w-full text-left p-2 text-midnight text-sm font-semibold hover:bg-lionsmane rounded-md mt-1 flex items-center gap-1"
                       >
-                        <Plus className="w-3 h-3" /> Add New Address
+                        <Plus className="w-3 h-3" /> {t('addNewAddress')}
                       </button>
                     ) : (
                       <form onSubmit={handleSaveAddress} className="mt-2 p-2 bg-lionsmane rounded-lg space-y-2">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-slate-600">New Address</span>
+                          <span className="text-xs font-bold text-slate-600">{t('newAddress')}</span>
                           <button
                             type="button"
                             onClick={detectGPS}
@@ -175,19 +175,19 @@ export default function Navbar({ onMenuClick }) {
                             className="flex items-center gap-1 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
                           >
                             {gpsLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Navigation className="w-3 h-3" />}
-                            {gpsLoading ? 'Detecting...' : 'Use My Location'}
+                            {gpsLoading ? t('detecting') : t('useMyLocation')}
                           </button>
                         </div>
                         <input
                           type="text"
-                          placeholder="Label (e.g. Restaurant)"
+                          placeholder={t('labelFieldPlaceholder')}
                           value={addrForm.label}
                           onChange={e => setAddrForm(f => ({ ...f, label: e.target.value }))}
                           className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-herb"
                         />
                         <input
                           type="text"
-                          placeholder="Street *"
+                          placeholder={t('streetFieldPlaceholder')}
                           value={addrForm.street}
                           onChange={e => setAddrForm(f => ({ ...f, street: e.target.value }))}
                           className="w-full px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-herb"
@@ -196,14 +196,14 @@ export default function Navbar({ onMenuClick }) {
                         <div className="flex gap-1.5">
                           <input
                             type="text"
-                            placeholder="Postal"
+                            placeholder={t('postalFieldPlaceholder')}
                             value={addrForm.postal_code}
                             onChange={e => setAddrForm(f => ({ ...f, postal_code: e.target.value }))}
                             className="w-[72px] min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-herb"
                           />
                           <input
                             type="text"
-                            placeholder="City *"
+                            placeholder={t('cityFieldPlaceholder')}
                             value={addrForm.city}
                             onChange={e => setAddrForm(f => ({ ...f, city: e.target.value }))}
                             className="flex-1 min-w-0 px-2 py-1.5 text-xs border border-slate-200 rounded-md outline-none focus:ring-1 focus:ring-herb"
@@ -216,7 +216,7 @@ export default function Navbar({ onMenuClick }) {
                             onClick={() => { setAddingAddr(false); setAddrForm({ label: '', street: '', postal_code: '', city: '' }) }}
                             className="flex-1 py-1.5 text-xs border border-slate-200 rounded-md text-slate-600 hover:bg-slate-100"
                           >
-                            Cancel
+                            {t('cancel')}
                           </button>
                           <button
                             type="submit"
@@ -224,7 +224,7 @@ export default function Navbar({ onMenuClick }) {
                             className="flex-1 py-1.5 text-xs bg-midnight text-white rounded-md hover:bg-midnight-dark flex items-center justify-center gap-1"
                           >
                             {savingAddr ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                            Save
+                            {t('save')}
                           </button>
                         </div>
                       </form>

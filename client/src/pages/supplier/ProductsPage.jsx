@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import ProductForm from '../../components/supplier/ProductForm'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
@@ -18,6 +19,7 @@ const DELIVERY_TIERS = [
 ]
 
 function DeliveryFeeTable() {
+  const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   return (
     <div className="mb-6 border border-celeste rounded-xl overflow-hidden">
@@ -26,7 +28,7 @@ function DeliveryFeeTable() {
         className="w-full flex items-center justify-between px-4 py-3 bg-lionsmane hover:bg-celeste transition-colors text-left"
       >
         <span className="flex items-center gap-2 text-sm font-semibold text-midnight">
-          <Truck className="w-4 h-4" /> Delivery Fee Structure
+          <Truck className="w-4 h-4" /> {t('deliveryFeeStructure')}
         </span>
         {open ? <ChevronUp className="w-4 h-4 text-midnight" /> : <ChevronDown className="w-4 h-4 text-midnight" />}
       </button>
@@ -35,8 +37,8 @@ function DeliveryFeeTable() {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-lionsmane border-b border-gray-100">
-                <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Distance</th>
-                <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500 uppercase">Delivery Fee</th>
+                <th className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase">{t('distanceLabel')}</th>
+                <th className="text-right px-4 py-2 text-xs font-semibold text-gray-500 uppercase">{t('deliveryFee')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -59,6 +61,7 @@ function DeliveryFeeTable() {
 
 export default function SupplierProductsPage() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [products, setProducts] = useState([])
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -109,9 +112,9 @@ export default function SupplierProductsPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black text-gray-900">Products</h1>
+        <h1 className="text-2xl font-black text-gray-900">{t('products')}</h1>
         <button onClick={() => { setEditProduct(null); setShowForm(true) }} className="btn-primary flex items-center gap-2 text-sm">
-          <Plus className="w-4 h-4" /> Add Product
+          <Plus className="w-4 h-4" /> {t('addProductBtn')}
         </button>
       </div>
 
@@ -119,7 +122,7 @@ export default function SupplierProductsPage() {
         <ModalPortal><div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl my-6 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h2 className="text-xl font-bold text-slate-900">{editProduct ? 'Edit Product' : 'Add New Product'}</h2>
+              <h2 className="text-xl font-bold text-slate-900">{editProduct ? t('editProductBtn') : t('addNewProductBtn')}</h2>
               <button
                 onClick={() => { setShowForm(false); setEditProduct(null) }}
                 className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-500"
@@ -151,9 +154,9 @@ export default function SupplierProductsPage() {
       {products.length === 0 ? (
         <div className="text-center py-16">
           <p className="text-4xl mb-3">📦</p>
-          <p className="text-gray-500 font-medium">No products yet</p>
+          <p className="text-gray-500 font-medium">{t('noProductsYetSupplier')}</p>
           <button onClick={() => setShowForm(true)} className="btn-primary mt-4 flex items-center gap-2 mx-auto">
-            <Plus className="w-4 h-4" /> Add your first product
+            <Plus className="w-4 h-4" /> {t('addFirstProduct')}
           </button>
         </div>
       ) : (
@@ -161,10 +164,10 @@ export default function SupplierProductsPage() {
           <table className="w-full">
             <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Category</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Price</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('productLabel')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">{t('categoryLabel')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('priceLabel')}</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('statusLabel')}</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>

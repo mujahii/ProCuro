@@ -7,17 +7,29 @@ import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import { useLanguage } from '../../context/LanguageContext'
 
-const SORT_OPTIONS = [
-  { value: '', label: 'Recommended' },
-  { value: 'name_asc', label: 'Name A–Z' },
-  { value: 'rating_desc', label: 'Top Rated' },
+const SORT_OPTION_KEYS = [
+  { value: '', key: 'sortRecommended' },
+  { value: 'name_asc', key: 'sortNameAZ' },
+  { value: 'rating_desc', key: 'sortTopRated' },
 ]
 
-const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Vegetables', 'Fruits', 'Bakery', 'Beverages', 'Spices', 'Other']
+const CATEGORY_KEYS = [
+  { value: 'Meat', key: 'catMeat' },
+  { value: 'Poultry', key: 'catPoultry' },
+  { value: 'Seafood', key: 'catSeafood' },
+  { value: 'Dairy', key: 'catDairy' },
+  { value: 'Vegetables', key: 'catVegetables' },
+  { value: 'Fruits', key: 'catFruits' },
+  { value: 'Bakery', key: 'catBakery' },
+  { value: 'Beverages', key: 'catBeverages' },
+  { value: 'Spices', key: 'catSpices' },
+  { value: 'Other', key: 'catOther' },
+]
 
 export default function SupplierListPage() {
   const navigate = useNavigate()
   const { t } = useLanguage()
+  const SORT_OPTIONS = SORT_OPTION_KEYS.map(o => ({ value: o.value, label: t(o.key) }))
   const [suppliers, setSuppliers] = useState([])
   const [search, setSearch] = useState('')
   const [activeCategory, setActiveCategory] = useState(null)
@@ -129,7 +141,7 @@ export default function SupplierListPage() {
               className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy && sortBy !== 'nearest' ? 'bg-midnight text-white border-midnight' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
             >
               <Filter className="w-4 h-4" />
-              <span className="hidden sm:inline">{sortBy && sortBy !== 'nearest' ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : t('sortLabel')}</span>
+              <span className="hidden sm:inline">{sortBy && sortBy !== 'nearest' ? t(SORT_OPTION_KEYS.find(o => o.value === sortBy)?.key || 'sortRecommended') : t('sortLabel')}</span>
               <ChevronDown className="w-3 h-3" />
             </button>
             {filterOpen && (
@@ -150,17 +162,17 @@ export default function SupplierListPage() {
 
         {/* Category filter chips */}
         <div className="flex flex-wrap gap-2 mb-6">
-          {CATEGORIES.map(cat => (
+          {CATEGORY_KEYS.map(({ value, key }) => (
             <button
-              key={cat}
-              onClick={() => setActiveCategory(activeCategory === cat ? null : cat)}
+              key={value}
+              onClick={() => setActiveCategory(activeCategory === value ? null : value)}
               className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                activeCategory === cat
+                activeCategory === value
                   ? 'bg-midnight text-white'
                   : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
               }`}
             >
-              {cat}
+              {t(key)}
             </button>
           ))}
         </div>
@@ -171,7 +183,7 @@ export default function SupplierListPage() {
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-slate-400">No suppliers found{search ? ` for "${search}"` : ''}{activeCategory ? ` in ${activeCategory}` : ''}</p>
+            <p className="text-slate-400">{t('noSuppliersFound')}{search ? ` for "${search}"` : ''}{activeCategory ? ` in ${t(CATEGORY_KEYS.find(c => c.value === activeCategory)?.key || activeCategory)}` : ''}</p>
             {(search || activeCategory) && (
               <button
                 onClick={() => { setSearch(''); setActiveCategory(null) }}

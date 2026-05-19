@@ -117,6 +117,8 @@ function timeAgo(iso) {
   return `${days}d ago`
 }
 
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000
+
 export default function AnalyticsSummary({ context }) {
   const [summary, setSummary] = useState('')
   const [generatedAt, setGeneratedAt] = useState(null)
@@ -124,6 +126,12 @@ export default function AnalyticsSummary({ context }) {
   const [fallback, setFallback] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  // True when the last generation is still fresh (< 24h). While true the
+  // refresh button is dimmed and non-interactive.
+  const isWithin24h = generatedAt
+    ? Date.now() - new Date(generatedAt).getTime() < CACHE_TTL_MS
+    : false
 
   const hasGenerated = useRef(false)
   useEffect(() => {
@@ -168,12 +176,12 @@ export default function AnalyticsSummary({ context }) {
           </div>
         </div>
         <button
-          onClick={() => generate({ force: true })}
-          disabled={loading}
-          className="p-2 hover:bg-white/10 rounded-xl transition-colors group"
-          title="Force-regenerate (uses your Gemini quota)"
+          onClick={() => !isWithin24h && generate({ force: true })}
+          disabled={loading || isWithin24h}
+          className={`p-2 rounded-xl transition-colors group ${isWithin24h ? 'cursor-not-allowed opacity-30' : 'hover:bg-white/10'}`}
+          title={isWithin24h ? 'Available again in 24h' : 'Force-regenerate (uses your Gemini quota)'}
         >
-          <RefreshCw className={`w-4 h-4 text-white/70 group-hover:text-white ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 text-white/70 ${loading ? 'animate-spin' : ''} ${!isWithin24h ? 'group-hover:text-white' : ''}`} />
         </button>
       </div>
 

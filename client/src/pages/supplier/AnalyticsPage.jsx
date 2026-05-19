@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import AnalyticsSummary from '../../components/ai/AnalyticsSummary'
 import { SkeletonCard } from '../../components/ui/Skeleton'
@@ -25,6 +26,7 @@ function StatCard({ label, value, icon: Icon, color, bg }) {
 
 export default function SupplierAnalyticsPage() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [range, setRange] = useState(() => rangeFromKey('month'))
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -166,7 +168,7 @@ export default function SupplierAnalyticsPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-black text-gray-900">Analytics</h1>
+        <h1 className="text-2xl font-black text-gray-900">{t('analytics')}</h1>
         <DateRangeFilter value={range} onChange={setRange} />
       </div>
 
@@ -178,19 +180,19 @@ export default function SupplierAnalyticsPage() {
         <>
           {/* KPI cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <StatCard label="Revenue" value={`€${stats.revenue.toFixed(2)}`} icon={Euro} color="text-midnight-dark" bg="bg-celeste" />
-            <StatCard label="Orders" value={stats.orders} icon={ShoppingBag} color="text-blue-600" bg="bg-blue-100" />
-            <StatCard label="Best Product" value={stats.bestProduct} icon={TrendingUp} color="text-marigold-dark" bg="bg-marigold-light" />
-            <StatCard label="Active Products" value={stats.activeProducts} icon={Package} color="text-purple-600" bg="bg-purple-100" />
+            <StatCard label={t('revenueStatLabel')} value={`€${stats.revenue.toFixed(2)}`} icon={Euro} color="text-midnight-dark" bg="bg-celeste" />
+            <StatCard label={t('ordersStatLabel')} value={stats.orders} icon={ShoppingBag} color="text-blue-600" bg="bg-blue-100" />
+            <StatCard label={t('bestProductStatLabel')} value={stats.bestProduct} icon={TrendingUp} color="text-marigold-dark" bg="bg-marigold-light" />
+            <StatCard label={t('activeProductsStatLabel')} value={stats.activeProducts} icon={Package} color="text-purple-600" bg="bg-purple-100" />
           </div>
 
           {/* Row 1: Line chart + Bar chart */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             {/* Revenue trend */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-gray-900 mb-4">Revenue Trend</h3>
+              <h3 className="font-bold text-gray-900 mb-4">{t('revenueTrend')}</h3>
               {revenueByMonth.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No data for this period</div>
+                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <AreaChart data={revenueByMonth} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
@@ -212,9 +214,9 @@ export default function SupplierAnalyticsPage() {
 
             {/* Revenue per product bar */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-gray-900 mb-4">Revenue by Product</h3>
+              <h3 className="font-bold text-gray-900 mb-4">{t('revenueByProduct')}</h3>
               {revenueByProduct.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No data for this period</div>
+                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={revenueByProduct} layout="vertical" margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
@@ -233,9 +235,9 @@ export default function SupplierAnalyticsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             {/* Donut - best selling by % */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-gray-900 mb-4">Sales by Product (%)</h3>
+              <h3 className="font-bold text-gray-900 mb-4">{t('salesByProductPct')}</h3>
               {salesByProduct.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No data for this period</div>
+                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
               ) : (
                 <div className="flex items-center gap-4">
                   <ResponsiveContainer width={160} height={160}>
@@ -263,9 +265,9 @@ export default function SupplierAnalyticsPage() {
 
             {/* Top clients */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-gray-900 mb-4">Top Restaurant Clients</h3>
+              <h3 className="font-bold text-gray-900 mb-4">{t('topRestaurantClients')}</h3>
               {topClients.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No data for this period</div>
+                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
               ) : (
                 <ResponsiveContainer width="100%" height={200}>
                   <BarChart data={topClients} margin={{ top: 0, right: 10, left: -20, bottom: 0 }}>

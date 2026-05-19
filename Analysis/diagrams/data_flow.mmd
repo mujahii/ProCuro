@@ -1,0 +1,21 @@
+sequenceDiagram
+  participant FE as Frontend (Vite/React)
+  participant API as Backend (Express / Netlify Functions)
+  participant AI as Gemini API
+  participant DB as Supabase (Postgres)
+  participant CACHE as ai_insights_cache
+
+  FE->>API: POST /api/ai/chat or /.netlify/functions/ai-chat
+  API->>GEMINI: Request to gemini-2.5-flash (with fallback chain)
+  alt Cache hit
+    API->>CACHE: Read cached summary (24h)
+    CACHE-->>API: Return cached summary
+    API-->>FE: 200 OK (cached)
+  else Cache miss
+    AI->>API: Gemini response
+    API->>CACHE: Write summary (user_id+scope)
+    API-->>FE: 200 OK (fresh)
+  end
+  FE->>DB: PostgREST queries (orders/products) for charts
+  DB-->>API: Query results
+  API-->>FE: Aggregated data + AI insights

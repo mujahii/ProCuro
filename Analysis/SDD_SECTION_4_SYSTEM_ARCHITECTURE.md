@@ -899,6 +899,145 @@ LanguageContext (if used)
 
 ---
 
+## 4.8 Analytics Dashboard & Data Visualization
+
+### 4.8.1 Admin Dashboard Overview (Rebuilt May 19, 2026)
+
+The admin dashboard provides real-time insights across three primary dimensions: **revenue, user growth, and geographic distribution**. As of commit a38dd9c, the dashboard supports **dynamic date-range filtering** and includes three new chart types.
+
+**Dashboard Components:**
+
+| Component | Type | Data Source | Purpose |
+|---|---|---|---|
+| Date Range Filter | Control | DateRangeFilter component | Filter all charts by custom date range |
+| GMV Chart | Line Chart | SUM(order_splits.subtotal) | Daily gross merchandise value trend |
+| User Growth Chart | Bar Chart | COUNT(users) by date | Cumulative user registrations over time |
+| Payment Type Chart | Donut Chart | COUNT(order_splits) by payment_method | Payment method distribution (COD vs bank transfer) |
+| City Comparison Radar Chart | Radar | COUNT(users) by city | City-wise user concentration |
+| Germany Dot Map | SVG Overlay | Aggregated user locations | Geographic distribution heatmap |
+| AI Insights Summary | Text + Markdown | Gemini API (cached 24h) | Auto-generated business summary |
+
+**Diagrams:**
+
+- Admin Dashboard layout: [Analysis/diagrams/admin_dashboard.mmd](Analysis/diagrams/admin_dashboard.mmd)
+- Gemini fallback chain: [Analysis/diagrams/gemini_fallback.mmd](Analysis/diagrams/gemini_fallback.mmd)
+- Order / Analytics Data Flow: [Analysis/diagrams/data_flow.mmd](Analysis/diagrams/data_flow.mmd)
+
+**Embedded Diagram: Admin Dashboard Layout**
+
+```mermaid
+flowchart TB
+  subgraph Dashboard["Admin Dashboard Layout"]
+    direction TB
+    A["📅 Date Range<br/>Filter"]
+    B["📈 GMV Chart<br/>(Line)"]
+    C["👥 User Growth<br/>Chart (Bar)"]
+    D["💳 Payment Type<br/>Donut Chart"]
+    E["🗺️ City Comparison<br/>Radar Chart"]
+    F["🇩🇪 Germany Dot Map<br/>(SVG)"]
+    G["✨ AI Insights<br/>Summary (Gemini)"]
+  end
+  A --> B
+  A --> C
+  A --> D
+  A --> E
+  A --> F
+  B --> G
+  C --> G
+  D --> G
+  E --> G
+  F --> G
+  
+  classDef filterStyle fill:#fff3cd,stroke:#ff9800,stroke-width:2px
+  classDef chartStyle fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
+  classDef aiStyle fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+  
+  class A filterStyle
+  class B,C,D,E,F chartStyle
+  class G aiStyle
+```
+
+**Embedded Diagram: Gemini Fallback Chain**
+
+```mermaid
+graph TD
+  A["🔄 Client Request<br/>Chat/Analytics"] 
+  G["⏱️ Rate Limiter<br/>20 req/60s"]
+  B["1️⃣ gemini-2.5-flash<br/>PRIMARY"]
+  C["2️⃣ gemini-2.5-flash-lite<br/>FALLBACK 1"]
+  D["3️⃣ gemini-flash-latest<br/>FALLBACK 2"]
+  E["4️⃣ gemini-2.0-flash-lite<br/>FALLBACK 3"]
+  F["💾 Cache:<br/>ai_insights_cache<br/>24h TTL"]
+  
+  A --> G
+  G --> B
+  B --> F
+  B -->|"❌ Fail"| C
+  C --> F
+  C -->|"❌ Fail"| D
+  D --> F
+  D -->|"❌ Fail"| E
+  E --> F
+  
+  classDef primary fill:#90ee90,stroke:#228b22,stroke-width:2px
+  classDef fallback fill:#87ceeb,stroke:#4682b4,stroke-width:2px
+  classDef cache fill:#ffa500,stroke:#ff8c00,stroke-width:2px
+  classDef control fill:#dda0dd,stroke:#8b008b,stroke-width:2px
+  
+  class B primary
+  class C,D,E fallback
+  class F cache
+  class A,G control
+```
+
+**Embedded Diagram: Order & Analytics Data Flow**
+
+```mermaid
+sequenceDiagram
+  participant FE as Frontend<br/>(React/Vite)
+  participant API as Backend<br/>(Express/Netlify)
+  participant GEMINI as Gemini API
+  participant DB as Supabase<br/>(PostgreSQL)
+  participant CACHE as ai_insights_cache
+  
+  FE->>API: POST /api/ai/chat<br/>(JWT + prompt)
+  activate API
+  
+  API->>API: Verify JWT<br/>Check rate limit
+  
+  alt Cache Hit (< 24h)
+    API->>CACHE: SELECT * WHERE user_id + scope
+    CACHE-->>API: Return cached summary
+    API-->>FE: 200 OK (CACHED)
+  else Cache Miss
+    API->>GEMINI: POST /generateContent<br/>gemini-2.5-flash (primary)
+    activate GEMINI
+    alt Primary Model Succeeds
+      GEMINI-->>API: ✅ Response
+    else Primary Model Fails
+      API->>GEMINI: Fallback: gemini-2.5-flash-lite
+      GEMINI-->>API: ✅ Response
+    end
+    deactivate GEMINI
+    
+    API->>CACHE: INSERT/UPDATE<br/>(user_id, scope, summary, generated_at)
+    CACHE-->>API: ✅ Cached
+    API-->>FE: 200 OK (FRESH)
+  end
+  
+  deactivate API
+  
+  FE->>DB: GET /rest/v1/orders<br/>+ /rest/v1/order_splits<br/>(JWT)
+  activate DB
+  DB-->>FE: JSON array (RLS filtered)
+  deactivate DB
+  
+  FE->>FE: Render charts<br/>(Recharts)
+  FE->>FE: Display AI summary<br/>+ analytics
+```
+
+---
+
 ## Diagram Recommendations
 
 ### Diagrams to Generate
@@ -926,6 +1065,137 @@ LanguageContext (if used)
 
 6. **Deployment Pipeline** (Section 4.2.5)
    - Git → Netlify → CDN/Serverless → Supabase
+
+---
+
+
+---
+
+## Appendix A: Row-Level Security (RLS) Policy Reference
+
+### Policy Architecture Overview
+
+ProCuro implements **three-tier authorization** at the database level using Row-Level Security (RLS):
+
+1. **Role-Based Access Control (RBAC):** restaurant_owner, supplier, admin
+2. **Ownership Verification:** Via `get_my_role()` SECURITY DEFINER function
+3. **Conditional Logic:** is_verified, is_active, is_banned flags
+
+**Key Security Function:**
+
+```sql
+CREATE OR REPLACE FUNCTION get_my_role() 
+RETURNS TEXT AS $$
+  SELECT COALESCE(role, 'anonymous')
+  FROM public.users
+  WHERE id = auth.uid()
+  LIMIT 1;
+$$ LANGUAGE SQL STABLE SECURITY DEFINER;
+```
+
+### RLS Validation Checklist
+
+- ✅ All 21 tables have RLS enabled
+- ✅ 40+ policies cover SELECT, INSERT, UPDATE, DELETE operations
+- ✅ Role-based access (restaurant_owner, supplier, admin)
+- ✅ Ownership verification via get_my_role() function
+- ✅ Nested subqueries for deep authorization (e.g., order_items via order_splits)
+- ✅ Admin override on sensitive tables
+- ✅ Service-role key used for profile creation (bypasses RLS)
+
+---
+
+## Appendix B: Proposed Audit Logging Architecture
+
+### Current State
+
+ProCuro tracks user deletion via `deleted_accounts` table but **lacks comprehensive audit logging** for all database changes. This appendix proposes a schema and implementation strategy.
+
+### Recommended audit_log Schema
+
+```sql
+CREATE TABLE audit_log (
+  id BIGSERIAL PRIMARY KEY,
+  table_name TEXT NOT NULL,
+  record_id UUID NOT NULL,
+  operation TEXT NOT NULL CHECK (operation IN ('INSERT', 'UPDATE', 'DELETE')),
+  old_values JSONB,
+  new_values JSONB,
+  changed_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  changed_at TIMESTAMPTZ DEFAULT now(),
+  ip_address INET,
+  user_agent TEXT
+);
+
+CREATE INDEX idx_audit_log_table_record ON audit_log(table_name, record_id);
+CREATE INDEX idx_audit_log_changed_at ON audit_log(changed_at DESC);
+```
+
+### Retention & Compliance
+
+- **Retention Period:** 2 years (730 days)
+- **Cleanup Job:** Weekly batch delete of old entries
+- **Access:** Admins only via RLS policy
+
+---
+
+## Appendix C: Deletion Semantics & Data Lifecycle
+
+### Current Deletion Strategy
+
+ProCuro uses **hard deletion with selective audit trails**, NOT soft deletes:
+
+| Scenario | Deletion Type | Rationale |
+|---|---|---|
+| **User deletes account** | Hard delete (CASCADE) + audit in `deleted_accounts` | GDPR right-to-be-forgotten |
+| **User deletes address** | Hard delete (CASCADE) | Safe; no business impact |
+| **Admin deletes product** | Hard delete (CASCADE) | Supplier can re-add |
+| **Admin deletes order** | Hard delete RESTRICTED | 🔒 Preserve order history |
+| **Order status → cancelled** | Status update (not deletion) | Keep record for accounting |
+
+### Key Foreign Key Constraints
+
+| FK Relationship | Delete Rule | Reason |
+|---|---|---|
+| orders → users (owner) | RESTRICT | Preserve order history |
+| order_splits → supplier_profiles | RESTRICT | Preserve supplier-order audit |
+| order_items → products | RESTRICT | Preserve price snapshot |
+| addresses → users | CASCADE | Safe to delete with user |
+| products → supplier_profiles | CASCADE | Safe to delete with supplier |
+| conversations → users | CASCADE | Safe to delete with user |
+
+**Migration Note:** As of migration 016 (`drop_conversations_soft_delete_columns.sql`), soft-delete columns have been removed from the `conversations` table. All data deletion is now hard-delete only, with audit trail via `deleted_accounts` table for user deletions.
+
+---
+
+## Appendix D: AI Analytics Service Architecture
+
+### Gemini Model Selection Strategy
+
+**Primary Model:** `gemini-2.5-flash` (recommended for analytics summaries)
+- **Cost:** Mid-tier (between flash-lite and pro)
+- **Speed:** ~1-2 seconds per request
+- **Quality:** High (suitable for business insights)
+- **Quota:** 1.5M tokens/day (protected via 24h cache)
+
+**Fallback Chain (if primary fails):**
+
+1. **Fallback 1:** `gemini-2.5-flash-lite` (lower cost, faster)
+2. **Fallback 2:** `gemini-flash-latest` (stable alternative)
+3. **Fallback 3:** `gemini-2.0-flash-lite` (legacy fallback)
+
+### Cache Strategy
+
+- **TTL:** 24 hours per user per scope (e.g., "analytics", "chat")
+- **Key:** `{user_id}_{scope}`
+- **Storage:** `ai_insights_cache` table in Supabase
+- **Bypass:** Explicit refresh button clears cache and regenerates
+
+### Rate Limiting
+
+- **Limit:** 20 requests per 60 seconds per user (Express middleware)
+- **Response:** HTTP 429 if exceeded
+- **Rationale:** Prevent quota exhaustion; encourage cache usage
 
 ---
 

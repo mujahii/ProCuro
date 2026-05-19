@@ -283,7 +283,7 @@ export default function CartPage() {
           <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-red-800">Account suspended</p>
-            <p className="text-sm text-red-700 mt-0.5">Your account has been suspended. You cannot place new orders. Contact <span className="font-semibold">procuro@admin.com</span> to appeal.</p>
+            <p className="text-sm text-red-700 mt-0.5">Your account has been suspended. You cannot place new orders. To appeal, please <a href="/owner/chat" className="font-semibold underline underline-offset-2 hover:text-red-900 inline-flex items-center gap-0.5">chat with the admin →</a></p>
           </div>
         </div>
       )}

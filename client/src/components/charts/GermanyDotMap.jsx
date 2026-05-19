@@ -1,16 +1,43 @@
 import { useState } from 'react'
 
-// Simplified Germany silhouette — single SVG path traced from a low-resolution
-// outline. It does not need to be cartographically perfect; the dots placed by
-// lat/lng are what tell the story.
-const GERMANY_PATH = `
-M118,12 L132,16 L138,28 L148,28 L160,18 L170,22 L182,34 L196,30
-L208,40 L222,38 L228,52 L242,60 L246,76 L260,82 L272,98
-L280,118 L288,138 L284,160 L268,180 L256,196 L248,220 L256,240
-L246,258 L228,268 L210,276 L196,290 L186,304 L172,308 L156,300
-L142,294 L130,288 L118,272 L108,256 L96,238 L86,218 L74,200
-L62,182 L52,164 L46,144 L52,124 L62,108 L70,90 L80,76 L94,62
-L102,48 L112,34 Z`
+// Germany border traced from real lat/lng waypoints projected into the same
+// coordinate space as project() below.
+// x = (lng - 5.5) / 9.7 * 340,  y = 340 - (lat - 47.0) / 8.1 * 340
+const GERMANY_PATH = [
+  // Dutch/German coast border (starting point)
+  [53,70],
+  // North Sea coast going east
+  [60,67],[78,60],[113,52],[140,48],
+  // West coast of Schleswig-Holstein going north
+  [124,26],
+  // Danish land border (west end → Flensburg)
+  [108,12],[138,13],
+  // South into Schleswig-Holstein peninsula
+  [142,25],[162,33],
+  // Baltic coast east (Lübeck → Wismar → Rostock → Stralsund → Wolgast)
+  [188,43],[208,42],[231,39],[269,28],[290,51],
+  // Polish border — Oder river going south
+  [304,58],[313,78],[317,116],
+  // Cottbus / Görlitz eastward bulge
+  [310,140],[332,166],[326,176],
+  // Czech / Erzgebirge border going west
+  [281,193],[235,205],
+  // Bavarian Forest south to Passau
+  [244,238],[269,251],[280,274],
+  // Alpine border west (Berchtesgaden → Garmisch → Lindau)
+  [262,314],[197,319],[147,317],
+  // Swiss border / Rhine at Basel
+  [73,317],
+  // Alsace / Rhine going north to Palatinate Forest
+  [65,309],[82,274],[95,257],
+  // Saarbrücken → Trier → Luxembourg border
+  [52,246],[40,225],[22,209],
+  // Belgian border → Aachen corner
+  [17,182],[13,170],
+  // Dutch border south → north back to coast
+  [21,137],[52,109],[53,70],
+].map(([x, y]) => `${x},${y}`).join(' L ')
+  .replace(/^/, 'M ') + ' Z'
 
 // Project (lng, lat) → (x, y) inside the SVG viewBox (340x340).
 // Germany's bounding box: lng ~5.8–15.05, lat ~47.27–55.06.

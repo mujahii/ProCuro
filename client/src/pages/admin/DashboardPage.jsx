@@ -11,16 +11,24 @@ import DateRangeFilter, { rangeFromKey } from '../../components/ui/DateRangeFilt
 import { SkeletonCard } from '../../components/ui/Skeleton'
 import { Users, ShoppingBag, Award, Euro, Package } from 'lucide-react'
 
-function bucketKeyFor(date, range) {
-  const span = range?.from && range?.to
+function rangeSpan(range) {
+  return range?.from && range?.to
     ? (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24)
     : 365
-  // For ranges shorter than ~60 days, bucket by day so the chart actually
-  // shows movement. Otherwise group by month.
+}
+
+// Returns { sortKey (ISO, lexicographically sortable), label (display string) }
+function bucketDataFor(date, span) {
   if (span <= 60) {
-    return date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' })
+    return {
+      sortKey: date.toISOString().slice(0, 10),
+      label: date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }),
+    }
   }
-  return date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' })
+  return {
+    sortKey: date.toISOString().slice(0, 7),
+    label: date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }),
+  }
 }
 
 export default function AdminDashboardPage() {
@@ -71,13 +79,19 @@ export default function AdminDashboardPage() {
     const totalRevenue = allSplits.filter(s => s.status === 'delivered').reduce((sum, s) => sum + Number(s.subtotal), 0)
     setStats({ totalUsers, totalSuppliers, totalOwners, pendingCerts, totalOrders, totalRevenue })
 
-    // GMV trend — use the day/month bucketing helper so short ranges have data
+    const span = rangeSpan(range)
+
+    // GMV trend — sortable ISO key so the chart always appears in chronological order
     const bucketMap = {}
+    const labelMap = {}
     allSplits.forEach(sp => {
-      const key = bucketKeyFor(new Date(sp.created_at), range)
-      bucketMap[key] = (bucketMap[key] || 0) + Number(sp.subtotal)
+      const { sortKey, label } = bucketDataFor(new Date(sp.created_at), span)
+      bucketMap[sortKey] = (bucketMap[sortKey] || 0) + Number(sp.subtotal)
+      labelMap[sortKey] = label
     })
-    setRevenueSeries(Object.entries(bucketMap).map(([month, revenue]) => ({ month, revenue })))
+    setRevenueSeries(
+      Object.keys(bucketMap).sort().map(k => ({ month: labelMap[k], revenue: bucketMap[k] }))
+    )
 
     const statusMap = {}
     allSplits.forEach(sp => { statusMap[sp.status] = (statusMap[sp.status] || 0) + 1 })
@@ -93,24 +107,26 @@ export default function AdminDashboardPage() {
     })
     setPaymentSplit(Object.entries(payMap).map(([method, v]) => ({ method, ...v })))
 
-    // User growth — filter by current range, group by month, separate roles
+    // User growth — filter by current range, bucket by day/month, separate roles
     const growthMap = {}
+    const growthLabelMap = {}
     ;(usersRows || []).forEach(u => {
       const created = new Date(u.created_at)
       if (range.from && created < range.from) return
       if (range.to && created > range.to) return
-      const key = bucketKeyFor(created, range)
-      if (!growthMap[key]) growthMap[key] = { month: key, owners: 0, suppliers: 0 }
-      if (u.role === 'supplier') growthMap[key].suppliers += 1
-      else if (u.role === 'restaurant_owner') growthMap[key].owners += 1
+      const { sortKey, label } = bucketDataFor(created, span)
+      if (!growthMap[sortKey]) growthMap[sortKey] = { owners: 0, suppliers: 0 }
+      growthLabelMap[sortKey] = label
+      if (u.role === 'supplier') growthMap[sortKey].suppliers += 1
+      else if (u.role === 'restaurant_owner') growthMap[sortKey].owners += 1
     })
-    // Convert to cumulative so the line trends upward like growth charts do
-    const growthSorted = Object.values(growthMap)
+    // Sort chronologically then cumulate so the lines always trend upward
+    const growthSorted = Object.keys(growthMap).sort()
     let cumOwners = 0, cumSuppliers = 0
-    const cumulative = growthSorted.map(g => {
-      cumOwners += g.owners
-      cumSuppliers += g.suppliers
-      return { month: g.month, owners: cumOwners, suppliers: cumSuppliers }
+    const cumulative = growthSorted.map(k => {
+      cumOwners += growthMap[k].owners
+      cumSuppliers += growthMap[k].suppliers
+      return { month: growthLabelMap[k], owners: cumOwners, suppliers: cumSuppliers }
     })
     setUserGrowth(cumulative)
 

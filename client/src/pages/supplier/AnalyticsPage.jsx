@@ -80,13 +80,34 @@ export default function SupplierAnalyticsPage() {
     const revenue = splits.filter(s => s.status === 'delivered').reduce((sum, s) => sum + Number(s.subtotal), 0)
     const orders = splits.length
 
-    // Monthly revenue trend
-    const monthMap = {}
+    const span = range?.from && range?.to
+      ? (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24)
+      : 365
+
+    function bucketDataFor(date) {
+      if (span <= 60) {
+        return {
+          sortKey: date.toISOString().slice(0, 10),
+          label: date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }),
+        }
+      }
+      return {
+        sortKey: date.toISOString().slice(0, 7),
+        label: date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }),
+      }
+    }
+
+    // Revenue trend — sorted chronologically
+    const bucketMap = {}
+    const labelMap = {}
     splits.forEach(s => {
-      const key = new Date(s.created_at).toLocaleDateString('de-DE', { month: 'short', year: range.key === 'year' ? '2-digit' : undefined })
-      monthMap[key] = (monthMap[key] || 0) + Number(s.subtotal)
+      const { sortKey, label } = bucketDataFor(new Date(s.created_at))
+      bucketMap[sortKey] = (bucketMap[sortKey] || 0) + Number(s.subtotal)
+      labelMap[sortKey] = label
     })
-    setRevenueByMonth(Object.entries(monthMap).map(([month, revenue]) => ({ month, revenue })))
+    setRevenueByMonth(
+      Object.keys(bucketMap).sort().map(k => ({ month: labelMap[k], revenue: bucketMap[k] }))
+    )
 
     // Revenue per product
     const prodRevMap = {}
@@ -104,17 +125,29 @@ export default function SupplierAnalyticsPage() {
       value: total > 0 ? Math.round((revenue / total) * 100) : 0,
     })))
 
-    // Top restaurant clients by order volume
+    // Top restaurant clients by order volume — resolve to real restaurant names
     const clientMap = {}
     splits.forEach(s => {
-      const key = s.restaurant_owner_id || 'Unknown'
+      const key = s.restaurant_owner_id || 'unknown'
       clientMap[key] = (clientMap[key] || 0) + 1
     })
+    const ownerIds = Object.keys(clientMap).filter(id => id !== 'unknown')
+    let nameMap = {}
+    if (ownerIds.length > 0) {
+      const { data: ownerProfiles } = await supabase
+        .from('owner_profiles')
+        .select('user_id, restaurant_name')
+        .in('user_id', ownerIds)
+      ;(ownerProfiles || []).forEach(p => { nameMap[p.user_id] = p.restaurant_name })
+    }
     setTopClients(
       Object.entries(clientMap)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
-        .map(([id, orders]) => ({ name: `Client ${id.slice(0, 6)}`, orders }))
+        .map(([id, orders]) => ({
+          name: nameMap[id] || (id === 'unknown' ? 'Unknown' : `Client ${id.slice(0, 6)}`),
+          orders,
+        }))
     )
 
     const bestProduct = prodRevEntries[0]?.[0] || '—'

@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, MapPin, Filter, ChevronDown, Navigation } from 'lucide-react'
+import { Search, MapPin, Filter, ChevronDown, Navigation, CheckCircle } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { haversineKm } from '../../lib/haversine'
-import HalalBadge from '../../components/ui/HalalBadge'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import { useLanguage } from '../../context/LanguageContext'
@@ -229,8 +228,8 @@ export default function SupplierListPage() {
                       </div>
                     )}
                     {isVerified ? (
-                      <div className="mt-2 inline-flex items-center gap-1 bg-midnight text-white px-2 py-0.5 rounded-full text-[10px] font-semibold">
-                        <HalalBadge status="approved" size={12} /> {t('halalCertifiedBadge')}
+                      <div className="mt-2 inline-flex items-center gap-1 bg-lionsmane text-midnight-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-celeste">
+                        <CheckCircle className="w-3 h-3" /> {t('halalCertifiedBadge')}
                       </div>
                     ) : isPending ? (
                       <div className="mt-2 inline-flex items-center gap-1 bg-marigold/20 text-marigold-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-marigold-light">

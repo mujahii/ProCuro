@@ -60,16 +60,32 @@ export default function AnalyticsPage() {
       periodSpend: totalSpend,
     })
 
-    // Spend trend across the selected range
-    const monthMap = {}
+    // Spend trend — day buckets for short ranges, month buckets for long ones
+    const span = range?.from && range?.to
+      ? (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24)
+      : 365
+    function bucketDataFor(date) {
+      if (span <= 60) {
+        return {
+          sortKey: date.toISOString().slice(0, 10),
+          label: date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }),
+        }
+      }
+      return {
+        sortKey: date.toISOString().slice(0, 7),
+        label: date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }),
+      }
+    }
+    const bucketMap = {}
+    const labelMap = {}
     splits.forEach(sp => {
-      const month = new Date(sp.created_at).toLocaleDateString('de-DE', {
-        month: 'short',
-        year: range.key === 'year' || range.key === 'custom' ? '2-digit' : undefined,
-      })
-      monthMap[month] = (monthMap[month] || 0) + Number(sp.subtotal)
+      const { sortKey, label } = bucketDataFor(new Date(sp.created_at))
+      bucketMap[sortKey] = (bucketMap[sortKey] || 0) + Number(sp.subtotal)
+      labelMap[sortKey] = label
     })
-    setMonthlySpend(Object.entries(monthMap).slice(-12).map(([month, revenue]) => ({ month, revenue })))
+    setMonthlySpend(
+      Object.keys(bucketMap).sort().map(k => ({ month: labelMap[k], revenue: bucketMap[k] }))
+    )
 
     // Category breakdown — fed into the pie chart
     const catMap = {}

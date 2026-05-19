@@ -113,7 +113,7 @@ export default function SupplierDashboardPage() {
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-red-800">Account suspended</p>
-            <p className="text-sm text-red-700 mt-0.5">Your account has been suspended by the admin. Your profile and products are no longer visible in the store. If you believe this is a mistake, contact us at <span className="font-semibold">procuro@admin.com</span>.</p>
+            <p className="text-sm text-red-700 mt-0.5">Your account has been suspended by the admin. Your profile and products are no longer visible in the store. If you believe this is a mistake, please <a href="/supplier/chat" className="font-semibold underline underline-offset-2 hover:text-red-900 inline-flex items-center gap-0.5">chat with the admin →</a></p>
           </div>
         </div>
       )}

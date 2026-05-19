@@ -21,9 +21,7 @@ export function rangeFromKey(key) {
   const now = new Date()
   if (key === 'week') return { key, from: startOfWeek(now), to: endOfDay(now) }
   if (key === 'year') {
-    const from = new Date(now)
-    from.setFullYear(from.getFullYear() - 1)
-    from.setHours(0, 0, 0, 0)
+    const from = new Date(now.getFullYear(), 0, 1) // Jan 1 of current calendar year
     return { key, from, to: endOfDay(now) }
   }
   return { key: 'month', from: startOfMonth(now), to: endOfDay(now) }

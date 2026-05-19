@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-19 22:22 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-19 23:56 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -680,7 +680,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | StorePage | `/owner/store` | Browse verified suppliers in card layout |
 | AllProductsPage | `/owner/products` | Browse all products with category/search filter |
 | CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout |
-| OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation; dispute filing |
+| OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation (pre-confirmation: any time; post-confirmation: within 3 days of supplier confirmation via `updated_at`); dispute filing |
 | ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings |
 | AnalyticsPage | `/owner/analytics` | Spending trend, top products, **pie chart** of spending by category, top categories bar chart, AI summary at the bottom; week/month/year + custom date-range filter |
 
@@ -774,7 +774,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `ProductForm` — Add/edit product form with image upload
 
 ### Charts (Recharts)
-- `RevenueChart` — Monthly revenue area chart (also used as Platform GMV Over Time, owner Spending Trend, supplier Revenue Trend); buckets by day for ≤ 60-day ranges, by month for longer ones
+- `RevenueChart` — Monthly revenue area chart (also used as Platform GMV Over Time, owner Spending Trend, supplier Revenue Trend); buckets by day for ≤ 60-day ranges, by month for longer ones. All three charts only count `delivered` or `completed` order_splits; all time periods in the selected range are rendered with 0 for empty periods so the timeline is always continuous. Dates use browser-local time (not UTC) to avoid timezone mismatch on the x-axis.
 - `CategorySalesChart` — Category revenue horizontal bar chart
 - `TopProductsChart` — Top products by revenue
 - `OrdersByStatusChart` — Donut showing order-split status distribution (admin)

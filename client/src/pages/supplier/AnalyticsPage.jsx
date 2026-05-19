@@ -60,7 +60,7 @@ export default function SupplierAnalyticsPage() {
     const rangeEnd = range.to ? range.to.toISOString() : null
 
     let splitsQuery = supabase.from('order_splits').select('*').eq('supplier_id', supplierId)
-    let itemsQuery = supabase.from('order_items').select('*, product:products(name, category), order_split:order_splits!inner(supplier_id, created_at)').eq('order_split.supplier_id', supplierId)
+    let itemsQuery = supabase.from('order_items').select('*, product:products(name, category), order_split:order_splits!inner(supplier_id, created_at, status)').eq('order_split.supplier_id', supplierId)
     if (rangeStart) {
       splitsQuery = splitsQuery.gte('created_at', rangeStart)
       itemsQuery = itemsQuery.gte('order_split.created_at', rangeStart)
@@ -77,43 +77,66 @@ export default function SupplierAnalyticsPage() {
     ])
 
     const splits = splitsRes.data || []
-    const items = itemsRes.data || []
+    const allItems = itemsRes.data || []
 
-    const revenue = splits.filter(s => s.status === 'delivered').reduce((sum, s) => sum + Number(s.subtotal), 0)
-    const orders = splits.length
+    const completedSplits = splits.filter(s => s.status === 'delivered' || s.status === 'completed')
+    const completedItems = allItems.filter(item => ['delivered', 'completed'].includes(item.order_split?.status))
+
+    const revenue = completedSplits.reduce((sum, s) => sum + Number(s.subtotal), 0)
+    const orders = completedSplits.length
 
     const span = range?.from && range?.to
       ? (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24)
       : 365
 
+    const sPad = n => String(n).padStart(2, '0')
     function bucketDataFor(date) {
       if (span <= 60) {
         return {
-          sortKey: date.toISOString().slice(0, 10),
+          sortKey: `${date.getFullYear()}-${sPad(date.getMonth() + 1)}-${sPad(date.getDate())}`,
           label: date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }),
         }
       }
       return {
-        sortKey: date.toISOString().slice(0, 7),
+        sortKey: `${date.getFullYear()}-${sPad(date.getMonth() + 1)}`,
         label: date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }),
       }
     }
+    function fillPeriods(bMap, lMap) {
+      const all = { ...bMap }, labels = { ...lMap }
+      if (span <= 60) {
+        const cur = new Date(range.from); cur.setHours(0, 0, 0, 0)
+        const end = new Date(range.to)
+        while (cur <= end) {
+          const key = `${cur.getFullYear()}-${sPad(cur.getMonth() + 1)}-${sPad(cur.getDate())}`
+          if (!(key in all)) { all[key] = 0; labels[key] = cur.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }) }
+          cur.setDate(cur.getDate() + 1)
+        }
+      } else {
+        const cur = new Date(range.from.getFullYear(), range.from.getMonth(), 1)
+        const end = new Date(range.to.getFullYear(), range.to.getMonth(), 1)
+        while (cur <= end) {
+          const key = `${cur.getFullYear()}-${sPad(cur.getMonth() + 1)}`
+          if (!(key in all)) { all[key] = 0; labels[key] = cur.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }) }
+          cur.setMonth(cur.getMonth() + 1)
+        }
+      }
+      return Object.keys(all).sort().map(k => ({ month: labels[k], revenue: all[k] }))
+    }
 
-    // Revenue trend — sorted chronologically
+    // Revenue trend — delivered/completed only, all periods filled in
     const bucketMap = {}
     const labelMap = {}
-    splits.forEach(s => {
+    completedSplits.forEach(s => {
       const { sortKey, label } = bucketDataFor(new Date(s.created_at))
       bucketMap[sortKey] = (bucketMap[sortKey] || 0) + Number(s.subtotal)
       labelMap[sortKey] = label
     })
-    setRevenueByMonth(
-      Object.keys(bucketMap).sort().map(k => ({ month: labelMap[k], revenue: bucketMap[k] }))
-    )
+    setRevenueByMonth(fillPeriods(bucketMap, labelMap))
 
-    // Revenue per product
+    // Revenue per product — completed orders only
     const prodRevMap = {}
-    items.forEach(item => {
+    completedItems.forEach(item => {
       const name = item.product?.name || 'Unknown'
       prodRevMap[name] = (prodRevMap[name] || 0) + item.price_at_time * item.quantity
     })
@@ -127,13 +150,13 @@ export default function SupplierAnalyticsPage() {
       value: total > 0 ? Math.round((revenue / total) * 100) : 0,
     })))
 
-    // Top restaurant clients by order volume — resolve to real restaurant names
+    // Top restaurant clients — completed orders only, skip deleted/anonymous clients
     const clientMap = {}
-    splits.forEach(s => {
-      const key = s.restaurant_owner_id || 'unknown'
-      clientMap[key] = (clientMap[key] || 0) + 1
+    completedSplits.forEach(s => {
+      if (!s.restaurant_owner_id) return
+      clientMap[s.restaurant_owner_id] = (clientMap[s.restaurant_owner_id] || 0) + 1
     })
-    const ownerIds = Object.keys(clientMap).filter(id => id !== 'unknown')
+    const ownerIds = Object.keys(clientMap)
     let nameMap = {}
     if (ownerIds.length > 0) {
       const { data: ownerProfiles } = await supabase
@@ -144,12 +167,10 @@ export default function SupplierAnalyticsPage() {
     }
     setTopClients(
       Object.entries(clientMap)
+        .filter(([id]) => nameMap[id]) // only clients with a known restaurant name
         .sort((a, b) => b[1] - a[1])
         .slice(0, 5)
-        .map(([id, orders]) => ({
-          name: nameMap[id] || (id === 'unknown' ? 'Unknown' : `Client ${id.slice(0, 6)}`),
-          orders,
-        }))
+        .map(([id, orders]) => ({ name: nameMap[id], orders }))
     )
 
     const bestProduct = prodRevEntries[0]?.[0] || '—'

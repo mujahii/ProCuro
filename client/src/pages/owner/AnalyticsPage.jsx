@@ -36,7 +36,7 @@ export default function AnalyticsPage() {
       .select('*, order:orders!inner(restaurant_owner_id)')
       .eq('order.restaurant_owner_id', user.id)
     let itemsQuery = supabase.from('order_items')
-      .select('*, product:products(name, category), order_split:order_splits!inner(created_at, order:orders!inner(restaurant_owner_id))')
+      .select('*, product:products(name, category), order_split:order_splits!inner(created_at, status, order:orders!inner(restaurant_owner_id))')
       .eq('order_split.order.restaurant_owner_id', user.id)
     if (rangeStart) {
       ordersQuery = ordersQuery.gte('created_at', rangeStart)
@@ -50,15 +50,16 @@ export default function AnalyticsPage() {
     }
 
     const [ordersRes, splitsRes, itemsRes] = await Promise.all([ordersQuery, splitsQuery, itemsQuery])
-    const orders = ordersRes.data || []
     const splits = splitsRes.data || []
+    const completedSplits = splits.filter(sp => sp.status === 'delivered' || sp.status === 'completed')
+    const allItems = (itemsRes.data || []).filter(item => ['delivered', 'completed'].includes(item.order_split?.status))
 
-    // Stats
-    const totalSpend = splits.reduce((s, sp) => s + Number(sp.subtotal), 0)
+    // Stats — delivered/completed orders only
+    const totalSpend = completedSplits.reduce((s, sp) => s + Number(sp.subtotal), 0)
     setStats({
       totalSpend,
-      totalOrders: orders.length,
-      periodOrders: orders.length,
+      totalOrders: completedSplits.length,
+      periodOrders: completedSplits.length,
       periodSpend: totalSpend,
     })
 
@@ -66,32 +67,51 @@ export default function AnalyticsPage() {
     const span = range?.from && range?.to
       ? (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24)
       : 365
+    const oPad = n => String(n).padStart(2, '0')
     function bucketDataFor(date) {
       if (span <= 60) {
         return {
-          sortKey: date.toISOString().slice(0, 10),
+          sortKey: `${date.getFullYear()}-${oPad(date.getMonth() + 1)}-${oPad(date.getDate())}`,
           label: date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }),
         }
       }
       return {
-        sortKey: date.toISOString().slice(0, 7),
+        sortKey: `${date.getFullYear()}-${oPad(date.getMonth() + 1)}`,
         label: date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }),
       }
     }
+    function fillPeriods(bMap, lMap) {
+      const all = { ...bMap }, labels = { ...lMap }
+      if (span <= 60) {
+        const cur = new Date(range.from); cur.setHours(0, 0, 0, 0)
+        const end = new Date(range.to)
+        while (cur <= end) {
+          const key = `${cur.getFullYear()}-${oPad(cur.getMonth() + 1)}-${oPad(cur.getDate())}`
+          if (!(key in all)) { all[key] = 0; labels[key] = cur.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }) }
+          cur.setDate(cur.getDate() + 1)
+        }
+      } else {
+        const cur = new Date(range.from.getFullYear(), range.from.getMonth(), 1)
+        const end = new Date(range.to.getFullYear(), range.to.getMonth(), 1)
+        while (cur <= end) {
+          const key = `${cur.getFullYear()}-${oPad(cur.getMonth() + 1)}`
+          if (!(key in all)) { all[key] = 0; labels[key] = cur.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }) }
+          cur.setMonth(cur.getMonth() + 1)
+        }
+      }
+      return Object.keys(all).sort().map(k => ({ month: labels[k], revenue: all[k] }))
+    }
     const bucketMap = {}
     const labelMap = {}
-    splits.forEach(sp => {
+    completedSplits.forEach(sp => {
       const { sortKey, label } = bucketDataFor(new Date(sp.created_at))
       bucketMap[sortKey] = (bucketMap[sortKey] || 0) + Number(sp.subtotal)
       labelMap[sortKey] = label
     })
-    setMonthlySpend(
-      Object.keys(bucketMap).sort().map(k => ({ month: labelMap[k], revenue: bucketMap[k] }))
-    )
+    setMonthlySpend(fillPeriods(bucketMap, labelMap))
 
-    // Category breakdown — fed into the pie chart
+    // Category breakdown — delivered/completed only
     const catMap = {}
-    const allItems = itemsRes.data || []
     allItems.forEach(item => {
       const cat = item.product?.category || 'Other'
       catMap[cat] = (catMap[cat] || 0) + item.price_at_time * item.quantity
@@ -102,7 +122,7 @@ export default function AnalyticsPage() {
         .sort((a, b) => b.revenue - a.revenue)
     )
 
-    // Top products by quantity ordered
+    // Top products by quantity ordered — delivered/completed only
     const productMap = {}
     allItems.forEach(item => {
       const name = item.product?.name || 'Unknown'

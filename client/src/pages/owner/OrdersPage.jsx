@@ -66,6 +66,13 @@ function ProductCardModal({ item, onClose }) {
 const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded', 'cancellation_requested', 'delivery_dispute']
 const COMPLETED = ['delivered', 'completed', 'cancelled']
 const CANCELLABLE = ['pending_payment', 'pending_confirmation', 'confirmed']
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000
+
+function isCancellable(split) {
+  if (['pending_payment', 'pending_confirmation'].includes(split.status)) return true
+  if (split.status === 'confirmed') return Date.now() - new Date(split.updated_at).getTime() <= THREE_DAYS_MS
+  return false
+}
 
 function NotReceivedModal({ split, onConfirm, onClose }) {
   const { t } = useLanguage()
@@ -299,7 +306,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
   const [showSupplierModal, setShowSupplierModal] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [showReportModal, setShowReportModal] = useState(false)
-  const canCancel = CANCELLABLE.includes(split.status)
+  const canCancel = isCancellable(split)
 
   async function handleChatWithSupplier() {
     const orderId = split.order.id.slice(0, 8).toUpperCase()
@@ -746,7 +753,7 @@ export default function OrdersPage() {
                       <CheckCircle className="w-3.5 h-3.5" /> {t('confirmRefundBtn')}
                     </button>
                   )}
-                  {CANCELLABLE.includes(split.status) && (
+                  {isCancellable(split) && (
                     <button
                       onClick={e => { e.stopPropagation(); setCancelTarget(split) }}
                       className="px-3 py-1.5 bg-red-50 text-red-600 text-sm font-semibold rounded-lg hover:bg-red-100 transition-colors"

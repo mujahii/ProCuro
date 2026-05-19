@@ -17,18 +17,42 @@ function rangeSpan(range) {
     : 365
 }
 
-// Returns { sortKey (ISO, lexicographically sortable), label (display string) }
+const pad = n => String(n).padStart(2, '0')
+
 function bucketDataFor(date, span) {
   if (span <= 60) {
     return {
-      sortKey: date.toISOString().slice(0, 10),
+      sortKey: `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
       label: date.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }),
     }
   }
   return {
-    sortKey: date.toISOString().slice(0, 7),
+    sortKey: `${date.getFullYear()}-${pad(date.getMonth() + 1)}`,
     label: date.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }),
   }
+}
+
+// Fills every day (span ≤ 60) or month (span > 60) in [from, to] with 0 if no data
+function fillPeriods(bucketMap, labelMap, from, to, span) {
+  const all = { ...bucketMap }, labels = { ...labelMap }
+  if (span <= 60) {
+    const cur = new Date(from); cur.setHours(0, 0, 0, 0)
+    const end = new Date(to)
+    while (cur <= end) {
+      const key = `${cur.getFullYear()}-${pad(cur.getMonth() + 1)}-${pad(cur.getDate())}`
+      if (!(key in all)) { all[key] = 0; labels[key] = cur.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }) }
+      cur.setDate(cur.getDate() + 1)
+    }
+  } else {
+    const cur = new Date(from.getFullYear(), from.getMonth(), 1)
+    const end = new Date(to.getFullYear(), to.getMonth(), 1)
+    while (cur <= end) {
+      const key = `${cur.getFullYear()}-${pad(cur.getMonth() + 1)}`
+      if (!(key in all)) { all[key] = 0; labels[key] = cur.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }) }
+      cur.setMonth(cur.getMonth() + 1)
+    }
+  }
+  return Object.keys(all).sort().map(k => ({ month: labels[k], revenue: all[k] }))
 }
 
 export default function AdminDashboardPage() {
@@ -81,17 +105,15 @@ export default function AdminDashboardPage() {
 
     const span = rangeSpan(range)
 
-    // GMV trend — sortable ISO key so the chart always appears in chronological order
+    // GMV trend — delivered + completed only, all periods filled in
     const bucketMap = {}
     const labelMap = {}
-    allSplits.forEach(sp => {
+    allSplits.filter(s => s.status === 'delivered' || s.status === 'completed').forEach(sp => {
       const { sortKey, label } = bucketDataFor(new Date(sp.created_at), span)
       bucketMap[sortKey] = (bucketMap[sortKey] || 0) + Number(sp.subtotal)
       labelMap[sortKey] = label
     })
-    setRevenueSeries(
-      Object.keys(bucketMap).sort().map(k => ({ month: labelMap[k], revenue: bucketMap[k] }))
-    )
+    setRevenueSeries(fillPeriods(bucketMap, labelMap, range.from, range.to, span))
 
     const statusMap = {}
     allSplits.forEach(sp => { statusMap[sp.status] = (statusMap[sp.status] || 0) + 1 })
@@ -107,27 +129,40 @@ export default function AdminDashboardPage() {
     })
     setPaymentSplit(Object.entries(payMap).map(([method, v]) => ({ method, ...v })))
 
-    // User growth — filter by current range, bucket by day/month, separate roles
+    // User growth — bucket registrations within range, cumulate over every filled period
     const growthMap = {}
-    const growthLabelMap = {}
     ;(usersRows || []).forEach(u => {
       const created = new Date(u.created_at)
       if (range.from && created < range.from) return
       if (range.to && created > range.to) return
-      const { sortKey, label } = bucketDataFor(created, span)
+      const { sortKey } = bucketDataFor(created, span)
       if (!growthMap[sortKey]) growthMap[sortKey] = { owners: 0, suppliers: 0 }
-      growthLabelMap[sortKey] = label
       if (u.role === 'supplier') growthMap[sortKey].suppliers += 1
       else if (u.role === 'restaurant_owner') growthMap[sortKey].owners += 1
     })
-    // Sort chronologically then cumulate so the lines always trend upward
-    const growthSorted = Object.keys(growthMap).sort()
     let cumOwners = 0, cumSuppliers = 0
-    const cumulative = growthSorted.map(k => {
-      cumOwners += growthMap[k].owners
-      cumSuppliers += growthMap[k].suppliers
-      return { month: growthLabelMap[k], owners: cumOwners, suppliers: cumSuppliers }
-    })
+    const cumulative = []
+    if (span <= 60) {
+      const cur = new Date(range.from); cur.setHours(0, 0, 0, 0)
+      const end = new Date(range.to)
+      while (cur <= end) {
+        const key = `${cur.getFullYear()}-${pad(cur.getMonth() + 1)}-${pad(cur.getDate())}`
+        cumOwners += growthMap[key]?.owners || 0
+        cumSuppliers += growthMap[key]?.suppliers || 0
+        cumulative.push({ month: cur.toLocaleDateString('de-DE', { day: '2-digit', month: 'short' }), owners: cumOwners, suppliers: cumSuppliers })
+        cur.setDate(cur.getDate() + 1)
+      }
+    } else {
+      const cur = new Date(range.from.getFullYear(), range.from.getMonth(), 1)
+      const end = new Date(range.to.getFullYear(), range.to.getMonth(), 1)
+      while (cur <= end) {
+        const key = `${cur.getFullYear()}-${pad(cur.getMonth() + 1)}`
+        cumOwners += growthMap[key]?.owners || 0
+        cumSuppliers += growthMap[key]?.suppliers || 0
+        cumulative.push({ month: cur.toLocaleDateString('de-DE', { month: 'short', year: '2-digit' }), owners: cumOwners, suppliers: cumSuppliers })
+        cur.setMonth(cur.getMonth() + 1)
+      }
+    }
     setUserGrowth(cumulative)
 
     // City counts + coords for radar + map (uses all-time profile data, not
@@ -174,7 +209,7 @@ export default function AdminDashboardPage() {
   const statCards = stats ? [
     { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'Suppliers', value: stats.totalSuppliers, icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Restaurant Owners', value: stats.totalOwners, icon: Users, color: 'text-green-600', bg: 'bg-green-50' },
+    { label: 'Restaurants', value: stats.totalOwners, icon: Users, color: 'text-green-600', bg: 'bg-green-50' },
     { label: 'Total Orders', value: stats.totalOrders, icon: ShoppingBag, color: 'text-indigo-600', bg: 'bg-indigo-50' },
     { label: 'Pending Certificates', value: stats.pendingCerts, icon: Award, color: 'text-marigold-dark', bg: 'bg-lionsmane' },
     { label: 'Total GMV', value: `€${stats.totalRevenue?.toFixed(2)}`, icon: Euro, color: 'text-primary', bg: 'bg-primary-100' },

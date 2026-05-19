@@ -14,7 +14,7 @@ export default function UserGrowthChart({ data = [] }) {
             <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} />
             <Tooltip />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Line type="monotone" dataKey="owners" stroke="#1B4332" strokeWidth={2} dot={false} name="Owners" />
+            <Line type="monotone" dataKey="owners" stroke="#1B4332" strokeWidth={2} dot={false} name="Restaurants" />
             <Line type="monotone" dataKey="suppliers" stroke="#D4A017" strokeWidth={2} dot={false} name="Suppliers" />
           </LineChart>
         </ResponsiveContainer>

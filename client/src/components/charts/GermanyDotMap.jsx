@@ -43,7 +43,7 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
         <h3 className="font-bold text-gray-900">{title}</h3>
         <div className="flex items-center gap-3 text-[10px]">
           <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#083A4F' }} /> Supplier</span>
-          <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#D4A017' }} /> Owner</span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#D4A017' }} /> Restaurant</span>
         </div>
       </div>
       <div className="relative">
@@ -70,7 +70,7 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
           <div className="absolute top-2 right-2 bg-white border border-gray-100 shadow-lg rounded-lg px-3 py-2 text-xs">
             <p className="font-bold text-gray-900">{hover.city}</p>
             <p className="text-gray-600">Suppliers: <span className="font-semibold text-midnight">{hover.suppliers}</span></p>
-            <p className="text-gray-600">Owners: <span className="font-semibold text-marigold-dark">{hover.owners}</span></p>
+            <p className="text-gray-600">Restaurants: <span className="font-semibold text-marigold-dark">{hover.owners}</span></p>
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink, X, Share2 } from 'lucide-react'
+import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink, X, Share2, Ban } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
@@ -47,7 +47,7 @@ export default function SupplierProfilePage() {
 
   async function loadData() {
     const [{ data: sp }, { data: prods }, { data: certs }] = await Promise.all([
-      supabase.from('supplier_profiles').select('*').eq('id', id).single(),
+      supabase.from('supplier_profiles').select('*, users:user_id(is_banned)').eq('id', id).single(),
       supabase.from('products').select('*').eq('supplier_id', id).eq('is_active', true).order('created_at', { ascending: false }),
       supabase.from('halal_certificates').select('*').eq('supplier_id', id).eq('status', 'approved'),
     ])
@@ -122,6 +122,8 @@ export default function SupplierProfilePage() {
   }
 
   const isHalalCertified = certificates.length > 0 || supplier.is_verified
+  const isBanned = supplier.users?.is_banned === true
+  const canOrder = supplier.is_active && !isBanned
   const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))]
   const filteredProducts = activeCategory ? products.filter(p => p.category === activeCategory) : products
   const visibleProducts = showAll ? filteredProducts : filteredProducts.slice(0, INITIAL_LIMIT)
@@ -233,7 +235,19 @@ export default function SupplierProfilePage() {
           </div>
         )}
 
-        {!supplier.is_active && (
+        {isBanned && (
+          <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 mb-6 flex items-start gap-3">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Ban className="w-4 h-4 text-red-600" />
+            </div>
+            <div>
+              <p className="font-bold text-red-800 text-sm">{t('supplierBannedTitle')}</p>
+              <p className="text-xs text-red-600 mt-0.5">{t('supplierBannedBanner')}</p>
+            </div>
+          </div>
+        )}
+
+        {!supplier.is_active && !isBanned && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3">
             <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
               <Flag className="w-4 h-4 text-red-500" />
@@ -292,8 +306,8 @@ export default function SupplierProfilePage() {
                   return (
                     <div
                       key={product.id}
-                      onClick={() => profile?.role === 'restaurant_owner' && supplier.is_active && setSelectedProduct(product)}
-                      className={`bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 transition-colors ${profile?.role === 'restaurant_owner' && supplier.is_active ? 'cursor-pointer hover:border-herb' : 'opacity-60'}`}
+                      onClick={() => profile?.role === 'restaurant_owner' && canOrder && setSelectedProduct(product)}
+                      className={`bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 transition-colors ${profile?.role === 'restaurant_owner' && canOrder ? 'cursor-pointer hover:border-herb' : 'opacity-60'}`}
                     >
                       <div className="w-20 h-20 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
                         {imgUrl ? (
@@ -310,7 +324,7 @@ export default function SupplierProfilePage() {
                           €{Number(product.price).toFixed(2)} / {product.unit_type}
                         </p>
                         <div className="flex items-center gap-2 mt-2">
-                          {profile?.role === 'restaurant_owner' && supplier.is_active && (
+                          {profile?.role === 'restaurant_owner' && canOrder && (
                             <button
                               onClick={e => { e.stopPropagation(); setSelectedProduct(product) }}
                               className="text-xs bg-midnight text-white px-3 py-1 rounded-full hover:bg-midnight transition-colors"

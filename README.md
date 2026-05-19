@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-19 17:01 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-19 17:10 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -684,7 +684,21 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings |
 | AnalyticsPage | `/owner/analytics` | Spending trend, top products, **pie chart** of spending by category, top categories bar chart, AI summary at the bottom; week/month/year + custom date-range filter |
 
-**Ban enforcement in OwnerLayout**: When `users.is_banned = true`, a dark red banner appears at the top of every owner dashboard page. All sidebar navigation links (Store, Cart, Orders, Analytics, Profile) are replaced with greyed-out non-clickable spans. The main content area is replaced with a "Account Banned" message and a button directing the user to Chat — the only feature that remains accessible. The layout adjusts its top padding dynamically based on how many banners (deactivated + banned) are visible simultaneously.
+**Ban enforcement in OwnerLayout**: When `users.is_banned = true` for the logged-in owner, a dark red banner appears at the top of every owner dashboard page. All sidebar navigation links (Store, Cart, Orders, Analytics, Profile) are replaced with greyed-out non-clickable spans. The main content area is replaced with an "Account Banned" message and a button directing the user to Chat — the only feature that remains accessible. The layout adjusts its top padding dynamically based on how many banners (deactivated + banned) are visible simultaneously.
+
+**Banned suppliers — restaurant owner view**: When an owner is browsing or interacting with a **supplier** whose user has `is_banned = true`, the owner still sees the supplier's existence everywhere (browse, profile, past orders, chat) but cannot place new orders:
+
+| Surface | Behaviour |
+|---|---|
+| `SupplierListPage` (`/suppliers`) | Card shows a red "Banned" badge alongside Halal/Pending badges |
+| `SupplierProfilePage` (`/supplier/:id`) | Big red banner at top: "This supplier has been banned…"; Add-to-cart buttons on every product become disabled (opacity 60, no click handler) |
+| `AddToCartModal` | Fetches `supplier_profiles.users.is_banned` on mount; if true, shows an inline red banner and the "Add to Cart" button is disabled with the label replaced by "Banned" |
+| `CartPage` | Joins all suppliers in the cart to `users.is_banned`; banned suppliers' grouped cart sections get a red border, "Banned" badge in the header, and a per-group warning row. The "Continue to Payment" button is disabled while any banned-supplier items remain in the cart |
+| `ChatPage` (owner side) | The supplier's row in the conversation list and the open conversation both surface the banned status; the active conversation shows a red strip above the message list: "This supplier's account has been banned. Past orders remain accessible but new orders cannot be placed." Chat remains fully usable |
+| `OrdersPage` (owner) | Past orders from a banned supplier remain visible and clickable. Clicking the supplier name still opens `SupplierProfileModal`, which now displays a red "Banned" pill and a red banner row explaining the supplier was banned |
+| `SupplierProfileModal` | Same as profile page — fetches `users.is_banned`, shows red badge + banner inline |
+
+All ban checks read `supplier_profiles → users(is_banned)` via Supabase's foreign-key embedding syntax (`users:user_id(is_banned)`), so the ban state propagates automatically once the admin toggles `users.is_banned`.
 
 ### Supplier (`/supplier/`)
 

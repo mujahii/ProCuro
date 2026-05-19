@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X, Navigation, AlertTriangle } from 'lucide-react'
+import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X, Navigation, AlertTriangle, Ban } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { reverseGeocode, forwardGeocode } from '../../lib/geocode'
 import { haversineKm } from '../../lib/haversine'
@@ -8,6 +8,7 @@ import { useCart } from '../../context/CartContext'
 import { useAddresses } from '../../context/AddressContext'
 import { usePlaceOrder } from '../../hooks/usePlaceOrder'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
 
@@ -21,6 +22,7 @@ function getProductImageUrl(path) {
 export default function CartPage() {
   const navigate = useNavigate()
   const { profile } = useAuth()
+  const { t } = useLanguage()
   const { groupedBySupplier, total, updateQty, removeItem, clearCart } = useCart()
   const { selectedAddress, addresses, selectAddress } = useAddresses()
   const { placeOrder, loading } = usePlaceOrder()
@@ -32,9 +34,31 @@ export default function CartPage() {
   const [showAddressPicker, setShowAddressPicker] = useState(false)
   const [deliveryFees, setDeliveryFees] = useState({})
   const [deliveryRecalcLoading, setDeliveryRecalcLoading] = useState(false)
+  const [bannedSupplierIds, setBannedSupplierIds] = useState(new Set())
 
   const groups = Object.entries(groupedBySupplier)
   const supplierIdsKey = useMemo(() => groups.map(([id]) => id).sort().join(','), [groups])
+  const hasBannedSupplierInCart = groups.some(([sid]) => bannedSupplierIds.has(sid))
+
+  // Check each supplier's ban status whenever the cart's supplier set changes
+  useEffect(() => {
+    let cancelled = false
+    async function checkBans() {
+      if (groups.length === 0) {
+        if (!cancelled) setBannedSupplierIds(new Set())
+        return
+      }
+      const supplierIds = groups.map(([id]) => id)
+      const { data } = await supabase
+        .from('supplier_profiles')
+        .select('id, users:user_id(is_banned)')
+        .in('id', supplierIds)
+      const banned = new Set((data || []).filter(s => s.users?.is_banned === true).map(s => s.id))
+      if (!cancelled) setBannedSupplierIds(banned)
+    }
+    checkBans()
+    return () => { cancelled = true }
+  }, [supplierIdsKey])
 
   // Recompute delivery fee per supplier whenever the selected delivery address changes
   // so the cart total always matches the actual distance from the chosen address.
@@ -114,6 +138,10 @@ export default function CartPage() {
   async function handlePlaceOrder() {
     if (profile?.is_banned) {
       toast.error('Your account has been suspended. You cannot place orders.')
+      return
+    }
+    if (hasBannedSupplierInCart) {
+      toast.error(t('supplierBannedCartNotice'))
       return
     }
     if (selectedPayment === 'bank_transfer') {
@@ -325,11 +353,24 @@ export default function CartPage() {
       <div className="space-y-3">
         {groups.map(([supplierId, group]) => {
           const deliveryFee = feeFor(supplierId, group)
+          const supplierIsBanned = bannedSupplierIds.has(supplierId)
           return (
-            <div key={supplierId} className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-              <div className="bg-lionsmane px-5 py-3 border-b border-slate-100">
-                <p className="font-bold text-slate-900 text-sm">{group.supplier?.business_name || 'Supplier'}</p>
+            <div key={supplierId} className={`bg-white rounded-xl shadow-sm border overflow-hidden ${supplierIsBanned ? 'border-red-300' : 'border-slate-100'}`}>
+              <div className={`px-5 py-3 border-b flex items-center justify-between ${supplierIsBanned ? 'bg-red-50 border-red-200' : 'bg-lionsmane border-slate-100'}`}>
+                <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  {group.supplier?.business_name || 'Supplier'}
+                  {supplierIsBanned && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                      <Ban className="w-3 h-3" /> {t('supplierBannedShort')}
+                    </span>
+                  )}
+                </p>
               </div>
+              {supplierIsBanned && (
+                <div className="bg-red-50 border-b border-red-200 px-5 py-2.5 text-xs text-red-700">
+                  {t('supplierBannedCartNotice')}
+                </div>
+              )}
               <div className="divide-y divide-slate-50">
                 {group.items.map(item => {
                   const imgUrl = getProductImageUrl(item.product.image_url)
@@ -431,9 +472,12 @@ export default function CartPage() {
       {!selectedAddress && (
         <p className="text-xs text-marigold font-medium text-center -mb-2">Please select a delivery address to continue</p>
       )}
+      {hasBannedSupplierInCart && (
+        <p className="text-xs text-red-600 font-medium text-center -mb-2">{t('supplierBannedCartNotice')}</p>
+      )}
       <button
         onClick={() => setStep(2)}
-        disabled={!!profile?.is_banned || !selectedAddress || deliveryRecalcLoading}
+        disabled={!!profile?.is_banned || !selectedAddress || deliveryRecalcLoading || hasBannedSupplierInCart}
         className="w-full py-4 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {deliveryRecalcLoading && <Loader2 className="w-4 h-4 animate-spin" />}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, MapPin, Filter, ChevronDown, Navigation, CheckCircle } from 'lucide-react'
+import { Search, MapPin, Filter, ChevronDown, Navigation, CheckCircle, Ban } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { haversineKm } from '../../lib/haversine'
 import Navbar from '../../components/layout/Navbar'
@@ -56,7 +56,7 @@ export default function SupplierListPage() {
   async function loadSuppliers() {
     const { data } = await supabase
       .from('supplier_profiles')
-      .select('*, halal_certificates(status)')
+      .select('*, halal_certificates(status), users:user_id(is_banned)')
       .eq('is_active', true)
       .eq('is_verified', true)
       .order('rating', { ascending: false })
@@ -199,6 +199,7 @@ export default function SupplierListPage() {
               const certs = supplier.halal_certificates || []
               const isVerified = supplier.is_verified || certs.some(c => c.status === 'approved')
               const isPending = !isVerified && certs.some(c => c.status === 'pending')
+              const isBanned = supplier.users?.is_banned === true
               const categories = Array.isArray(supplier.category)
                 ? supplier.category
                 : supplier.category ? [supplier.category] : []
@@ -239,15 +240,23 @@ export default function SupplierListPage() {
                         ))}
                       </div>
                     )}
-                    {isVerified ? (
-                      <div className="mt-2 inline-flex items-center gap-1 bg-lionsmane text-midnight-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-celeste">
-                        <CheckCircle className="w-3 h-3" /> {t('halalCertifiedBadge')}
-                      </div>
-                    ) : isPending ? (
-                      <div className="mt-2 inline-flex items-center gap-1 bg-marigold/20 text-marigold-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-marigold-light">
-                        {t('pendingReview')}
-                      </div>
-                    ) : null}
+                    <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                      {isVerified && (
+                        <div className="inline-flex items-center gap-1 bg-lionsmane text-midnight-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-celeste">
+                          <CheckCircle className="w-3 h-3" /> {t('halalCertifiedBadge')}
+                        </div>
+                      )}
+                      {!isVerified && isPending && (
+                        <div className="inline-flex items-center gap-1 bg-marigold/20 text-marigold-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-marigold-light">
+                          {t('pendingReview')}
+                        </div>
+                      )}
+                      {isBanned && (
+                        <div className="inline-flex items-center gap-1 bg-red-100 text-red-700 px-2 py-0.5 rounded-full text-[10px] font-bold border border-red-200">
+                          <Ban className="w-3 h-3" /> {t('supplierBannedShort')}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )

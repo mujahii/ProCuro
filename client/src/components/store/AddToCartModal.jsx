@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Truck, Package, Flag, MapPin, Loader2, Share2 } from 'lucide-react'
+import { X, Truck, Package, Flag, MapPin, Loader2, Share2, Ban } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
 import { useAuth } from '../../context/AuthContext'
@@ -41,15 +41,32 @@ export default function AddToCartModal({ product, onClose }) {
   const [deliveryFee, setDeliveryFee] = useState(null)
   const [deliveryLoading, setDeliveryLoading] = useState(false)
   const [ownerHasLocation, setOwnerHasLocation] = useState(true)
+  const [supplierBanned, setSupplierBanned] = useState(false)
 
   const price = Number(product.price)
   const inStock = product.is_active
   const total = price * qty * (1 - appliedDiscount)
   const imgUrl = getProductImageUrl(product.image_url)
+  const canAdd = inStock && !supplierBanned
 
   useEffect(() => {
     calcDeliveryFee()
   }, [selectedAddress])
+
+  useEffect(() => {
+    let cancelled = false
+    async function checkSupplierBan() {
+      if (!product.supplier_id) return
+      const { data } = await supabase
+        .from('supplier_profiles')
+        .select('users:user_id(is_banned)')
+        .eq('id', product.supplier_id)
+        .maybeSingle()
+      if (!cancelled) setSupplierBanned(data?.users?.is_banned === true)
+    }
+    checkSupplierBan()
+    return () => { cancelled = true }
+  }, [product.supplier_id])
 
   async function calcDeliveryFee() {
     setDeliveryLoading(true)
@@ -130,6 +147,10 @@ export default function AddToCartModal({ product, onClose }) {
   }
 
   function handleAdd() {
+    if (supplierBanned) {
+      toast.error(t('supplierBannedCannotAdd'))
+      return
+    }
     addItem({ ...product, delivery_fee: deliveryFee ?? 0 }, qty)
     toast.success(`${product.name} added to cart`)
     onClose()
@@ -182,6 +203,16 @@ export default function AddToCartModal({ product, onClose }) {
 
           {product.description && (
             <p className="text-slate-600 mb-4 leading-relaxed">{product.description}</p>
+          )}
+
+          {supplierBanned && (
+            <div className="bg-red-50 border-2 border-red-300 rounded-xl p-3 mb-4 flex items-start gap-2">
+              <Ban className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-red-800 text-sm">{t('supplierBannedTitle')}</p>
+                <p className="text-xs text-red-600 mt-0.5">{t('supplierBannedBanner')}</p>
+              </div>
+            </div>
           )}
 
           {/* Delivery fee row */}
@@ -259,10 +290,14 @@ export default function AddToCartModal({ product, onClose }) {
             >{t('close')}</button>
             <button
               onClick={handleAdd}
-              disabled={!inStock}
+              disabled={!canAdd}
               className="flex-[2] py-3 bg-midnight text-white font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {inStock ? `${t('addToCart')} - €${total.toFixed(2)}` : t('unavailable')}
+              {supplierBanned
+                ? t('supplierBannedShort')
+                : inStock
+                  ? `${t('addToCart')} - €${total.toFixed(2)}`
+                  : t('unavailable')}
             </button>
           </div>
 

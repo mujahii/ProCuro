@@ -554,6 +554,14 @@ const T = {
     accountBannedBanner: 'Your account has been banned. Contact support to appeal.',
     accountBannedTitle: 'Account Banned',
     accountBannedContent: 'Your account has been suspended by an administrator. Only the chat feature is available to contact support.',
+
+    // Supplier banned (visible to restaurant owners)
+    supplierBannedTitle: 'This supplier account is banned',
+    supplierBannedBanner: 'This supplier has been banned by an administrator for violating our terms. You cannot place new orders, but you can still view their profile and any previous orders.',
+    supplierBannedShort: 'Banned',
+    supplierBannedChatNotice: 'This supplier\'s account has been banned. Past orders remain accessible but new orders cannot be placed.',
+    supplierBannedCartNotice: 'This supplier has been banned. Please remove their items to continue checkout.',
+    supplierBannedCannotAdd: 'Cannot add — supplier is banned',
   },
   de: {
     // Navbar
@@ -1104,6 +1112,14 @@ const T = {
     accountBannedBanner: 'Ihr Konto wurde gesperrt. Kontaktieren Sie den Support.',
     accountBannedTitle: 'Konto gesperrt',
     accountBannedContent: 'Ihr Konto wurde von einem Administrator gesperrt. Nur der Chat steht Ihnen zur Kontaktaufnahme mit dem Support zur Verfügung.',
+
+    // Supplier banned (visible to restaurant owners)
+    supplierBannedTitle: 'Dieser Lieferant ist gesperrt',
+    supplierBannedBanner: 'Dieser Lieferant wurde von einem Administrator wegen Verstoßes gegen unsere Nutzungsbedingungen gesperrt. Sie können keine neuen Bestellungen aufgeben, das Profil und frühere Bestellungen bleiben aber einsehbar.',
+    supplierBannedShort: 'Gesperrt',
+    supplierBannedChatNotice: 'Das Konto dieses Lieferanten wurde gesperrt. Frühere Bestellungen bleiben einsehbar, neue Bestellungen sind nicht möglich.',
+    supplierBannedCartNotice: 'Dieser Lieferant wurde gesperrt. Bitte entfernen Sie seine Artikel, um mit der Kasse fortzufahren.',
+    supplierBannedCannotAdd: 'Hinzufügen nicht möglich — Lieferant gesperrt',
   },
 }
 

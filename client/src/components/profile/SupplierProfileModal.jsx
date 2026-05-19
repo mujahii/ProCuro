@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { MapPin, Store, X, CheckCircle, ArrowUpRight, Flag, Loader2, Globe } from 'lucide-react'
+import { MapPin, Store, X, CheckCircle, ArrowUpRight, Flag, Loader2, Globe, Ban } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { useLanguage } from '../../context/LanguageContext'
 import ModalPortal from '../ui/ModalPortal'
 import ReportModal from '../ui/ReportModal'
 
@@ -13,15 +14,17 @@ function resolveAvatar(path) {
 
 export default function SupplierProfileModal({ supplierId, businessName, onClose }) {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [sp, setSp] = useState(null)
   const [showReport, setShowReport] = useState(false)
+  const isBanned = sp?.users?.is_banned === true
 
   useEffect(() => {
     if (!supplierId) return
     let cancelled = false
     supabase
       .from('supplier_profiles')
-      .select('business_name, description, category, city, website, avatar_url, is_verified')
+      .select('business_name, description, category, city, website, avatar_url, is_verified, users:user_id(is_banned)')
       .eq('id', supplierId)
       .single()
       .then(({ data }) => { if (!cancelled) setSp(data) })
@@ -51,8 +54,20 @@ export default function SupplierProfileModal({ supplierId, businessName, onClose
                   <CheckCircle className="w-3 h-3" /> Verified
                 </span>
               )}
+              {isBanned && (
+                <span className="flex items-center gap-1 text-xs text-white bg-red-600 px-2.5 py-1 rounded-full font-semibold">
+                  <Ban className="w-3 h-3" /> {t('supplierBannedShort')}
+                </span>
+              )}
             </div>
           </div>
+
+          {isBanned && (
+            <div className="bg-red-50 border-b border-red-200 px-5 py-3 flex items-start gap-2">
+              <Ban className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-700">{t('supplierBannedBanner')}</p>
+            </div>
+          )}
 
           <div className="p-5 space-y-3">
             {!sp && <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>}

@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Send, MessageSquare, ArrowLeft, Package, Shield, Paperclip, FileText, MoreVertical, Pin, Trash2, Loader2, X } from 'lucide-react'
+import { Send, MessageSquare, ArrowLeft, Package, Shield, Paperclip, FileText, MoreVertical, Pin, Trash2, Loader2, X, Ban } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 import OwnerProfileModal from '../../components/profile/OwnerProfileModal'
 import SupplierProfileModal from '../../components/profile/SupplierProfileModal'
@@ -13,6 +14,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export default function ChatPage() {
   const { user, role } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initSupplierId = searchParams.get('supplier_id')
@@ -139,7 +141,7 @@ export default function ChatPage() {
     if (role === 'restaurant_owner') {
       const { data } = await supabase
         .from('conversations')
-        .select('*, supplier:supplier_profiles(id, business_name, avatar_url, city)')
+        .select('*, supplier:supplier_profiles(id, business_name, avatar_url, city, users:user_id(is_banned))')
         .eq('owner_id', user.id)
         .order('last_message_at', { ascending: false })
       const convIds = (data || []).map(c => c.id)
@@ -198,7 +200,7 @@ export default function ChatPage() {
   async function startOrOpen(targetSupplierId) {
     const { data: existing } = await supabase
       .from('conversations')
-      .select('*, supplier:supplier_profiles(id, business_name, avatar_url, city)')
+      .select('*, supplier:supplier_profiles(id, business_name, avatar_url, city, users:user_id(is_banned))')
       .eq('owner_id', user.id)
       .eq('supplier_id', targetSupplierId)
       .maybeSingle()
@@ -210,7 +212,7 @@ export default function ChatPage() {
       const { data: newConv } = await supabase
         .from('conversations')
         .insert({ owner_id: user.id, supplier_id: targetSupplierId })
-        .select('*, supplier:supplier_profiles(id, business_name, avatar_url, city)')
+        .select('*, supplier:supplier_profiles(id, business_name, avatar_url, city, users:user_id(is_banned))')
         .single()
       if (newConv) {
         setConversations(prev => [newConv, ...prev])
@@ -796,6 +798,13 @@ export default function ChatPage() {
                 )}
               </div>
             </div>
+
+            {role === 'restaurant_owner' && selectedConv.supplier?.users?.is_banned === true && (
+              <div className="bg-red-50 border-b border-red-200 px-4 py-2.5 flex items-start gap-2">
+                <Ban className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-red-700">{t('supplierBannedChatNotice')}</p>
+              </div>
+            )}
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-lionsmane">
               {messages.length === 0 && (

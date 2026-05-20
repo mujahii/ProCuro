@@ -4,6 +4,9 @@
 # MCP config (contains Supabase project ref and other service URLs)
 .mcp.json
 
+# Codex config (contains MCP server secrets — service role keys, URLs)
+.codex/
+
 # Environment variables and secrets
 .env
 .env.local

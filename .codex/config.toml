@@ -1,0 +1,38 @@
+[mcp_servers.filesystem]
+args = [
+    "-y",
+    "@modelcontextprotocol/server-filesystem",
+    "/Users/muja/Documents/vs code/ProCuro",
+]
+command = "npx"
+
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp/"
+
+[mcp_servers.memory]
+args = [
+    "-y",
+    "@modelcontextprotocol/server-memory",
+]
+command = "npx"
+
+[mcp_servers.memory.env]
+MEMORY_FILE_PATH = "/Users/muja/Documents/vs code/ProCuro/.claude/memory.jsonl"
+
+[mcp_servers.playwright]
+args = [
+    "-y",
+    "@playwright/mcp",
+]
+command = "npx"
+
+[mcp_servers.supabase]
+args = [
+    "-y",
+    "@supabase/mcp-server-postgrest",
+]
+command = "npx"
+
+[mcp_servers.supabase.env]
+SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJleG5nZHR3ZWlpdmR5enJwZnVkIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3Nzk4OTM1OSwiZXhwIjoyMDkzNTY1MzU5fQ.BC88zeqBtUjuv7qpvh-ovMRueehPiAIrxyxF1mhPcpk"
+SUPABASE_URL = "https://rexngdtweiivdyzrpfud.supabase.co"

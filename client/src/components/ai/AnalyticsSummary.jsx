@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { getAnalyticsSummary } from '../../lib/gemini'
+import { useLanguage } from '../../context/LanguageContext'
 import Skeleton from '../ui/Skeleton'
 
 const FALLBACK_META = [
@@ -120,6 +121,7 @@ function timeAgo(iso) {
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
 export default function AnalyticsSummary({ context }) {
+  const { lang: language } = useLanguage()
   const [summary, setSummary] = useState('')
   const [generatedAt, setGeneratedAt] = useState(null)
   const [stale, setStale] = useState(false)
@@ -134,6 +136,8 @@ export default function AnalyticsSummary({ context }) {
     : false
 
   const hasGenerated = useRef(false)
+  const prevLanguage = useRef(language)
+
   useEffect(() => {
     if (context && !hasGenerated.current) {
       hasGenerated.current = true
@@ -141,12 +145,22 @@ export default function AnalyticsSummary({ context }) {
     }
   }, [context])
 
+  // Auto-regenerate in the new language when the user switches
+  useEffect(() => {
+    if (prevLanguage.current !== language) {
+      prevLanguage.current = language
+      if (hasGenerated.current) {
+        generate({ force: true })
+      }
+    }
+  }, [language])
+
   async function generate({ force = false } = {}) {
     setLoading(true)
     setError(null)
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const result = await getAnalyticsSummary(context, session?.access_token ?? '', { force })
+      const result = await getAnalyticsSummary(context, session?.access_token ?? '', { force, language })
       setSummary(result.summary || '')
       setGeneratedAt(result.generated_at || null)
       setStale(Boolean(result.stale))

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { Calendar, ChevronDown, X } from 'lucide-react'
+import { useLanguage } from '../../context/LanguageContext'
 
-const PRESETS = [
-  { key: 'week',  label: 'This Week' },
-  { key: 'month', label: 'This Month' },
-  { key: 'year',  label: 'This Year' },
+const PRESET_KEYS = [
+  { key: 'week',  labelKey: 'dateFilterWeek' },
+  { key: 'month', labelKey: 'dateFilterMonth' },
+  { key: 'year',  labelKey: 'dateFilterYear' },
 ]
 
 function startOfWeek(d) {
@@ -44,6 +45,7 @@ function fmtInput(d) {
 }
 
 export default function DateRangeFilter({ value, onChange }) {
+  const { t } = useLanguage()
   const [open, setOpen] = useState(false)
   const [fromInput, setFromInput] = useState(value?.key === 'custom' ? fmtInput(value.from) : '')
   const [toInput, setToInput] = useState(value?.key === 'custom' ? fmtInput(value.to) : '')
@@ -66,10 +68,11 @@ export default function DateRangeFilter({ value, onChange }) {
     setOpen(false)
   }
 
+  const activePresetLabel = PRESET_KEYS.find(p => p.key === value?.key)
   const activeLabel =
     value?.key === 'custom' && value?.from && value?.to
       ? `${value.from.toLocaleDateString()} – ${value.to.toLocaleDateString()}`
-      : PRESETS.find(p => p.key === value?.key)?.label || 'This Month'
+      : activePresetLabel ? t(activePresetLabel.labelKey) : t('dateFilterMonth')
 
   const customActive = value?.key === 'custom'
 
@@ -77,7 +80,7 @@ export default function DateRangeFilter({ value, onChange }) {
     <div className="relative" ref={ref}>
       {/* ── Pill group (desktop) ── */}
       <div className="hidden sm:flex gap-1 bg-gray-100 p-1 rounded-xl">
-        {PRESETS.map(p => (
+        {PRESET_KEYS.map(p => (
           <button
             key={p.key}
             onClick={() => pickPreset(p.key)}
@@ -85,7 +88,7 @@ export default function DateRangeFilter({ value, onChange }) {
               value?.key === p.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            {p.label}
+            {t(p.labelKey)}
           </button>
         ))}
         {/* Custom inside the pill group */}
@@ -96,7 +99,7 @@ export default function DateRangeFilter({ value, onChange }) {
           }`}
         >
           <Calendar className="w-3 h-3" />
-          {customActive ? activeLabel : 'Custom'}
+          {customActive ? activeLabel : t('dateFilterCustom')}
           <ChevronDown className="w-3 h-3" />
         </button>
       </div>
@@ -116,7 +119,7 @@ export default function DateRangeFilter({ value, onChange }) {
         <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 z-30 p-4 space-y-3">
           {/* Preset chips on mobile */}
           <div className="sm:hidden grid grid-cols-3 gap-1">
-            {PRESETS.map(p => (
+            {PRESET_KEYS.map(p => (
               <button
                 key={p.key}
                 onClick={() => pickPreset(p.key)}
@@ -124,15 +127,15 @@ export default function DateRangeFilter({ value, onChange }) {
                   value?.key === p.key ? 'bg-midnight text-white border-midnight' : 'bg-white text-gray-600 border-gray-200'
                 }`}
               >
-                {p.label}
+                {t(p.labelKey)}
               </button>
             ))}
           </div>
           <div>
-            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Custom range</p>
+            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{t('dateFilterCustomRange')}</p>
             <div className="grid grid-cols-2 gap-2">
               <label className="block text-[11px] text-gray-500">
-                From
+                {t('dateFilterFrom')}
                 <input
                   type="date"
                   value={fromInput}
@@ -142,7 +145,7 @@ export default function DateRangeFilter({ value, onChange }) {
                 />
               </label>
               <label className="block text-[11px] text-gray-500">
-                To
+                {t('dateFilterTo')}
                 <input
                   type="date"
                   value={toInput}
@@ -158,14 +161,14 @@ export default function DateRangeFilter({ value, onChange }) {
               onClick={() => { setFromInput(''); setToInput(''); pickPreset('month') }}
               className="flex-1 flex items-center justify-center gap-1 py-2 text-xs font-semibold border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50"
             >
-              <X className="w-3 h-3" /> Clear
+              <X className="w-3 h-3" /> {t('clearBtn')}
             </button>
             <button
               onClick={applyCustom}
               disabled={!fromInput || !toInput}
               className="flex-1 py-2 text-xs font-semibold bg-midnight text-white rounded-lg hover:bg-slate-800 disabled:opacity-40"
             >
-              Apply
+              {t('applyBtn')}
             </button>
           </div>
         </div>

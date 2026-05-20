@@ -2,35 +2,66 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, X, Bot, Sparkles } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { supabase } from '../../lib/supabase'
 import { askGemini } from '../../lib/gemini'
 
 const SUGGESTIONS = {
-  restaurant_owner: [
-    'Which suppliers are near me?',
-    'What did I spend last month?',
-    'Suggest a product I need',
-    'Any pending deliveries?',
-  ],
-  supplier: [
-    'Who ordered from me this month?',
-    'Which products sell best?',
-    'Show my pending orders',
-    'How can I grow my business?',
-  ],
-  admin: [
-    'Platform overview',
-    'Any issues to flag?',
-    'How many active users?',
-    'Top performing suppliers',
-  ],
+  en: {
+    restaurant_owner: [
+      'Which suppliers are near me?',
+      'What did I spend last month?',
+      'Suggest a product I need',
+      'Any pending deliveries?',
+    ],
+    supplier: [
+      'Who ordered from me this month?',
+      'Which products sell best?',
+      'Show my pending orders',
+      'How can I grow my business?',
+    ],
+    admin: [
+      'Platform overview',
+      'Any issues to flag?',
+      'How many active users?',
+      'Top performing suppliers',
+    ],
+  },
+  de: {
+    restaurant_owner: [
+      'Welche Lieferanten sind in meiner Nähe?',
+      'Was habe ich letzten Monat ausgegeben?',
+      'Schlage ein Produkt vor, das ich brauche',
+      'Gibt es ausstehende Lieferungen?',
+    ],
+    supplier: [
+      'Wer hat diesen Monat bei mir bestellt?',
+      'Welche Produkte verkaufen sich am besten?',
+      'Zeige meine offenen Bestellungen',
+      'Wie kann ich mein Geschäft ausbauen?',
+    ],
+    admin: [
+      'Plattformübersicht',
+      'Gibt es Probleme zu melden?',
+      'Wie viele aktive Nutzer gibt es?',
+      'Top-Lieferanten anzeigen',
+    ],
+  },
 }
 
 const WELCOME = {
-  restaurant_owner: "Hi! I'm your ProCuro AI assistant. I can help you track orders, analyse spending, and find the best Halal suppliers. What would you like to know?",
-  supplier: "Hi! I'm your ProCuro AI assistant. I can help you manage orders, understand your sales, and grow your business. What would you like to know?",
-  admin: "Hi! I'm your ProCuro AI assistant. I can give you platform insights, flag issues, and help you manage the marketplace. What would you like to know?",
-  default: "Hi! I'm your ProCuro AI assistant. How can I help you today?",
+  en: {
+    restaurant_owner: "Hi! I'm your ProCuro AI assistant. I can help you track orders, analyse spending, and find the best Halal suppliers. What would you like to know?",
+    supplier: "Hi! I'm your ProCuro AI assistant. I can help you manage orders, understand your sales, and grow your business. What would you like to know?",
+    admin: "Hi! I'm your ProCuro AI assistant. I can give you platform insights, flag issues, and help you manage the marketplace. What would you like to know?",
+    default: "Hi! I'm your ProCuro AI assistant. How can I help you today?",
+  },
+  de: {
+    restaurant_owner: "Hallo! Ich bin Ihr ProCuro KI-Assistent. Ich helfe Ihnen bei Bestellungen, Ausgabenanalysen und der Suche nach den besten Halal-Lieferanten. Was möchten Sie wissen?",
+    supplier: "Hallo! Ich bin Ihr ProCuro KI-Assistent. Ich helfe Ihnen bei der Verwaltung von Bestellungen, dem Verständnis Ihrer Umsätze und dem Wachstum Ihres Unternehmens. Was möchten Sie wissen?",
+    admin: "Hallo! Ich bin Ihr ProCuro KI-Assistent. Ich kann Ihnen Plattformeinblicke geben, Probleme melden und bei der Verwaltung des Marktplatzes helfen. Was möchten Sie wissen?",
+    default: "Hallo! Ich bin Ihr ProCuro KI-Assistent. Wie kann ich Ihnen heute helfen?",
+  },
 }
 
 async function fetchContext(user) {
@@ -158,8 +189,11 @@ function FormattedMessage({ text }) {
 
 export default function ChatbotDrawer({ open, onClose }) {
   const { user, role } = useAuth()
-  const welcome = WELCOME[role] || WELCOME.default
-  const suggestions = SUGGESTIONS[role] || []
+  const { lang: language, t } = useLanguage()
+
+  const lang = WELCOME[language] ? language : 'en'
+  const welcome = WELCOME[lang][role] || WELCOME[lang].default
+  const suggestions = SUGGESTIONS[lang][role] || []
 
   const [messages, setMessages] = useState([{ role: 'assistant', content: welcome }])
   const [input, setInput] = useState('')
@@ -173,10 +207,11 @@ export default function ChatbotDrawer({ open, onClose }) {
 
   useEffect(() => {
     if (open) {
-      setMessages([{ role: 'assistant', content: welcome }])
+      const w = WELCOME[language] ? WELCOME[language][role] || WELCOME[language].default : WELCOME.en[role] || WELCOME.en.default
+      setMessages([{ role: 'assistant', content: w }])
       setShowSuggestions(true)
     }
-  }, [open, role])
+  }, [open, role, language])
 
   async function send(text) {
     const trimmed = (text || input).trim()
@@ -189,7 +224,7 @@ export default function ChatbotDrawer({ open, onClose }) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const context = await fetchContext(user)
-      const response = await askGemini(trimmed, context, session?.access_token ?? '')
+      const response = await askGemini(trimmed, context, session?.access_token ?? '', { language })
       setMessages(prev => [...prev, { role: 'assistant', content: response }])
     } catch {
       setMessages(prev => [...prev, {
@@ -289,16 +324,17 @@ export default function ChatbotDrawer({ open, onClose }) {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-          placeholder="Ask me anything..."
+          placeholder={t('chatbotAskPlaceholder')}
           className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-herb focus:bg-white transition-colors"
           disabled={loading}
         />
         <button
           onClick={() => send()}
           disabled={loading || !input.trim()}
-          className="p-2 bg-midnight rounded-full text-white hover:bg-midnight-dark disabled:opacity-40 flex-shrink-0 transition-colors"
+          className="px-4 py-2 bg-midnight rounded-full text-white hover:bg-midnight-dark disabled:opacity-40 flex-shrink-0 transition-colors flex items-center gap-1.5"
         >
           <Send className="w-4 h-4" />
+          <span className="text-xs font-semibold hidden xs:inline sm:hidden lg:hidden">Senden</span>
         </button>
       </div>
     </div>

@@ -550,9 +550,9 @@ export default function ChatPage() {
             ) : conversations.length === 0 ? (
               <div className="p-8 text-center">
                 <MessageSquare className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-400">No conversations yet</p>
+                <p className="text-sm text-slate-400">{t('noConversationsYet')}</p>
                 {role === 'restaurant_owner' && (
-                  <p className="text-xs text-slate-400 mt-1">Visit a supplier profile to start a conversation</p>
+                  <p className="text-xs text-slate-400 mt-1">{t('visitSupplierStart')}</p>
                 )}
               </div>
             ) : [...conversations].sort((a, b) => {
@@ -814,7 +814,7 @@ export default function ChatPage() {
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-lionsmane">
               {messages.length === 0 && (
-                <div className="text-center text-slate-400 text-sm py-8">No messages yet. Say hello!</div>
+                <div className="text-center text-slate-400 text-sm py-8">{t('noMessagesHello')}</div>
               )}
               {messages.map(msg => {
                 const isMine = msg.sender_id === user.id
@@ -870,7 +870,7 @@ export default function ChatPage() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-                placeholder={uploading ? 'Uploading...' : 'Type a message...'}
+                placeholder={uploading ? '...' : t('typeAMessage')}
                 className="flex-1 bg-slate-100 rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-herb focus:bg-white transition-colors"
                 disabled={sending || uploading}
               />

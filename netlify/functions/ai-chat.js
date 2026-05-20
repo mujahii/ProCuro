@@ -28,9 +28,13 @@ const supabase = createClient(
   }
 )
 
-function buildSystemPrompt(role, name, contextData) {
+function buildSystemPrompt(role, name, contextData, language) {
+  const isDE = language === 'de'
+  const langInstr = isDE
+    ? '\nWICHTIG: Antworte immer auf Deutsch, unabhängig von der Sprache des Nutzers.'
+    : ''
   const base = `You are ProCuro Assistant, an expert AI helper for a Halal food procurement platform in Germany.
-The user's name is ${name || 'there'}.
+The user's name is ${name || 'there'}.${langInstr}
 Be concise, warm, and professional. Use bullet points for lists. Keep responses under 200 words unless the user asks for detail.
 Only reference data that is provided in the context below. Never fabricate order numbers, amounts, supplier names, or IDs.
 If the context is empty, answer from general knowledge about food procurement and restaurant management.
@@ -101,13 +105,13 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) }
   }
 
-  const { prompt, context } = body
+  const { prompt, context, language } = body
   if (!prompt?.trim()) {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Prompt is required' }) }
   }
 
   try {
-    const systemPrompt = buildSystemPrompt(profile?.role, profile?.full_name, context)
+    const systemPrompt = buildSystemPrompt(profile?.role, profile?.full_name, context, language)
     const fullPrompt = `${systemPrompt}\n\nUser message: ${prompt}`
     const response = await generateWithFallback(fullPrompt)
     return {

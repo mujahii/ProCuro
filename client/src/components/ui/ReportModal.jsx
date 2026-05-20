@@ -36,6 +36,13 @@ const REASONS = {
     'Harassment',
     'Other',
   ],
+  restaurant: [
+    'Fraudulent activity',
+    'Abusive or unprofessional behavior',
+    'Fake or misleading account',
+    'Harassment',
+    'Other',
+  ],
 }
 
 const LABEL = {
@@ -43,6 +50,7 @@ const LABEL = {
   supplier: 'Supplier',
   order: 'Order',
   user: 'User',
+  restaurant: 'Restaurant',
 }
 
 export default function ReportModal({ type, targetId, targetName, onClose }) {

@@ -119,7 +119,9 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid JSON body' }) }
   }
 
-  const { context, force } = body
+  const { context, force, language } = body
+  const isDE = language === 'de'
+  const langInstr = isDE ? 'Antworte ausschließlich auf Deutsch.\n' : ''
 
   // Cache hit: signed-in user, not forcing, and the last summary is fresh.
   if (userId && !force) {
@@ -159,30 +161,30 @@ exports.handler = async (event) => {
   const eventContext = [...islamicEventHints, ...germanEventHints].join(' ')
 
   const prompts = {
-    restaurant_owner: `You are a food procurement analyst. Analyze this Halal restaurant owner's data.
+    restaurant_owner: `${langInstr}You are a food procurement analyst. Analyze this Halal restaurant owner's data.
 Data: ${JSON.stringify(context)}
 ${eventContext ? `Season: ${eventContext}` : ''}
 Reply with exactly 3 bullet points (each ≤ 15 words):
-• **Spending** — total spent and main supplier
-• **Top pick** — most ordered category or product
-• **Tip** — one action to save money or prepare for demand`,
+• **${isDE ? 'Ausgaben' : 'Spending'}** — total spent and main supplier
+• **${isDE ? 'Top-Produkt' : 'Top pick'}** — most ordered category or product
+• **${isDE ? 'Tipp' : 'Tip'}** — one action to save money or prepare for demand`,
 
-    supplier: `You are a business analyst for a Halal food supplier in Germany. Analyze this data.
+    supplier: `${langInstr}You are a business analyst for a Halal food supplier in Germany. Analyze this data.
 Data: ${JSON.stringify(context)}
 ${eventContext ? `Season: ${eventContext}` : ''}
 Reply with exactly 4 bullet points (each ≤ 15 words):
-• **Sales** — revenue and order count this period
-• **Best seller** — top product by volume
-• **Stock alert** — any item with stock ≤ 3 (or "all good")
-• **Action** — one concrete step to grow or prepare`,
+• **${isDE ? 'Umsatz' : 'Sales'}** — revenue and order count this period
+• **${isDE ? 'Bestseller' : 'Best seller'}** — top product by volume
+• **${isDE ? 'Lagerwarnung' : 'Stock alert'}** — any item with stock ≤ 3 (or "${isDE ? 'alles in Ordnung' : 'all good'}")
+• **${isDE ? 'Maßnahme' : 'Action'}** — one concrete step to grow or prepare`,
 
-    admin: `You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
+    admin: `${langInstr}You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
 Data: ${JSON.stringify(context)}
 ${eventContext ? `Season: ${eventContext}` : ''}
 Reply with exactly 3 bullet points (each ≤ 15 words):
-• **Health** — active users and order volume summary
-• **Flag** — top issue or anomaly needing attention
-• **Next step** — one platform action to take now`,
+• **${isDE ? 'Status' : 'Health'}** — active users and order volume summary
+• **${isDE ? 'Hinweis' : 'Flag'}** — top issue or anomaly needing attention
+• **${isDE ? 'Nächster Schritt' : 'Next step'}** — one platform action to take now`,
   }
 
   const prompt = prompts[profile?.role] || prompts.restaurant_owner

@@ -12,24 +12,24 @@ import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 
-const CATEGORIES = [
-  { name: 'Meat', icon: Beef },
-  { name: 'Poultry', icon: Drumstick },
-  { name: 'Seafood', icon: Fish },
-  { name: 'Dairy', icon: Milk },
-  { name: 'Vegetables', icon: Leaf },
-  { name: 'Fruits', icon: Apple },
-  { name: 'Bakery', icon: Wheat },
-  { name: 'Beverages', icon: Coffee },
-  { name: 'Spices', icon: Flame },
-  { name: 'Other', icon: Package },
+const CATEGORY_KEYS = [
+  { value: 'Meat', key: 'catMeat', icon: Beef },
+  { value: 'Poultry', key: 'catPoultry', icon: Drumstick },
+  { value: 'Seafood', key: 'catSeafood', icon: Fish },
+  { value: 'Dairy', key: 'catDairy', icon: Milk },
+  { value: 'Vegetables', key: 'catVegetables', icon: Leaf },
+  { value: 'Fruits', key: 'catFruits', icon: Apple },
+  { value: 'Bakery', key: 'catBakery', icon: Wheat },
+  { value: 'Beverages', key: 'catBeverages', icon: Coffee },
+  { value: 'Spices', key: 'catSpices', icon: Flame },
+  { value: 'Other', key: 'catOther', icon: Package },
 ]
 
-const SORT_OPTIONS = [
-  { value: '', label: 'Recommended' },
-  { value: 'price_asc', label: 'Price: Low to High' },
-  { value: 'price_desc', label: 'Price: High to Low' },
-  { value: 'name_asc', label: 'Name A–Z' },
+const SORT_OPTION_KEYS = [
+  { value: '', key: 'sortRecommended' },
+  { value: 'price_asc', key: 'sortPriceAsc' },
+  { value: 'price_desc', key: 'sortPriceDesc' },
+  { value: 'name_asc', key: 'sortNameAZ' },
 ]
 
 export default function StorePage() {
@@ -282,7 +282,7 @@ export default function StorePage() {
           <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
           <input
             type="text"
-            placeholder="Search Halal products..."
+            placeholder={t('searchProductsPlaceholder')}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="bg-transparent border-none outline-none focus:outline-none ring-0 focus:ring-0 w-full text-sm"
@@ -295,18 +295,18 @@ export default function StorePage() {
             className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-midnight text-white border-midnight' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
           >
             <Filter className="w-4 h-4" />
-            <span className="hidden sm:inline">{sortBy ? SORT_OPTIONS.find(o => o.value === sortBy)?.label : 'Filter'}</span>
+            <span className="hidden sm:inline">{t(sortBy ? (SORT_OPTION_KEYS.find(o => o.value === sortBy)?.key || 'sortLabel') : 'sortLabel')}</span>
             <ChevronDown className="w-3 h-3" />
           </button>
           {filterOpen && (
             <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl shadow-xl border border-slate-100 z-20 py-1">
-              {SORT_OPTIONS.map(opt => (
+              {SORT_OPTION_KEYS.map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => { setSortBy(opt.value); setFilterOpen(false) }}
                   className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${sortBy === opt.value ? 'text-midnight-dark font-semibold bg-lionsmane' : 'text-slate-700 hover:bg-lionsmane'}`}
                 >
-                  {opt.label}
+                  {t(opt.key)}
                 </button>
               ))}
             </div>
@@ -319,17 +319,17 @@ export default function StorePage() {
         <div>
           {/* Category filter chips */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {CATEGORIES.map(({ name }) => (
+            {CATEGORY_KEYS.map(({ value, key }) => (
               <button
-                key={name}
-                onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
+                key={value}
+                onClick={() => setSelectedCategory(selectedCategory === value ? 'All' : value)}
                 className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
-                  selectedCategory === name
+                  selectedCategory === value
                     ? 'bg-midnight text-white'
                     : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
                 }`}
               >
-                {name}
+                {t(key)}
               </button>
             ))}
           </div>
@@ -360,23 +360,23 @@ export default function StorePage() {
               className="flex overflow-x-auto pb-2 scrollbar-hide justify-between gap-2"
               style={{ WebkitOverflowScrolling: 'touch' }}
             >
-              {[{ name: 'All', icon: Package }, ...CATEGORIES].map(({ name, icon: Icon }) => (
+              {[{ value: 'All', key: 'catAll', icon: Package }, ...CATEGORY_KEYS].map(({ value, key, icon: Icon }) => (
                 <div
-                  key={name}
-                  onClick={() => setSelectedCategory(selectedCategory === name ? 'All' : name)}
+                  key={value}
+                  onClick={() => setSelectedCategory(selectedCategory === value ? 'All' : value)}
                   className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0 outline-none select-none"
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   <div className={`w-20 h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
-                    selectedCategory === name
+                    selectedCategory === value
                       ? 'bg-lionsmane border-herb shadow-md'
                       : 'bg-white border-slate-100 group-hover:border-celeste-dark group-hover:shadow-md'
                   }`}>
-                    <Icon className={`w-9 h-9 ${selectedCategory === name ? 'text-midnight' : 'text-slate-400 group-hover:text-herb'}`} />
+                    <Icon className={`w-9 h-9 ${selectedCategory === value ? 'text-midnight' : 'text-slate-400 group-hover:text-herb'}`} />
                   </div>
                   <span className={`text-xs font-medium whitespace-nowrap ${
-                    selectedCategory === name ? 'text-midnight-dark font-bold' : 'text-slate-600 group-hover:text-slate-900'
-                  }`}>{name}</span>
+                    selectedCategory === value ? 'text-midnight-dark font-bold' : 'text-slate-600 group-hover:text-slate-900'
+                  }`}>{t(key)}</span>
                 </div>
               ))}
             </div>
@@ -441,7 +441,9 @@ export default function StorePage() {
           <div>
             <div className="flex justify-between items-end mb-4 px-1">
               <h2 className="text-lg font-bold text-slate-900">
-                {selectedCategory !== 'All' ? selectedCategory : t('recommendedOrders')}
+                {selectedCategory !== 'All'
+                  ? t(CATEGORY_KEYS.find(c => c.value === selectedCategory)?.key || 'catOther')
+                  : t('recommendedOrders')}
               </h2>
               <button onClick={() => navigate('/owner/products')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">{t('seeAll')} <ChevronRight className="w-4 h-4" /></button>
             </div>

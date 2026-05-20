@@ -12,9 +12,16 @@ import { SkeletonCard } from '../../components/ui/Skeleton'
 
 const COLORS = ['#083A4F', '#D4A017', '#1B4332', '#A58D66', '#40916C', '#74C69D', '#9CA3AF']
 
+const CAT_KEY_MAP = {
+  Meat: 'catMeat', Poultry: 'catPoultry', Seafood: 'catSeafood',
+  Dairy: 'catDairy', Vegetables: 'catVegetables', Fruits: 'catFruits',
+  Bakery: 'catBakery', Beverages: 'catBeverages', Spices: 'catSpices', Other: 'catOther',
+}
+
 export default function AnalyticsPage() {
   const { user } = useAuth()
   const { t } = useLanguage()
+  const tCat = (name) => (CAT_KEY_MAP[name] ? t(CAT_KEY_MAP[name]) : name || '—')
   const [range, setRange] = useState(() => rangeFromKey('month'))
   const [stats, setStats] = useState(null)
   const [monthlySpend, setMonthlySpend] = useState([])
@@ -170,7 +177,7 @@ export default function AnalyticsPage() {
             {[
               { labelKey: 'spendPeriod', value: `€${stats?.periodSpend?.toFixed(2) || '0.00'}`, icon: Euro, color: 'text-primary' },
               { labelKey: 'ordersPeriodLabel', value: stats?.periodOrders || 0, icon: ShoppingBag, color: 'text-blue-600' },
-              { labelKey: 'topCategoryLabel', value: categoryBreakdown[0]?.name || '—', icon: Package, color: 'text-purple-600' },
+              { labelKey: 'topCategoryLabel', value: tCat(categoryBreakdown[0]?.name), icon: Package, color: 'text-purple-600' },
               { labelKey: 'topProductLabel', value: topProducts[0]?.name || '—', icon: TrendingUp, color: 'text-accent' },
             ].map(({ labelKey, value, icon: Icon, color }) => (
               <div key={labelKey} className="card p-4">
@@ -210,7 +217,7 @@ export default function AnalyticsPage() {
                     {categoryPie.map((item, i) => (
                       <div key={item.name} className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <span className="text-xs text-gray-600 truncate flex-1">{item.name}</span>
+                        <span className="text-xs text-gray-600 truncate flex-1">{tCat(item.name)}</span>
                         <span className="text-xs font-bold text-gray-900">{item.pct}%</span>
                       </div>
                     ))}
@@ -232,7 +239,7 @@ export default function AnalyticsPage() {
                     return (
                       <div key={c.name}>
                         <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-medium text-gray-700">{c.name}</span>
+                          <span className="text-xs font-medium text-gray-700">{tCat(c.name)}</span>
                           <span className="text-xs font-bold text-gray-900">€{c.revenue.toFixed(2)}</span>
                         </div>
                         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">

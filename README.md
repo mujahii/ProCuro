@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-20 22:50 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 04:04 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -539,8 +539,8 @@ Serverless equivalents of the AI routes, deployed to production alongside the Vi
 
 | Function | Trigger | Description |
 |---|---|---|
-| `ai-chat.js` | `POST /.netlify/functions/ai-chat` | Proxies to Gemini 2.5 Flash (with 2.5-flash-lite → 2.0-flash-lite fallback chain); verifies Supabase JWT; rate-limited |
-| `ai-analytics-summary.js` | `POST /.netlify/functions/ai-analytics-summary` | Generates AI analytics summary; checks `ai_insights_cache` (24h TTL); falls back to a deterministic text summary if Gemini quota is exceeded |
+| `ai-chat.js` | `POST /.netlify/functions/ai-chat` | Proxies to Gemini 2.5 Flash (with 2.5-flash-lite → 2.0-flash-lite fallback chain); verifies Supabase JWT; accepts `language` field — appends German instruction to system prompt when `language === 'de'` |
+| `ai-analytics-summary.js` | `POST /.netlify/functions/ai-analytics-summary` | Generates AI analytics summary; checks `ai_insights_cache` (24h TTL); falls back to a deterministic text summary if Gemini quota is exceeded; accepts `language` field — prefixes prompts with German instruction and uses German bullet headers when `language === 'de'` |
 
 ---
 
@@ -551,6 +551,7 @@ Serverless equivalents of the AI routes, deployed to production alongside the Vi
 - Sends user messages to `POST /api/ai/chat` (dev) or `/.netlify/functions/ai-chat` (prod).
 - System prompt is role-aware: different instructions for `restaurant_owner`, `supplier`, and `admin`.
 - Context data (e.g. recent orders, active products) is sent alongside the prompt so the model can give grounded answers.
+- **Language-aware:** client sends `language` (`en`/`de`) with each request; the backend appends a German-response instruction when `language === 'de'`, ensuring Gemini replies in the active app language.
 - Rate-limited to 20 requests/minute per user.
 
 ### Analytics Summary (`AnalyticsSummary`)
@@ -558,6 +559,7 @@ Serverless equivalents of the AI routes, deployed to production alongside the Vi
 - Sends business context (revenue, orders, products, etc.) to `POST /api/ai/analytics-summary`.
 - **Caching:** Generated summaries are stored in `ai_insights_cache`. Subsequent page loads within 24 hours return the cached version without a Gemini API call.
 - **Force refresh:** User can bypass the cache with an explicit refresh button.
+- **Language toggle:** When the user switches language (EN ↔ DE), `AnalyticsSummary` automatically triggers `generate({ force: true })`, bypassing the 24h cache to regenerate the summary in the new language.
 - **Stale fallback:** If Gemini is rate-limited and a stale cache entry exists, it is served with a `stale: true` flag.
 - **Deterministic fallback:** If both Gemini and cache fail, a plain-text summary is built from the context data client-side so the user never sees a hard error.
 
@@ -611,7 +613,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 ## Report System
 
-- Any authenticated user can submit a report of type `product`, `supplier`, `order`, or `user`.
+- Any authenticated user can submit a report of type `product`, `supplier`, `order`, `user`, or `restaurant`. When a supplier reports a restaurant owner, `OwnerProfileModal` passes `type="restaurant"` to `ReportModal` so the admin sees the correct type label in the Reports panel.
 - On INSERT, `notify_admin_new_report` trigger notifies the admin.
 - Admin reviews reports in the Reports panel, can mark them as `reviewed` or `dismissed`, and records an `admin_action` with timestamp.
 
@@ -645,8 +647,10 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 ## Invoice Generation
 
-- `client/src/lib/invoiceGenerator.js` generates PDF invoices/delivery receipts for completed orders.
-- Includes order details, line items, supplier and owner business info, IBAN, tax ID, and amounts.
+- `client/src/lib/invoiceGenerator.js` generates PDF invoices for completed orders, **fully in German** (RECHNUNG, Rechnungsempfänger, Lieferant, Produkt, Menge, Einzelpreis, Zwischensumme, GESAMT, etc.).
+- Per split: items subtotal + **7% MwSt. (Lebensmittel)** line + supplier total + payment method (Barzahlung bei Lieferung / Banküberweisung).
+- Grand total box shows the full order total across all suppliers.
+- File saved as `ProCuro-Rechnung-<ID>.pdf`.
 
 ---
 
@@ -677,12 +681,12 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 | Page | Route | Description |
 |---|---|---|
-| StorePage | `/owner/store` | Browse verified suppliers in card layout |
+| StorePage | `/owner/store` | Browse verified suppliers and products by category; categories, sort options, and search placeholder are fully i18n'd (DE: Fleisch, Geflügel, etc.); "See All" button navigates to AllProductsPage |
 | AllProductsPage | `/owner/products` | Browse all products with category/search filter |
 | CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout |
 | OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation (pre-confirmation: any time; post-confirmation: within 3 days of supplier confirmation via `updated_at`); dispute filing |
 | ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings |
-| AnalyticsPage | `/owner/analytics` | Spending trend, top products, **pie chart** of spending by category, top categories bar chart, AI summary at the bottom; week/month/year + custom date-range filter |
+| AnalyticsPage | `/owner/analytics` | Spending trend, top products, pie chart of spending by category, top categories bar chart (category names translated), AI summary at the bottom; week/month/year + custom date-range filter (all labels i18n'd) |
 
 **Ban enforcement in OwnerLayout**: When `users.is_banned = true` for the logged-in owner, a dark red banner appears at the top of every owner dashboard page. All sidebar navigation links (Store, Cart, Orders, Analytics, Profile) are replaced with greyed-out non-clickable spans. The main content area is replaced with an "Account Banned" message and a button directing the user to Chat — the only feature that remains accessible. The layout adjusts its top padding dynamically based on how many banners (deactivated + banned) are visible simultaneously.
 
@@ -726,7 +730,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | Page | Route | Description |
 |---|---|---|
 | AdminLoginPage | `/admin/login` | Separate admin login page |
-| DashboardPage | `/admin/dashboard` | Platform KPIs: GMV, user count, order count. Charts: Platform GMV Over Time (filtered), Orders by Status, **User Growth** (cumulative, fed by real `users.created_at` data), **Payment Type** (COD vs Bank Transfer donut, replaces old Certificate Status), **City Comparison Radar** (suppliers vs owners per top city), **Germany Dot Map** (per-city dots, one colour per role), AI summary. Week/month/year + custom date-range filter on all charts. |
+| DashboardPage | `/admin/dashboard` | Platform KPIs: GMV, user count, order count. Charts: Platform GMV Over Time (filtered), **Orders by Status (Treemap — coloured squares sized by count)**, **User Growth** (cumulative, fed by real `users.created_at` data), **Payment Type** (COD vs Bank Transfer donut), **City Comparison Radar** (suppliers vs owners per top city), **Germany Dot Map** (per-city dots, one colour per role), AI summary. Week/month/year + custom date-range filter on all charts. |
 | UsersPage | `/admin/users` | List all users; ban/unban; delete; view details; deleted accounts log |
 | SuppliersPage | `/admin/suppliers` | List suppliers; verify/unverify; activate/deactivate |
 | OrdersPage | `/admin/orders` | Platform-wide order list with status filters |
@@ -778,18 +782,18 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `RevenueChart` — Monthly revenue area chart (also used as Platform GMV Over Time, owner Spending Trend, supplier Revenue Trend); buckets by day for ≤ 60-day ranges, by month for longer ones. All three charts only count `delivered` or `completed` order_splits; all time periods in the selected range are rendered with 0 for empty periods so the timeline is always continuous. Dates use browser-local time (not UTC) to avoid timezone mismatch on the x-axis.
 - `CategorySalesChart` — Category revenue horizontal bar chart
 - `TopProductsChart` — Top products by revenue
-- `OrdersByStatusChart` — Donut showing order-split status distribution (admin)
+- `OrdersByStatusChart` — **Treemap** showing order-split status distribution (admin) — each status is a coloured square sized by count, with label + count overlaid inside the square; replaced the previous doughnut/pie chart
 - `UserGrowthChart` — Cumulative line chart of owners + suppliers, fed by `users.created_at` grouped by month and filtered by the active date range (admin)
 - `PaymentTypeChart` — Donut + breakdown card showing Bank Transfer vs Cash on Delivery counts and GMV (admin) — replaced the old Certificate Status card
 - `CityComparisonRadar` — Polar/radar chart with one axis per top city, two overlaid series (Suppliers + Owners). Intentionally a different chart family from everything else on the dashboard. **Domain is dynamic**: computed as `Math.ceil(max(all series values) × 1.15)` so the radar shape proportionally reflects actual differences rather than being artificially scaled.
 - `GermanyDotMap` — Germany outline loaded from `/public/Deutschland.svg` (443 × 599 px) as an `<image>` inside an SVG. Two coloured dots per city (supplier = midnight, owner = marigold); dot radius scales with user count (4–12 units). lat/lng → SVG coordinates via Mercator-vertical + equirectangular-horizontal projection using mainland bounds `lat 47.27–55.06, lng 5.87–15.04`, scaled to the 443-unit viewBox.
 - `SupplierVerificationChart` — Defined but currently **unused** (not imported by any page). Intended to show verified vs unverified supplier breakdown; the analytics RPC it was built for (`get_supplier_verification_breakdown`) was dropped in migration 017.
-- `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages.
+- `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages. All labels (presets, custom range header, From/To, Clear, Apply) are fully i18n'd via `t()`.
 
 ### AI
-- `AnalyticsSummary` — AI insight card with cache indicator and force-refresh button; refresh is disabled (dimmed) for 24 hours after the last generation — the button re-enables only once the `ai_insights_cache` TTL expires
+- `AnalyticsSummary` — AI insight card with cache indicator and force-refresh button; refresh is disabled (dimmed) for 24 hours after the last generation — the button re-enables only once the `ai_insights_cache` TTL expires. **Language-aware**: watches `lang` via `useLanguage`; when the language changes, automatically calls `generate({ force: true })` to regenerate the summary in the new language and update the cache.
 - `ChatbotFAB` — Floating action button that opens the AI assistant
-- `ChatbotDrawer` — Slide-in chat drawer for AI assistant
+- `ChatbotDrawer` — Slide-in chat drawer for AI assistant. **Language-aware**: welcome message and suggestion chips are in the active language (EN/DE); sends `language` to the backend so Gemini responds in the selected language. Send button is wider on mobile.
 
 ### UI
 - `Badge` — Generic badge/chip component
@@ -801,7 +805,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `NotificationBell` — Bell icon with unread count; opens `NotificationDropdown`
 - `NotificationDropdown` — Notification list with read/unread state and deep-links
 - `PWAInstallPrompt` — Progressive Web App install prompt
-- `ReportModal` — Abuse report submission form
+- `ReportModal` — Abuse report submission form. Types: `product`, `supplier`, `order`, `user`, `restaurant`. The `restaurant` type is used when a supplier reports a restaurant owner; `OwnerProfileModal` now passes `type="restaurant"` so the admin sees the correct report type.
 - `Skeleton` — Loading skeleton placeholders
 - `StatusBadge` — Color-coded order status badge
 
@@ -823,7 +827,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | File | Purpose |
 |---|---|
 | `supabase.js` | Initialises the Supabase JS client with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` |
-| `gemini.js` | Initialises the Google Generative AI client; wraps `generateContent` calls |
+| `gemini.js` | Client-side helpers: `askGemini(prompt, context, token, { language })` for chat; `getAnalyticsSummary(context, token, { force, language })` for analytics — both pass `language` to the backend |
 | `geocode.js` | Reverse geocoding via browser Geolocation API + OpenStreetMap Nominatim |
 | `haversine.js` | Haversine great-circle distance formula (returns km) |
 | `formatIBAN.js` | Formats raw IBAN string with spaces (e.g. `DE89 3704 0044 …`) |
@@ -839,7 +843,8 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - Language is toggled in the Account Settings card and persisted in `localStorage`.
 - On toggle, `<html lang>` is updated for screen readers and OS integrations.
 - No page reload; no third-party library.
-- **Coverage:** Every user-facing string across all pages is translated including: Login/Register/Role-select flows, Reset Password page, Navbar address dropdown (Delivered to, Select Address, form placeholders), Owner store (search, categories, sort), AllProducts (categories, sort, product card), Public Products List (search, categories, sort, empty states), AddToCartModal (delivery fee states, quantity, discount), Owner Orders (full lifecycle: modals, rating, dispute, refund), Owner Analytics (all chart titles and KPI labels), Supplier Dashboard (certification status banners, KPI cards), Supplier Analytics (all chart titles and KPI labels), Supplier Orders (full lifecycle: Cancel/RefundSection/DisputeResponse modals, detail view, list page), Supplier Products (table headers, add/edit modal, delivery fee table), Supplier Bank Details (labels, validation errors), Supplier Certificates (upload/edit/delete modals), SupplierListPage (categories, sort), Notifications bell. Dictionary has **300+ keys** (EN+DE).
+- **Coverage (as of May 2026):** Login/Register/Role-select flows, Reset Password, Navbar address dropdown, Owner Store (search placeholder, categories, sort options), AllProducts, Public Products List, AddToCartModal, Cart & Checkout (items, delivery, 7% MwSt., per-supplier CoD/bank transfer breakdowns), Owner Orders (full lifecycle), Owner Analytics (chart titles, KPI labels, category names, date-range filter), Supplier Dashboard, Supplier Analytics (chart titles, KPI labels, date-range filter), Supplier Orders, Supplier Products (delivery fee table, delete modal), Supplier Bank Details, Supplier Certificates, SupplierListPage, ChatPage ("No conversations yet", "No messages yet", "Type a message…", "Visit a supplier…"), ChatbotDrawer (welcome message, suggestion chips, placeholder), Notifications bell, Profile modals, AI Insights (auto-regenerates in active language on toggle). Meta description and Open Graph tags in German.
+- **Category name translations** — DB category names (Meat/Poultry/Seafood/Dairy/Vegetables/Fruits/Bakery/Beverages/Spices/Other) are translated everywhere they appear in the UI via `catMeat`/`catPoultry`/… keys; DB values remain English for query filtering. Dictionary has **350+ keys** (EN+DE).
 
 ---
 

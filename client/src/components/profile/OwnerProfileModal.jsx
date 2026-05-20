@@ -177,7 +177,7 @@ export default function OwnerProfileModal({
         </div>
         {showReport && ownerId && (
           <ReportModal
-            type="user"
+            type="restaurant"
             targetId={ownerId}
             targetName={ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant Owner'}
             onClose={() => setShowReport(false)}

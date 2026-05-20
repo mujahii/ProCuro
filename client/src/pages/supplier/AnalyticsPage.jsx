@@ -24,9 +24,16 @@ function StatCard({ label, value, icon: Icon, color, bg }) {
   )
 }
 
+const CAT_KEY_MAP = {
+  Meat: 'catMeat', Poultry: 'catPoultry', Seafood: 'catSeafood',
+  Dairy: 'catDairy', Vegetables: 'catVegetables', Fruits: 'catFruits',
+  Bakery: 'catBakery', Beverages: 'catBeverages', Spices: 'catSpices', Other: 'catOther',
+}
+
 export default function SupplierAnalyticsPage() {
   const { user } = useAuth()
   const { t } = useLanguage()
+  const tCat = (name) => (CAT_KEY_MAP[name] ? t(CAT_KEY_MAP[name]) : name || '—')
   const [range, setRange] = useState(() => rangeFromKey('month'))
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [loading, setLoading] = useState(true)

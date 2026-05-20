@@ -226,8 +226,14 @@ export default function CartPage() {
                   <p className="font-bold text-slate-900 mb-2">{group.supplier?.business_name}</p>
                   {bank ? (
                     <div className="bg-lionsmane p-3 rounded-lg text-sm space-y-1 mb-3">
-                      <p><span className="text-slate-500">{t('accountLabel')}:</span> <span className="font-medium">{bank.account_holder || bank.account_name}</span></p>
-                      <p><span className="text-slate-500">IBAN:</span> <span className="font-mono font-semibold">{bank.iban}</span></p>
+                      {bank.bank_name && (
+                        <p><span className="text-slate-500">{t('bankNameLabel')}:</span> <span className="font-medium">{bank.bank_name}</span></p>
+                      )}
+                      <p><span className="text-slate-500">{t('accountHolderLabel')}:</span> <span className="font-medium">{bank.account_holder || bank.account_name}</span></p>
+                      <p><span className="text-slate-500">{t('ibanLabel')}:</span> <span className="font-mono font-semibold">{bank.iban}</span></p>
+                      {bank.bic && (
+                        <p><span className="text-slate-500">{t('bicSwiftLabel')}:</span> <span className="font-mono font-semibold">{bank.bic}</span></p>
+                      )}
                       <div className="border-t border-slate-200 pt-1 mt-1 space-y-0.5">
                         <p className="text-xs text-slate-400">{t('itemsSubtotal')}: €{group.subtotal.toFixed(2)}</p>
                         <p className="text-xs text-slate-400">{t('deliveryLineLabel')}: €{fee.toFixed(2)}</p>
@@ -281,7 +287,7 @@ export default function CartPage() {
             })}
             <div className="border-t border-marigold-light pt-2">
               <p className="font-bold text-midnight-dark">{t('grandTotal')}: <strong>€{grandTotal.toFixed(2)}</strong></p>
-              <p className="text-xs text-slate-500 mt-0.5">Bitte den genauen Betrag pro Lieferant bereithalten.</p>
+              <p className="text-xs text-slate-500 mt-0.5">{t('cashOnDeliveryNote')}</p>
             </div>
           </div>
         )}
@@ -400,7 +406,7 @@ export default function CartPage() {
                 </div>
                 <div className="flex justify-between text-xs text-slate-500">
                   <span className="flex items-center gap-1"><Truck className="w-3 h-3" /> {t('deliveryLineLabel')}</span>
-                  <span>{deliveryFee > 0 ? `€${deliveryFee.toFixed(2)}` : <span className="text-midnight font-medium">Free</span>}</span>
+                  <span>{deliveryFee > 0 ? `€${deliveryFee.toFixed(2)}` : <span className="text-midnight font-medium">{t('freeText')}</span>}</span>
                 </div>
                 <div className="flex justify-between text-xs text-slate-500">
                   <span>{t('taxLabel')}</span>
@@ -440,8 +446,9 @@ export default function CartPage() {
             <span className="flex items-center gap-1"><Truck className="w-3.5 h-3.5" /> {t('totalDeliveryLabel')}</span>
             <span>
               {deliveryRecalcLoading
-                ? <span className="text-slate-400 inline-flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> Updating…</span>
-                : totalDelivery > 0 ? `€${totalDelivery.toFixed(2)}` : <span className="text-midnight font-medium">Free</span>
+                ? <span className="text-slate-400 inline-flex items-center gap-1"><Loader2 className="w-3 h-3 animate-spin" /> {t('loading')}</span>
+                : totalDelivery > 0 ? `€${totalDelivery.toFixed(2)}` : <span className="text-midnight font-medium">{t('freeText')}</span>
+
               }
             </span>
           </div>

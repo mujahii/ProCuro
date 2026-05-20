@@ -12,6 +12,15 @@ const STATUS_STYLES = {
   dismissed: 'bg-gray-100 text-gray-500',
 }
 
+const TYPE_LABELS = { product: 'Product', supplier: 'Supplier', restaurant: 'Restaurant', order: 'Order', user: 'User' }
+const TYPE_STYLES = {
+  product: 'bg-blue-50 text-blue-700',
+  supplier: 'bg-purple-50 text-purple-700',
+  restaurant: 'bg-orange-50 text-orange-700',
+}
+function typeStyle(type) { return TYPE_STYLES[type] || 'bg-gray-100 text-gray-600' }
+function typeLabel(type) { return TYPE_LABELS[type] || type }
+
 function ActionModal({ report, onClose, onActionDone }) {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
@@ -29,6 +38,13 @@ function ActionModal({ report, onClose, onActionDone }) {
         .eq('id', report.target_id)
         .single()
       setTargetInfo(data)
+    } else if (report.type === 'restaurant') {
+      const { data } = await supabase
+        .from('owner_profiles')
+        .select('id, restaurant_name, user_id')
+        .eq('id', report.target_id)
+        .maybeSingle()
+      setTargetInfo(data)
     } else {
       const { data } = await supabase
         .from('products')
@@ -43,7 +59,7 @@ function ActionModal({ report, onClose, onActionDone }) {
     if (!warnMsg.trim()) return toast.error('Please write a warning message')
     setLoading(true)
     try {
-      const userId = report.type === 'supplier'
+      const userId = report.type === 'supplier' || report.type === 'restaurant'
         ? targetInfo?.user_id
         : targetInfo?.supplier?.user_id
       if (!userId) throw new Error('Could not find user to notify')
@@ -55,6 +71,7 @@ function ActionModal({ report, onClose, onActionDone }) {
         type: 'warning',
         link: report.type === 'supplier' ? '/supplier/chat' : '/owner/chat',
       })
+
       await supabase.from('reports').update({
         status: 'reviewed',
         admin_action: `Warning sent: "${warnMsg.trim()}"`,
@@ -89,6 +106,32 @@ function ActionModal({ report, onClose, onActionDone }) {
         admin_action_at: new Date().toISOString(),
       }).eq('id', report.id)
       toast.success('Account suspended and user notified')
+      onActionDone(report.id, 'reviewed', 'Account suspended')
+      onClose()
+    } catch (err) {
+      toast.error(err.message || 'Failed to suspend account')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function banRestaurantAccount() {
+    setLoading(true)
+    try {
+      await supabase.from('users').update({ is_banned: true }).eq('id', targetInfo.user_id)
+      await supabase.from('notifications').insert({
+        user_id: targetInfo.user_id,
+        title: 'Your account has been suspended',
+        message: 'Your ProCuro account has been suspended following a report. To appeal, please chat with the admin through the ProCuro Chat Centre.',
+        type: 'warning',
+        link: '/owner/chat',
+      })
+      await supabase.from('reports').update({
+        status: 'reviewed',
+        admin_action: 'Account suspended',
+        admin_action_at: new Date().toISOString(),
+      }).eq('id', report.id)
+      toast.success('Account suspended and owner notified')
       onActionDone(report.id, 'reviewed', 'Account suspended')
       onClose()
     } catch (err) {
@@ -152,10 +195,10 @@ function ActionModal({ report, onClose, onActionDone }) {
         {/* Report info */}
         <div className="px-6 py-4 space-y-3 text-sm border-b border-gray-50">
           {[
-            ['Type', report.type === 'product' ? 'Product' : 'Supplier'],
-            ['Target', report.target_name],
+            ['Type', typeLabel(report.type)],
+            ['Target', report.target_name || '—'],
+            ['Reported by', report.reporter?.full_name || report.reporter?.email || '—'],
             ['Reason', report.reason],
-            ['Reporter', report.reporter?.full_name || report.reporter?.email || '—'],
             ['Date', report.created_at ? format(new Date(report.created_at), 'dd MMM yyyy') : '—'],
           ].map(([label, val]) => (
             <div key={label} className="flex justify-between">
@@ -168,13 +211,15 @@ function ActionModal({ report, onClose, onActionDone }) {
               {report.details}
             </div>
           )}
-          <button
-            onClick={() => { onClose(); navigate(`${report.type === 'supplier' ? '/admin/suppliers' : '/admin/products'}?id=${report.target_id}`) }}
-            className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors mt-1"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            View {report.type === 'supplier' ? 'Supplier' : 'Product'} in Admin Panel
-          </button>
+          {(report.type === 'supplier' || report.type === 'product') && (
+            <button
+              onClick={() => { onClose(); navigate(`${report.type === 'supplier' ? '/admin/suppliers' : '/admin/products'}?id=${report.target_id}`) }}
+              className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors mt-1"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              View {typeLabel(report.type)} in Admin Panel
+            </button>
+          )}
         </div>
 
         {/* Actions */}
@@ -226,6 +271,21 @@ function ActionModal({ report, onClose, onActionDone }) {
                   <div>
                     <p className="text-sm font-semibold text-red-700">Suspend Account</p>
                     <p className="text-xs text-red-500">Ban the supplier's account and notify them</p>
+                  </div>
+                </button>
+              )}
+
+              {/* Restaurant-specific: Ban account */}
+              {report.type === 'restaurant' && (
+                <button
+                  onClick={banRestaurantAccount}
+                  disabled={loading}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 transition-colors text-left disabled:opacity-50"
+                >
+                  <Ban className="w-4 h-4 text-red-600 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-red-700">Suspend Restaurant Account</p>
+                    <p className="text-xs text-red-500">Ban the restaurant owner's account and notify them</p>
                   </div>
                 </button>
               )}
@@ -322,6 +382,7 @@ export default function AdminReportsPage() {
             <option value="">All types</option>
             <option value="product">Products</option>
             <option value="supplier">Suppliers</option>
+            <option value="restaurant">Restaurants</option>
           </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input text-sm py-2 flex-1 sm:w-36">
             <option value="">All statuses</option>
@@ -348,11 +409,9 @@ export default function AdminReportsPage() {
                 className="w-full text-left bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:border-midnight/20 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                    r.type === 'product' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'
-                  }`}>
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${typeStyle(r.type)}`}>
                     <Flag className="w-3 h-3" />
-                    {r.type === 'product' ? 'Product' : 'Supplier'}
+                    {typeLabel(r.type)}
                   </span>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${STATUS_STYLES[r.status]}`}>
                     {r.status}
@@ -395,11 +454,9 @@ export default function AdminReportsPage() {
                 {filtered.map(r => (
                   <tr key={r.id} className="hover:bg-lionsmane cursor-pointer" onClick={() => setSelected(r)}>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${
-                        r.type === 'product' ? 'bg-blue-50 text-blue-700' : 'bg-purple-50 text-purple-700'
-                      }`}>
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${typeStyle(r.type)}`}>
                         <Flag className="w-3 h-3" />
-                        {r.type === 'product' ? 'Product' : 'Supplier'}
+                        {typeLabel(r.type)}
                       </span>
                     </td>
                     <td className="px-4 py-3">

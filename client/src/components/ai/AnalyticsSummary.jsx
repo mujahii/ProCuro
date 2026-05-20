@@ -149,11 +149,11 @@ export default function AnalyticsSummary({ context }) {
   useEffect(() => {
     if (prevLanguage.current !== language) {
       prevLanguage.current = language
-      if (hasGenerated.current) {
+      if (context) {
         generate({ force: true })
       }
     }
-  }, [language])
+  }, [language, context])
 
   async function generate({ force = false } = {}) {
     setLoading(true)

@@ -464,6 +464,16 @@ export default function StorePage() {
             {!loading && sortedProducts.length === 0 && (
               <div className="text-center py-12 text-slate-400">No products found</div>
             )}
+            {!loading && sortedProducts.length > 0 && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => navigate('/owner/products')}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-sm"
+                >
+                  {t('seeAll')} <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}

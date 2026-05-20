@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { Send, MessageSquare, ArrowLeft, Package, Shield, Paperclip, FileText, MoreVertical, Pin, Trash2, Loader2, X, Ban } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { de } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
@@ -14,7 +15,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export default function ChatPage() {
   const { user, role } = useAuth()
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initSupplierId = searchParams.get('supplier_id')
@@ -77,6 +78,19 @@ export default function ChatPage() {
     if (role === 'supplier' && !supplierId) return
     loadConversations()
     loadAdminConv()
+  }, [user, role, supplierId])
+
+  // Reload data when tab becomes visible again to recover from dropped WebSocket connections
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState !== 'visible') return
+      if (!user) return
+      if (role === 'supplier' && !supplierId) return
+      loadConversations()
+      loadAdminConv()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
   }, [user, role, supplierId])
 
   useEffect(() => {
@@ -590,7 +604,7 @@ export default function ChatPage() {
                         <p className="text-xs text-slate-400 truncate">{conv.supplier.city}</p>
                       )}
                       {conv.last_message_at && (
-                        <p className="text-xs text-slate-400">{formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })}</p>
+                        <p className="text-xs text-slate-400">{formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true, locale: lang === 'de' ? de : undefined })}</p>
                       )}
                     </div>
                     {unread > 0 && (
@@ -689,12 +703,12 @@ export default function ChatPage() {
                       {msg.content && (
                         <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${isMine ? 'bg-midnight text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'}`}>
                           <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                          <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</p>
+                          <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true, locale: lang === 'de' ? de : undefined })}</p>
                         </div>
                       )}
                       {msg.attachment_url && !msg.content && (
                         <p className={`text-[10px] px-1 opacity-60 text-slate-400 ${isMine ? 'text-right' : ''}`}>
-                          {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true, locale: lang === 'de' ? de : undefined })}
                         </p>
                       )}
                     </div>
@@ -840,12 +854,12 @@ export default function ChatPage() {
                           isMine ? 'bg-midnight text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'
                         }`}>
                           <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                          <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}</p>
+                          <p className="text-[10px] mt-1 opacity-60">{formatDistanceToNow(new Date(msg.created_at), { addSuffix: true, locale: lang === 'de' ? de : undefined })}</p>
                         </div>
                       )}
                       {msg.attachment_url && !msg.content && (
                         <p className={`text-[10px] px-1 opacity-60 text-slate-400 ${isMine ? 'text-right' : ''}`}>
-                          {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true, locale: lang === 'de' ? de : undefined })}
                         </p>
                       )}
                     </div>

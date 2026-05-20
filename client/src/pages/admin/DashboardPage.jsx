@@ -85,8 +85,7 @@ export default function AdminDashboardPage() {
       { count: totalOrders },
       { data: splits },
       { data: usersRows },
-      { data: supplierRows },
-      { data: ownerRows },
+      { data: addressRows },
     ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
       supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'supplier'),
@@ -95,8 +94,10 @@ export default function AdminDashboardPage() {
       supabase.from('orders').select('*', { count: 'exact', head: true }),
       splitsQuery,
       supabase.from('users').select('id, role, created_at').in('role', ['supplier', 'restaurant_owner']),
-      supabase.from('supplier_profiles').select('city, latitude, longitude'),
-      supabase.from('owner_profiles').select('city, latitude, longitude'),
+      supabase.from('addresses')
+        .select('city, latitude, longitude, user:users!user_id(role)')
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null),
     ])
 
     const allSplits = splits || []
@@ -165,32 +166,30 @@ export default function AdminDashboardPage() {
     }
     setUserGrowth(cumulative)
 
-    // City counts + coords for radar + map (uses all-time profile data, not
-    // date-filtered — geography of the platform is stable across periods)
+    // Build one dot per address for the Germany map — each address row is a
+    // separate location dot regardless of how many addresses a user has.
+    const validAddresses = (addressRows || []).filter(
+      a => a.user?.role === 'supplier' || a.user?.role === 'restaurant_owner'
+    )
+    const mapDots = validAddresses.map((a, i) => ({
+      id: i,
+      city: a.city || 'Unknown',
+      lat: Number(a.latitude),
+      lng: Number(a.longitude),
+      role: a.user.role,
+    }))
+    setCityCoords(mapDots)
+
+    // Also build city-level counts for the radar chart (grouped by city)
     const cityMap = {}
-    ;(supplierRows || []).forEach(p => {
-      if (!p.city) return
-      ;(p.city.split(',').map(c => c.trim()).filter(Boolean)).forEach(c => {
-        if (!cityMap[c]) cityMap[c] = { city: c, suppliers: 0, owners: 0, lat: null, lng: null }
-        cityMap[c].suppliers += 1
-        if (cityMap[c].lat == null && p.latitude != null) {
-          cityMap[c].lat = Number(p.latitude); cityMap[c].lng = Number(p.longitude)
-        }
-      })
+    validAddresses.forEach(a => {
+      const c = a.city?.trim()
+      if (!c) return
+      if (!cityMap[c]) cityMap[c] = { city: c, suppliers: 0, owners: 0 }
+      if (a.user.role === 'supplier') cityMap[c].suppliers += 1
+      else cityMap[c].owners += 1
     })
-    ;(ownerRows || []).forEach(p => {
-      if (!p.city) return
-      ;(p.city.split(',').map(c => c.trim()).filter(Boolean)).forEach(c => {
-        if (!cityMap[c]) cityMap[c] = { city: c, suppliers: 0, owners: 0, lat: null, lng: null }
-        cityMap[c].owners += 1
-        if (cityMap[c].lat == null && p.latitude != null) {
-          cityMap[c].lat = Number(p.latitude); cityMap[c].lng = Number(p.longitude)
-        }
-      })
-    })
-    const cityList = Object.values(cityMap).sort((a, b) => (b.suppliers + b.owners) - (a.suppliers + a.owners))
-    setCityCounts(cityList)
-    setCityCoords(cityList)
+    setCityCounts(Object.values(cityMap).sort((a, b) => (b.suppliers + b.owners) - (a.suppliers + a.owners)))
 
     setLoading(false)
   }

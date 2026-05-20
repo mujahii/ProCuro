@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X, Flag } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
+import ModalPortal from './ModalPortal'
 import toast from 'react-hot-toast'
 
 const REASONS = {
@@ -103,7 +104,7 @@ export default function ReportModal({ type, targetId, targetName, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <ModalPortal><div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <div className="flex items-center gap-2">
@@ -171,6 +172,6 @@ export default function ReportModal({ type, targetId, targetName, onClose }) {
           </button>
         </div>
       </div>
-    </div>
+    </div></ModalPortal>
   )
 }

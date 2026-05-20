@@ -87,31 +87,35 @@ export function AddressProvider({ children }) {
     if (isFirst) setSelectedAddress(data)
     setAddressesVersion(v => v + 1)
 
-    // If the user's business card currently has no location, seed it with
-    // this new address so the card reflects the address book straight away.
-    // (When the card already has cities the multi-city selection stays an
-    // explicit choice via the Business Details modal.)
+    // Always sync the new city into the business card so the business details
+    // section reflects new addresses immediately without requiring an edit+save.
     if (user?.id && data.city) {
       const table = role === 'supplier' ? 'supplier_profiles' : 'owner_profiles'
       const { data: prof } = await supabase
         .from(table)
-        .select('city')
+        .select('city, latitude, longitude')
         .eq('user_id', user.id)
         .maybeSingle()
-      if (prof && !prof.city) {
-        await supabase.from(table).update({
-          city: data.city,
-          latitude: data.latitude || null,
-          longitude: data.longitude || null,
-        }).eq('user_id', user.id)
-        if (role !== 'supplier' && updateProfileState) {
-          updateProfileState({
-            city: data.city,
-            latitude: data.latitude || null,
-            longitude: data.longitude || null,
-          })
+      if (prof) {
+        const existing = (prof.city || '').split(',').map(c => c.trim()).filter(Boolean)
+        if (!existing.includes(data.city.trim())) {
+          const updatedCity = existing.length > 0
+            ? [...existing, data.city.trim()].join(', ')
+            : data.city.trim()
+          await supabase.from(table).update({
+            city: updatedCity,
+            latitude: data.latitude || prof.latitude || null,
+            longitude: data.longitude || prof.longitude || null,
+          }).eq('user_id', user.id)
+          if (role !== 'supplier' && updateProfileState) {
+            updateProfileState({
+              city: updatedCity,
+              latitude: data.latitude || prof.latitude || null,
+              longitude: data.longitude || prof.longitude || null,
+            })
+          }
+          if (refreshProfile) await refreshProfile()
         }
-        if (refreshProfile) await refreshProfile()
       }
     }
 

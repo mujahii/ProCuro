@@ -4,13 +4,11 @@ import { useState } from 'react'
 const VB = { w: 443, h: 599 }
 
 // Germany's real geographic bounds (extrema of the mainland).
-// Combined with Mercator projection these match the aspect of the supplied SVG
-// (ratio ≈ 0.83). Tweak only if dots land outside the country outline.
 const BOUNDS = {
-  top: 55.06,    // List, Sylt — northernmost point
-  bottom: 47.27, // Haldenwanger Eck — southernmost point
-  left: 5.87,    // Isenbruch — westernmost point
-  right: 15.04,  // Deschka, Saxony — easternmost point
+  top: 55.06,
+  bottom: 47.27,
+  left: 5.87,
+  right: 15.04,
 }
 
 function mercatorY(lat) {
@@ -20,22 +18,16 @@ function mercatorY(lat) {
 const Y_TOP_M = mercatorY(BOUNDS.top)
 const Y_BOTTOM_M = mercatorY(BOUNDS.bottom)
 
-// Project (lat, lng) → (x, y) inside the SVG viewBox using Mercator vertical
-// and equirectangular horizontal — same projection family Wikimedia uses for
-// its Germany location-map SVGs.
 function project(lat, lng) {
   const x = ((lng - BOUNDS.left) / (BOUNDS.right - BOUNDS.left)) * VB.w
   const y = ((Y_TOP_M - mercatorY(lat)) / (Y_TOP_M - Y_BOTTOM_M)) * VB.h
   return { x, y }
 }
 
-function dotRadius(count) {
-  return Math.max(4, Math.min(12, 4 + count * 1.3))
-}
-
 export default function GermanyDotMap({ data = [], title = 'Users Across Germany' }) {
   const [hover, setHover] = useState(null)
-  const valid = data.filter(d => d.lat != null && d.lng != null)
+  // data: [{ id, city, lat, lng, role: 'supplier'|'restaurant_owner' }]
+  const valid = data.filter(d => d.lat != null && d.lng != null && !isNaN(d.lat) && !isNaN(d.lng))
 
   return (
     <div className="card p-5">
@@ -50,32 +42,35 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
         <svg viewBox={`0 0 ${VB.w} ${VB.h}`} className="w-full h-72" preserveAspectRatio="xMidYMid meet">
           <image href="/Deutschland.svg" x="0" y="0" width={VB.w} height={VB.h} preserveAspectRatio="xMidYMid meet" />
 
-          {valid.map((d, i) => {
+          {valid.map((d) => {
             const { x, y } = project(d.lat, d.lng)
-            const sx = x - 5
-            const ox = x + 5
+            const isSupplier = d.role === 'supplier'
             return (
-              <g key={`${d.city}-${i}`} onMouseEnter={() => setHover(d)} onMouseLeave={() => setHover(null)}>
-                {d.suppliers > 0 && (
-                  <circle cx={sx} cy={y} r={dotRadius(d.suppliers)} fill="#083A4F" fillOpacity="0.85" stroke="#fff" strokeWidth="2" />
-                )}
-                {d.owners > 0 && (
-                  <circle cx={ox} cy={y} r={dotRadius(d.owners)} fill="#D4A017" fillOpacity="0.85" stroke="#fff" strokeWidth="2" />
-                )}
-              </g>
+              <circle
+                key={d.id}
+                cx={x}
+                cy={y}
+                r={5}
+                fill={isSupplier ? '#083A4F' : '#D4A017'}
+                fillOpacity="0.85"
+                stroke="#fff"
+                strokeWidth="1.5"
+                className="cursor-pointer"
+                onMouseEnter={() => setHover({ ...d, x, y })}
+                onMouseLeave={() => setHover(null)}
+              />
             )
           })}
         </svg>
         {hover && (
-          <div className="absolute top-2 right-2 bg-white border border-gray-100 shadow-lg rounded-lg px-3 py-2 text-xs">
+          <div className="absolute top-2 right-2 bg-white border border-gray-100 shadow-lg rounded-lg px-3 py-2 text-xs pointer-events-none">
             <p className="font-bold text-gray-900">{hover.city}</p>
-            <p className="text-gray-600">Suppliers: <span className="font-semibold text-midnight">{hover.suppliers}</span></p>
-            <p className="text-gray-600">Restaurants: <span className="font-semibold text-marigold-dark">{hover.owners}</span></p>
+            <p className="text-gray-500 capitalize">{hover.role === 'supplier' ? 'Supplier' : 'Restaurant'}</p>
           </div>
         )}
       </div>
       {valid.length === 0 && (
-        <p className="text-center text-xs text-gray-400 mt-3">No mapped users yet — coordinates are required.</p>
+        <p className="text-center text-xs text-gray-400 mt-3">No mapped locations yet — coordinates are required.</p>
       )}
     </div>
   )

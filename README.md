@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 04:20 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 05:19 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -309,7 +309,7 @@ User-submitted abuse reports.
 |---|---|---|
 | `id` | UUID PK | |
 | `reporter_id` | UUID | References `users(id) ON DELETE CASCADE` |
-| `type` | TEXT | `product`, `supplier`, `order`, `user` |
+| `type` | TEXT | `product`, `supplier`, `order`, `user`, `restaurant` |
 | `target_id` | UUID NOT NULL | ID of the reported entity |
 | `target_name` | TEXT | Display name of entity |
 | `reason` | TEXT NOT NULL | |
@@ -628,6 +628,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - Any authenticated user can submit a report of type `product`, `supplier`, `order`, `user`, or `restaurant`. When a supplier reports a restaurant owner, `OwnerProfileModal` passes `type="restaurant"` to `ReportModal` so the admin sees the correct type label in the Reports panel.
 - On INSERT, `notify_admin_new_report` trigger notifies the admin.
 - Admin reviews reports in the Reports panel, can mark them as `reviewed` or `dismissed`, and records an `admin_action` with timestamp.
+- **Restaurant reports**: Admin `ReportsPage` now handles `type="restaurant"` — `fetchTarget()` queries `owner_profiles`, the type filter dropdown includes "Restaurants", type badges use an orange colour, and a "Suspend Restaurant Account" action bans the owner's `users` row and sends a notification to `/owner/chat`.
 
 ---
 
@@ -640,6 +641,8 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - Conversations can be pinned by either party (`pinned_by_owner`, `pinned_by_supplier`).
 - Live updates via Supabase Realtime on `messages` and `conversations` tables.
 - `last_message_at` is updated automatically by the `on_new_message` trigger.
+- **Reconnect on tab focus**: A `visibilitychange` listener re-runs `loadConversations()` and `loadAdminConv()` whenever the browser tab becomes visible, recovering gracefully from dropped WebSocket connections without requiring a full page reload.
+- **German date strings**: `formatDistanceToNow` calls pass `{ locale: de }` from `date-fns/locale` when `lang === 'de'`, so message timestamps like "6 days ago" render as "vor 6 Tagen" in German.
 
 ### Admin Support Chat
 - Users can message the admin directly from the platform.
@@ -696,7 +699,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 |---|---|---|
 | StorePage | `/owner/store` | Browse verified suppliers and products by category; categories, sort options, and search placeholder are fully i18n'd (DE: Fleisch, Geflügel, etc.); "See All" button navigates to AllProductsPage |
 | AllProductsPage | `/owner/products` | Browse all products with category/search filter |
-| CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout |
+| CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout. Bank transfer step shows full bank info (bank name, IBAN, BIC, account holder). All cart and payment labels are fully i18n'd (EN/DE): items subtotal, delivery, VAT, amount, upload receipt, place order, back, cash on delivery note, free delivery label. |
 | OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation (pre-confirmation: any time; post-confirmation: within 3 days of supplier confirmation via `updated_at`); dispute filing |
 | ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings |
 | AnalyticsPage | `/owner/analytics` | Spending trend, top products, pie chart of spending by category, top categories bar chart (category names translated), AI summary at the bottom; week/month/year + custom date-range filter (all labels i18n'd) |
@@ -724,7 +727,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | `OwnerProfileModal` (used by Supplier OrdersPage when viewing an order's owner card, and by ChatPage when tapping the owner avatar) | Fetches `users.is_banned`; if true, shows a red "Banned" pill under the owner's name + a red banner row inside the modal with the banned message |
 | `ChatPage` (supplier side) | When the open conversation's owner has `is_banned = true`, shows a red strip above the message list: "This restaurant owner's account has been banned. Past orders remain accessible but no new orders can be placed." Chat remains usable so the supplier can still communicate |
 
-**Germany Dot Map — real outline**: The map SVG was updated to `client/public/Deutschland.svg` (443 × 599 px, viewBox `0 0 443 599`). The component renders it as an `<image>` element inside its own SVG and projects city dots onto it using Mercator-vertical + equirectangular-horizontal projection with mainland bounds `lat 47.27–55.06, lng 5.87–15.04`. Dot radius (`4–12 units`) and stroke width (`2 units`) are scaled to the 443-unit viewBox.
+**Germany Dot Map — real outline**: The map SVG was updated to `client/public/Deutschland.svg` (443 × 599 px, viewBox `0 0 443 599`). The component renders it as an `<image>` element inside its own SVG and projects address dots onto it using Mercator-vertical + equirectangular-horizontal projection with mainland bounds `lat 47.27–55.06, lng 5.87–15.04`. Each dot represents one saved `addresses` row (not one user), so a supplier or owner with multiple addresses appears as multiple distinct dots. Dot radius 5 units, colour-coded by role (supplier = `#083A4F`, restaurant owner = `#D4A017`), white stroke.
 
 ### Supplier (`/supplier/`)
 
@@ -743,13 +746,13 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | Page | Route | Description |
 |---|---|---|
 | AdminLoginPage | `/admin/login` | Separate admin login page |
-| DashboardPage | `/admin/dashboard` | Platform KPIs (title: "Overview"): GMV, user count, order count. Charts: Platform GMV Over Time (filtered), **Orders by Status (Treemap — coloured squares sized by count)**, **User Growth** (cumulative, fed by real `users.created_at` data), **Payment Type** (COD vs Bank Transfer donut), **City Comparison Radar** (suppliers vs owners per top city), **Germany Dot Map** (per-city dots, one colour per role), AI summary. Week/month/year + custom date-range filter on all charts. |
+| DashboardPage | `/admin/dashboard` | Platform KPIs (title: "Overview"): GMV, user count, order count. Charts: Platform GMV Over Time (filtered), **Orders by Status (column/bar chart — one bar per status, colour-coded)**, **User Growth** (cumulative, fed by real `users.created_at` data), **Payment Type** (COD vs Bank Transfer donut), **City Comparison Radar** (suppliers vs owners per top city), **Germany Dot Map** (one dot per address/location — users with multiple addresses appear as multiple dots), AI summary. Week/month/year + custom date-range filter on all charts. |
 | UsersPage | `/admin/users` | List all users; ban/unban; delete; view details; deleted accounts log |
 | SuppliersPage | `/admin/suppliers` | List suppliers; verify/unverify; activate/deactivate |
 | OrdersPage | `/admin/orders` | Platform-wide order list with status filters |
 | ProductsPage | `/admin/products` | All products across all suppliers; activate/deactivate; delete with confirmation modal |
 | CertificatesPage | `/admin/certificates` | Certificate review queue: approve or reject with reason |
-| ReportsPage | `/admin/reports` | Abuse report queue: review, record action, dismiss |
+| ReportsPage | `/admin/reports` | Abuse report queue: review, record action, dismiss. Supports all report types: `product`, `supplier`, `restaurant`, `order`, `user`. ActionModal shows who filed the report ("Reported by"), the target details, and role-appropriate actions — warns/bans for suppliers, warns/suspends for restaurant accounts, deletes for products. Type filter dropdown includes all types including `restaurant`. Type badges are colour-coded (blue = product, purple = supplier, orange = restaurant). |
 | AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations); per-conversation delete via modal overlay (same pattern as ChatPage) |
 | DeliveryFeesPage | `/admin/delivery-fees` | CRUD for `delivery_fee_rules` table — add, edit, and delete distance-based delivery fee tiers; changes are reflected live in the supplier Products page delivery fee table. **Tax rate section** at the bottom: displays the current VAT rate from `platform_settings` and allows the admin to edit it via a modal (value stored as a decimal in DB, displayed as a percentage in the UI) |
 
@@ -757,7 +760,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 
 | Page | Route | Description |
 |---|---|---|
-| ChatPage | `/owner/chat` and `/supplier/chat` | Supplier–owner real-time messaging; shared component rendered inside OwnerLayout and SupplierLayout respectively; per-conversation delete via modal overlay with pin/unpin |
+| ChatPage | `/owner/chat` and `/supplier/chat` | Supplier–owner real-time messaging; shared component rendered inside OwnerLayout and SupplierLayout respectively; per-conversation delete via modal overlay with pin/unpin. **Reconnect on tab focus**: a `visibilitychange` listener reloads conversations and messages whenever the tab becomes visible, preventing stale state after the browser suspends the Supabase Realtime WebSocket. **German date strings**: all `formatDistanceToNow` calls pass `{ locale: de }` when the active language is DE, so timestamps display in German ("vor 6 Tagen" etc.). |
 
 ---
 
@@ -795,11 +798,11 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `RevenueChart` — Monthly revenue area chart (also used as Platform GMV Over Time, owner Spending Trend, supplier Revenue Trend); buckets by day for ≤ 60-day ranges, by month for longer ones. All three charts only count `delivered` or `completed` order_splits; all time periods in the selected range are rendered with 0 for empty periods so the timeline is always continuous. Dates use browser-local time (not UTC) to avoid timezone mismatch on the x-axis.
 - `CategorySalesChart` — Category revenue horizontal bar chart
 - `TopProductsChart` — Top products by revenue
-- `OrdersByStatusChart` — **Treemap** showing order-split status distribution (admin) — each status is a coloured square sized by count, with label + count overlaid inside the square; replaced the previous doughnut/pie chart
+- `OrdersByStatusChart` — **Column/bar chart** showing order-split status distribution (admin) — one bar per status, each colour-coded (yellow for pending, blue for confirmed, purple for in-transit, dark green for delivered/completed, red for cancelled); x-axis labels angled −35°; replaced the previous Treemap
 - `UserGrowthChart` — Cumulative line chart of owners + suppliers, fed by `users.created_at` grouped by month and filtered by the active date range (admin)
 - `PaymentTypeChart` — Donut + breakdown card showing Bank Transfer vs Cash on Delivery counts and GMV (admin) — replaced the old Certificate Status card
 - `CityComparisonRadar` — Polar/radar chart with one axis per top city, two overlaid series (Suppliers + Owners). Intentionally a different chart family from everything else on the dashboard. **Domain is dynamic**: computed as `Math.ceil(max(all series values) × 1.15)` so the radar shape proportionally reflects actual differences rather than being artificially scaled.
-- `GermanyDotMap` — Germany outline loaded from `/public/Deutschland.svg` (443 × 599 px) as an `<image>` inside an SVG. Two coloured dots per city (supplier = midnight, owner = marigold); dot radius scales with user count (4–12 units). lat/lng → SVG coordinates via Mercator-vertical + equirectangular-horizontal projection using mainland bounds `lat 47.27–55.06, lng 5.87–15.04`, scaled to the 443-unit viewBox.
+- `GermanyDotMap` — Germany outline loaded from `/public/Deutschland.svg` (443 × 599 px) as an `<image>` inside an SVG. Renders **one dot per address row** (from the `addresses` table), not one dot per user — so multi-location users appear as multiple dots. Colour-coded by role: supplier = `#083A4F` (midnight), restaurant owner = `#D4A017` (marigold). lat/lng → SVG coordinates via Mercator-vertical + equirectangular-horizontal projection using mainland bounds `lat 47.27–55.06, lng 5.87–15.04`, scaled to the 443-unit viewBox. Hover shows city name + role tooltip.
 - `SupplierVerificationChart` — Defined but currently **unused** (not imported by any page). Intended to show verified vs unverified supplier breakdown; the analytics RPC it was built for (`get_supplier_verification_breakdown`) was dropped in migration 017.
 - `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages. All labels (presets, custom range header, From/To, Clear, Apply) are fully i18n'd via `t()`.
 
@@ -829,7 +832,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | Context | File | Provides |
 |---|---|---|
 | `AuthContext` | `context/AuthContext.jsx` | `user`, `session`, `loading`, `signOut` |
-| `AddressContext` | `context/AddressContext.jsx` | Address book CRUD, default address management |
+| `AddressContext` | `context/AddressContext.jsx` | Address book CRUD, default address management. When a new address is added, automatically syncs the city into `supplier_profiles.city` / `owner_profiles.city` (appending to the comma-separated list if not already present) so the Business Details card reflects new addresses immediately without requiring an edit+save cycle. |
 | `CartContext` | `context/CartContext.jsx` | Cart items, add/remove/clear, grouped by supplier |
 | `LanguageContext` | `context/LanguageContext.jsx` | `lang` (`en`/`de`), `t(key)` translation function, persisted to `localStorage` |
 
@@ -856,7 +859,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - Language is toggled in the Account Settings card and persisted in `localStorage`.
 - On toggle, `<html lang>` is updated for screen readers and OS integrations.
 - No page reload; no third-party library.
-- **Coverage (as of May 2026):** Login/Register/Role-select flows, Reset Password, Navbar address dropdown, Owner Store (search placeholder, categories, sort options), AllProducts, Public Products List, AddToCartModal, Cart & Checkout (items, delivery, 7% MwSt., per-supplier CoD/bank transfer breakdowns), Owner Orders (full lifecycle), Owner Analytics (chart titles, KPI labels, category names, date-range filter), Supplier Dashboard, Supplier Analytics (chart titles, KPI labels, date-range filter), Supplier Orders, Supplier Products (delivery fee table, delete modal), Supplier Bank Details, Supplier Certificates, SupplierListPage, ChatPage ("No conversations yet", "No messages yet", "Type a message…", "Visit a supplier…"), ChatbotDrawer (welcome message, suggestion chips, placeholder), Notifications bell, Profile modals, AI Insights (auto-regenerates in active language on toggle). Meta description and Open Graph tags in German.
+- **Coverage (as of May 2026):** Login/Register/Role-select flows, Reset Password, Navbar address dropdown, Owner Store (search placeholder, categories, sort options, "See All" button at bottom of Recommended Products), AllProducts, Public Products List, AddToCartModal, Cart & Checkout (items subtotal, delivery, 7% MwSt., amount, upload receipt, place order, back, "Continue to Payment", cash on delivery note, free delivery label, bank transfer fields: bank name / IBAN / BIC / account holder), Owner Orders (full lifecycle), Owner Analytics (chart titles, KPI labels, category names, date-range filter), Supplier Dashboard, Supplier Analytics (chart titles, KPI labels, date-range filter), Supplier Orders, Supplier Products (delivery fee table, delete modal), Supplier Bank Details, Supplier Certificates, SupplierListPage, ChatPage ("No conversations yet", "No messages yet", "Type a message…", "Visit a supplier…"; date/time strings use German locale when DE is active via `date-fns/locale/de`), ChatbotDrawer (welcome message, suggestion chips, placeholder), Notifications bell, Profile modals, AI Insights (auto-regenerates in active language on toggle). Meta description and Open Graph tags in German.
 - **Category name translations** — DB category names (Meat/Poultry/Seafood/Dairy/Vegetables/Fruits/Bakery/Beverages/Spices/Other) are translated everywhere they appear in the UI via `catMeat`/`catPoultry`/… keys; DB values remain English for query filtering. Dictionary has **350+ keys** (EN+DE).
 
 ---

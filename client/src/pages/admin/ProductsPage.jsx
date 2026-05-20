@@ -24,6 +24,7 @@ export default function AdminProductsPage() {
   const [supplierFilter, setSupplierFilter] = useState('')
   const [suppliers, setSuppliers] = useState([])
   const [toggleTarget, setToggleTarget] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const [viewProduct, setViewProduct] = useState(null)
 
   useEffect(() => { loadProducts(); loadSuppliers() }, [])
@@ -48,10 +49,11 @@ export default function AdminProductsPage() {
     setSuppliers(data || [])
   }
 
-  async function deleteProduct(id) {
-    if (!confirm('Delete this product?')) return
-    await supabase.from('products').delete().eq('id', id)
-    setProducts(prev => prev.filter(p => p.id !== id))
+  async function deleteProduct() {
+    if (!deleteTarget) return
+    await supabase.from('products').delete().eq('id', deleteTarget.id)
+    setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
+    setDeleteTarget(null)
     toast.success('Product deleted')
   }
 
@@ -131,7 +133,7 @@ export default function AdminProductsPage() {
                       <button onClick={() => handleToggleClick(product)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
                         {product.is_active ? <ToggleRight className="w-4 h-4 text-primary" /> : <ToggleLeft className="w-4 h-4" />}
                       </button>
-                      <button onClick={() => deleteProduct(product.id)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
+                      <button onClick={() => setDeleteTarget(product)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -211,6 +213,30 @@ export default function AdminProductsPage() {
                 className="flex-1 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-semibold hover:bg-orange-600"
               >
                 Yes, Deactivate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">Delete Product</h2>
+              <button onClick={() => setDeleteTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-5">
+              <p className="text-sm font-semibold text-red-700 mb-1">This will permanently delete the product:</p>
+              <p className="text-sm text-red-600 font-medium">"{deleteTarget.name}" by {deleteTarget.supplier?.business_name || 'this supplier'}</p>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setDeleteTarget(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-lionsmane">
+                Cancel
+              </button>
+              <button onClick={deleteProduct} className="flex-1 py-2.5 bg-red-500 text-white rounded-xl text-sm font-semibold hover:bg-red-600">
+                Yes, Delete
               </button>
             </div>
           </div>

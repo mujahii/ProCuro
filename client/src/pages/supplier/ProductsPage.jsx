@@ -9,16 +9,15 @@ import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff, X, Truck, Chevr
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
 
-const DELIVERY_TIERS = [
-  { range: '0 – 50 km',   fee: '€5.00' },
-  { range: '50 – 100 km', fee: '€9.00' },
-  { range: '100 – 200 km', fee: '€14.00' },
-  { range: '200+ km',     fee: '€20.00' },
-]
-
 function DeliveryFeeTable() {
   const { t } = useLanguage()
   const [open, setOpen] = useState(false)
+  const [rules, setRules] = useState([])
+
+  useEffect(() => {
+    supabase.from('delivery_fee_rules').select('*').order('min_km').then(({ data }) => setRules(data || []))
+  }, [])
+
   return (
     <div className="mb-6 border border-celeste rounded-xl overflow-hidden">
       <button
@@ -40,10 +39,10 @@ function DeliveryFeeTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {DELIVERY_TIERS.map(t => (
-                <tr key={t.range}>
-                  <td className="px-4 py-2 text-gray-700">{t.range}</td>
-                  <td className="px-4 py-2 text-right font-semibold text-midnight-dark">{t.fee}</td>
+              {rules.map(rule => (
+                <tr key={rule.id}>
+                  <td className="px-4 py-2 text-gray-700">{rule.label || `${rule.min_km}–${rule.max_km ?? '∞'} km`}</td>
+                  <td className="px-4 py-2 text-right font-semibold text-midnight-dark">€{Number(rule.fee).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -65,6 +64,7 @@ export default function SupplierProductsPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editProduct, setEditProduct] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   useEffect(() => {
     if (user) init()
@@ -86,11 +86,12 @@ export default function SupplierProductsPage() {
     setLoading(false)
   }
 
-  async function handleDelete(id) {
-    if (!confirm('Delete this product?')) return
-    await supabase.from('products').delete().eq('id', id)
-    setProducts(prev => prev.filter(p => p.id !== id))
-    toast.success('Product deleted')
+  async function handleDelete() {
+    if (!deleteTarget) return
+    await supabase.from('products').delete().eq('id', deleteTarget.id)
+    setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
+    setDeleteTarget(null)
+    toast.success(t('productDeletedToast'))
   }
 
   async function toggleActive(product) {
@@ -206,7 +207,7 @@ export default function SupplierProductsPage() {
                         <button onClick={() => { setEditProduct(product); setShowForm(true) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDelete(product.id)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500">
+                        <button onClick={() => setDeleteTarget(product)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -217,6 +218,26 @@ export default function SupplierProductsPage() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* Delete Product Confirmation */}
+      {deleteTarget && (
+        <ModalPortal><div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">{t('deleteProductTitle')}</h2>
+              <button onClick={() => setDeleteTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-5">
+              <p className="text-sm font-semibold text-red-700 mb-1">{t('deleteProductWarning')}</p>
+              <p className="text-sm text-red-600 font-medium">{deleteTarget.name}</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteTarget(null)} className="btn-ghost flex-1 text-sm py-2">{t('cancel')}</button>
+              <button onClick={handleDelete} className="flex-1 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-colors">{t('delete')}</button>
+            </div>
+          </div>
+        </div></ModalPortal>
       )}
     </div>
   )

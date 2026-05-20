@@ -1,5 +1,5 @@
 import { Outlet, NavLink } from 'react-router-dom'
-import { LayoutDashboard, Users, Award, Package, ShoppingBag, LogOut, Flag, MessageSquare, Shield, Menu, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { LayoutDashboard, Users, Award, Package, ShoppingBag, LogOut, Flag, MessageSquare, Shield, Menu, ChevronLeft, ChevronRight, X, Truck } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
@@ -12,6 +12,7 @@ const navItems = [
   { to: '/admin/certificates', icon: Award, label: 'Certificates' },
   { to: '/admin/products', icon: Package, label: 'Products' },
   { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
+  { to: '/admin/delivery-fees', icon: Truck, label: 'Delivery Fees' },
   { to: '/admin/reports', icon: Flag, label: 'Reports', badge: true },
   { to: '/admin/chat', icon: MessageSquare, label: 'Chat', unreadBadge: true },
 ]

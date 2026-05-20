@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-19 23:56 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-20 22:50 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -714,7 +714,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | Page | Route | Description |
 |---|---|---|
 | DashboardPage | `/supplier/dashboard` | Overview: pending orders count, revenue KPIs, quick actions |
-| ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock |
+| ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock; delete with confirmation modal; delivery fee table loaded live from `delivery_fee_rules` DB table |
 | OrdersPage | `/supplier/orders` | Incoming order management: confirm, ship, deliver, cancel, upload refund |
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
 | BankDetailsPage | `/supplier/bank-details` | IBAN, BIC, account holder management |
@@ -730,10 +730,11 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | UsersPage | `/admin/users` | List all users; ban/unban; delete; view details; deleted accounts log |
 | SuppliersPage | `/admin/suppliers` | List suppliers; verify/unverify; activate/deactivate |
 | OrdersPage | `/admin/orders` | Platform-wide order list with status filters |
-| ProductsPage | `/admin/products` | All products across all suppliers; activate/deactivate |
+| ProductsPage | `/admin/products` | All products across all suppliers; activate/deactivate; delete with confirmation modal |
 | CertificatesPage | `/admin/certificates` | Certificate review queue: approve or reject with reason |
 | ReportsPage | `/admin/reports` | Abuse report queue: review, record action, dismiss |
 | AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations); per-conversation delete via modal overlay (same pattern as ChatPage) |
+| DeliveryFeesPage | `/admin/delivery-fees` | CRUD for `delivery_fee_rules` table — add, edit, and delete distance-based delivery fee tiers; changes are reflected live in the supplier Products page delivery fee table |
 
 ### Shared
 

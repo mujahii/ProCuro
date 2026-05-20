@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Plus, Edit2, Trash2, X, Truck } from 'lucide-react'
+import { Plus, Edit2, Trash2, X, Truck, Percent } from 'lucide-react'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import toast from 'react-hot-toast'
 
@@ -15,12 +15,37 @@ export default function AdminDeliveryFeesPage() {
   const [saving, setSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  useEffect(() => { loadRules() }, [])
+  // Tax rate state
+  const [taxRate, setTaxRate] = useState(null)
+  const [showTaxForm, setShowTaxForm] = useState(false)
+  const [taxInput, setTaxInput] = useState('')
+  const [savingTax, setSavingTax] = useState(false)
+
+  useEffect(() => { loadRules(); loadTaxRate() }, [])
 
   async function loadRules() {
     const { data } = await supabase.from('delivery_fee_rules').select('*').order('min_km')
     setRules(data || [])
     setLoading(false)
+  }
+
+  async function loadTaxRate() {
+    const { data } = await supabase.from('platform_settings').select('value').eq('key', 'tax_rate').maybeSingle()
+    if (data?.value) setTaxRate(parseFloat(data.value))
+  }
+
+  async function handleSaveTaxRate(e) {
+    e.preventDefault()
+    const val = parseFloat(taxInput)
+    if (isNaN(val) || val < 0 || val > 100) { toast.error('Enter a valid percentage between 0 and 100'); return }
+    setSavingTax(true)
+    const { error } = await supabase.from('platform_settings')
+      .upsert({ key: 'tax_rate', value: String(val / 100) }, { onConflict: 'key' })
+    if (error) { toast.error('Failed to save tax rate'); setSavingTax(false); return }
+    setTaxRate(val / 100)
+    setShowTaxForm(false)
+    setSavingTax(false)
+    toast.success('Tax rate updated')
   }
 
   function openAdd() {
@@ -187,6 +212,77 @@ export default function AdminDeliveryFeesPage() {
                 </button>
                 <button type="submit" disabled={saving} className="btn-primary flex-1 text-sm py-2">
                   {saving ? 'Saving…' : editRule ? 'Save Changes' : 'Add Rule'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Tax Rate Section */}
+      <div className="mt-8">
+        <div className="flex items-center gap-2 mb-3">
+          <Percent className="w-5 h-5 text-primary" />
+          <h2 className="text-lg font-black text-gray-900">VAT / Tax Rate</h2>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">
+          The tax rate applied to all orders at checkout and shown on invoices. Germany's reduced VAT rate for food (Lebensmittel) is 7%.
+        </p>
+        <div className="bg-white rounded-xl border border-gray-100 p-5 flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Current Rate</p>
+            <p className="text-2xl font-black text-midnight">
+              {taxRate != null ? `${(taxRate * 100).toFixed(1)}%` : '—'}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">Applied at checkout &amp; on PDF invoices</p>
+          </div>
+          <button
+            onClick={() => { setTaxInput(taxRate != null ? String((taxRate * 100).toFixed(2)) : '7'); setShowTaxForm(true) }}
+            className="flex items-center gap-2 px-4 py-2 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors"
+          >
+            <Edit2 className="w-4 h-4" /> Edit Rate
+          </button>
+        </div>
+      </div>
+
+      {/* Tax Rate Edit Modal */}
+      {showTaxForm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold text-gray-900">Edit Tax Rate</h2>
+              <button onClick={() => setShowTaxForm(false)} className="p-1 rounded-lg hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleSaveTaxRate} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1">
+                  Rate (%) <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    required
+                    value={taxInput}
+                    onChange={e => setTaxInput(e.target.value)}
+                    className="input w-full text-sm py-2 pr-8"
+                    placeholder="e.g. 7"
+                    autoFocus
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">%</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">Enter as a percentage — e.g. "7" for 7%</p>
+              </div>
+              <div className="flex gap-3 pt-1">
+                <button type="button" onClick={() => setShowTaxForm(false)} className="btn-ghost flex-1 text-sm py-2">
+                  Cancel
+                </button>
+                <button type="submit" disabled={savingTax} className="btn-primary flex-1 text-sm py-2">
+                  {savingTax ? 'Saving…' : 'Save Rate'}
                 </button>
               </div>
             </form>

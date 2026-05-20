@@ -480,7 +480,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
           <MessageSquare className="w-4 h-4 text-midnight" /> {t('chatWithSupplierBtn')}
         </button>
         <button
-          onClick={() => generateInvoice(split.order, [split], profile)}
+          onClick={() => generateInvoice(split.order, [split], profile, taxRate)}
           className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-lionsmane transition-colors text-sm"
         >
           <Download className="w-4 h-4" /> {t('downloadInvoice')}
@@ -542,6 +542,12 @@ export default function OrdersPage() {
   const [cancelTarget, setCancelTarget] = useState(null)
   const [notReceivedTarget, setNotReceivedTarget] = useState(null)
   const [ratingTarget, setRatingTarget] = useState(null)
+  const [taxRate, setTaxRate] = useState(0.07)
+
+  useEffect(() => {
+    supabase.from('platform_settings').select('value').eq('key', 'tax_rate').maybeSingle()
+      .then(({ data }) => { if (data?.value) setTaxRate(parseFloat(data.value)) })
+  }, [])
 
   useEffect(() => {
     if (user) fetchOrders()

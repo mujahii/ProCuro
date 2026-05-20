@@ -159,8 +159,8 @@ export default function SupplierProductsPage() {
           </button>
         </div>
       ) : (
-        <div className="card overflow-hidden">
-          <table className="w-full">
+        <div className="card overflow-x-auto">
+          <table className="w-full min-w-[480px]">
             <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('productLabel')}</th>
@@ -174,7 +174,11 @@ export default function SupplierProductsPage() {
               {products.map(product => {
                 const imgUrl = getImageUrl(product.image_url)
                 return (
-                  <tr key={product.id} className="hover:bg-lionsmane transition-colors">
+                  <tr
+                    key={product.id}
+                    onClick={() => { setEditProduct(product); setShowForm(true) }}
+                    className="hover:bg-lionsmane transition-colors cursor-pointer"
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
@@ -199,15 +203,15 @@ export default function SupplierProductsPage() {
                     <td className="px-4 py-3">
                       <Badge status={product.is_active ? 'active' : 'inactive'} />
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center gap-1 justify-end">
                         <button onClick={() => toggleActive(product)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                           {product.is_active ? <ToggleRight className="w-7 h-7 text-midnight" /> : <ToggleLeft className="w-7 h-7 text-gray-300" />}
                         </button>
-                        <button onClick={() => { setEditProduct(product); setShowForm(true) }} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-400">
+                        <button onClick={() => { setEditProduct(product); setShowForm(true) }} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => setDeleteTarget(product)} className="p-1.5 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500">
+                        <button onClick={() => setDeleteTarget(product)} className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>

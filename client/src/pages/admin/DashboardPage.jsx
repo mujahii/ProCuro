@@ -218,7 +218,7 @@ export default function AdminDashboardPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-black text-gray-900">Platform Overview</h1>
+        <h1 className="text-2xl font-black text-gray-900">Overview</h1>
         <DateRangeFilter value={range} onChange={setRange} />
       </div>
 

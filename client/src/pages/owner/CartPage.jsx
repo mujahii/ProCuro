@@ -12,8 +12,6 @@ import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
 
-const TAX_RATE = 0.07   // Germany reduced VAT rate for food (Lebensmittel)
-
 function getProductImageUrl(path) {
   if (!path) return null
   if (path.startsWith('http')) return path
@@ -37,10 +35,16 @@ export default function CartPage() {
   const [deliveryFees, setDeliveryFees] = useState({})
   const [deliveryRecalcLoading, setDeliveryRecalcLoading] = useState(false)
   const [bannedSupplierIds, setBannedSupplierIds] = useState(new Set())
+  const [taxRate, setTaxRate] = useState(0.07)
 
   const groups = Object.entries(groupedBySupplier)
   const supplierIdsKey = useMemo(() => groups.map(([id]) => id).sort().join(','), [groups])
   const hasBannedSupplierInCart = groups.some(([sid]) => bannedSupplierIds.has(sid))
+
+  useEffect(() => {
+    supabase.from('platform_settings').select('value').eq('key', 'tax_rate').maybeSingle()
+      .then(({ data }) => { if (data?.value) setTaxRate(parseFloat(data.value)) })
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -114,7 +118,7 @@ export default function CartPage() {
     return Number(group.items[0]?.product?.delivery_fee || 0)
   }
 
-  function taxFor(subtotal) { return subtotal * TAX_RATE }
+  function taxFor(subtotal) { return subtotal * taxRate }
 
   function handleReceiptFile(supplierId, file) {
     if (file?.size > 5 * 1024 * 1024) { toast.error('File must be under 5MB'); return }

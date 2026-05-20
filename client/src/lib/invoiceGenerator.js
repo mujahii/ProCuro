@@ -8,9 +8,7 @@ const TEXT = [26, 26, 26]
 const MUTED = [100, 100, 100]
 const ACCENT_TINT = [220, 200, 130]   // soft marigold for header subtext
 
-const TAX_RATE = 0.07   // 7% German reduced VAT for food (Lebensmittel)
-
-export function generateInvoice(order, splits, ownerProfile) {
+export function generateInvoice(order, splits, ownerProfile, taxRate = 0.07) {
   const doc = new jsPDF()
   const pageWidth = doc.internal.pageSize.getWidth()
 
@@ -67,7 +65,7 @@ export function generateInvoice(order, splits, ownerProfile) {
 
   splits.forEach((split, splitIdx) => {
     const itemsSubtotal = Number(split.subtotal) || 0
-    const tax = itemsSubtotal * TAX_RATE
+    const tax = itemsSubtotal * taxRate
     const splitTotal = itemsSubtotal + tax
 
     // Supplier header — soft cream (lionsmane) band with midnight text
@@ -112,7 +110,7 @@ export function generateInvoice(order, splits, ownerProfile) {
     // 7% MwSt. line
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(...MUTED)
-    doc.text('7% MwSt. (Lebensmittel):', pageWidth - 55, yPos, { align: 'right' })
+    doc.text(`${(taxRate * 100).toFixed(0)}% MwSt. (Lebensmittel):`, pageWidth - 55, yPos, { align: 'right' })
     doc.text(`€${tax.toFixed(2)}`, pageWidth - 20, yPos, { align: 'right' })
     yPos += 7
 

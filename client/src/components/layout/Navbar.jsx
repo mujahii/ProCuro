@@ -126,12 +126,21 @@ export default function Navbar({ onMenuClick }) {
               <span className="font-bold text-xl text-midnight hidden sm:block">ProCuro</span>
             </Link>
 
-            {/* Address selector — owner only, md+ */}
+            {/* Address selector — owner only */}
             {role === 'restaurant_owner' && (
-              <div className="relative ml-3 hidden md:block" ref={addrRef}>
+              <div className="relative ml-2 sm:ml-3" ref={addrRef}>
+                {/* Mobile: compact MapPin icon */}
                 <button
                   onClick={() => setAddrOpen(o => !o)}
-                  className="flex flex-col items-start text-xs text-slate-500 hover:text-midnight"
+                  className="md:hidden p-2 text-slate-500 hover:text-midnight hover:bg-slate-100 rounded-lg transition-colors"
+                  title={selectedAddress?.street || selectedAddress?.city || t('selectAddress')}
+                >
+                  <MapPin className="w-4 h-4" />
+                </button>
+                {/* Desktop: full "Delivered to / address" display */}
+                <button
+                  onClick={() => setAddrOpen(o => !o)}
+                  className="hidden md:flex flex-col items-start text-xs text-slate-500 hover:text-midnight"
                 >
                   <span>{t('deliveredTo')}</span>
                   <span className="font-bold text-slate-900 flex items-center gap-1">

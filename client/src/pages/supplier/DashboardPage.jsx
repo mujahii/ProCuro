@@ -72,7 +72,7 @@ export default function SupplierDashboardPage() {
 
     const deliveredSplits = splits.filter(s => s.status === 'delivered')
     const monthSplits = splits.filter(s => new Date(s.created_at) >= monthStart)
-    const activeSplits = splits.filter(s => !['delivered', 'cancelled'].includes(s.status))
+    const activeSplits = splits.filter(s => ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'cancellation_requested', 'delivery_dispute'].includes(s.status))
 
     const productMap = {}
     items.forEach(item => {

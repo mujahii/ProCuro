@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 04:04 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 04:20 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -356,6 +356,17 @@ Distance-based delivery fee tiers, readable by all authenticated users, managed 
 
 **Seeded tiers:** 0–50 km → €5.00 | 50–100 km → €9.00 | 100–200 km → €14.00 | 200+ km → €20.00
 
+### `public.platform_settings`
+Key-value store for platform-wide configuration managed by admin. Publicly readable, admin-only writes.
+
+| Column | Type | Notes |
+|---|---|---|
+| `key` | TEXT PK | Setting identifier |
+| `value` | TEXT NOT NULL | Setting value (serialized as string) |
+
+**Seeded defaults:**
+- `tax_rate` = `0.07` — German reduced VAT rate for food (Lebensmittel); read by CartPage at checkout and by `invoiceGenerator.js` when generating PDF invoices
+
 ---
 
 ## Database Indexes
@@ -486,6 +497,7 @@ RLS is enabled on all tables. `get_my_role()` is used throughout to avoid recurs
 | ai_insights_cache | `Users read own AI cache` | SELECT | Own `user_id` |
 | deleted_accounts | `admin_read/insert_deleted` | SELECT/INSERT | Admin only |
 | delivery_fee_rules | `read_delivery_fee_rules` / `admin_manage_delivery_fees` | SELECT/ALL | Public read; admin write |
+| platform_settings | `platform_settings_read_all` / `platform_settings_admin_write` | SELECT/ALL | Public read; admin write |
 | owner_profiles | `owner_profiles_select` | SELECT | Own row, admin, or supplier |
 | owner_profiles | `owner_profiles_insert_own` | INSERT | Own row or admin |
 | owner_profiles | `owner_profiles_update_own` | UPDATE | Own row or admin |
@@ -648,7 +660,8 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 ## Invoice Generation
 
 - `client/src/lib/invoiceGenerator.js` generates PDF invoices for completed orders, **fully in German** (RECHNUNG, Rechnungsempfänger, Lieferant, Produkt, Menge, Einzelpreis, Zwischensumme, GESAMT, etc.).
-- Per split: items subtotal + **7% MwSt. (Lebensmittel)** line + supplier total + payment method (Barzahlung bei Lieferung / Banküberweisung).
+- Per split: items subtotal + **`{rate}%` MwSt. (Lebensmittel)** line (percentage shown dynamically from `platform_settings.tax_rate`) + supplier total + payment method (Barzahlung bei Lieferung / Banküberweisung).
+- `generateInvoice(order, splits, ownerProfile, taxRate = 0.07)` — accepts an optional `taxRate` parameter (fetched from `platform_settings` by the caller); falls back to 0.07 if not supplied.
 - Grand total box shows the full order total across all suppliers.
 - File saved as `ProCuro-Rechnung-<ID>.pdf`.
 
@@ -717,8 +730,8 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 
 | Page | Route | Description |
 |---|---|---|
-| DashboardPage | `/supplier/dashboard` | Overview: pending orders count, revenue KPIs, quick actions |
-| ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock; delete with confirmation modal; delivery fee table loaded live from `delivery_fee_rules` DB table |
+| DashboardPage | `/supplier/dashboard` | Overview: pending orders count, revenue KPIs, quick actions. **Active Orders** count uses the same ONGOING statuses as OrdersPage (`pending_payment`, `pending_confirmation`, `confirmed`, `out_for_delivery`, `cancellation_requested`, `delivery_dispute`) — `refund_uploaded` and `completed` are excluded so the badge always matches the "Ongoing" tab count |
+| ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock; delete with confirmation modal; delivery fee table loaded live from `delivery_fee_rules` DB table. **Rows are clickable** — clicking anywhere on a row opens the edit modal (same as the pencil button); action column uses `stopPropagation` so toggle and delete still work independently. Table has `overflow-x-auto` and `min-w-[480px]` for scrollability on narrow screens |
 | OrdersPage | `/supplier/orders` | Incoming order management: confirm, ship, deliver, cancel, upload refund |
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
 | BankDetailsPage | `/supplier/bank-details` | IBAN, BIC, account holder management |
@@ -730,7 +743,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | Page | Route | Description |
 |---|---|---|
 | AdminLoginPage | `/admin/login` | Separate admin login page |
-| DashboardPage | `/admin/dashboard` | Platform KPIs: GMV, user count, order count. Charts: Platform GMV Over Time (filtered), **Orders by Status (Treemap — coloured squares sized by count)**, **User Growth** (cumulative, fed by real `users.created_at` data), **Payment Type** (COD vs Bank Transfer donut), **City Comparison Radar** (suppliers vs owners per top city), **Germany Dot Map** (per-city dots, one colour per role), AI summary. Week/month/year + custom date-range filter on all charts. |
+| DashboardPage | `/admin/dashboard` | Platform KPIs (title: "Overview"): GMV, user count, order count. Charts: Platform GMV Over Time (filtered), **Orders by Status (Treemap — coloured squares sized by count)**, **User Growth** (cumulative, fed by real `users.created_at` data), **Payment Type** (COD vs Bank Transfer donut), **City Comparison Radar** (suppliers vs owners per top city), **Germany Dot Map** (per-city dots, one colour per role), AI summary. Week/month/year + custom date-range filter on all charts. |
 | UsersPage | `/admin/users` | List all users; ban/unban; delete; view details; deleted accounts log |
 | SuppliersPage | `/admin/suppliers` | List suppliers; verify/unverify; activate/deactivate |
 | OrdersPage | `/admin/orders` | Platform-wide order list with status filters |
@@ -738,7 +751,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | CertificatesPage | `/admin/certificates` | Certificate review queue: approve or reject with reason |
 | ReportsPage | `/admin/reports` | Abuse report queue: review, record action, dismiss |
 | AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations); per-conversation delete via modal overlay (same pattern as ChatPage) |
-| DeliveryFeesPage | `/admin/delivery-fees` | CRUD for `delivery_fee_rules` table — add, edit, and delete distance-based delivery fee tiers; changes are reflected live in the supplier Products page delivery fee table |
+| DeliveryFeesPage | `/admin/delivery-fees` | CRUD for `delivery_fee_rules` table — add, edit, and delete distance-based delivery fee tiers; changes are reflected live in the supplier Products page delivery fee table. **Tax rate section** at the bottom: displays the current VAT rate from `platform_settings` and allows the admin to edit it via a modal (value stored as a decimal in DB, displayed as a percentage in the UI) |
 
 ### Shared
 
@@ -751,7 +764,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 ## Frontend Components
 
 ### Layout
-- `Navbar` — Top navigation; role-aware links; `NotificationBell`; language toggle
+- `Navbar` — Top navigation; role-aware links; `NotificationBell`; language toggle. **Address selector** is responsive: a compact `MapPin` icon button on mobile (< `md`) opens the same address dropdown that the full "Delivered to / address" display provides on desktop; click-outside detection uses a shared `ref`
 - `Footer` — Site-wide footer with links
 - `OwnerLayout` — Wrapper with owner sidebar navigation
 - `SupplierLayout` — Wrapper with supplier sidebar navigation

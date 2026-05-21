@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 22:11 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 22:15 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -46,7 +46,7 @@ Mirrors `auth.users`. Created by trigger on every sign-up.
 | `full_name` | TEXT | |
 | `phone` | TEXT | |
 | `role` | TEXT | `restaurant_owner`, `supplier`, `admin` — nullable until role is chosen |
-| `avatar_url` | TEXT | Signed URL from `avatars` storage bucket |
+| `avatar_url` | TEXT | Public URL — either a Supabase `avatars` bucket URL (uploaded photo) or a DiceBear CDN URL (generated avatar) |
 | `is_banned` | BOOLEAN DEFAULT false | Set by admin; bans prevent dashboard access |
 | `created_at` | TIMESTAMPTZ | |
 
@@ -801,7 +801,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `PublicOnlyRoute` — Redirects authenticated users to their dashboard
 
 ### Profile
-- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device) and **"Generate Avatar"** — single "Generate" button that randomly selects from 15 pre-defined DiceBear avatars (adventurer, personas, bottts, micah styles with fixed seeds). Click again to cycle through more options. The selected SVG is fetched and uploaded to the `avatars` bucket as `{userId}/avatar.svg`. All labels fully i18n'd.
+- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device → stored in `avatars` bucket as `{userId}/avatar.{ext}`) and **"Generate Avatar"** — single "Generate" button that randomly selects from 15 pre-defined DiceBear avatars (adventurer, personas, bottts, micah styles with fixed seeds). Clicking again cycles to a different avatar. On save, the DiceBear CDN URL is stored directly as `avatar_url` (no re-upload to Supabase storage — avoids browser CORS restrictions when fetching the external URL). All labels fully i18n'd.
 - `DeleteAccountModal` — Confirmation dialog for account deletion
 - `Modal` — Base modal wrapper
 - `OwnerProfileModal` — Supplier-side modal showing an owner's details when viewing their order

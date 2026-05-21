@@ -77,20 +77,16 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
     if (!generatedUrl) { toast.error('Generate an avatar first'); return }
     setSaving(true)
     try {
-      const res = await fetch(generatedUrl)
-      const blob = await res.blob()
-      const path = `${userId}/avatar.svg`
-      const { error: uploadError } = await supabase.storage.from('avatars').upload(path, blob, { upsert: true, contentType: 'image/svg+xml' })
-      if (uploadError) throw uploadError
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-      await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', userId)
+      const { error } = await supabase.from('users').update({ avatar_url: generatedUrl }).eq('id', userId)
+      if (error) throw error
       if (role === 'supplier') {
-        await supabase.from('supplier_profiles').update({ avatar_url: publicUrl }).eq('user_id', userId)
+        await supabase.from('supplier_profiles').update({ avatar_url: generatedUrl }).eq('user_id', userId)
       }
-      onSaved(publicUrl)
+      onSaved(generatedUrl)
       onClose()
       toast.success('Avatar saved!')
-    } catch {
+    } catch (err) {
+      console.error('Avatar save error:', err)
       toast.error('Failed to save avatar')
     } finally {
       setSaving(false)

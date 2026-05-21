@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Search, Ban, Trash2, CheckCircle, Eye, Send, X, History, ToggleLeft, ToggleRight, MessageSquare, KeyRound } from 'lucide-react'
+import { Search, Ban, Trash2, CheckCircle, Eye, Send, X, History, ToggleLeft, ToggleRight, MessageSquare, KeyRound, MoreVertical } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -35,6 +35,7 @@ export default function AdminUsersPage() {
   const [ownerToggleTarget, setOwnerToggleTarget] = useState(null)
   const [resetTarget, setResetTarget] = useState(null)
   const [sendingReset, setSendingReset] = useState(false)
+  const [openMenu, setOpenMenu] = useState(null)
 
   useEffect(() => { loadUsers(); loadDeletedAccounts() }, [])
 
@@ -269,6 +270,8 @@ export default function AdminUsersPage() {
           {deletedAccounts.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted accounts</p>}
         </div>
       ) : loading ? <SkeletonTable rows={6} /> : (
+        <>
+        {openMenu && <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />}
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
             <thead className="bg-lionsmane border-b border-gray-100">
@@ -312,63 +315,55 @@ export default function AdminUsersPage() {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 justify-end">
-                      <button onClick={() => setViewTarget(u)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400" title="View profile">
-                        <Eye className="w-4 h-4" />
-                      </button>
+                  <td className="px-3 py-3 text-right">
+                    <div className="relative inline-block">
                       <button
-                        onClick={() => u.role !== 'admin' && navigate(`/admin/chat?user_id=${u.id}`)}
-                        className={`p-1.5 rounded-lg text-herb-light ${u.role !== 'admin' ? 'hover:bg-lionsmane cursor-pointer' : 'opacity-30 cursor-default'}`}
-                        title="Chat with user"
+                        onClick={() => setOpenMenu(openMenu === u.id ? null : u.id)}
+                        className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
                       >
-                        <MessageSquare className="w-4 h-4" />
+                        <MoreVertical className="w-4 h-4" />
                       </button>
-                      <button onClick={() => { setNotifyTarget(u); setNotifyTitle(''); setNotifyMsg('') }} className="p-1.5 rounded-lg hover:bg-blue-50 text-blue-400" title="Send notification">
-                        <Send className="w-4 h-4" />
-                      </button>
-                      {u.role === 'supplier' && u.supplier_profile && (
-                        <button
-                          onClick={() => toggleSupplierActive(u)}
-                          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
-                          title={u.supplier_profile.is_active ? 'Deactivate listing' : 'Activate listing'}
-                        >
-                          {u.supplier_profile.is_active
-                            ? <ToggleRight className="w-4 h-4 text-herb" />
-                            : <ToggleLeft className="w-4 h-4" />}
-                        </button>
-                      )}
-                      {u.role === 'restaurant_owner' && (
-                        <button
-                          onClick={() => (u.owner_profile?.is_active ?? true) ? setOwnerToggleTarget(u) : toggleOwnerActive(u)}
-                          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400"
-                          title={(u.owner_profile?.is_active ?? true) ? 'Unlist owner' : 'List owner'}
-                        >
-                          {(u.owner_profile?.is_active ?? true)
-                            ? <ToggleRight className="w-4 h-4 text-herb" />
-                            : <ToggleLeft className="w-4 h-4" />}
-                        </button>
-                      )}
-                      {u.role !== 'admin' && (
-                        <button
-                          onClick={() => setResetTarget(u)}
-                          className="p-1.5 rounded-lg hover:bg-lionsmane text-marigold-light"
-                          title="Send password reset email"
-                        >
-                          <KeyRound className="w-4 h-4" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => u.is_banned ? toggleBan(u) : setBanTarget(u)}
-                        className={`p-1.5 rounded-lg transition-colors ${u.is_banned ? 'text-green-500 hover:bg-green-50' : 'text-orange-500 hover:bg-orange-50'}`}
-                        title={u.is_banned ? 'Unban' : 'Ban'}
-                      >
-                        {u.is_banned ? <CheckCircle className="w-4 h-4" /> : <Ban className="w-4 h-4" />}
-                      </button>
-                      {u.role !== 'admin' && (
-                        <button onClick={() => { setDeleteTarget(u); setDeleteConfirmText('') }} className="p-1.5 rounded-lg text-red-400 hover:bg-red-50 transition-colors" title="Delete">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                      {openMenu === u.id && (
+                        <div className="absolute right-0 top-8 z-20 bg-white rounded-xl shadow-lg border border-gray-100 w-48 py-1">
+                          <button onClick={() => { setViewTarget(u); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                            <Eye className="w-4 h-4 text-gray-400" /> View Profile
+                          </button>
+                          {u.role !== 'admin' && (
+                            <button onClick={() => { navigate(`/admin/chat?user_id=${u.id}`); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                              <MessageSquare className="w-4 h-4 text-herb-light" /> Chat
+                            </button>
+                          )}
+                          {u.role !== 'admin' && (
+                            <button onClick={() => { setNotifyTarget(u); setNotifyTitle(''); setNotifyMsg(''); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                              <Send className="w-4 h-4 text-blue-400" /> Send Notification
+                            </button>
+                          )}
+                          {u.role === 'supplier' && u.supplier_profile && (
+                            <button onClick={() => { toggleSupplierActive(u); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                              {u.supplier_profile.is_active ? <><ToggleLeft className="w-4 h-4 text-herb" /> Deactivate</> : <><ToggleRight className="w-4 h-4 text-herb" /> Activate</>}
+                            </button>
+                          )}
+                          {u.role === 'restaurant_owner' && (
+                            <button onClick={() => { (u.owner_profile?.is_active ?? true) ? setOwnerToggleTarget(u) : toggleOwnerActive(u); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                              {(u.owner_profile?.is_active ?? true) ? <><ToggleLeft className="w-4 h-4 text-herb" /> Unlist</> : <><ToggleRight className="w-4 h-4 text-herb" /> List</>}
+                            </button>
+                          )}
+                          {u.role !== 'admin' && (
+                            <button onClick={() => { setResetTarget(u); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                              <KeyRound className="w-4 h-4 text-marigold-light" /> Reset Password
+                            </button>
+                          )}
+                          {u.role !== 'admin' && (
+                            <button onClick={() => { u.is_banned ? toggleBan(u) : setBanTarget(u); setOpenMenu(null) }} className={`w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-lionsmane text-left ${u.is_banned ? 'text-green-600' : 'text-orange-500'}`}>
+                              {u.is_banned ? <><CheckCircle className="w-4 h-4" /> Unban</> : <><Ban className="w-4 h-4" /> Ban</>}
+                            </button>
+                          )}
+                          {u.role !== 'admin' && (
+                            <button onClick={() => { setDeleteTarget(u); setDeleteConfirmText(''); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 text-left">
+                              <Trash2 className="w-4 h-4" /> Delete
+                            </button>
+                          )}
+                        </div>
                       )}
                     </div>
                   </td>
@@ -378,6 +373,7 @@ export default function AdminUsersPage() {
           </table>
           {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No users found</p>}
         </div>
+        </>
       )}
 
       {/* View Profile Modal */}

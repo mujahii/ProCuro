@@ -5,7 +5,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import ProductForm from '../../components/supplier/ProductForm'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff, X, Truck, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff, X, Truck, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
 
@@ -65,6 +65,7 @@ export default function SupplierProductsPage() {
   const [showForm, setShowForm] = useState(false)
   const [editProduct, setEditProduct] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [openMenu, setOpenMenu] = useState(null)
 
   useEffect(() => {
     if (user) init()
@@ -159,8 +160,9 @@ export default function SupplierProductsPage() {
           </button>
         </div>
       ) : (
-        <div className="card overflow-x-auto">
-          <table className="w-full min-w-[480px]">
+        {openMenu && <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />}
+        <div className="card overflow-hidden">
+          <table className="w-full">
             <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">{t('productLabel')}</th>
@@ -203,17 +205,39 @@ export default function SupplierProductsPage() {
                     <td className="px-4 py-3">
                       <Badge status={product.is_active ? 'active' : 'inactive'} />
                     </td>
-                    <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                      <div className="flex items-center gap-1 justify-end">
-                        <button onClick={() => toggleActive(product)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                          {product.is_active ? <ToggleRight className="w-7 h-7 text-midnight" /> : <ToggleLeft className="w-7 h-7 text-gray-300" />}
+                    <td className="px-3 py-3 text-right" onClick={e => e.stopPropagation()}>
+                      <div className="relative inline-block">
+                        <button
+                          onClick={() => setOpenMenu(openMenu === product.id ? null : product.id)}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"
+                        >
+                          <MoreVertical className="w-4 h-4" />
                         </button>
-                        <button onClick={() => { setEditProduct(product); setShowForm(true) }} className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => setDeleteTarget(product)} className="p-2 hover:bg-red-50 rounded-lg transition-colors text-gray-400 hover:text-red-500">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {openMenu === product.id && (
+                          <div className="absolute right-0 top-9 z-20 bg-white rounded-xl shadow-lg border border-gray-100 w-44 py-1">
+                            <button
+                              onClick={() => { toggleActive(product); setOpenMenu(null) }}
+                              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left"
+                            >
+                              {product.is_active
+                                ? <><ToggleLeft className="w-4 h-4 text-gray-400" /> {t('outOfStock')}</>
+                                : <><ToggleRight className="w-4 h-4 text-midnight" /> {t('inStock')}</>
+                              }
+                            </button>
+                            <button
+                              onClick={() => { setEditProduct(product); setShowForm(true); setOpenMenu(null) }}
+                              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left"
+                            >
+                              <Edit2 className="w-4 h-4 text-gray-400" /> {t('editProductBtn')}
+                            </button>
+                            <button
+                              onClick={() => { setDeleteTarget(product); setOpenMenu(null) }}
+                              className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 text-left"
+                            >
+                              <Trash2 className="w-4 h-4" /> {t('delete')}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>

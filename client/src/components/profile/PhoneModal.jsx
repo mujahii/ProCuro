@@ -4,9 +4,10 @@ import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import Modal from './Modal'
 
-// Format a stored phone string for display.
+const PREFIX = '+49'
+
+// Format a stored phone string for display in SettingRow.
 // "+491701234567" → "+49 170 1234567"
-// "01701234567"   → "0170 1234567"
 export function formatPhone(raw) {
   if (!raw) return ''
   const stripped = raw.replace(/\s+/g, '')
@@ -17,41 +18,36 @@ export function formatPhone(raw) {
   return raw
 }
 
-// Live formatter called on every keystroke — same idea as handleIBANInput.
-// Strips spaces / non-phone chars, then re-inserts spaces in the right places.
-export function handlePhoneInput(value) {
-  // Keep only digits and a leading +; remove any + that's not at the very start.
-  let raw = value.replace(/[^\d+]/g, '')
-  if (raw.indexOf('+') > 0) raw = raw.replace(/\+/g, '')
+// Extract digits after the +49 prefix from any stored format.
+function initSuffix(rawPhone) {
+  if (!rawPhone) return ''
+  const stripped = rawPhone.replace(/\s+/g, '')
+  let digits = ''
+  if (stripped.startsWith('+49')) digits = stripped.slice(3)
+  else if (stripped.startsWith('0049')) digits = stripped.slice(4)
+  else if (stripped.startsWith('0')) digits = stripped.slice(1) // local 0XXX → drop leading 0
+  else digits = stripped.replace(/\D/g, '')
+  return formatSuffix(digits)
+}
 
-  if (raw.startsWith('+')) {
-    const body = raw.slice(1)                   // digits after the +
-    if (body.length <= 2) return `+${body}`     // still typing country code
-    const cc  = `+${body.slice(0, 2)}`          // e.g. +49
-    const net = body.slice(2, 5)                // network prefix (3 digits)
-    const sub = body.slice(5, 15)               // subscriber number
-    if (!sub) return `${cc} ${net}`
-    return `${cc} ${net} ${sub}`
-  }
-
-  if (raw.startsWith('0')) {
-    const area = raw.slice(0, 4)                // 0XXX
-    const sub  = raw.slice(4, 14)
-    if (!sub) return area
-    return `${area} ${sub}`
-  }
-
-  return raw.slice(0, 15)
+// Format the suffix portion as "NNN XXXXXXXXX" (network prefix 3 digits + subscriber).
+function formatSuffix(digits) {
+  const d = digits.replace(/\D/g, '').slice(0, 12)
+  const net = d.slice(0, 3)
+  const sub = d.slice(3)
+  if (!net) return ''
+  if (!sub) return net
+  return `${net} ${sub}`
 }
 
 export default function PhoneModal({ userId, currentPhone, role, onClose, onSaved }) {
-  const [phone, setPhone] = useState(formatPhone(currentPhone) || '')
+  const [suffix, setSuffix] = useState(initSuffix(currentPhone))
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
     setSaving(true)
     try {
-      const trimmed = phone.trim()
+      const trimmed = suffix.trim() ? `${PREFIX} ${suffix.trim()}` : ''
       await supabase.from('users').update({ phone: trimmed }).eq('id', userId)
       if (role === 'supplier') {
         await supabase.from('supplier_profiles').update({ phone: trimmed }).eq('user_id', userId)
@@ -77,13 +73,18 @@ export default function PhoneModal({ userId, currentPhone, role, onClose, onSave
         )}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">New Phone Number</label>
-          <input
-            type="tel"
-            value={phone}
-            onChange={e => setPhone(handlePhoneInput(e.target.value))}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="+49 170 1234567"
-          />
+          <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-herb">
+            <span className="px-4 py-3 text-sm font-semibold text-slate-600 bg-slate-50 border-r border-slate-200 select-none whitespace-nowrap">
+              {PREFIX}
+            </span>
+            <input
+              type="tel"
+              value={suffix}
+              onChange={e => setSuffix(formatSuffix(e.target.value))}
+              className="flex-1 px-4 py-3 text-sm focus:outline-none bg-white"
+              placeholder="170 1234567"
+            />
+          </div>
         </div>
         <div className="flex gap-3 pt-1">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">

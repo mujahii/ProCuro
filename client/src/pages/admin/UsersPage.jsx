@@ -246,33 +246,131 @@ export default function AdminUsersPage() {
       </div>
 
       {tab === 'deleted' ? (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-lionsmane border-b border-gray-100">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Email</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Role</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Business</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Deleted At</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {deletedAccounts.map(d => (
-                <tr key={d.id} className="hover:bg-lionsmane">
-                  <td className="px-4 py-3 text-sm text-gray-700">{d.email || '—'}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell">{roleBadge(d.role)}</td>
-                  <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">{d.business_name || '—'}</td>
-                  <td className="px-4 py-3 text-xs text-gray-400">{d.deleted_at ? format(new Date(d.deleted_at), 'dd MMM yyyy, HH:mm') : '—'}</td>
+        <>
+          {/* Mobile card list - deleted accounts */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {deletedAccounts.map(d => (
+              <div key={d.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                <p className="text-sm font-medium text-gray-700 truncate">{d.email || '—'}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  {roleBadge(d.role)}
+                  {d.business_name && <span className="text-xs text-gray-500 truncate">{d.business_name}</span>}
+                </div>
+                <p className="text-xs text-gray-400 mt-1">{d.deleted_at ? format(new Date(d.deleted_at), 'dd MMM yyyy, HH:mm') : '—'}</p>
+              </div>
+            ))}
+            {deletedAccounts.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted accounts</p>}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-lionsmane border-b border-gray-100">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Email</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Role</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Business</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Deleted At</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {deletedAccounts.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted accounts</p>}
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {deletedAccounts.map(d => (
+                  <tr key={d.id} className="hover:bg-lionsmane">
+                    <td className="px-4 py-3 text-sm text-gray-700">{d.email || '—'}</td>
+                    <td className="px-4 py-3 hidden sm:table-cell">{roleBadge(d.role)}</td>
+                    <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">{d.business_name || '—'}</td>
+                    <td className="px-4 py-3 text-xs text-gray-400">{d.deleted_at ? format(new Date(d.deleted_at), 'dd MMM yyyy, HH:mm') : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {deletedAccounts.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted accounts</p>}
+          </div>
+        </>
       ) : loading ? <SkeletonTable rows={6} /> : (
         <>
         {openMenu && <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />}
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        {/* Mobile card list - active users */}
+        <div className="flex flex-col gap-3 md:hidden">
+          {filtered.map(u => (
+            <div key={u.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{u.full_name || '—'}</p>
+                  <p className="text-xs text-gray-400 truncate">{u.email}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {roleBadge(u.role)}
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${u.is_banned ? 'bg-red-50 text-red-600' : 'bg-lionsmane text-midnight-dark'}`}>
+                      {u.is_banned ? 'Banned' : 'Active'}
+                    </span>
+                    {u.role === 'supplier' && u.supplier_profile && (
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${u.supplier_profile.is_active ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
+                        {u.supplier_profile.is_active ? 'Listed' : 'Unlisted'}
+                      </span>
+                    )}
+                    {u.role === 'restaurant_owner' && (
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${(u.owner_profile?.is_active ?? true) ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
+                        {(u.owner_profile?.is_active ?? true) ? 'Listed' : 'Unlisted'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="relative flex-shrink-0">
+                  <button
+                    onClick={() => setOpenMenu(openMenu === u.id ? null : u.id)}
+                    className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition-colors"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                  {openMenu === u.id && (
+                    <div className="absolute right-0 top-8 z-20 bg-white rounded-xl shadow-lg border border-gray-100 w-48 py-1">
+                      <button onClick={() => { setViewTarget(u); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                        <Eye className="w-4 h-4 text-gray-400" /> View Profile
+                      </button>
+                      {u.role !== 'admin' && (
+                        <button onClick={() => { navigate(`/admin/chat?user_id=${u.id}`); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                          <MessageSquare className="w-4 h-4 text-herb-light" /> Chat
+                        </button>
+                      )}
+                      {u.role !== 'admin' && (
+                        <button onClick={() => { setNotifyTarget(u); setNotifyTitle(''); setNotifyMsg(''); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                          <Send className="w-4 h-4 text-blue-400" /> Send Notification
+                        </button>
+                      )}
+                      {u.role === 'supplier' && u.supplier_profile && (
+                        <button onClick={() => { toggleSupplierActive(u); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                          {u.supplier_profile.is_active ? <><ToggleLeft className="w-4 h-4 text-herb" /> Deactivate</> : <><ToggleRight className="w-4 h-4 text-herb" /> Activate</>}
+                        </button>
+                      )}
+                      {u.role === 'restaurant_owner' && (
+                        <button onClick={() => { (u.owner_profile?.is_active ?? true) ? setOwnerToggleTarget(u) : toggleOwnerActive(u); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                          {(u.owner_profile?.is_active ?? true) ? <><ToggleLeft className="w-4 h-4 text-herb" /> Unlist</> : <><ToggleRight className="w-4 h-4 text-herb" /> List</>}
+                        </button>
+                      )}
+                      {u.role !== 'admin' && (
+                        <button onClick={() => { setResetTarget(u); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left">
+                          <KeyRound className="w-4 h-4 text-marigold-light" /> Reset Password
+                        </button>
+                      )}
+                      {u.role !== 'admin' && (
+                        <button onClick={() => { u.is_banned ? toggleBan(u) : setBanTarget(u); setOpenMenu(null) }} className={`w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-lionsmane text-left ${u.is_banned ? 'text-green-600' : 'text-orange-500'}`}>
+                          {u.is_banned ? <><CheckCircle className="w-4 h-4" /> Unban</> : <><Ban className="w-4 h-4" /> Ban</>}
+                        </button>
+                      )}
+                      {u.role !== 'admin' && (
+                        <button onClick={() => { setDeleteTarget(u); setDeleteConfirmText(''); setOpenMenu(null) }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 text-left">
+                          <Trash2 className="w-4 h-4" /> Delete
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No users found</p>}
+        </div>
+        {/* Desktop table */}
+        <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
             <thead className="bg-lionsmane border-b border-gray-100">
               <tr>

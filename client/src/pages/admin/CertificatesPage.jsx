@@ -225,31 +225,50 @@ export default function AdminCertificatesPage() {
       </div>
 
       {loading ? <SkeletonTable rows={5} /> : (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-lionsmane border-b border-gray-100">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Supplier</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">City</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Uploaded</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filtered.map(cert => (
-                <tr key={cert.id} className="hover:bg-lionsmane cursor-pointer" onClick={() => setSelected(cert)}>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{cert.supplier?.business_name || '—'}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-500">{cert.supplier?.city || '—'}</td>
-                  <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">{format(new Date(cert.uploaded_at), 'dd MMM yyyy')}</td>
-                  <td className="px-4 py-3"><Badge status={cert.status} /></td>
-                  <td className="px-4 py-3 text-xs text-primary font-medium">Review →</td>
+        <>
+          {/* Mobile card list */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {filtered.map(cert => (
+              <button key={cert.id} onClick={() => setSelected(cert)} className="w-full text-left bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <p className="text-sm font-semibold text-gray-900">{cert.supplier?.business_name || '—'}</p>
+                  <Badge status={cert.status} />
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500">{cert.supplier?.city || '—'} · {format(new Date(cert.uploaded_at), 'dd MMM yyyy')}</p>
+                  <span className="text-xs text-primary font-medium">Review →</span>
+                </div>
+              </button>
+            ))}
+            {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No certificates</p>}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-lionsmane border-b border-gray-100">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Supplier</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">City</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Uploaded</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-3"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No certificates</p>}
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtered.map(cert => (
+                  <tr key={cert.id} className="hover:bg-lionsmane cursor-pointer" onClick={() => setSelected(cert)}>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{cert.supplier?.business_name || '—'}</td>
+                    <td className="px-4 py-3 hidden sm:table-cell text-sm text-gray-500">{cert.supplier?.city || '—'}</td>
+                    <td className="px-4 py-3 hidden md:table-cell text-xs text-gray-500">{format(new Date(cert.uploaded_at), 'dd MMM yyyy')}</td>
+                    <td className="px-4 py-3"><Badge status={cert.status} /></td>
+                    <td className="px-4 py-3 text-xs text-primary font-medium">Review →</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No certificates</p>}
+          </div>
+        </>
       )}
 
       {selected && (

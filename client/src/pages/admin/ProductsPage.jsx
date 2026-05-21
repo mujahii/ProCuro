@@ -143,90 +143,142 @@ export default function AdminProductsPage() {
       </div>
 
       {tab === 'deleted' ? (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-lionsmane border-b border-gray-100">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Supplier</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Category</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Price</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Deleted At</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filteredDeleted.map(p => (
-                <tr key={p.id} className="hover:bg-lionsmane">
-                  <td className="px-4 py-3">
-                    <p className="text-sm font-medium text-gray-900">{p.name}</p>
-                    <p className="text-xs text-gray-400">{p.description?.slice(0, 60) || '—'}</p>
-                  </td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-xs text-gray-500">{p.supplier?.business_name || '—'}</td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{p.category || '—'}</span>
-                  </td>
-                  <td className="px-4 py-3 text-sm font-semibold">€{Number(p.price).toFixed(2)}</td>
-                  <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-400">{p.deleted_at ? format(new Date(p.deleted_at), 'dd MMM yyyy') : '—'}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end">
-                      <button onClick={() => restoreProduct(p)} className="flex items-center gap-1.5 text-xs font-bold text-herb hover:text-herb-dark underline underline-offset-2">
-                        <RotateCcw className="w-3.5 h-3.5" /> Restore
-                      </button>
-                    </div>
-                  </td>
+        <>
+          {/* Mobile card list - deleted products */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {filteredDeleted.map(p => (
+              <div key={p.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <p className="text-sm font-semibold text-gray-900">{p.name}</p>
+                  <span className="text-sm font-bold text-midnight-dark flex-shrink-0">€{Number(p.price).toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">{p.supplier?.business_name || '—'}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-400">{p.deleted_at ? format(new Date(p.deleted_at), 'dd MMM yyyy') : '—'}</p>
+                  <button onClick={() => restoreProduct(p)} className="flex items-center gap-1.5 text-xs font-bold text-herb hover:text-herb-dark underline underline-offset-2">
+                    <RotateCcw className="w-3.5 h-3.5" /> Restore
+                  </button>
+                </div>
+              </div>
+            ))}
+            {filteredDeleted.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted products</p>}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-lionsmane border-b border-gray-100">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Supplier</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Category</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Price</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Deleted At</th>
+                  <th className="px-4 py-3"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {filteredDeleted.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted products</p>}
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filteredDeleted.map(p => (
+                  <tr key={p.id} className="hover:bg-lionsmane">
+                    <td className="px-4 py-3">
+                      <p className="text-sm font-medium text-gray-900">{p.name}</p>
+                      <p className="text-xs text-gray-400">{p.description?.slice(0, 60) || '—'}</p>
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell text-xs text-gray-500">{p.supplier?.business_name || '—'}</td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{p.category || '—'}</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm font-semibold">€{Number(p.price).toFixed(2)}</td>
+                    <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-400">{p.deleted_at ? format(new Date(p.deleted_at), 'dd MMM yyyy') : '—'}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end">
+                        <button onClick={() => restoreProduct(p)} className="flex items-center gap-1.5 text-xs font-bold text-herb hover:text-herb-dark underline underline-offset-2">
+                          <RotateCcw className="w-3.5 h-3.5" /> Restore
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredDeleted.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted products</p>}
+          </div>
+        </>
       ) : loading ? <SkeletonTable rows={6} /> : (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-lionsmane border-b border-gray-100">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Supplier</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Category</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Price</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {filtered.map(product => (
-                <tr
-                  key={product.id}
-                  ref={product.id === highlightId ? highlightRef : null}
-                  className={`hover:bg-lionsmane transition-colors ${product.id === highlightId ? 'bg-lionsmane outline outline-2 outline-herb-light' : ''}`}
-                >
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{product.name}</td>
-                  <td className="px-4 py-3 hidden sm:table-cell text-xs text-gray-500">{product.supplier?.business_name || '—'}</td>
-                  <td className="px-4 py-3 hidden md:table-cell">
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{product.category}</span>
-                  </td>
-                  <td className="px-4 py-3 text-sm font-semibold">€{Number(product.price).toFixed(2)}</td>
-                  <td className="px-4 py-3"><Badge status={product.is_active ? 'active' : 'inactive'} /></td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1 justify-end">
-                      <button onClick={() => setViewProduct(product)} className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-400" title="View details">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => handleToggleClick(product)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
-                        {product.is_active ? <ToggleRight className="w-4 h-4 text-primary" /> : <ToggleLeft className="w-4 h-4" />}
-                      </button>
-                      <button onClick={() => setDeleteTarget(product)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+        <>
+          {/* Mobile card list - active products */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {filtered.map(product => (
+              <div key={product.id} ref={product.id === highlightId ? highlightRef : null} className={`bg-white rounded-xl border p-4 shadow-sm ${product.id === highlightId ? 'border-herb-light outline outline-2 outline-herb-light' : 'border-gray-100'}`}>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <p className="text-sm font-semibold text-gray-900">{product.name}</p>
+                  <span className="text-sm font-bold text-midnight-dark flex-shrink-0">€{Number(product.price).toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-gray-500 mb-2">{product.supplier?.business_name || '—'}</p>
+                <div className="flex items-center justify-between">
+                  <Badge status={product.is_active ? 'active' : 'inactive'} />
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => setViewProduct(product)} className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-400">
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleToggleClick(product)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
+                      {product.is_active ? <ToggleRight className="w-4 h-4 text-primary" /> : <ToggleLeft className="w-4 h-4" />}
+                    </button>
+                    <button onClick={() => setDeleteTarget(product)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No products found</p>}
+          </div>
+          {/* Desktop table */}
+          <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-lionsmane border-b border-gray-100">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Supplier</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Category</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Price</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-3"></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No products found</p>}
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filtered.map(product => (
+                  <tr
+                    key={product.id}
+                    ref={product.id === highlightId ? highlightRef : null}
+                    className={`hover:bg-lionsmane transition-colors ${product.id === highlightId ? 'bg-lionsmane outline outline-2 outline-herb-light' : ''}`}
+                  >
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{product.name}</td>
+                    <td className="px-4 py-3 hidden sm:table-cell text-xs text-gray-500">{product.supplier?.business_name || '—'}</td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{product.category}</span>
+                    </td>
+                    <td className="px-4 py-3 text-sm font-semibold">€{Number(product.price).toFixed(2)}</td>
+                    <td className="px-4 py-3"><Badge status={product.is_active ? 'active' : 'inactive'} /></td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-1 justify-end">
+                        <button onClick={() => setViewProduct(product)} className="p-1.5 hover:bg-blue-50 rounded-lg text-blue-400" title="View details">
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => handleToggleClick(product)} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400">
+                          {product.is_active ? <ToggleRight className="w-4 h-4 text-primary" /> : <ToggleLeft className="w-4 h-4" />}
+                        </button>
+                        <button onClick={() => setDeleteTarget(product)} className="p-1.5 hover:bg-red-50 rounded-lg text-red-400">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No products found</p>}
+          </div>
+        </>
       )}
 
       {/* Product Detail Modal */}

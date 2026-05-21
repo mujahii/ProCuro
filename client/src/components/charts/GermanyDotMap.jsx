@@ -29,6 +29,27 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
   // data: [{ id, city, lat, lng, role: 'supplier'|'restaurant_owner' }]
   const valid = data.filter(d => d.lat != null && d.lng != null && !isNaN(d.lat) && !isNaN(d.lng))
 
+  // Project every dot, then fan out any that land on the same point (e.g. many
+  // suppliers in one city) into a small ring so each user stays individually visible.
+  const groups = {}
+  valid.forEach(d => {
+    const p = project(d.lat, d.lng)
+    const key = `${Math.round(p.x)},${Math.round(p.y)}`
+    ;(groups[key] ||= []).push({ d, ...p })
+  })
+  const positioned = []
+  Object.values(groups).forEach(items => {
+    if (items.length === 1) {
+      positioned.push({ ...items[0], cx: items[0].x, cy: items[0].y })
+    } else {
+      const R = 7
+      items.forEach((it, i) => {
+        const angle = (2 * Math.PI * i) / items.length
+        positioned.push({ ...it, cx: it.x + R * Math.cos(angle), cy: it.y + R * Math.sin(angle) })
+      })
+    }
+  })
+
   return (
     <div className="card p-5">
       <div className="flex items-center justify-between mb-3">
@@ -42,21 +63,20 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
         <svg viewBox={`0 0 ${VB.w} ${VB.h}`} className="w-full h-72" preserveAspectRatio="xMidYMid meet">
           <image href="/Deutschland.svg" x="0" y="0" width={VB.w} height={VB.h} preserveAspectRatio="xMidYMid meet" />
 
-          {valid.map((d) => {
-            const { x, y } = project(d.lat, d.lng)
+          {positioned.map(({ d, cx, cy }) => {
             const isSupplier = d.role === 'supplier'
             return (
               <circle
                 key={d.id}
-                cx={x}
-                cy={y}
+                cx={cx}
+                cy={cy}
                 r={5}
                 fill={isSupplier ? '#083A4F' : '#D4A017'}
                 fillOpacity="0.85"
                 stroke="#fff"
                 strokeWidth="1.5"
                 className="cursor-pointer"
-                onMouseEnter={() => setHover({ ...d, x, y })}
+                onMouseEnter={() => setHover({ ...d, x: cx, y: cy })}
                 onMouseLeave={() => setHover(null)}
               />
             )

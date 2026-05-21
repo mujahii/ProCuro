@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Search, Trash2, ToggleLeft, ToggleRight, X, Eye, Package } from 'lucide-react'
+import { Search, Trash2, ToggleLeft, ToggleRight, X, Eye, Package, RotateCcw, History } from 'lucide-react'
+import { format } from 'date-fns'
 
 function getProductImageUrl(path) {
   if (!path) return null
@@ -17,7 +18,9 @@ export default function AdminProductsPage() {
   const [searchParams] = useSearchParams()
   const highlightId = searchParams.get('id')
   const highlightRef = useRef(null)
+  const [tab, setTab] = useState('active')
   const [products, setProducts] = useState([])
+  const [deletedProducts, setDeletedProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -27,7 +30,7 @@ export default function AdminProductsPage() {
   const [deleteTarget, setDeleteTarget] = useState(null)
   const [viewProduct, setViewProduct] = useState(null)
 
-  useEffect(() => { loadProducts(); loadSuppliers() }, [])
+  useEffect(() => { loadProducts(); loadDeleted(); loadSuppliers() }, [])
 
   useEffect(() => {
     if (highlightId && highlightRef.current) {
@@ -45,6 +48,15 @@ export default function AdminProductsPage() {
     setLoading(false)
   }
 
+  async function loadDeleted() {
+    const { data } = await supabase
+      .from('products')
+      .select('*, supplier:supplier_profiles(id, business_name)')
+      .not('deleted_at', 'is', null)
+      .order('deleted_at', { ascending: false })
+    setDeletedProducts(data || [])
+  }
+
   async function loadSuppliers() {
     const { data } = await supabase.from('supplier_profiles').select('id, business_name').order('business_name')
     setSuppliers(data || [])
@@ -55,7 +67,15 @@ export default function AdminProductsPage() {
     await supabase.from('products').update({ deleted_at: new Date().toISOString(), is_active: false }).eq('id', deleteTarget.id)
     setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
     setDeleteTarget(null)
+    loadDeleted()
     toast.success('Product deleted')
+  }
+
+  async function restoreProduct(product) {
+    await supabase.from('products').update({ deleted_at: null, deleted_by: null, is_active: true }).eq('id', product.id)
+    setDeletedProducts(prev => prev.filter(p => p.id !== product.id))
+    loadProducts()
+    toast.success('Product restored')
   }
 
   async function toggleActive(product) {
@@ -78,28 +98,90 @@ export default function AdminProductsPage() {
     const matchSupplier = !supplierFilter || p.supplier?.id === supplierFilter
     return matchSearch && matchCat && matchSupplier
   })
+  const filteredDeleted = deletedProducts.filter(p =>
+    !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.supplier?.business_name?.toLowerCase().includes(search.toLowerCase())
+  )
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h1 className="text-2xl font-black text-gray-900">Products ({products.length})</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 className="text-2xl font-black text-gray-900">Products</h1>
         <div className="flex gap-2">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." className="pl-9 input text-sm py-2 w-48" />
           </div>
-          <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="input text-sm py-2 w-36">
-            <option value="">All categories</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select value={supplierFilter} onChange={e => setSupplierFilter(e.target.value)} className="input text-sm py-2 w-44">
-            <option value="">All suppliers</option>
-            {suppliers.map(s => <option key={s.id} value={s.id}>{s.business_name}</option>)}
-          </select>
+          {tab === 'active' && (
+            <>
+              <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="input text-sm py-2 w-36">
+                <option value="">All categories</option>
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select value={supplierFilter} onChange={e => setSupplierFilter(e.target.value)} className="input text-sm py-2 w-44">
+                <option value="">All suppliers</option>
+                {suppliers.map(s => <option key={s.id} value={s.id}>{s.business_name}</option>)}
+              </select>
+            </>
+          )}
         </div>
       </div>
 
-      {loading ? <SkeletonTable rows={6} /> : (
+      {/* Tabs */}
+      <div className="flex gap-1 mb-4 border-b border-gray-200">
+        <button
+          onClick={() => setTab('active')}
+          className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px ${tab === 'active' ? 'border-midnight text-midnight-dark' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          Active ({products.length})
+        </button>
+        <button
+          onClick={() => setTab('deleted')}
+          className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-1.5 ${tab === 'deleted' ? 'border-red-500 text-red-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+        >
+          <History className="w-3.5 h-3.5" /> Deleted ({deletedProducts.length})
+        </button>
+      </div>
+
+      {tab === 'deleted' ? (
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <table className="w-full">
+            <thead className="bg-lionsmane border-b border-gray-100">
+              <tr>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Product</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden sm:table-cell">Supplier</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Category</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Price</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Deleted At</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filteredDeleted.map(p => (
+                <tr key={p.id} className="hover:bg-lionsmane">
+                  <td className="px-4 py-3">
+                    <p className="text-sm font-medium text-gray-900">{p.name}</p>
+                    <p className="text-xs text-gray-400">{p.description?.slice(0, 60) || '—'}</p>
+                  </td>
+                  <td className="px-4 py-3 hidden sm:table-cell text-xs text-gray-500">{p.supplier?.business_name || '—'}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">
+                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">{p.category || '—'}</span>
+                  </td>
+                  <td className="px-4 py-3 text-sm font-semibold">€{Number(p.price).toFixed(2)}</td>
+                  <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-400">{p.deleted_at ? format(new Date(p.deleted_at), 'dd MMM yyyy') : '—'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end">
+                      <button onClick={() => restoreProduct(p)} className="flex items-center gap-1.5 text-xs font-bold text-herb hover:text-herb-dark underline underline-offset-2">
+                        <RotateCcw className="w-3.5 h-3.5" /> Restore
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filteredDeleted.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted products</p>}
+        </div>
+      ) : loading ? <SkeletonTable rows={6} /> : (
         <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <table className="w-full">
             <thead className="bg-lionsmane border-b border-gray-100">

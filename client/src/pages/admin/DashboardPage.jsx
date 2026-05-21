@@ -19,6 +19,22 @@ function rangeSpan(range) {
 
 const pad = n => String(n).padStart(2, '0')
 
+// Last-resort coordinates for German cities that may be saved without their own
+// lat/lng. DB coordinates always win; this only fills gaps so the map can plot.
+const CITY_FALLBACK = {
+  berlin: { lat: 52.52, lng: 13.405 },
+  hamburg: { lat: 53.5753, lng: 10.0153 },
+  munich: { lat: 48.1351, lng: 11.582 },
+  münchen: { lat: 48.1351, lng: 11.582 },
+  cologne: { lat: 50.9333, lng: 6.95 },
+  köln: { lat: 50.9333, lng: 6.95 },
+  frankfurt: { lat: 50.1109, lng: 8.6821 },
+  stuttgart: { lat: 48.7758, lng: 9.1829 },
+  düsseldorf: { lat: 51.2217, lng: 6.7762 },
+  dusseldorf: { lat: 51.2217, lng: 6.7762 },
+  donaustauf: { lat: 49.0356, lng: 12.2003 },
+}
+
 function bucketDataFor(date, span) {
   if (span <= 60) {
     return {
@@ -86,7 +102,8 @@ export default function AdminDashboardPage() {
       { data: splits },
       { data: usersRows },
       { data: addressRows },
-      { data: addressAllRows },
+      { data: supplierProfileRows },
+      { data: ownerProfileRows },
     ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
       supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'supplier'),
@@ -95,15 +112,13 @@ export default function AdminDashboardPage() {
       supabase.from('orders').select('*', { count: 'exact', head: true }),
       splitsQuery,
       supabase.from('users').select('id, role, created_at').in('role', ['supplier', 'restaurant_owner']),
-      // map dots — only addresses with coordinates
+      // every saved address (captures relocations — one location per address row)
       supabase.from('addresses')
-        .select('city, latitude, longitude, user:users!user_id(role)')
-        .not('latitude', 'is', null)
-        .not('longitude', 'is', null),
-      // radar city counts — all addresses with a city name (no coord requirement)
-      supabase.from('addresses')
-        .select('city, user:users!user_id(role)')
+        .select('city, latitude, longitude, user_id, user:users!user_id(role)')
         .not('city', 'is', null),
+      // each user's home city — most suppliers/owners only have a profile, no address rows
+      supabase.from('supplier_profiles').select('user_id, city, latitude, longitude'),
+      supabase.from('owner_profiles').select('user_id, city, latitude, longitude'),
     ])
 
     const allSplits = splits || []
@@ -172,32 +187,52 @@ export default function AdminDashboardPage() {
     }
     setUserGrowth(cumulative)
 
-    // Build one dot per address for the Germany map — each address row is a
-    // separate location dot regardless of how many addresses a user has.
-    const validAddresses = (addressRows || []).filter(
-      a => a.user?.role === 'supplier' || a.user?.role === 'restaurant_owner'
-    )
-    const mapDots = validAddresses.map((a, i) => ({
-      id: i,
-      city: a.city || 'Unknown',
-      lat: Number(a.latitude),
-      lng: Number(a.longitude),
-      role: a.user.role,
-    }))
-    setCityCoords(mapDots)
+    // Merge both location layers — profile home cities + relocation addresses —
+    // deduped per (user, city). A relocated user therefore shows one dot per
+    // distinct city; a user listed once shows exactly one.
+    const norm = s => (s || '').trim().toLowerCase()
 
-    // Radar city counts use ALL addresses (no coord requirement) so cities
-    // without coordinates still appear in the comparison chart.
-    const allCityAddresses = (addressAllRows || []).filter(
-      a => a.user?.role === 'supplier' || a.user?.role === 'restaurant_owner'
+    // city -> {lat,lng}, learned only from single-city rows that carry coords
+    // (a multi-city profile stores one coordinate that can't be split per city).
+    const coordByCity = {}
+    const learnCoords = (city, lat, lng) => {
+      if (!city || city.includes(',') || lat == null || lng == null) return
+      const k = norm(city)
+      if (!coordByCity[k]) coordByCity[k] = { lat: Number(lat), lng: Number(lng) }
+    }
+    ;(supplierProfileRows || []).forEach(p => learnCoords(p.city, p.latitude, p.longitude))
+    ;(ownerProfileRows || []).forEach(p => learnCoords(p.city, p.latitude, p.longitude))
+    ;(addressRows || []).forEach(a => learnCoords(a.city, a.latitude, a.longitude))
+    for (const [k, v] of Object.entries(CITY_FALLBACK)) if (!coordByCity[k]) coordByCity[k] = v
+
+    const locations = new Map()
+    const addLocation = (userId, role, cityField) => {
+      if (!userId || (role !== 'supplier' && role !== 'restaurant_owner')) return
+      ;(cityField || '').split(',').map(c => c.trim()).filter(Boolean).forEach(city => {
+        const key = `${userId}|${norm(city)}`
+        if (locations.has(key)) return
+        const coord = coordByCity[norm(city)]
+        locations.set(key, { city, role, lat: coord?.lat ?? null, lng: coord?.lng ?? null })
+      })
+    }
+    ;(supplierProfileRows || []).forEach(p => addLocation(p.user_id, 'supplier', p.city))
+    ;(ownerProfileRows || []).forEach(p => addLocation(p.user_id, 'restaurant_owner', p.city))
+    ;(addressRows || []).forEach(a => addLocation(a.user_id, a.user?.role, a.city))
+    const allLocations = [...locations.values()]
+
+    // Germany map — one dot per located (user, city) that resolved to coordinates.
+    setCityCoords(
+      allLocations
+        .filter(l => l.lat != null && l.lng != null)
+        .map((l, i) => ({ id: i, city: l.city, lat: l.lat, lng: l.lng, role: l.role }))
     )
+
+    // Radar — supplier vs owner counts per city (all cities, coords not required).
     const cityMap = {}
-    allCityAddresses.forEach(a => {
-      const c = a.city?.trim()
-      if (!c) return
-      if (!cityMap[c]) cityMap[c] = { city: c, suppliers: 0, owners: 0 }
-      if (a.user.role === 'supplier') cityMap[c].suppliers += 1
-      else cityMap[c].owners += 1
+    allLocations.forEach(l => {
+      if (!cityMap[l.city]) cityMap[l.city] = { city: l.city, suppliers: 0, owners: 0 }
+      if (l.role === 'supplier') cityMap[l.city].suppliers += 1
+      else cityMap[l.city].owners += 1
     })
     setCityCounts(Object.values(cityMap).sort((a, b) => (b.suppliers + b.owners) - (a.suppliers + a.owners)))
 

@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 17:21 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 22:02 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -394,6 +394,20 @@ Key-value store for platform-wide configuration managed by admin. Publicly reada
 | `conversations_owner_id_idx` | conversations | owner_id | Owner's conversation list |
 | `conversations_supplier_id_idx` | conversations | supplier_id | Supplier's conversation list |
 | `ai_insights_cache_generated_at_idx` | ai_insights_cache | generated_at DESC | Cache freshness queries |
+| `idx_addresses_user_id` | addresses | user_id | Foreign-key cover (join/cascade) |
+| `idx_admin_messages_conversation_id` | admin_messages | conversation_id | Foreign-key cover |
+| `idx_admin_messages_sender_id` | admin_messages | sender_id | Foreign-key cover |
+| `idx_deleted_accounts_deleted_by_admin_id` | deleted_accounts | deleted_by_admin_id | Foreign-key cover |
+| `idx_halal_certificates_reviewed_by` | halal_certificates | reviewed_by | Foreign-key cover |
+| `idx_messages_order_id` | messages | order_id | Foreign-key cover |
+| `idx_messages_sender_id` | messages | sender_id | Foreign-key cover |
+| `idx_order_items_order_split_id` | order_items | order_split_id | Foreign-key cover |
+| `idx_order_items_product_id` | order_items | product_id | Foreign-key cover |
+| `idx_products_deleted_by` | products | deleted_by | Foreign-key cover |
+| `idx_supplier_ratings_owner_id` | supplier_ratings | owner_id | Foreign-key cover |
+| `idx_supplier_ratings_supplier_id` | supplier_ratings | supplier_id | Foreign-key cover |
+
+> The 12 foreign-key cover indexes above were added to resolve the Supabase `unindexed_foreign_keys` performance advisory — unindexed FKs force sequential scans on joins and slow down `ON DELETE` cascade checks as data grows.
 
 ---
 
@@ -468,6 +482,8 @@ All functions are `SECURITY DEFINER` with `SET search_path = public` to prevent 
 
 RLS is enabled on all tables. `get_my_role()` is used throughout to avoid recursion.
 
+> **Init-plan optimization:** all 53 policies that reference `auth.uid()` / `auth.role()` wrap the call in a scalar subquery — `(select auth.uid())` instead of `auth.uid()`. This lets Postgres evaluate the auth function **once per query** (as an InitPlan) rather than **once per row**, eliminating the Supabase `auth_rls_initplan` performance advisory. The access logic is unchanged — the subquery returns the same value.
+
 | Table | Policy | Operation | Rule |
 |---|---|---|---|
 | users | `users_select_own` | SELECT | Own row or admin |
@@ -512,11 +528,13 @@ RLS is enabled on all tables. `get_my_role()` is used throughout to avoid recurs
 
 | Bucket | Visibility | Max Size | Allowed Types | Access |
 |---|---|---|---|---|
-| `avatars` | Public | — | — | Owner uploads own; public read |
-| `product-images` | Public | 5 MB | JPEG, PNG, WEBP, GIF | Suppliers upload/update/delete; public read |
+| `avatars` | Public | — | — | Owner uploads own; objects read via public URL |
+| `product-images` | Public | 5 MB | JPEG, PNG, WEBP, GIF | Suppliers upload/update/delete; objects read via public URL |
 | `halal-certificates` | Private | 10 MB | PDF, JPEG, PNG | Supplier uploads own folder; admin reads all; restaurant_owner reads approved |
 | `payment-receipts` | Private | 10 MB | PDF, JPEG, PNG | Owner uploads; supplier and admin read |
-| `chat-attachments` | Public | 5 MB | JPEG, PNG, GIF, WEBP, PDF | Any authenticated user uploads; public read |
+| `chat-attachments` | Public | 5 MB | JPEG, PNG, GIF, WEBP, PDF | Any authenticated user uploads; objects read via public URL |
+
+> **Listing hardened:** the broad public `SELECT` policies on `storage.objects` for the three public buckets (`avatars`, `chat-attachments`, `product-images`) were removed. Public buckets serve objects through the public URL endpoint (which bypasses RLS), so those policies only enabled anonymous **enumeration** of all files (`.list()`) — which the app never uses. Removing them resolves the Supabase `public_bucket_allows_listing` security advisory while leaving `getPublicUrl` access and uploads intact.
 
 ---
 
@@ -836,7 +854,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 
 | Context | File | Provides |
 |---|---|---|
-| `AuthContext` | `context/AuthContext.jsx` | `user`, `session`, `loading`, `signOut` |
+| `AuthContext` | `context/AuthContext.jsx` | `user`, `authUser`, `profile`, `role`, `loading`, `signIn`, `signOut`, `refreshProfile`, `updateProfileState`. The provider `value` is memoized (`useMemo`) and the `onAuthStateChange` handler only refetches the profile when the **user id actually changes** — Supabase fires `SIGNED_IN`/`TOKEN_REFRESHED` on every tab refocus, so unconditional refetching previously caused a refetch storm. The profile query is also deferred out of the auth callback (`setTimeout(0)`) to avoid the documented `onAuthStateChange` deadlock. |
 | `AddressContext` | `context/AddressContext.jsx` | Address book CRUD, default address management. When a new address is added, automatically syncs the city into `supplier_profiles.city` / `owner_profiles.city` (appending to the comma-separated list if not already present) so the Business Details card reflects new addresses immediately without requiring an edit+save cycle. |
 | `CartContext` | `context/CartContext.jsx` | Cart items, add/remove/clear, grouped by supplier |
 | `LanguageContext` | `context/LanguageContext.jsx` | `lang` (`en`/`de`), `t(key)` translation function, persisted to `localStorage` |
@@ -873,7 +891,35 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 
 - `PWAInstallPrompt` component intercepts the browser's `beforeinstallprompt` event and shows a custom install CTA.
 - Allows users to add ProCuro to their home screen on Android and desktop Chrome.
+- **Service-worker updates are prompt-based** (`registerType: 'prompt'`, `vite.config.js`). The SW never auto-reloads; instead `main.jsx` registers it explicitly (`virtual:pwa-register`) and shows a small "A new version is available — Update" toast that reloads only when the user clicks it. This replaced `registerType: 'autoUpdate'`, which force-reloaded the page on every detected SW change — and because browsers re-check for SW updates on every tab refocus, that produced a repeated reload loop when returning to the tab.
+- **Precache** (`workbox.globPatterns`) covers app JS/CSS/HTML/icons; `og-image.png` is excluded via `globIgnores` since it is only used for social link previews. App icons are served at sensible sizes (favicon 16/32 px, `apple-touch-icon` 180 px, PWA icon 512 px) so the offline precache stays small (~2.7 MB, down from ~5.8 MB).
 - **iOS safe area**: `index.html` sets `viewport-fit=cover` so the app extends edge-to-edge on notched iPhones. `apple-mobile-web-app-status-bar-style: black-translucent` makes the status bar transparent. The `<nav>` element receives `padding-top: var(--sat)` (where `--sat = env(safe-area-inset-top, 0px)` defined in `index.css`) so the navbar content always sits below the notch/Dynamic Island. All layout offset values in `OwnerLayout` and `SupplierLayout` (`paddingTop`, sidebar `top`) use `calc(Xrem + var(--sat))` inline styles to stay flush regardless of device.
+
+---
+
+## Performance & Optimization
+
+This section documents the load-speed and stability work, organized by the symptom each fix addresses.
+
+### Fixing the "page reloads repeatedly on tab return" loop
+
+Returning to the browser tab caused the app to reload over and over (~every 2 s) on every page. Three compounding client-side causes were addressed:
+
+1. **PWA auto-update** (primary) — `registerType: 'autoUpdate'` force-reloaded the page whenever the browser detected a "new" service worker, and browsers re-check for SW updates on tab refocus. Switched to `registerType: 'prompt'` with an explicit, user-triggered update toast (see PWA section). A prompt-mode SW only `skipWaiting()`s on an explicit message, so it can no longer auto-reload.
+2. **Auth refetch storm** — `AuthContext` re-ran a 3-table profile join and reset all auth state on **every** `onAuthStateChange` event (Supabase fires `SIGNED_IN`/`TOKEN_REFRESHED` on focus). Now guarded by a user-id ref so the profile only refetches when the user actually changes; the context `value` is memoized so consumers stop re-rendering on token refresh.
+3. **ChatPage visibility refetch** — the `visibilitychange` handler that reloads conversations (to recover dropped WebSockets) is now throttled to at most once per 5 s so rapid focus/blur cycles can't trigger a refetch loop.
+
+### Faster initial load
+
+- **Favicon**: the icon in `index.html` was a 1 MB `Picture1.png` loaded on every page. Replaced with dedicated 32 px / 16 px favicons (~1 KB total).
+- **Image weight**: `ProCuroIcon.png` (970 KB → 233 KB, resized to 512 px), `apple-touch-icon.png` (758 KB → 26 KB, resized to 180 px), `Deutschland.svg` (208 KB → 112 KB via SVGO). Unused `germany.svg` (365 KB) and the orphaned `Picture1.png` were removed. Public-asset weight dropped from ~3.9 MB to ~0.6 MB.
+- **Code splitting**: routes are already lazy-loaded via `React.lazy` in `App.jsx`; heavy report/export libraries (`jspdf`, `html2canvas`) and the date-range filter only load on the routes that use them.
+
+### Database
+
+The database itself was confirmed **not** to be the source of slow page loads — the largest application table holds ~100 rows, so query time is negligible. The DB changes below are scale/quality/security hardening, not latency fixes: the RLS init-plan rewrite (53 policies), the 12 foreign-key cover indexes, and the storage-bucket listing lockdown (see the respective sections above).
+
+> **Known deferred items (Supabase advisories, low priority):** `multiple_permissive_policies` (~29) — multiple permissive RLS policies on the same table/action; safe to leave on a small dataset and risky to merge automatically because several mix `FOR ALL` admin policies with `FOR SELECT` user policies. `security_definer_function_executable` (~44) — flags `SECURITY DEFINER` helpers (e.g. `get_my_role()`) executable by `anon`/`authenticated`; these are required for RLS evaluation and should not be revoked without review. `auth_leaked_password_protection` — enable HaveIBeenPwned password checking in the Supabase Auth dashboard. Database region is `ap-northeast-2` (Seoul); end users in Germany see ~250 ms round-trips, but the region was intentionally kept.
 
 ---
 
@@ -962,6 +1008,9 @@ ProCuro/
 | `018_drop_not_null_on_nullable_fk_columns.sql` | Further FK constraint corrections for account deletion cascade |
 | `019_certificate_status_keeps_verification.sql` | Supplier verification follows approved-certificate count: `sync_supplier_verification()` + `halal_cert_status_resync` trigger keep `supplier_profiles.is_verified`/`is_active` in sync, so rejecting one cert no longer un-verifies a supplier who still has another approved cert. Includes one-off backfill |
 | `soft_delete_products` (applied remotely via Supabase MCP) | Adds `deleted_at TIMESTAMPTZ` and `deleted_by UUID` columns to `products` plus partial index `idx_products_deleted_at`. Powers the Admin Products → **Deleted** tab; soft-deleted products stay in `order_items` so analytics keep history |
+| `rls_initplan_wrap_auth_functions` (applied remotely via Supabase MCP) | Rewrites all 53 RLS policies that call `auth.uid()`/`auth.role()` to wrap them in `(select …)` so Postgres evaluates them once per query instead of once per row. Access logic unchanged; clears the `auth_rls_initplan` advisory |
+| `add_missing_fk_indexes` (applied remotely via Supabase MCP) | Adds 12 foreign-key cover indexes (addresses, admin_messages, deleted_accounts, halal_certificates, messages, order_items, products, supplier_ratings); clears `unindexed_foreign_keys` |
+| `storage_drop_public_bucket_listing` (applied remotely via Supabase MCP) | Drops the broad public `SELECT` policies on `storage.objects` for `avatars`, `chat-attachments`, `product-images` to prevent anonymous file enumeration; clears `public_bucket_allows_listing`. Public URL access and uploads unaffected |
 
 ---
 

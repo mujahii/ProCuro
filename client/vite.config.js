@@ -6,8 +6,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['ProCuroIcon.png', 'og-image.png'],
+      registerType: 'prompt',
+      injectRegister: false,
+      includeAssets: ['ProCuroIcon.png'],
       manifest: {
         name: 'ProCuro — Halal Supply Chain',
         short_name: 'ProCuro',
@@ -22,13 +23,13 @@ export default defineConfig({
         icons: [
           {
             src: '/ProCuroIcon.png',
-            sizes: '1024x1024',
+            sizes: '512x512',
             type: 'image/png',
             purpose: 'any'
           },
           {
             src: '/ProCuroIcon.png',
-            sizes: '1024x1024',
+            sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
           }
@@ -36,6 +37,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globIgnores: ['**/og-image.png'],
         navigateFallback: 'index.html',
         runtimeCaching: [
           {

@@ -1,6 +1,9 @@
 # Claude Code local settings & worktrees (machine-specific)
 .claude/
 
+# Playwright MCP test artifacts (screenshots, snapshots, console logs)
+.playwright-mcp/
+
 # MCP config (contains Supabase project ref and other service URLs)
 .mcp.json
 

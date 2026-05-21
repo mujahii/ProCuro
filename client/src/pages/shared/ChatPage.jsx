@@ -50,6 +50,7 @@ export default function ChatPage() {
   const autoSentRef = useRef(false)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
+  const lastVisibilityRefetch = useRef(0)
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -80,12 +81,16 @@ export default function ChatPage() {
     loadAdminConv()
   }, [user, role, supplierId])
 
-  // Reload data when tab becomes visible again to recover from dropped WebSocket connections
+  // Reload data when tab becomes visible again to recover from dropped WebSocket
+  // connections. Throttled so rapid focus/blur cycles can't trigger a refetch loop.
   useEffect(() => {
     function handleVisibility() {
       if (document.visibilityState !== 'visible') return
       if (!user) return
       if (role === 'supplier' && !supplierId) return
+      const now = Date.now()
+      if (now - lastVisibilityRefetch.current < 5000) return
+      lastVisibilityRefetch.current = now
       loadConversations()
       loadAdminConv()
     }

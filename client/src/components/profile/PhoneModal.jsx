@@ -4,24 +4,48 @@ import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import Modal from './Modal'
 
-// Format a phone string with spaces for display.
+// Format a stored phone string for display.
 // "+491701234567" → "+49 170 1234567"
 // "01701234567"   → "0170 1234567"
-// Already-spaced strings pass through unchanged.
 export function formatPhone(raw) {
   if (!raw) return ''
-  const digits = raw.replace(/\s+/g, '')
-  // International format: +CC XXXXXXXXX
-  const intl = digits.match(/^(\+\d{1,3})(\d{3})(\d+)$/)
+  const stripped = raw.replace(/\s+/g, '')
+  const intl = stripped.match(/^(\+\d{1,3})(\d{3})(\d+)$/)
   if (intl) return `${intl[1]} ${intl[2]} ${intl[3]}`
-  // German mobile / local: 0XXX XXXXXXX
-  const local = digits.match(/^(0\d{3,4})(\d+)$/)
+  const local = stripped.match(/^(0\d{3,4})(\d+)$/)
   if (local) return `${local[1]} ${local[2]}`
   return raw
 }
 
+// Live formatter called on every keystroke — same idea as handleIBANInput.
+// Strips spaces / non-phone chars, then re-inserts spaces in the right places.
+export function handlePhoneInput(value) {
+  // Keep only digits and a leading +; remove any + that's not at the very start.
+  let raw = value.replace(/[^\d+]/g, '')
+  if (raw.indexOf('+') > 0) raw = raw.replace(/\+/g, '')
+
+  if (raw.startsWith('+')) {
+    const body = raw.slice(1)                   // digits after the +
+    if (body.length <= 2) return `+${body}`     // still typing country code
+    const cc  = `+${body.slice(0, 2)}`          // e.g. +49
+    const net = body.slice(2, 5)                // network prefix (3 digits)
+    const sub = body.slice(5, 15)               // subscriber number
+    if (!sub) return `${cc} ${net}`
+    return `${cc} ${net} ${sub}`
+  }
+
+  if (raw.startsWith('0')) {
+    const area = raw.slice(0, 4)                // 0XXX
+    const sub  = raw.slice(4, 14)
+    if (!sub) return area
+    return `${area} ${sub}`
+  }
+
+  return raw.slice(0, 15)
+}
+
 export default function PhoneModal({ userId, currentPhone, role, onClose, onSaved }) {
-  const [phone, setPhone] = useState(currentPhone || '')
+  const [phone, setPhone] = useState(formatPhone(currentPhone) || '')
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
@@ -56,7 +80,7 @@ export default function PhoneModal({ userId, currentPhone, role, onClose, onSave
           <input
             type="tel"
             value={phone}
-            onChange={e => setPhone(e.target.value)}
+            onChange={e => setPhone(handlePhoneInput(e.target.value))}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
             placeholder="+49 170 1234567"
           />

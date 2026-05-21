@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 17:06 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 17:13 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -788,7 +788,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `OwnerProfileModal` — Supplier-side modal showing an owner's details when viewing their order
 - `SupplierProfileModal` — Owner-side modal for supplier details
 - `PasswordModal` — Change email & password modal. Email section shows current email pre-filled with an inline "Change" sub-popup (no password required) for entering a new email. Password section (New Password + Confirm) is independent and unchanged.
-- `PhoneModal` — Update phone number form; shows formatted current phone number above the input. Exports `formatPhone(raw)` helper used by both profile pages to display phone in settings row.
+- `PhoneModal` — Update phone number form; shows formatted current phone above the input; pre-fills the input with the formatted current value. Live auto-spacing on every keystroke via `handlePhoneInput` (same pattern as `handleIBANInput`): strips non-phone chars then re-inserts spaces as `+CC NNN XXXXXXX` (international) or `0XXX XXXXXXX` (local German). Exports `formatPhone(raw)` for display in settings rows.
 - `SettingRow` — Reusable row component for the settings card; accepts optional `value` prop to show a secondary value (used to display formatted phone number)
 
 ### Store

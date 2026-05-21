@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 22:17 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 22:23 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -801,7 +801,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `PublicOnlyRoute` — Redirects authenticated users to their dashboard
 
 ### Profile
-- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device → stored in `avatars` bucket as `{userId}/avatar.{ext}`) and **"Generate Avatar"** — single "Generate" button that randomly selects from 15 pre-defined DiceBear avatars (adventurer, personas, bottts, micah styles with fixed seeds). Clicking again cycles to a different avatar. On save, the DiceBear CDN URL is stored directly as `avatar_url` (no re-upload to Supabase storage — avoids browser CORS restrictions when fetching the external URL). All labels fully i18n'd.
+- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device → stored in `avatars` bucket as `{userId}/avatar.{ext}`) and **"Generate Avatar"** — single "Generate" button that randomly selects from 15 pre-defined DiceBear avatars (adventurer, personas, bottts, micah styles with fixed seeds). Clicking again cycles to a different avatar. On save, calls the `update_own_avatar(p_url)` SECURITY DEFINER RPC (bypasses the `users_update_own` WITH CHECK which rejects updates when `role IS NULL`). The RPC updates both `users.avatar_url` and `supplier_profiles.avatar_url` in one call. All labels fully i18n'd.
 - `DeleteAccountModal` — Confirmation dialog for account deletion
 - `Modal` — Base modal wrapper
 - `OwnerProfileModal` — Supplier-side modal showing an owner's details when viewing their order

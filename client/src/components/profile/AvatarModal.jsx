@@ -59,14 +59,13 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
       const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
       if (uploadError) throw uploadError
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
-      await supabase.from('users').update({ avatar_url: publicUrl }).eq('id', userId)
-      if (role === 'supplier') {
-        await supabase.from('supplier_profiles').update({ avatar_url: publicUrl }).eq('user_id', userId)
-      }
+      const { error: rpcError } = await supabase.rpc('update_own_avatar', { p_url: publicUrl })
+      if (rpcError) throw rpcError
       onSaved(publicUrl)
       onClose()
       toast.success('Profile photo updated!')
-    } catch {
+    } catch (err) {
+      console.error('Avatar upload error:', err)
       toast.error('Failed to upload photo')
     } finally {
       setSaving(false)
@@ -77,11 +76,8 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
     if (!generatedUrl) { toast.error('Generate an avatar first'); return }
     setSaving(true)
     try {
-      const { error } = await supabase.from('users').update({ avatar_url: generatedUrl }).eq('id', userId)
+      const { error } = await supabase.rpc('update_own_avatar', { p_url: generatedUrl })
       if (error) throw error
-      if (role === 'supplier') {
-        await supabase.from('supplier_profiles').update({ avatar_url: generatedUrl }).eq('user_id', userId)
-      }
       onSaved(generatedUrl)
       onClose()
       toast.success('Avatar saved!')

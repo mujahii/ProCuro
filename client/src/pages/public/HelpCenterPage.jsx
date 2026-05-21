@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, HelpCircle, Mail, CheckCircle } from 'lucide-react'
+import { ArrowLeft, HelpCircle, Mail, CheckCircle, ChevronDown } from 'lucide-react'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import toast from 'react-hot-toast'
@@ -15,6 +15,19 @@ const TOPIC_KEYS = [
   'helpTopicOther',
 ]
 
+const FAQ_KEYS = [
+  ['faq1Q', 'faq1A'],
+  ['faq2Q', 'faq2A'],
+  ['faq3Q', 'faq3A'],
+  ['faq4Q', 'faq4A'],
+  ['faq5Q', 'faq5A'],
+  ['faq6Q', 'faq6A'],
+  ['faq7Q', 'faq7A'],
+  ['faq8Q', 'faq8A'],
+  ['faq9Q', 'faq9A'],
+  ['faq10Q', 'faq10A'],
+]
+
 export default function HelpCenterPage() {
   const navigate = useNavigate()
   const { t } = useLanguage()
@@ -23,6 +36,7 @@ export default function HelpCenterPage() {
   const [topicKey, setTopicKey] = useState('')
   const [message, setMessage] = useState('')
   const [sent, setSent] = useState(false)
+  const [openFaq, setOpenFaq] = useState(null)
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -45,7 +59,34 @@ export default function HelpCenterPage() {
           <HelpCircle className="w-6 h-6 sm:w-7 sm:h-7 text-midnight" />
           <h1 className="text-xl sm:text-2xl font-black text-slate-900">{t('helpTitle')}</h1>
         </div>
-        <p className="text-sm sm:text-base text-slate-500 mb-6 sm:mb-8">{t('helpSubtitle')}</p>
+        <p className="text-sm sm:text-base text-slate-500 mb-8 sm:mb-10">{t('helpSubtitle')}</p>
+
+        {/* FAQ accordion */}
+        <h2 className="text-lg font-black text-slate-900 mb-4">{t('faqTitle')}</h2>
+        <div className="space-y-2 mb-10">
+          {FAQ_KEYS.map(([qKey, aKey], i) => (
+            <div key={qKey} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+              <button
+                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                className="w-full flex items-center justify-between px-5 py-4 text-left gap-3"
+              >
+                <span className="text-sm font-semibold text-slate-800">{t(qKey)}</span>
+                <ChevronDown className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`} />
+              </button>
+              {openFaq === i && (
+                <div className="px-5 pb-5">
+                  <p className="text-sm text-slate-600 leading-relaxed">{t(aKey)}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Contact form */}
+        <div className="mb-2">
+          <h2 className="text-lg font-black text-slate-900 mb-1">{t('faqContactTitle')}</h2>
+          <p className="text-sm text-slate-500 mb-6">{t('faqContactSubtitle')}</p>
+        </div>
 
         {sent ? (
           <div className="bg-lionsmane border border-celeste rounded-2xl p-8 text-center">

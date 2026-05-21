@@ -16,6 +16,7 @@ export default function CityComparisonRadar({ data = [], title = 'Suppliers vs O
   }
 
   const sorted = [...data].sort((a, b) => (b.suppliers + b.owners) - (a.suppliers + a.owners))
+  const maxVal = Math.max(...sorted.map(d => Math.max(d.suppliers || 0, d.owners || 0)), 1)
 
   return (
     <div className="card p-5">
@@ -30,7 +31,7 @@ export default function CityComparisonRadar({ data = [], title = 'Suppliers vs O
             dataKey="city"
             tick={{ fontSize: sorted.length > 12 ? 8 : 10, fill: '#6b7280' }}
           />
-          <PolarRadiusAxis allowDecimals={false} tick={{ fontSize: 9, fill: '#9ca3af' }} />
+          <PolarRadiusAxis domain={[0, maxVal]} allowDecimals={false} tick={{ fontSize: 9, fill: '#9ca3af' }} />
           <Radar name="Suppliers" dataKey="suppliers" stroke="#083A4F" fill="#083A4F" fillOpacity={0.45} />
           <Radar name="Owners" dataKey="owners" stroke="#D4A017" fill="#D4A017" fillOpacity={0.45} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />

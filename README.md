@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 22:42 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 22:49 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -711,7 +711,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | AboutPage | `/about` | Company information |
 | CareersPage | `/careers` | Careers page |
 | PressPage | `/press` | Press and media page |
-| HelpCenterPage | `/help` | Help center and FAQs |
+| HelpCenterPage | `/help` | Help center with **10-item FAQ accordion** (click to expand/collapse) covering: what ProCuro is, account creation, supplier verification, payment methods, order tracking, cancellation, delivery fees, delivery disputes, GDPR/privacy, and account deletion. Fully bilingual (EN/DE via `t()` keys). Below the FAQ is the contact form (name, email, topic, message → mailto). |
 | PrivacyPolicyPage | `/privacy` | Privacy policy |
 | TermsOfServicePage | `/terms` | Terms of service |
 | AccountDeletedPage | `/account-deleted` | Farewell page shown after successful account deletion; bilingual (EN/DE) with a warm goodbye message and a back-to-homepage button |
@@ -824,7 +824,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `OrdersByStatusChart` — **Column/bar chart** showing order-split status distribution (admin) — one bar per status, each colour-coded (yellow for pending, blue for confirmed, purple for in-transit, dark green for delivered/completed, red for cancelled); x-axis labels angled −35°; replaced the previous Treemap
 - `UserGrowthChart` — Cumulative line chart of owners + suppliers, fed by `users.created_at` grouped by month and filtered by the active date range (admin)
 - `PaymentTypeChart` — Donut + breakdown card showing Bank Transfer vs Cash on Delivery counts and GMV (admin) — replaced the old Certificate Status card
-- `CityComparisonRadar` — Radar (spider) chart showing **all** cities in the system (no cap). Two filled Radar series: Suppliers (midnight #083A4F) and Owners (marigold #D4A017). Chart height scales with city count (`200 + cities × 18px`, capped at 520px) so spokes don't crowd. Label font size shrinks to 8px when more than 12 cities are present. Cities outside Germany are included. Sorted by combined count descending. (Note: admin dashboard README table entry still references "horizontal bar chart" — this is the component that was briefly a bar chart and is now restored to a radar.)
+- `CityComparisonRadar` — Radar (spider) chart showing **all** cities in the system (no cap). Two filled Radar series: Suppliers (midnight #083A4F) and Owners (marigold #D4A017). The `PolarRadiusAxis` uses `domain={[0, maxVal]}` where `maxVal` is derived from the actual highest data value, so the axis rings always reflect the real maximum rather than a rounded "nice" number. Label font size shrinks to 8px when more than 12 cities are present. Cities outside Germany are included. Sorted by combined count descending.
 - `GermanyDotMap` — Germany outline loaded from `/public/Deutschland.svg` (443 × 599 px) as an `<image>` inside an SVG. Renders **one dot per `(user, city)` location**, sourced from both profile home cities and the addresses table (see Admin DashboardPage). Colour-coded by role: supplier = `#083A4F` (midnight), restaurant owner = `#D4A017` (marigold). lat/lng → SVG coordinates via Mercator-vertical + equirectangular-horizontal projection using mainland bounds `lat 47.27–55.06, lng 5.87–15.04`, scaled to the 443-unit viewBox. Dots that project to the same point (multiple users in one city) **fan out into a small ring** so each stays individually visible. Coordinates are resolved through a `city → {lat,lng}` lookup learned from single-city rows that carry coords, with a fallback table of major German cities. Hover shows city name + role tooltip.
 - `SupplierVerificationChart` — Defined but currently **unused** (not imported by any page). Intended to show verified vs unverified supplier breakdown; the analytics RPC it was built for (`get_supplier_verification_breakdown`) was dropped in migration 017.
 - `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages. All labels (presets, custom range header, From/To, Clear, Apply) are fully i18n'd via `t()`.

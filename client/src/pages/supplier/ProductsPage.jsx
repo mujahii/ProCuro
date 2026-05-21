@@ -160,6 +160,7 @@ export default function SupplierProductsPage() {
           </button>
         </div>
       ) : (
+        <>
         {openMenu && <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />}
         <div className="card overflow-hidden">
           <table className="w-full">
@@ -246,6 +247,7 @@ export default function SupplierProductsPage() {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       {/* Delete Product Confirmation */}

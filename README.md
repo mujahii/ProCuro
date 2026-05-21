@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 22:15 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 22:17 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 

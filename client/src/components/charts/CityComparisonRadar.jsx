@@ -16,8 +16,6 @@ export default function CityComparisonRadar({ data = [], title = 'Suppliers vs O
   }
 
   const sorted = [...data].sort((a, b) => (b.suppliers + b.owners) - (a.suppliers + a.owners))
-  // Scale chart height with city count so labels don't crowd each other.
-  const chartSize = Math.max(280, Math.min(520, 200 + sorted.length * 18))
 
   return (
     <div className="card p-5">
@@ -25,7 +23,7 @@ export default function CityComparisonRadar({ data = [], title = 'Suppliers vs O
       <p className="text-xs text-gray-400 mb-4">
         {sorted.length} {sorted.length === 1 ? 'city' : 'cities'} · all locations in the system
       </p>
-      <ResponsiveContainer width="100%" height={chartSize}>
+      <ResponsiveContainer width="100%" height={288}>
         <RadarChart data={sorted} margin={{ top: 10, right: 40, bottom: 10, left: 40 }}>
           <PolarGrid stroke="#e5e7eb" />
           <PolarAngleAxis

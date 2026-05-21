@@ -20,6 +20,7 @@ import PhoneModal from '../../components/profile/PhoneModal'
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal'
 
 function EditProfileModal({ userId, currentName, currentRestaurantName, currentBio, onClose, onSaved }) {
+  const { t } = useLanguage()
   const [name, setName] = useState(currentName || '')
   const [restaurantName, setRestaurantName] = useState(currentRestaurantName || '')
   const [bio, setBio] = useState(currentBio || '')
@@ -45,7 +46,7 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
   }
 
   return (
-    <Modal title="Edit Profile" onClose={onClose}>
+    <Modal title={t('editProfileTitle')} onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Your Name</label>
@@ -92,6 +93,7 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
 }
 
 function BusinessInfoModal({ userId, current, onClose, onSaved }) {
+  const { t } = useLanguage()
   const normaliseCuisine = v => Array.isArray(v) ? v : (v ? [v] : [])
   const [form, setForm] = useState({
     tax_id: current.tax_id || '',
@@ -191,7 +193,7 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
   const CUISINE_TYPES = ['Halal', 'Middle Eastern', 'Asian', 'Mediterranean', 'Fast Food', 'Fine Dining', 'Café', 'Bakery', 'Seafood', 'Other']
 
   return (
-    <Modal title="Business Details" onClose={onClose} maxW="max-w-md">
+    <Modal title={t('businessDetailsTitle')} onClose={onClose} maxW="max-w-md">
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
@@ -296,6 +298,7 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
 
 
 function AddressModal({ onClose, userId }) {
+  const { t } = useLanguage()
   const { addresses, addAddress, deleteAddress, setDefault, reload } = useAddresses()
   const [form, setForm] = useState({ label: '', street: '', postal_code: '', city: '', latitude: null, longitude: null })
   const [saving, setSaving] = useState(false)
@@ -371,7 +374,7 @@ function AddressModal({ onClose, userId }) {
   }
 
   return (
-    <Modal title="Manage Addresses" onClose={onClose} maxW="max-w-md">
+    <Modal title={t('manageAddressesTitle')} onClose={onClose} maxW="max-w-md">
       <div className="space-y-3 mb-5">
         {addresses.length === 0 ? (
           <p className="text-sm text-slate-400 text-center py-2">No addresses yet.</p>
@@ -454,6 +457,7 @@ function AddressModal({ onClose, userId }) {
 
 
 function BankModal({ userId, current, onClose, onSaved }) {
+  const { t } = useLanguage()
   const [form, setForm] = useState({
     bank_name: current?.bank_name || '',
     account_holder: current?.account_holder || '',
@@ -481,7 +485,7 @@ function BankModal({ userId, current, onClose, onSaved }) {
   }
 
   return (
-    <Modal title="Bank Details" onClose={onClose}>
+    <Modal title={t('bankDetailsTitle')} onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Bank Name</label>
@@ -790,7 +794,7 @@ export default function ProfilePage() {
 
       {/* Modals */}
       {showAvatarModal && (
-        <AvatarModal userId={user.id} role="owner" onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
+        <AvatarModal userId={user.id} role="owner" userName={displayName} onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
       )}
       {showEditModal && (
         <EditProfileModal

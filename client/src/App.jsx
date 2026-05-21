@@ -48,6 +48,7 @@ const AdminOrdersPage = lazy(() => import('./pages/admin/OrdersPage'))
 const AdminReportsPage = lazy(() => import('./pages/admin/ReportsPage'))
 const AdminChatPage = lazy(() => import('./pages/admin/AdminChatPage'))
 const AdminDeliveryFeesPage = lazy(() => import('./pages/admin/DeliveryFeesPage'))
+const AdminDeletedProductsPage = lazy(() => import('./pages/admin/DeletedProductsPage'))
 
 // Owner
 const OwnerStorePage = lazy(() => import('./pages/owner/StorePage'))
@@ -139,6 +140,7 @@ export default function App() {
               <Route path="reports" element={<AdminReportsPage />} />
               <Route path="chat" element={<AdminChatPage />} />
               <Route path="delivery-fees" element={<AdminDeliveryFeesPage />} />
+              <Route path="deleted-products" element={<AdminDeletedProductsPage />} />
             </Route>
 
             {/* Restaurant Owner */}

@@ -81,14 +81,14 @@ export default function SupplierProductsPage() {
   }
 
   async function loadProducts(supplierId) {
-    const { data } = await supabase.from('products').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false })
+    const { data } = await supabase.from('products').select('*').eq('supplier_id', supplierId).is('deleted_at', null).order('created_at', { ascending: false })
     setProducts(data || [])
     setLoading(false)
   }
 
   async function handleDelete() {
     if (!deleteTarget) return
-    await supabase.from('products').delete().eq('id', deleteTarget.id)
+    await supabase.from('products').update({ deleted_at: new Date().toISOString(), deleted_by: user.id, is_active: false }).eq('id', deleteTarget.id)
     setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
     setDeleteTarget(null)
     toast.success(t('productDeletedToast'))

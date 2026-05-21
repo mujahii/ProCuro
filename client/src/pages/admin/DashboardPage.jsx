@@ -86,6 +86,7 @@ export default function AdminDashboardPage() {
       { data: splits },
       { data: usersRows },
       { data: addressRows },
+      { data: addressAllRows },
     ] = await Promise.all([
       supabase.from('users').select('*', { count: 'exact', head: true }),
       supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'supplier'),
@@ -94,10 +95,15 @@ export default function AdminDashboardPage() {
       supabase.from('orders').select('*', { count: 'exact', head: true }),
       splitsQuery,
       supabase.from('users').select('id, role, created_at').in('role', ['supplier', 'restaurant_owner']),
+      // map dots — only addresses with coordinates
       supabase.from('addresses')
         .select('city, latitude, longitude, user:users!user_id(role)')
         .not('latitude', 'is', null)
         .not('longitude', 'is', null),
+      // radar city counts — all addresses with a city name (no coord requirement)
+      supabase.from('addresses')
+        .select('city, user:users!user_id(role)')
+        .not('city', 'is', null),
     ])
 
     const allSplits = splits || []
@@ -180,9 +186,13 @@ export default function AdminDashboardPage() {
     }))
     setCityCoords(mapDots)
 
-    // Also build city-level counts for the radar chart (grouped by city)
+    // Radar city counts use ALL addresses (no coord requirement) so cities
+    // without coordinates still appear in the comparison chart.
+    const allCityAddresses = (addressAllRows || []).filter(
+      a => a.user?.role === 'supplier' || a.user?.role === 'restaurant_owner'
+    )
     const cityMap = {}
-    validAddresses.forEach(a => {
+    allCityAddresses.forEach(a => {
       const c = a.city?.trim()
       if (!c) return
       if (!cityMap[c]) cityMap[c] = { city: c, suppliers: 0, owners: 0 }
@@ -244,8 +254,8 @@ export default function AdminDashboardPage() {
             <OrdersByStatusChart data={statusBreakdown} title="All Orders by Status" />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <UserGrowthChart data={userGrowth} />
             <PaymentTypeChart data={paymentSplit} />
+            <UserGrowthChart data={userGrowth} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <CityComparisonRadar data={cityCounts} />

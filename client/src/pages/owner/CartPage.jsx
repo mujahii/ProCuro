@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
+import SupplierProfileModal from '../../components/profile/SupplierProfileModal'
 
 function getProductImageUrl(path) {
   if (!path) return null
@@ -36,6 +37,7 @@ export default function CartPage() {
   const [deliveryRecalcLoading, setDeliveryRecalcLoading] = useState(false)
   const [bannedSupplierIds, setBannedSupplierIds] = useState(new Set())
   const [taxRate, setTaxRate] = useState(0.07)
+  const [profileModalId, setProfileModalId] = useState(null)
 
   const groups = Object.entries(groupedBySupplier)
   const supplierIdsKey = useMemo(() => groups.map(([id]) => id).sort().join(','), [groups])
@@ -359,14 +361,17 @@ export default function CartPage() {
           return (
             <div key={supplierId} className={`bg-white rounded-xl shadow-sm border overflow-hidden ${supplierIsBanned ? 'border-red-300' : 'border-slate-100'}`}>
               <div className={`px-5 py-3 border-b flex items-center justify-between ${supplierIsBanned ? 'bg-red-50 border-red-200' : 'bg-lionsmane border-slate-100'}`}>
-                <p className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <button
+                  onClick={() => setProfileModalId(supplierId)}
+                  className="font-bold text-slate-900 text-sm flex items-center gap-2 hover:text-midnight hover:underline underline-offset-2 transition-colors"
+                >
                   {group.supplier?.business_name || 'Supplier'}
                   {supplierIsBanned && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
                       <Ban className="w-3 h-3" /> {t('supplierBannedShort')}
                     </span>
                   )}
-                </p>
+                </button>
               </div>
               {supplierIsBanned && (
                 <div className="bg-red-50 border-b border-red-200 px-5 py-2.5 text-xs text-red-700">{t('supplierBannedCartNotice')}</div>
@@ -477,6 +482,14 @@ export default function CartPage() {
         {deliveryRecalcLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         {t('continueToPayment')} — €{grandTotal.toFixed(2)}
       </button>
+
+      {profileModalId && (
+        <SupplierProfileModal
+          supplierId={profileModalId}
+          businessName={groupedBySupplier[profileModalId]?.supplier?.business_name}
+          onClose={() => setProfileModalId(null)}
+        />
+      )}
     </div>
   )
 }

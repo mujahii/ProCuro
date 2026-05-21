@@ -39,6 +39,7 @@ export default function AdminProductsPage() {
     const { data } = await supabase
       .from('products')
       .select('*, supplier:supplier_profiles(id, business_name)')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
     setProducts(data || [])
     setLoading(false)
@@ -51,7 +52,7 @@ export default function AdminProductsPage() {
 
   async function deleteProduct() {
     if (!deleteTarget) return
-    await supabase.from('products').delete().eq('id', deleteTarget.id)
+    await supabase.from('products').update({ deleted_at: new Date().toISOString(), is_active: false }).eq('id', deleteTarget.id)
     setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
     setDeleteTarget(null)
     toast.success('Product deleted')

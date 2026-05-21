@@ -370,7 +370,6 @@ const T = {
     missingReceiptError: 'Please upload a payment receipt for all suppliers',
     freeText: 'Free',
     cashOnDeliveryNote: 'Please have the exact amount ready per supplier.',
-    accountSuspendedTitle: 'Account suspended',
     saveAddressBtn: 'Save Address',
     backToSavedAddresses: '← Back to saved addresses',
     streetPlaceholderLabel: 'Street',
@@ -693,6 +692,46 @@ const T = {
     productCountSingular: 'product',
     productCountPlural: 'products',
     noProductsInCategory: 'No products found in',
+
+    // Order statuses (StatusBadge)
+    statusPendingPayment: 'Pending Payment',
+    statusPendingConfirmation: 'Pending Confirmation',
+    statusPending: 'Pending',
+    statusConfirmed: 'Confirmed',
+    statusShipped: 'Shipped',
+    statusOutForDelivery: 'Out for Delivery',
+    statusDelivered: 'Delivered',
+    statusRefundUploaded: 'Refund Uploaded',
+    statusCompleted: 'Completed',
+    statusCancellationRequested: 'Cancellation Requested',
+    statusCancelled: 'Cancelled',
+    statusVerified: 'Verified',
+    statusApproved: 'Approved',
+    statusRejected: 'Rejected',
+
+    // Modal titles (profile pages)
+    editProfileTitle: 'Edit Profile',
+    manageAddressesTitle: 'Manage Addresses',
+    bankDetailsTitle: 'Bank Details',
+    businessDetailsTitle: 'Business Details',
+    updateProfilePicTitle: 'Update Profile Picture',
+
+    // Avatar modal
+    choosePhoto: 'Choose a photo',
+    autoGenerateAvatar: 'Generate Avatar',
+    autoGenerateAvatarDesc: 'Get a unique auto-generated profile picture',
+    generating: 'Generating…',
+
+    // Supplier profile header
+    locationLabel: 'Location',
+
+    // Dashboard admin
+    deletedProducts: 'Deleted Products',
+    deletedProductsDesc: 'Products removed from the platform',
+    noDeletedProducts: 'No deleted products yet',
+    deletedAt: 'Deleted at',
+    restoreProduct: 'Restore',
+    productRestored: 'Product restored',
   },
   de: {
     // Navbar
@@ -1059,7 +1098,6 @@ const T = {
     missingReceiptError: 'Bitte laden Sie für alle Lieferanten einen Zahlungsbeleg hoch',
     freeText: 'Kostenlos',
     cashOnDeliveryNote: 'Bitte den genauen Betrag pro Lieferant bereithalten.',
-    accountSuspendedTitle: 'Konto gesperrt',
     saveAddressBtn: 'Adresse speichern',
     backToSavedAddresses: '← Zurück zu gespeicherten Adressen',
     streetPlaceholderLabel: 'Straße',
@@ -1382,6 +1420,46 @@ const T = {
     productCountSingular: 'Produkt',
     productCountPlural: 'Produkte',
     noProductsInCategory: 'Keine Produkte gefunden in',
+
+    // Order statuses (StatusBadge)
+    statusPendingPayment: 'Zahlung ausstehend',
+    statusPendingConfirmation: 'Bestätigung ausstehend',
+    statusPending: 'Ausstehend',
+    statusConfirmed: 'Bestätigt',
+    statusShipped: 'Versandt',
+    statusOutForDelivery: 'Wird geliefert',
+    statusDelivered: 'Geliefert',
+    statusRefundUploaded: 'Rückerstattung hochgeladen',
+    statusCompleted: 'Abgeschlossen',
+    statusCancellationRequested: 'Stornierung beantragt',
+    statusCancelled: 'Storniert',
+    statusVerified: 'Verifiziert',
+    statusApproved: 'Genehmigt',
+    statusRejected: 'Abgelehnt',
+
+    // Modal titles (profile pages)
+    editProfileTitle: 'Profil bearbeiten',
+    manageAddressesTitle: 'Adressen verwalten',
+    bankDetailsTitle: 'Bankverbindung',
+    businessDetailsTitle: 'Geschäftsdaten',
+    updateProfilePicTitle: 'Profilbild aktualisieren',
+
+    // Avatar modal
+    choosePhoto: 'Foto auswählen',
+    autoGenerateAvatar: 'Avatar generieren',
+    autoGenerateAvatarDesc: 'Einzigartiges automatisch generiertes Profilbild erhalten',
+    generating: 'Wird generiert…',
+
+    // Supplier profile header
+    locationLabel: 'Standort',
+
+    // Dashboard admin
+    deletedProducts: 'Gelöschte Produkte',
+    deletedProductsDesc: 'Vom Marktplatz entfernte Produkte',
+    noDeletedProducts: 'Noch keine gelöschten Produkte',
+    deletedAt: 'Gelöscht am',
+    restoreProduct: 'Wiederherstellen',
+    productRestored: 'Produkt wiederhergestellt',
   },
 }
 

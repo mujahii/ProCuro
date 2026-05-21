@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 05:19 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 12:12 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -139,6 +139,8 @@ Uploaded by suppliers, reviewed by admin.
 | `discount_percent` | NUMERIC | Optional discount |
 | `image_url` | TEXT | URL in public `product-images` bucket |
 | `is_active` | BOOLEAN DEFAULT true | |
+| `deleted_at` | TIMESTAMPTZ DEFAULT NULL | Set on soft-delete; NULL = active; non-NULL = archived |
+| `deleted_by` | UUID | References `users(id) ON DELETE SET NULL` — who deleted it (supplier or admin) |
 | `created_at` | TIMESTAMPTZ | |
 | `updated_at` | TIMESTAMPTZ | |
 
@@ -376,6 +378,7 @@ Key-value store for platform-wide configuration managed by admin. Publicly reada
 | `idx_products_supplier_id` | products | supplier_id | Filter products by supplier |
 | `idx_products_category` | products | category | Category browsing |
 | `idx_products_is_active` | products | is_active | Active-product filter |
+| `idx_products_deleted_at` | products | deleted_at | Partial index (WHERE deleted_at IS NOT NULL) — admin deleted-products query |
 | `idx_orders_restaurant_owner_id` | orders | restaurant_owner_id | Owner order history |
 | `idx_order_splits_supplier_id` | order_splits | supplier_id | Supplier order list |
 | `idx_order_splits_status` | order_splits | status | Status-based filtering |
@@ -628,7 +631,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - Any authenticated user can submit a report of type `product`, `supplier`, `order`, `user`, or `restaurant`. When a supplier reports a restaurant owner, `OwnerProfileModal` passes `type="restaurant"` to `ReportModal` so the admin sees the correct type label in the Reports panel.
 - On INSERT, `notify_admin_new_report` trigger notifies the admin.
 - Admin reviews reports in the Reports panel, can mark them as `reviewed` or `dismissed`, and records an `admin_action` with timestamp.
-- **Restaurant reports**: Admin `ReportsPage` now handles `type="restaurant"` — `fetchTarget()` queries `owner_profiles`, the type filter dropdown includes "Restaurants", type badges use an orange colour, and a "Suspend Restaurant Account" action bans the owner's `users` row and sends a notification to `/owner/chat`.
+- **Restaurant reports**: Admin `ReportsPage` handles both `type="restaurant"` and `type="user"` (both represent restaurant owners — `user` is the value stored in DB for this role). `fetchTarget()` queries `owner_profiles` by `.eq('user_id', report.target_id)` (not by `id`) and falls back to the `users` table if no owner profile is found. The type filter dropdown has an option for both `user` (labelled "Restaurant Owners") and `restaurant` (labelled "Restaurants (legacy)"). Type badges for both use orange. `isRestaurantType()` helper unifies logic so suspend/warn/view actions work for both type values. Warning `userId` resolution: `targetInfo.user_id || report.target_id` for restaurant types, `targetInfo.user_id` for supplier types. Both `banSupplierAccount` and `banRestaurantAccount` guard against `null`/`undefined` `user_id` with an early-return toast error.
 
 ---
 
@@ -699,9 +702,9 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 |---|---|---|
 | StorePage | `/owner/store` | Browse verified suppliers and products by category; categories, sort options, and search placeholder are fully i18n'd (DE: Fleisch, Geflügel, etc.); "See All" button navigates to AllProductsPage |
 | AllProductsPage | `/owner/products` | Browse all products with category/search filter |
-| CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout. Bank transfer step shows full bank info (bank name, IBAN, BIC, account holder). All cart and payment labels are fully i18n'd (EN/DE): items subtotal, delivery, VAT, amount, upload receipt, place order, back, cash on delivery note, free delivery label. |
+| CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout. Bank transfer step shows full bank info (bank name, IBAN, BIC, account holder). All cart and payment labels are fully i18n'd (EN/DE): items subtotal, delivery, VAT, amount, upload receipt, place order, back, cash on delivery note, free delivery label. **Supplier name is a clickable button** — clicking it opens `SupplierProfileModal` with the supplier's full profile card inline. |
 | OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation (pre-confirmation: any time; post-confirmation: within 3 days of supplier confirmation via `updated_at`); dispute filing |
-| ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings |
+| ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings. All modal titles (Edit Profile, Manage Addresses, Bank Details, Business Details, Update Profile Picture) are fully i18n'd via `t()` keys. |
 | AnalyticsPage | `/owner/analytics` | Spending trend, top products, pie chart of spending by category, top categories bar chart (category names translated), AI summary at the bottom; week/month/year + custom date-range filter (all labels i18n'd) |
 
 **Ban enforcement in OwnerLayout**: When `users.is_banned = true` for the logged-in owner, a dark red banner appears at the top of every owner dashboard page. All sidebar navigation links (Store, Cart, Orders, Analytics, Profile) are replaced with greyed-out non-clickable spans. The main content area is replaced with an "Account Banned" message and a button directing the user to Chat — the only feature that remains accessible. The layout adjusts its top padding dynamically based on how many banners (deactivated + banned) are visible simultaneously.
@@ -734,11 +737,11 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | Page | Route | Description |
 |---|---|---|
 | DashboardPage | `/supplier/dashboard` | Overview: pending orders count, revenue KPIs, quick actions. **Active Orders** count uses the same ONGOING statuses as OrdersPage (`pending_payment`, `pending_confirmation`, `confirmed`, `out_for_delivery`, `cancellation_requested`, `delivery_dispute`) — `refund_uploaded` and `completed` are excluded so the badge always matches the "Ongoing" tab count |
-| ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock; delete with confirmation modal; delivery fee table loaded live from `delivery_fee_rules` DB table. **Rows are clickable** — clicking anywhere on a row opens the edit modal (same as the pencil button); action column uses `stopPropagation` so toggle and delete still work independently. Table has `overflow-x-auto` and `min-w-[480px]` for scrollability on narrow screens |
+| ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock; soft-delete with confirmation modal (sets `deleted_at` + `deleted_by`, removes from list without destroying order history); delivery fee table loaded live from `delivery_fee_rules` DB table. **Rows are clickable** — clicking anywhere on a row opens the edit modal (same as the pencil button); action column uses `stopPropagation` so toggle and delete still work independently. Table has `overflow-x-auto` and `min-w-[480px]` for scrollability on narrow screens |
 | OrdersPage | `/supplier/orders` | Incoming order management: confirm, ship, deliver, cancel, upload refund |
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
 | BankDetailsPage | `/supplier/bank-details` | IBAN, BIC, account holder management |
-| ProfilePage | `/supplier/profile` | Business profile: avatar, bio, categories, cities (auto-populated from saved addresses — no manual checkbox), website, phone, account settings |
+| ProfilePage | `/supplier/profile` | Business profile: avatar, bio, categories, cities (auto-populated from saved addresses — no manual checkbox), website, phone, account settings. **City displayed in profile header** below the business name (dot-separated if multiple cities). All modal titles (Edit Profile, Manage Addresses, Bank Details, Business Details, Upload Certificate, Edit Certificate, Update Profile Picture) are fully i18n'd via `t()` keys. |
 | AnalyticsPage | `/supplier/analytics` | Revenue trend, category breakdown, top products, top clients, AI summary; week/month/year + custom date-range filter. **Top Restaurant Clients** bar chart: labels are angled (−35°) with truncation at 14 chars; Y-axis uses integer ticks only (`allowDecimals={false}`). **Date bucketing**: span ≤ 60 days → daily (YYYY-MM-DD) buckets; span > 60 days → monthly (YYYY-MM) buckets — so Week and Month views show per-day bars, Year view shows per-month bars. |
 
 ### Admin (`/admin/`)
@@ -746,15 +749,16 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | Page | Route | Description |
 |---|---|---|
 | AdminLoginPage | `/admin/login` | Separate admin login page |
-| DashboardPage | `/admin/dashboard` | Platform KPIs (title: "Overview"): GMV, user count, order count. Charts: Platform GMV Over Time (filtered), **Orders by Status (column/bar chart — one bar per status, colour-coded)**, **User Growth** (cumulative, fed by real `users.created_at` data), **Payment Type** (COD vs Bank Transfer donut), **City Comparison Radar** (suppliers vs owners per top city), **Germany Dot Map** (one dot per address/location — users with multiple addresses appear as multiple dots), AI summary. Week/month/year + custom date-range filter on all charts. |
+| DashboardPage | `/admin/dashboard` | Platform KPIs (title: "Overview"): GMV, user count, order count. Charts: Platform GMV Over Time (filtered), **Orders by Status (column/bar chart — one bar per status, colour-coded)**, **Orders by Payment Type** (COD vs Bank Transfer donut — left column), **User Growth** (cumulative line chart — right column), **City Comparison Radar** (suppliers vs owners per top city — uses all addresses with a city name, not just those with GPS coordinates, so every city appears even without lat/lng), **Germany Dot Map** (one dot per address/location — users with multiple addresses appear as multiple dots), AI summary. Week/month/year + custom date-range filter on all charts. |
 | UsersPage | `/admin/users` | List all users; ban/unban; delete; view details; deleted accounts log |
 | SuppliersPage | `/admin/suppliers` | List suppliers; verify/unverify; activate/deactivate |
 | OrdersPage | `/admin/orders` | Platform-wide order list with status filters |
-| ProductsPage | `/admin/products` | All products across all suppliers; activate/deactivate; delete with confirmation modal |
+| ProductsPage | `/admin/products` | All active products across all suppliers (`deleted_at IS NULL`); activate/deactivate; soft-delete with confirmation modal (sets `deleted_at`, moves to DeletedProductsPage archive) |
 | CertificatesPage | `/admin/certificates` | Certificate review queue: approve or reject with reason |
 | ReportsPage | `/admin/reports` | Abuse report queue: review, record action, dismiss. Supports all report types: `product`, `supplier`, `restaurant`, `order`, `user`. ActionModal shows who filed the report ("Reported by"), the target details, and role-appropriate actions — warns/bans for suppliers, warns/suspends for restaurant accounts, deletes for products. Type filter dropdown includes all types including `restaurant`. Type badges are colour-coded (blue = product, purple = supplier, orange = restaurant). |
 | AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations); per-conversation delete via modal overlay (same pattern as ChatPage) |
 | DeliveryFeesPage | `/admin/delivery-fees` | CRUD for `delivery_fee_rules` table — add, edit, and delete distance-based delivery fee tiers; changes are reflected live in the supplier Products page delivery fee table. **Tax rate section** at the bottom: displays the current VAT rate from `platform_settings` and allows the admin to edit it via a modal (value stored as a decimal in DB, displayed as a percentage in the UI) |
+| DeletedProductsPage | `/admin/deleted-products` | Archive of all soft-deleted products (`deleted_at IS NOT NULL`). Searchable by product name or supplier. Shows product name, supplier, category, price, and deletion date. **Restore** button clears `deleted_at` and `deleted_by` and re-activates the product. Deleted products data is preserved in `order_items` for analytics continuity — analytics pages include historical data from deleted products. Mobile card view + desktop table. All labels fully i18n'd (EN/DE). |
 
 ### Shared
 
@@ -778,7 +782,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `PublicOnlyRoute` — Redirects authenticated users to their dashboard
 
 ### Profile
-- `AvatarModal` — Avatar upload and preview with lightbox
+- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device, existing behaviour) and **"Generate Avatar"** (auto-generate using DiceBear API — 5 styles: adventurer, personas, avataaars, bottts, micah; selected SVG is fetched, uploaded to the `avatars` bucket as `{userId}/avatar.svg`, and the public URL is saved). All labels fully i18n'd.
 - `DeleteAccountModal` — Confirmation dialog for account deletion
 - `Modal` — Base modal wrapper
 - `OwnerProfileModal` — Supplier-side modal showing an owner's details when viewing their order
@@ -823,7 +827,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `PWAInstallPrompt` — Progressive Web App install prompt
 - `ReportModal` — Abuse report submission form. Types: `product`, `supplier`, `order`, `user`, `restaurant`. The `restaurant` type is used when a supplier reports a restaurant owner; `OwnerProfileModal` now passes `type="restaurant"` so the admin sees the correct report type.
 - `Skeleton` — Loading skeleton placeholders
-- `StatusBadge` — Color-coded order status badge
+- `StatusBadge` — Color-coded order status badge, **language-aware** via `useLanguage()`: maps each status slug to a `t('statusXxx')` key so labels render in the active language (EN/DE). Statuses covered: `pending_payment`, `pending_confirmation`, `pending`, `confirmed`, `shipped`, `out_for_delivery`, `delivered`, `refund_uploaded`, `completed`, `cancellation_requested`, `cancelled`, `verified`, `approved`, `rejected`.
 
 ---
 
@@ -859,7 +863,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - Language is toggled in the Account Settings card and persisted in `localStorage`.
 - On toggle, `<html lang>` is updated for screen readers and OS integrations.
 - No page reload; no third-party library.
-- **Coverage (as of May 2026):** Login/Register/Role-select flows, Reset Password, Navbar address dropdown, Owner Store (search placeholder, categories, sort options, "See All" button at bottom of Recommended Products), AllProducts, Public Products List, AddToCartModal, Cart & Checkout (items subtotal, delivery, 7% MwSt., amount, upload receipt, place order, back, "Continue to Payment", cash on delivery note, free delivery label, bank transfer fields: bank name / IBAN / BIC / account holder), Owner Orders (full lifecycle), Owner Analytics (chart titles, KPI labels, category names, date-range filter), Supplier Dashboard, Supplier Analytics (chart titles, KPI labels, date-range filter), Supplier Orders, Supplier Products (delivery fee table, delete modal), Supplier Bank Details, Supplier Certificates, SupplierListPage, ChatPage ("No conversations yet", "No messages yet", "Type a message…", "Visit a supplier…"; date/time strings use German locale when DE is active via `date-fns/locale/de`), ChatbotDrawer (welcome message, suggestion chips, placeholder), Notifications bell, Profile modals, AI Insights (auto-regenerates in active language on toggle). Meta description and Open Graph tags in German.
+- **Coverage (as of May 2026):** Login/Register/Role-select flows, Reset Password, Navbar address dropdown, Owner Store (search placeholder, categories, sort options, "See All" button at bottom of Recommended Products), AllProducts, Public Products List, AddToCartModal, Cart & Checkout (items subtotal, delivery, 7% MwSt., amount, upload receipt, place order, back, "Continue to Payment", cash on delivery note, free delivery label, bank transfer fields: bank name / IBAN / BIC / account holder), Owner Orders (full lifecycle), Owner Analytics (chart titles, KPI labels, category names, date-range filter), Supplier Dashboard, Supplier Analytics (chart titles, KPI labels, date-range filter), Supplier Orders, Supplier Products (delivery fee table, delete modal), Supplier Bank Details, Supplier Certificates, SupplierListPage, ChatPage ("No conversations yet", "No messages yet", "Type a message…", "Visit a supplier…"; date/time strings use German locale when DE is active via `date-fns/locale/de`), ChatbotDrawer (welcome message, suggestion chips, placeholder), Notifications bell, **all profile modal titles** (Edit Profile, Manage Addresses, Bank Details, Business Details, Upload/Edit Certificate, Update Profile Picture — both owner and supplier ProfilePage), **order status labels** (pending_payment → Zahlung ausstehend, confirmed → Bestätigt, delivered → Geliefert, cancelled → Storniert, etc. — via language-aware `StatusBadge`), **admin Deleted Products page** (page title, descriptions, restore button, deleted date label), **avatar modal** (Choose a photo, Generate Avatar, Generating…), AI Insights (auto-regenerates in active language on toggle). Meta description and Open Graph tags in German.
 - **Category name translations** — DB category names (Meat/Poultry/Seafood/Dairy/Vegetables/Fruits/Bakery/Beverages/Spices/Other) are translated everywhere they appear in the UI via `catMeat`/`catPoultry`/… keys; DB values remain English for query filtering. Dictionary has **350+ keys** (EN+DE).
 
 ---
@@ -899,7 +903,7 @@ ProCuro/
 │       │   ├── supplier/       Profile, Dashboard, Orders, Products, Analytics,
 │       │   │                   Certificates, BankDetails
 │       │   ├── admin/          Login, Dashboard, Users, Suppliers, Orders, Products,
-│       │   │                   Certificates, Reports, Chat
+│       │   │                   Certificates, Reports, Chat, DeletedProducts
 │       │   ├── public/         Landing, Login, Register (Owner/Supplier), SelectRole,
 │       │   │                   ResetPassword, SupplierList, SupplierProfile, ProductsList,
 │       │   │                   About, Careers, Press, HelpCenter, PrivacyPolicy, Terms,
@@ -928,7 +932,7 @@ ProCuro/
 ├── netlify/functions/          Production serverless AI endpoints
 │   ├── ai-chat.js
 │   └── ai-analytics-summary.js
-└── supabase/migrations/        18 versioned SQL migrations (schema, RLS, RPCs, triggers)
+└── supabase/migrations/        19 versioned SQL migrations (schema, RLS, RPCs, triggers)
 ```
 
 ---
@@ -955,6 +959,7 @@ ProCuro/
 | `016_drop_conversations_soft_delete_columns.sql` | Remove `deleted_for_*_at` soft-delete columns |
 | `017_drop_dead_analytics_functions.sql` | Remove 7 unused analytics RPCs |
 | `018_drop_not_null_on_nullable_fk_columns.sql` | Further FK constraint corrections for account deletion cascade |
+| `019_soft_delete_products.sql` | Adds `deleted_at TIMESTAMPTZ` and `deleted_by UUID` columns to `products`; partial index `idx_products_deleted_at` for admin deleted-products query |
 
 ---
 

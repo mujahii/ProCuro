@@ -27,6 +27,7 @@ const CERT_STATUS = {
 }
 
 function EditProfileModal({ userId, currentName, supplierProfile, currentBio, onClose, onSaved }) {
+  const { t } = useLanguage()
   const [name, setName] = useState(currentName || '')
   const [businessName, setBusinessName] = useState(supplierProfile?.business_name || '')
   const [bio, setBio] = useState(currentBio || '')
@@ -54,10 +55,10 @@ function EditProfileModal({ userId, currentName, supplierProfile, currentBio, on
   }
 
   return (
-    <Modal title="Edit Profile" onClose={onClose}>
+    <Modal title={t('editProfileTitle')} onClose={onClose}>
       <div className="space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Your Name</label>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('yourName')}</label>
           <input
             value={name}
             onChange={e => setName(e.target.value)}
@@ -102,6 +103,7 @@ function EditProfileModal({ userId, currentName, supplierProfile, currentBio, on
 
 
 function AddressModal({ onClose, supplierProfileId }) {
+  const { t } = useLanguage()
   const { addresses, addAddress, deleteAddress, setDefault, reload } = useAddresses()
   const [form, setForm] = useState({ label: '', street: '', postal_code: '', city: '' })
   const [saving, setSaving] = useState(false)
@@ -184,7 +186,7 @@ function AddressModal({ onClose, supplierProfileId }) {
   }
 
   return (
-    <Modal title="Manage Addresses" onClose={onClose} maxW="max-w-md">
+    <Modal title={t('manageAddressesTitle')} onClose={onClose} maxW="max-w-md">
       <div className="space-y-3 mb-5">
         {addresses.length === 0 ? (
           <p className="text-sm text-slate-400 text-center py-2">No addresses yet.</p>
@@ -266,6 +268,7 @@ function AddressModal({ onClose, supplierProfileId }) {
 }
 
 function BankModal({ userId, onClose }) {
+  const { t } = useLanguage()
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [form, setForm] = useState({ bank_name: '', account_holder: '', iban: '', bic: '' })
   const [loading, setLoading] = useState(true)
@@ -313,7 +316,7 @@ function BankModal({ userId, onClose }) {
   }
 
   return (
-    <Modal title="Bank Details" onClose={onClose}>
+    <Modal title={t('bankDetailsTitle')} onClose={onClose}>
       {loading ? (
         <div className="flex justify-center py-4"><Loader2 className="w-5 h-5 animate-spin text-slate-400" /></div>
       ) : (
@@ -361,6 +364,7 @@ function BankModal({ userId, onClose }) {
 }
 
 function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSaved }) {
+  const { t } = useLanguage()
   const normaliseCategories = v => Array.isArray(v) ? v : (v ? [v] : [])
   const [form, setForm] = useState({
     tax_id: current.tax_id || '',
@@ -458,7 +462,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
   const CATEGORIES = ['Meat', 'Poultry', 'Seafood', 'Dairy', 'Vegetables', 'Fruits', 'Bakery', 'Beverages', 'Spices', 'Other']
 
   return (
-    <Modal title="Business Details" onClose={onClose} maxW="max-w-md">
+    <Modal title={t('businessDetailsTitle')} onClose={onClose} maxW="max-w-md">
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
@@ -562,6 +566,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
 }
 
 function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
+  const { t } = useLanguage()
   const [file, setFile] = useState(null)
   const [label, setLabel] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -594,7 +599,7 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
   }
 
   return (
-    <Modal title="Upload Certificate" onClose={onClose}>
+    <Modal title={t('uploadCertTitle')} onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
@@ -642,6 +647,7 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
 }
 
 function CertEditModal({ cert, supplierProfileId, onClose, onSaved }) {
+  const { t } = useLanguage()
   const [label, setLabel] = useState(cert.file_name || '')
   const [newFile, setNewFile] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -676,7 +682,7 @@ function CertEditModal({ cert, supplierProfileId, onClose, onSaved }) {
   }
 
   return (
-    <Modal title="Edit Certificate" onClose={onClose}>
+    <Modal title={t('editCertTitle')} onClose={onClose}>
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Certificate Name</label>
@@ -865,6 +871,12 @@ export default function SupplierAccountPage() {
           </div>
           <h2 className="font-bold text-slate-900 text-xl mt-3">{profile?.full_name || t('supplier')}</h2>
           <p className="text-sm text-slate-400 mt-0.5">{businessName || t('supplier')}</p>
+          {supplierProfile?.city && (
+            <p className="flex items-center justify-center gap-1 text-xs text-slate-400 mt-1">
+              <MapPin className="w-3 h-3 flex-shrink-0" />
+              {supplierProfile.city.split(',').map(c => c.trim()).filter(Boolean).join(' · ')}
+            </p>
+          )}
           {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
           <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
             {t('editProfile')}
@@ -1124,7 +1136,7 @@ export default function SupplierAccountPage() {
 
       {/* Modals */}
       {showAvatarModal && (
-        <AvatarModal userId={user.id} role="supplier" onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
+        <AvatarModal userId={user.id} role="supplier" userName={profile?.full_name} onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
       )}
       {showEditModal && (
         <EditProfileModal

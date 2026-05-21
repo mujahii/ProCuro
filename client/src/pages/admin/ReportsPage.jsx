@@ -12,14 +12,16 @@ const STATUS_STYLES = {
   dismissed: 'bg-gray-100 text-gray-500',
 }
 
-const TYPE_LABELS = { product: 'Product', supplier: 'Supplier', restaurant: 'Restaurant', order: 'Order', user: 'User' }
+const TYPE_LABELS = { product: 'Product', supplier: 'Supplier', restaurant: 'Restaurant Owner', user: 'Restaurant Owner', order: 'Order' }
 const TYPE_STYLES = {
   product: 'bg-blue-50 text-blue-700',
   supplier: 'bg-purple-50 text-purple-700',
   restaurant: 'bg-orange-50 text-orange-700',
+  user: 'bg-orange-50 text-orange-700',
 }
 function typeStyle(type) { return TYPE_STYLES[type] || 'bg-gray-100 text-gray-600' }
 function typeLabel(type) { return TYPE_LABELS[type] || type }
+function isRestaurantType(type) { return type === 'restaurant' || type === 'user' }
 
 function ActionModal({ report, onClose, onActionDone }) {
   const navigate = useNavigate()
@@ -36,21 +38,29 @@ function ActionModal({ report, onClose, onActionDone }) {
         .from('supplier_profiles')
         .select('id, business_name, user_id, is_active')
         .eq('id', report.target_id)
-        .single()
+        .maybeSingle()
       setTargetInfo(data)
-    } else if (report.type === 'restaurant') {
+    } else if (report.type === 'restaurant' || report.type === 'user') {
+      // target_id is the owner's user_id (not the owner_profiles.id)
       const { data } = await supabase
         .from('owner_profiles')
         .select('id, restaurant_name, user_id')
+        .eq('user_id', report.target_id)
+        .maybeSingle()
+      // Fall back to a plain users row if no owner_profile exists
+      if (data) { setTargetInfo(data); return }
+      const { data: u } = await supabase
+        .from('users')
+        .select('id, full_name, email')
         .eq('id', report.target_id)
         .maybeSingle()
-      setTargetInfo(data)
+      setTargetInfo(u ? { user_id: u.id, restaurant_name: u.full_name || u.email } : null)
     } else {
       const { data } = await supabase
         .from('products')
         .select('id, name, is_active, supplier_id, supplier:supplier_profiles(user_id, business_name)')
         .eq('id', report.target_id)
-        .single()
+        .maybeSingle()
       setTargetInfo(data)
     }
   }
@@ -59,9 +69,10 @@ function ActionModal({ report, onClose, onActionDone }) {
     if (!warnMsg.trim()) return toast.error('Please write a warning message')
     setLoading(true)
     try {
-      const userId = report.type === 'supplier' || report.type === 'restaurant'
-        ? targetInfo?.user_id
-        : targetInfo?.supplier?.user_id
+      let userId
+      if (report.type === 'supplier') userId = targetInfo?.user_id
+      else if (report.type === 'restaurant' || report.type === 'user') userId = targetInfo?.user_id || report.target_id
+      else userId = targetInfo?.supplier?.user_id
       if (!userId) throw new Error('Could not find user to notify')
 
       await supabase.from('notifications').insert({
@@ -89,12 +100,14 @@ function ActionModal({ report, onClose, onActionDone }) {
   }
 
   async function banSupplierAccount() {
+    const uid = targetInfo?.user_id
+    if (!uid) { toast.error('Could not find supplier user ID'); return }
     setLoading(true)
     try {
-      await supabase.from('users').update({ is_banned: true }).eq('id', targetInfo.user_id)
-      await supabase.from('supplier_profiles').update({ is_active: false }).eq('id', targetInfo.id)
+      await supabase.from('users').update({ is_banned: true }).eq('id', uid)
+      if (targetInfo?.id) await supabase.from('supplier_profiles').update({ is_active: false }).eq('id', targetInfo.id)
       await supabase.from('notifications').insert({
-        user_id: targetInfo.user_id,
+        user_id: uid,
         title: 'Your account has been suspended',
         message: 'Your ProCuro account has been suspended following a report. To appeal, please chat with the admin through the ProCuro Chat Centre.',
         type: 'warning',
@@ -116,11 +129,13 @@ function ActionModal({ report, onClose, onActionDone }) {
   }
 
   async function banRestaurantAccount() {
+    const uid = targetInfo?.user_id || report.target_id
+    if (!uid) { toast.error('Could not find restaurant user ID'); return }
     setLoading(true)
     try {
-      await supabase.from('users').update({ is_banned: true }).eq('id', targetInfo.user_id)
+      await supabase.from('users').update({ is_banned: true }).eq('id', uid)
       await supabase.from('notifications').insert({
-        user_id: targetInfo.user_id,
+        user_id: uid,
         title: 'Your account has been suspended',
         message: 'Your ProCuro account has been suspended following a report. To appeal, please chat with the admin through the ProCuro Chat Centre.',
         type: 'warning',
@@ -211,9 +226,14 @@ function ActionModal({ report, onClose, onActionDone }) {
               {report.details}
             </div>
           )}
-          {(report.type === 'supplier' || report.type === 'product') && (
+          {(report.type === 'supplier' || report.type === 'product' || isRestaurantType(report.type)) && (
             <button
-              onClick={() => { onClose(); navigate(`${report.type === 'supplier' ? '/admin/suppliers' : '/admin/products'}?id=${report.target_id}`) }}
+              onClick={() => {
+                onClose()
+                if (report.type === 'supplier') navigate(`/admin/suppliers?id=${report.target_id}`)
+                else if (report.type === 'product') navigate(`/admin/products?id=${report.target_id}`)
+                else navigate(`/admin/users`)
+              }}
               className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors mt-1"
             >
               <ExternalLink className="w-3.5 h-3.5" />
@@ -276,7 +296,7 @@ function ActionModal({ report, onClose, onActionDone }) {
               )}
 
               {/* Restaurant-specific: Ban account */}
-              {report.type === 'restaurant' && (
+              {isRestaurantType(report.type) && (
                 <button
                   onClick={banRestaurantAccount}
                   disabled={loading}
@@ -382,7 +402,8 @@ export default function AdminReportsPage() {
             <option value="">All types</option>
             <option value="product">Products</option>
             <option value="supplier">Suppliers</option>
-            <option value="restaurant">Restaurants</option>
+            <option value="user">Restaurant Owners</option>
+            <option value="restaurant">Restaurants (legacy)</option>
           </select>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input text-sm py-2 flex-1 sm:w-36">
             <option value="">All statuses</option>

@@ -48,7 +48,7 @@ export default function SupplierProfilePage() {
   async function loadData() {
     const [{ data: sp }, { data: prods }, { data: certs }] = await Promise.all([
       supabase.from('supplier_profiles').select('*, users:user_id(is_banned)').eq('id', id).single(),
-      supabase.from('products').select('*').eq('supplier_id', id).eq('is_active', true).order('created_at', { ascending: false }),
+      supabase.from('products').select('*').eq('supplier_id', id).eq('is_active', true).is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('halal_certificates').select('*').eq('supplier_id', id).eq('status', 'approved'),
     ])
     setSupplier(sp)

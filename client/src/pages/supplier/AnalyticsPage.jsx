@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
@@ -38,6 +38,8 @@ export default function SupplierAnalyticsPage() {
   const [supplierProfile, setSupplierProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ revenue: 0, orders: 0, bestProduct: '—', activeProducts: 0 })
+  const [aiContext, setAiContext] = useState(null)
+  const aiContextSet = useRef(false)
   const [revenueByMonth, setRevenueByMonth] = useState([])
   const [revenueByProduct, setRevenueByProduct] = useState([])
   const [salesByProduct, setSalesByProduct] = useState([])
@@ -182,16 +184,18 @@ export default function SupplierAnalyticsPage() {
 
     const bestProduct = prodRevEntries[0]?.[0] || '—'
     setStats({ revenue, orders, bestProduct, activeProducts: productCountRes.count || 0 })
+    // Capture AI context once — never overwrite on subsequent range changes
+    if (!aiContextSet.current) {
+      aiContextSet.current = true
+      setAiContext({
+        revenueThisPeriod: revenue.toFixed(2),
+        ordersThisPeriod: orders,
+        bestProduct,
+        activeProducts: productCountRes.count || 0,
+      })
+    }
     setLoading(false)
   }
-
-  const summaryContext = !loading && supplierProfile ? {
-    revenueThisPeriod: stats.revenue.toFixed(2),
-    ordersThisPeriod: stats.orders,
-    bestProduct: stats.bestProduct,
-    activeProducts: stats.activeProducts,
-    range: range.key,
-  } : null
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
@@ -317,10 +321,11 @@ export default function SupplierAnalyticsPage() {
             </div>
           </div>
 
-          {/* AI Summary */}
-          {summaryContext && <AnalyticsSummary context={summaryContext} />}
         </>
       )}
+
+      {/* AI Summary — outside the loading block so it never unmounts on range change */}
+      {aiContext && <AnalyticsSummary context={aiContext} />}
     </div>
   )
 }

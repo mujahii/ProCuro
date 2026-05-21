@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
@@ -28,6 +28,8 @@ export default function AnalyticsPage() {
   const [topProducts, setTopProducts] = useState([])
   const [categoryBreakdown, setCategoryBreakdown] = useState([])
   const [loading, setLoading] = useState(true)
+  const [aiContext, setAiContext] = useState(null)
+  const aiContextSet = useRef(false)
 
   useEffect(() => {
     if (user) loadData()
@@ -142,6 +144,17 @@ export default function AnalyticsPage() {
         .slice(0, 6)
     )
 
+    if (!aiContextSet.current) {
+      aiContextSet.current = true
+      setAiContext({
+        totalSpendThisPeriod: totalSpend.toFixed(2),
+        totalOrdersThisPeriod: completedSplits.length,
+        range: range.key,
+        topCategory: Object.entries(catMap).sort((a, b) => b[1] - a[1])[0]?.[0],
+        topProducts: Object.entries(productMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([n]) => n),
+      })
+    }
+
     setLoading(false)
   }
 
@@ -150,14 +163,6 @@ export default function AnalyticsPage() {
     ...c,
     pct: categoryTotal > 0 ? Math.round((c.revenue / categoryTotal) * 100) : 0,
   }))
-
-  const summaryContext = stats ? {
-    totalSpendThisPeriod: stats.periodSpend?.toFixed(2),
-    totalOrdersThisPeriod: stats.periodOrders,
-    range: range.key,
-    topCategory: categoryBreakdown[0]?.name,
-    topProducts: topProducts.slice(0, 3).map(p => p.name),
-  } : null
 
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
@@ -253,10 +258,10 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          {/* AI insight pinned at the bottom — matches supplier analytics layout */}
-          {summaryContext && <AnalyticsSummary context={summaryContext} />}
         </>
       )}
+
+      {aiContext && <AnalyticsSummary context={aiContext} />}
     </div>
   )
 }

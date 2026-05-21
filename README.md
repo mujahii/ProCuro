@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 17:13 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 17:19 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -576,6 +576,7 @@ Serverless equivalents of the AI routes, deployed to production alongside the Vi
 - **Caching:** Generated summaries are stored in `ai_insights_cache`. Subsequent page loads within 24 hours return the cached version without a Gemini API call.
 - **Force refresh:** User can bypass the cache with an explicit refresh button.
 - **Language-aware cache:** The `ai_insights_cache` table stores `language`. On load, if the cached language differs from the current UI language, the summary is regenerated. For in-session switches, a `force: true` request fires immediately. For switches made while the component was unmounted (e.g. navigating to Settings and back), a `localStorage` key (`procuro_ai_lang`) tracks the last generation language so remounts detect the mismatch and regenerate automatically.
+- **Range-change stability:** On both owner and supplier analytics pages, the AI context is captured once (on the very first data load) via an `aiContextSet` ref gate and a stable `aiContext` state. `AnalyticsSummary` is rendered outside the `loading ? skeletons : content` block so it stays mounted across range changes. Switching between This Week / This Month / This Year / Custom does **not** trigger re-generation; only a language change or cache expiry does.
 - **Stale fallback:** If Gemini is rate-limited and a stale cache entry exists, it is served with a `stale: true` flag.
 - **Deterministic fallback:** If both Gemini and cache fail, a plain-text summary is built from the context data client-side so the user never sees a hard error.
 

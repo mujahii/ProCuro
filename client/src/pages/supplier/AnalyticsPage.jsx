@@ -271,22 +271,24 @@ export default function SupplierAnalyticsPage() {
               {salesByProduct.length === 0 ? (
                 <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
               ) : (
-                <div className="flex items-center gap-4">
-                  <ResponsiveContainer width={160} height={160}>
-                    <PieChart>
-                      <Pie data={salesByProduct} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={2} dataKey="value">
-                        {salesByProduct.map((_, i) => (
-                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(v) => [`${v}%`, 'Share']} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="flex-1 space-y-2">
+                <div className="flex flex-col" style={{ height: 240 }}>
+                  <div className="flex-1 min-h-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={salesByProduct} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={2} dataKey="value">
+                          {salesByProduct.map((_, i) => (
+                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(v) => [`${v}%`, 'Share']} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 justify-center px-2 pb-1">
                     {salesByProduct.map((item, i) => (
-                      <div key={item.name} className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <span className="text-xs text-gray-600 truncate flex-1">{item.name}</span>
+                      <div key={item.name} className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                        <span className="text-xs text-gray-600">{item.name}</span>
                         <span className="text-xs font-bold text-gray-900">{item.value}%</span>
                       </div>
                     ))}

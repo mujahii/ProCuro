@@ -2,9 +2,9 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 export default function ProtectedRoute({ children, allowedRoles }) {
-  const { user, authUser, role, loading } = useAuth()
+  const { user, authUser, role, loading, profileLoading } = useAuth()
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-lionsmane">
         <div className="flex flex-col items-center gap-3">

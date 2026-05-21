@@ -201,28 +201,30 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            {/* New pie chart — spending share by category */}
+            {/* Spending share by category — donut */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-gray-900 mb-4">{t('spendingByCategory')}</h3>
+              <h3 className="font-bold text-gray-900 mb-2">{t('spendingByCategory')}</h3>
               {categoryPie.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
+                <div className="h-[288px] flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
               ) : (
-                <div className="flex items-center gap-4">
-                  <ResponsiveContainer width={160} height={160}>
-                    <PieChart>
-                      <Pie data={categoryPie} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={2} dataKey="revenue">
-                        {categoryPie.map((_, i) => (
-                          <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(v) => [`€${Number(v).toFixed(2)}`, 'Spent']} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                  <div className="flex-1 space-y-2">
+                <div className="flex flex-col" style={{ height: 288 }}>
+                  <div className="flex-1 min-h-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={categoryPie} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={2} dataKey="revenue">
+                          {categoryPie.map((_, i) => (
+                            <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(v) => [`€${Number(v).toFixed(2)}`, 'Spent']} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 justify-center px-2 pb-1">
                     {categoryPie.map((item, i) => (
-                      <div key={item.name} className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-sm flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
-                        <span className="text-xs text-gray-600 truncate flex-1">{tCat(item.name)}</span>
+                      <div key={item.name} className="flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-sm flex-shrink-0" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                        <span className="text-xs text-gray-600">{tCat(item.name)}</span>
                         <span className="text-xs font-bold text-gray-900">{item.pct}%</span>
                       </div>
                     ))}
@@ -233,26 +235,28 @@ export default function AnalyticsPage() {
 
             {/* Category breakdown bar */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-              <h3 className="font-bold text-gray-900 mb-4">{t('topCategoriesEur')}</h3>
+              <h3 className="font-bold text-gray-900 mb-2">{t('topCategoriesEur')}</h3>
               {categoryBreakdown.length === 0 ? (
-                <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
+                <div className="h-[288px] flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
               ) : (
-                <div className="space-y-2 pt-2">
-                  {categoryBreakdown.slice(0, 6).map((c, i) => {
-                    const max = categoryBreakdown[0]?.revenue || 1
-                    const pct = (c.revenue / max) * 100
-                    return (
-                      <div key={c.name}>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-medium text-gray-700">{tCat(c.name)}</span>
-                          <span className="text-xs font-bold text-gray-900">€{c.revenue.toFixed(2)}</span>
+                <div className="flex flex-col justify-between" style={{ height: 288 }}>
+                  <div className="space-y-3 pt-2">
+                    {categoryBreakdown.slice(0, 6).map((c, i) => {
+                      const max = categoryBreakdown[0]?.revenue || 1
+                      const pct = (c.revenue / max) * 100
+                      return (
+                        <div key={c.name}>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="text-xs font-medium text-gray-700">{tCat(c.name)}</span>
+                            <span className="text-xs font-bold text-gray-900">€{c.revenue.toFixed(2)}</span>
+                          </div>
+                          <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }} />
+                          </div>
                         </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: COLORS[i % COLORS.length] }} />
-                        </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
+                  </div>
                 </div>
               )}
             </div>

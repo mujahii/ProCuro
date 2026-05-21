@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 22:49 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 23:07 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -276,6 +276,7 @@ One conversation per user with the admin. Unique on `user_id`.
 |---|---|---|
 | `id` | UUID PK | |
 | `user_id` | UUID NOT NULL | References `auth.users(id) ON DELETE CASCADE` |
+| `pinned_by_admin` | BOOLEAN DEFAULT false | Admin can pin conversations for quick access; pinned chats sort first |
 | `created_at` | TIMESTAMPTZ | |
 
 ### `public.admin_messages`
@@ -672,6 +673,8 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - Separate tables: `admin_conversations` and `admin_messages`.
 - Admin views all support conversations in the Admin Chat page.
 - Supports attachments and real-time updates.
+- Admin can **pin** conversations via the ⋮ menu — pinned chats sort first in the list and show a gold pin badge on the avatar; state persisted in `pinned_by_admin` column.
+- Admin can **delete** a conversation (and all its messages) via the ⋮ menu with a confirmation modal.
 
 ---
 
@@ -725,7 +728,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout. Bank transfer step shows full bank info (bank name, IBAN, BIC, account holder). All cart and payment labels are fully i18n'd (EN/DE): items subtotal, delivery, VAT, amount, upload receipt, place order, back, cash on delivery note, free delivery label. **Supplier name is a clickable button** — clicking it opens `SupplierProfileModal` with the supplier's full profile card inline. |
 | OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation (pre-confirmation: any time; post-confirmation: within 3 days of supplier confirmation via `updated_at`); dispute filing |
 | ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings. All modal titles (Edit Profile, Manage Addresses, Bank Details, Business Details, Update Profile Picture) are fully i18n'd via `t()` keys. |
-| AnalyticsPage | `/owner/analytics` | Spending trend, top products, pie chart of spending by category, top categories bar chart (category names translated), AI summary at the bottom; week/month/year + custom date-range filter (all labels i18n'd) |
+| AnalyticsPage | `/owner/analytics` | Spending trend, top products, pie chart of spending by category (donut fills the card, legend below in a wrapping row), top categories bar chart (category names translated, fixed 288px height matching the other charts), AI summary at the bottom; week/month/year + custom date-range filter (all labels i18n'd) |
 
 **Ban enforcement in OwnerLayout**: When `users.is_banned = true` for the logged-in owner, a dark red banner appears at the top of every owner dashboard page. All sidebar navigation links (Store, Cart, Orders, Analytics, Profile) are replaced with greyed-out non-clickable spans. The main content area is replaced with an "Account Banned" message and a button directing the user to Chat — the only feature that remains accessible. The layout adjusts its top padding dynamically based on how many banners (deactivated + banned) are visible simultaneously.
 
@@ -757,12 +760,12 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | Page | Route | Description |
 |---|---|---|
 | DashboardPage | `/supplier/dashboard` | Overview: pending orders count, revenue KPIs, quick actions. **Active Orders** count uses the same ONGOING statuses as OrdersPage (`pending_payment`, `pending_confirmation`, `confirmed`, `out_for_delivery`, `cancellation_requested`, `delivery_dispute`) — `refund_uploaded` and `completed` are excluded so the badge always matches the "Ongoing" tab count |
-| ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock; soft-delete with confirmation modal (sets `deleted_at` + `deleted_by`, removes from list without destroying order history); delivery fee table loaded live from `delivery_fee_rules` DB table. **Rows are clickable** — clicking anywhere on a row opens the edit modal (same as the pencil button); action column uses `stopPropagation` so toggle and delete still work independently. Table has `overflow-x-auto` and `min-w-[480px]` for scrollability on narrow screens |
+| ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock; soft-delete with confirmation modal (sets `deleted_at` + `deleted_by`, removes from list without destroying order history); delivery fee table loaded live from `delivery_fee_rules` DB table. **Dual layout**: Mobile (`md:hidden`) shows product cards with image, name, category, price, status badge, and a **⋮ menu** (in-stock/out-of-stock toggle, edit, delete) as the call-to-action. Desktop (`hidden md:block`) shows the full table where clicking any row opens the edit modal. |
 | OrdersPage | `/supplier/orders` | Incoming order management: confirm, ship, deliver, cancel, upload refund |
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
 | BankDetailsPage | `/supplier/bank-details` | IBAN, BIC, account holder management |
 | ProfilePage | `/supplier/profile` | Business profile: avatar, bio, categories, cities (auto-populated from saved addresses — no manual checkbox), website, phone, account settings. **City displayed in profile header** below the business name (dot-separated if multiple cities). All modal titles (Edit Profile, Manage Addresses, Bank Details, Business Details, Upload Certificate, Edit Certificate, Update Profile Picture) are fully i18n'd via `t()` keys. |
-| AnalyticsPage | `/supplier/analytics` | Revenue trend, category breakdown, top products, top clients, AI summary; week/month/year + custom date-range filter. **Top Restaurant Clients** bar chart: labels are angled (−35°) with truncation at 14 chars; Y-axis uses integer ticks only (`allowDecimals={false}`). **Date bucketing**: span ≤ 60 days → daily (YYYY-MM-DD) buckets; span > 60 days → monthly (YYYY-MM) buckets — so Week and Month views show per-day bars, Year view shows per-month bars. |
+| AnalyticsPage | `/supplier/analytics` | Revenue trend, category breakdown, top products, top clients, AI summary; week/month/year + custom date-range filter. **Top Restaurant Clients** bar chart: labels are angled (−35°) with truncation at 14 chars; Y-axis uses integer ticks only (`allowDecimals={false}`). **Date bucketing**: span ≤ 60 days → daily (YYYY-MM-DD) buckets; span > 60 days → monthly (YYYY-MM) buckets — so Week and Month views show per-day bars, Year view shows per-month bars. **Sales by Product %** donut chart fills the card width with legend below (same fixed-height flex-column pattern as owner analytics). |
 
 ### Admin (`/admin/`)
 
@@ -776,7 +779,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | ProductsPage | `/admin/products` | Two tabs — **Active** (`deleted_at IS NULL`) and **Deleted** (`deleted_at IS NOT NULL`), mirroring the Users page Active/Deleted pattern. Active tab: activate/deactivate, view details, soft-delete with confirmation modal (sets `deleted_at`, moves the product to the Deleted tab). Deleted tab: archived products with supplier, category, price, deletion date, and a **Restore** button. Soft-deleted products are preserved in `order_items` so analytics retain history. **Mobile card layout** (`md:hidden`) for both tabs: Active card shows product name, supplier, price, status badge, and View/Toggle/Delete icon buttons; Deleted card shows name, supplier, price, deletion date, and Restore button. Desktop shows the full table (`hidden md:block`). |
 | CertificatesPage | `/admin/certificates` | Certificate review queue: approve or reject with reason. **Mobile card layout** (`md:hidden`): each cert shows supplier name, status badge, city + upload date, and a "Review →" tap target — clicking opens the review modal. Desktop shows the full table. |
 | ReportsPage | `/admin/reports` | Abuse report queue: review, record action, dismiss. Supports all report types: `product`, `supplier`, `restaurant`, `order`, `user`. ActionModal shows who filed the report ("Reported by"), the target details, and role-appropriate actions — warns/bans for suppliers, warns/suspends for restaurant accounts, deletes for products. Type filter dropdown includes all types including `restaurant`. Type badges are colour-coded (blue = product, purple = supplier, orange = restaurant). |
-| AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations); per-conversation delete via modal overlay (same pattern as ChatPage) |
+| AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations). Each conversation row has a **⋮ menu** with **Pin** (toggles `pinned_by_admin`, shows gold pin badge on avatar, sorts pinned chats to top) and **Delete** (confirmation modal). Delete uses a modal overlay. Mirrors the user ChatPage ⋮ menu pattern. |
 | DeliveryFeesPage | `/admin/delivery-fees` | CRUD for `delivery_fee_rules` table — add, edit, and delete distance-based delivery fee tiers; changes are reflected live in the supplier Products page delivery fee table. **Tax rate section** at the bottom: displays the current VAT rate from `platform_settings` and allows the admin to edit it via a modal (value stored as a decimal in DB, displayed as a percentage in the UI) |
 
 ### Shared
@@ -797,7 +800,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `AdminLayout` — Wrapper with admin sidebar navigation
 
 ### Routing
-- `ProtectedRoute` — Redirects unauthenticated users to `/login`; enforces role access
+- `ProtectedRoute` — Redirects unauthenticated users to `/login`; enforces role access. Uses `loading || profileLoading` to avoid a flash of the SelectRole page during the async gap between `setAuthUser` and `setProfile` (React 18 batching only applies within the same synchronous block).
 - `PublicOnlyRoute` — Redirects authenticated users to their dashboard
 
 ### Profile
@@ -854,7 +857,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 
 | Context | File | Provides |
 |---|---|---|
-| `AuthContext` | `context/AuthContext.jsx` | `user`, `authUser`, `profile`, `role`, `loading`, `signIn`, `signOut`, `refreshProfile`, `updateProfileState`. The provider `value` is memoized (`useMemo`) and the `onAuthStateChange` handler only refetches the profile when the **user id actually changes** — Supabase fires `SIGNED_IN`/`TOKEN_REFRESHED` on every tab refocus, so unconditional refetching previously caused a refetch storm. The profile query is also deferred out of the auth callback (`setTimeout(0)`) to avoid the documented `onAuthStateChange` deadlock. |
+| `AuthContext` | `context/AuthContext.jsx` | `user`, `authUser`, `profile`, `role`, `loading`, `profileLoading`, `signIn`, `signOut`, `refreshProfile`, `updateProfileState`. The provider `value` is memoized (`useMemo`) and the `onAuthStateChange` handler only refetches the profile when the **user id actually changes** — Supabase fires `SIGNED_IN`/`TOKEN_REFRESHED` on every tab refocus, so unconditional refetching previously caused a refetch storm. The profile query is deferred out of the auth callback (`setTimeout(0)`) to avoid the documented `onAuthStateChange` deadlock; `profileLoading` is set to `true` before the deferred fetch and `false` after, so `ProtectedRoute` shows a spinner rather than flashing `/select-role`. In `signIn()`, the profile is fetched before calling `setAuthUser`/`setProfile` so both state updates are batched into one render (no flash). |
 | `AddressContext` | `context/AddressContext.jsx` | Address book CRUD, default address management. When a new address is added, automatically syncs the city into `supplier_profiles.city` / `owner_profiles.city` (appending to the comma-separated list if not already present) so the Business Details card reflects new addresses immediately without requiring an edit+save cycle. |
 | `CartContext` | `context/CartContext.jsx` | Cart items, add/remove/clear, grouped by supplier |
 | `LanguageContext` | `context/LanguageContext.jsx` | `lang` (`en`/`de`), `t(key)` translation function, persisted to `localStorage` |

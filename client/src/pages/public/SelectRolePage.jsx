@@ -7,7 +7,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 
 export default function SelectRolePage() {
-  const { user, authUser, role, loading, refreshProfile } = useAuth()
+  const { user, authUser, role, loading, profileLoading, refreshProfile } = useAuth()
   const navigate = useNavigate()
   const { t } = useLanguage()
   const [selecting, setSelecting] = useState(false)
@@ -48,7 +48,7 @@ export default function SelectRolePage() {
     }
   }
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-midnight">
         <div className="w-10 h-10 border-4 border-herb border-t-transparent rounded-full animate-spin" />

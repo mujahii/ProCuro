@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [authUser, setAuthUser] = useState(null)  // raw Supabase session user
   const [profile, setProfile] = useState(null)    // public.users row
   const [loading, setLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
   const currentUserId = useRef(null)               // last user id we fetched a profile for
 
   const fetchProfile = useCallback(async (userId) => {
@@ -56,7 +57,12 @@ export function AuthProvider({ children }) {
       // never await a Supabase call inside onAuthStateChange (deadlock risk).
       if (u.id !== currentUserId.current) {
         currentUserId.current = u.id
-        setTimeout(async () => setProfile(await fetchProfile(u.id)), 0)
+        setProfileLoading(true)
+        setTimeout(async () => {
+          const p = await fetchProfile(u.id)
+          setProfile(p)
+          setProfileLoading(false)
+        }, 0)
       }
     })
 
@@ -67,8 +73,10 @@ export function AuthProvider({ children }) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
     currentUserId.current = data.user.id
-    setAuthUser(data.user)
+    // Fetch profile before setting state so React batches both updates into one render,
+    // preventing a flash of the SelectRole page between setAuthUser and setProfile.
     const p = await fetchProfile(data.user.id)
+    setAuthUser(data.user)
     setProfile(p)
     return p
   }, [fetchProfile])
@@ -100,11 +108,12 @@ export function AuthProvider({ children }) {
     profile,
     role: profile?.role ?? null,
     loading,
+    profileLoading,
     signIn,
     signOut,
     refreshProfile,
     updateProfileState,
-  }), [profile, authUser, loading, signIn, signOut, refreshProfile, updateProfileState])
+  }), [profile, authUser, loading, profileLoading, signIn, signOut, refreshProfile, updateProfileState])
 
   return (
     <AuthContext.Provider value={value}>

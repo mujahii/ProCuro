@@ -162,7 +162,71 @@ export default function SupplierProductsPage() {
       ) : (
         <>
         {openMenu && <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />}
-        <div className="card overflow-hidden">
+
+        {/* Mobile card list */}
+        <div className="flex flex-col gap-3 md:hidden">
+          {products.map(product => {
+            const imgUrl = getImageUrl(product.image_url)
+            return (
+              <div key={product.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                    {imgUrl
+                      ? <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
+                      : <div className="w-full h-full flex items-center justify-center"><ImageOff className="w-5 h-5 text-gray-300" /></div>
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{product.name}</p>
+                    <p className="text-xs text-gray-400">{product.category}{product.unit_type ? ` · ${product.unit_type}` : ''}</p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-sm font-bold text-midnight-dark">€{Number(product.price).toFixed(2)}</span>
+                    <div className="relative">
+                      <button
+                        onClick={e => { e.stopPropagation(); setOpenMenu(openMenu === product.id ? null : product.id) }}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                      {openMenu === product.id && (
+                        <div className="absolute right-0 top-9 z-20 bg-white rounded-xl shadow-lg border border-gray-100 w-44 py-1">
+                          <button
+                            onClick={() => { toggleActive(product); setOpenMenu(null) }}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left"
+                          >
+                            {product.is_active
+                              ? <><ToggleLeft className="w-4 h-4 text-gray-400" /> {t('outOfStock')}</>
+                              : <><ToggleRight className="w-4 h-4 text-midnight" /> {t('inStock')}</>
+                            }
+                          </button>
+                          <button
+                            onClick={() => { setEditProduct(product); setShowForm(true); setOpenMenu(null) }}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left"
+                          >
+                            <Edit2 className="w-4 h-4 text-gray-400" /> {t('editProductBtn')}
+                          </button>
+                          <button
+                            onClick={() => { setDeleteTarget(product); setOpenMenu(null) }}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 text-left"
+                          >
+                            <Trash2 className="w-4 h-4" /> {t('delete')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2 ml-15">
+                  <Badge status={product.is_active ? 'active' : 'inactive'} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Desktop table */}
+        <div className="card overflow-hidden hidden md:block">
           <table className="w-full">
             <thead className="bg-lionsmane border-b border-gray-100">
               <tr>

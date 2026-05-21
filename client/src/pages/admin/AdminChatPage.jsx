@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Send, MessageSquare, ArrowLeft, Shield, Search, X, Paperclip, Trash2, FileText, Loader2 } from 'lucide-react'
+import { Send, MessageSquare, ArrowLeft, Shield, Search, X, Paperclip, Trash2, FileText, Loader2, MoreVertical, Pin } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -26,6 +26,7 @@ export default function AdminChatPage() {
   const [profileModal, setProfileModal] = useState(null)
   const [unreadMap, setUnreadMap] = useState({})
   const [deleteModalConvId, setDeleteModalConvId] = useState(null)
+  const [openMenu, setOpenMenu] = useState(null)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
 
@@ -247,6 +248,16 @@ export default function AdminChatPage() {
     setUploading(false)
   }
 
+  async function togglePin(convId) {
+    const conv = conversations.find(c => c.id === convId)
+    if (!conv) return
+    const newVal = !conv.pinned_by_admin
+    await supabase.from('admin_conversations').update({ pinned_by_admin: newVal }).eq('id', convId)
+    setConversations(prev => prev.map(c => c.id === convId ? { ...c, pinned_by_admin: newVal } : c))
+    toast.success(newVal ? 'Chat pinned' : 'Chat unpinned')
+    setOpenMenu(null)
+  }
+
   async function deleteConversation(convId) {
     if (!convId) return
     const { error } = await supabase.from('admin_conversations').delete().eq('id', convId)
@@ -280,9 +291,9 @@ export default function AdminChatPage() {
     return { supplier: 'bg-purple-50 text-purple-700', restaurant_owner: 'bg-blue-50 text-blue-700', admin: 'bg-red-50 text-red-700' }[role] || 'bg-gray-100 text-gray-600'
   }
 
-  const filtered = conversations.filter(c =>
-    !search || getDisplayName(c).toLowerCase().includes(search.toLowerCase())
-  )
+  const filtered = conversations
+    .filter(c => !search || getDisplayName(c).toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => (b.pinned_by_admin ? 1 : 0) - (a.pinned_by_admin ? 1 : 0))
   const selectedProfile = selectedConv ? userProfiles[selectedConv.user_id] : null
 
   return (
@@ -325,17 +336,22 @@ export default function AdminChatPage() {
               return (
                 <div
                   key={conv.id}
-                  className={`group flex items-center border-b border-gray-50 ${selectedConv?.id === conv.id ? 'bg-lionsmane' : 'hover:bg-lionsmane'} transition-colors`}
+                  className={`flex items-center border-b border-gray-50 ${selectedConv?.id === conv.id ? 'bg-lionsmane' : 'hover:bg-lionsmane'} transition-colors`}
                 >
                   <button
                     onClick={() => handleSelectConv(conv)}
                     className="flex-1 p-4 flex items-center gap-3 text-left min-w-0"
                   >
-                    <div className="w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    <div className="relative w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
                       {p?.avatar_url
                         ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
                         : <span className="text-sm font-bold text-slate-500">{getDisplayName(conv)?.[0]?.toUpperCase()}</span>
                       }
+                      {conv.pinned_by_admin && (
+                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-marigold rounded-full flex items-center justify-center">
+                          <Pin className="w-2.5 h-2.5 text-white" />
+                        </span>
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`text-sm truncate ${unread > 0 ? 'font-black text-gray-900' : 'font-semibold text-gray-900'}`}>{getDisplayName(conv)}</p>
@@ -352,13 +368,34 @@ export default function AdminChatPage() {
                       )}
                     </div>
                   </button>
-                  <button
-                    onClick={e => { e.stopPropagation(); setDeleteModalConvId(conv.id) }}
-                    className="opacity-0 group-hover:opacity-100 p-2 mr-1 hover:bg-red-50 rounded-lg flex-shrink-0 transition-all"
-                    title="Delete conversation"
-                  >
-                    <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-500" />
-                  </button>
+                  <div className="relative flex-shrink-0 mr-1">
+                    <button
+                      onClick={e => { e.stopPropagation(); setOpenMenu(openMenu === conv.id ? null : conv.id) }}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"
+                    >
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                    {openMenu === conv.id && (
+                      <>
+                        <div className="fixed inset-0 z-10" onClick={() => setOpenMenu(null)} />
+                        <div className="absolute right-0 top-9 z-20 bg-white rounded-xl shadow-lg border border-gray-100 w-40 py-1">
+                          <button
+                            onClick={() => togglePin(conv.id)}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-lionsmane text-left"
+                          >
+                            <Pin className="w-3.5 h-3.5 text-marigold" />
+                            {conv.pinned_by_admin ? 'Unpin' : 'Pin'}
+                          </button>
+                          <button
+                            onClick={() => { setDeleteModalConvId(conv.id); setOpenMenu(null) }}
+                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-red-50 text-left"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               )
             })}

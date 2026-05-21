@@ -213,9 +213,9 @@ export default function AdminCertificatesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <h1 className="text-2xl font-black text-gray-900">Halal Certificates</h1>
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg self-start sm:self-auto overflow-x-auto">
           {['all', 'pending', 'approved', 'rejected'].map(f => (
             <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors capitalize ${filter === f ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
               {f} {f !== 'all' && `(${certs.filter(c => c.status === f).length})`}

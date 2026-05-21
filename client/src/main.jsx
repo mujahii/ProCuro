@@ -5,6 +5,16 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App.jsx'
 import './index.css'
 
+// Stale-chunk recovery: when a new deploy changes chunk hashes, lazy
+// imports fail with "Failed to fetch dynamically imported module". Catch
+// that and do a hard reload so the new service worker activates.
+window.addEventListener('unhandledrejection', event => {
+  const msg = event.reason?.message || ''
+  if (msg.includes('dynamically imported module') || msg.includes('ChunkLoadError') || msg.includes('Failed to fetch')) {
+    window.location.reload()
+  }
+})
+
 // Prompt-based SW updates: never auto-reload (avoids the focus reload loop).
 // A waiting SW only takes over when the user clicks "Update".
 const updateSW = registerSW({

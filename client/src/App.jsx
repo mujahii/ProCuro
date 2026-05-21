@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, Component } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import PWAInstallPrompt from './components/ui/PWAInstallPrompt'
@@ -77,6 +77,19 @@ function AuthenticatedChatbotFAB() {
   return <ChatbotFAB />
 }
 
+// Catches lazy-import chunk errors after a new deploy (stale cached hashes)
+// and reloads the page so the new service worker activates.
+class ChunkErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { errored: false } }
+  static getDerivedStateFromError() { return { errored: true } }
+  componentDidCatch(err) {
+    if (err?.message?.includes('dynamically imported module') || err?.name === 'ChunkLoadError') {
+      window.location.reload()
+    }
+  }
+  render() { return this.state.errored ? null : this.props.children }
+}
+
 function RouteFallback() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
@@ -106,6 +119,7 @@ export default function App() {
           />
           <CookieConsent />
           <PWAInstallPrompt />
+          <ChunkErrorBoundary>
           <Suspense fallback={<RouteFallback />}>
           <Routes>
             {/* Public */}
@@ -170,6 +184,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           </Suspense>
+          </ChunkErrorBoundary>
           <AuthenticatedChatbotFAB />
         </AddressProvider>
       </CartProvider>

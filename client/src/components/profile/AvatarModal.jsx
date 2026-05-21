@@ -5,23 +5,27 @@ import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../context/LanguageContext'
 import Modal from './Modal'
 
-// 15 hand-picked preset avatars (DiceBear CDN, fixed seeds)
+// 15 hand-picked preset avatars — Muslim/German names and chef-related
+// German words (Koch = cook, Küche = kitchen) across human-face styles.
 const PRESET_AVATARS = [
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Zara&backgroundColor=fde68a',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Khalid&backgroundColor=bbf7d0',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Nour&backgroundColor=bae6fd',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Fatima&backgroundColor=f5d0fe',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Omar&backgroundColor=fed7aa',
-  'https://api.dicebear.com/7.x/personas/svg?seed=Layla&backgroundColor=e0f2fe',
-  'https://api.dicebear.com/7.x/personas/svg?seed=Yusuf&backgroundColor=dcfce7',
-  'https://api.dicebear.com/7.x/personas/svg?seed=Aisha&backgroundColor=fef9c3',
-  'https://api.dicebear.com/7.x/personas/svg?seed=Hassan&backgroundColor=fce7f3',
-  'https://api.dicebear.com/7.x/personas/svg?seed=Maryam&backgroundColor=ede9fe',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Nova&backgroundColor=083a4f',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Orion&backgroundColor=1b4332',
-  'https://api.dicebear.com/7.x/bottts/svg?seed=Atlas&backgroundColor=78350f',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Lena&backgroundColor=e8f4f8',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Ahmad&backgroundColor=f0fdf4',
+  // adventurer — warm cartoon faces
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Ahmed&backgroundColor=fde68a',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Fatima&backgroundColor=fce7f3',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Mehmet&backgroundColor=bae6fd',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Koch&backgroundColor=bbf7d0',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Leila&backgroundColor=fed7aa',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Ibrahim&backgroundColor=f5d0fe',
+  // micah — minimalist human faces
+  'https://api.dicebear.com/7.x/micah/svg?seed=Yusuf&backgroundColor=f0fdf4',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Sara&backgroundColor=e8f4f8',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Mustafa&backgroundColor=ede9fe',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Halal&backgroundColor=fef9c3',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Kueche&backgroundColor=fff7ed',
+  // lorelei — elegant professional portraits
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Chef&backgroundColor=e0f2fe',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Aisha&backgroundColor=dcfce7',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Omar&backgroundColor=fce7f3',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Zainab&backgroundColor=f5f0ff',
 ]
 
 function pickRandom(exclude) {

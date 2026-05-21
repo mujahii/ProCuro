@@ -111,29 +111,65 @@ router.post('/chat', verifySupabaseJWT, aiLimiter, async (req, res) => {
 
 // POST /api/ai/analytics-summary
 router.post('/analytics-summary', verifySupabaseJWT, aiLimiter, async (req, res) => {
-  const { context, force } = req.body
+  const { context, force, language } = req.body
   const userId = req.user.id
+  const isDE = language === 'de'
+  const langInstr = isDE ? 'Antworte ausschließlich auf Deutsch.\n' : ''
 
-  // Cache hit: serve the previously-generated summary if it's under 24h old
-  // and the client didn't explicitly request a refresh.
+  // Upcoming Islamic and German events (approximate month hints)
+  const now = new Date()
+  const month = now.getMonth() + 1
+  const islamicEventHints = []
+  if (month >= 2 && month <= 3) islamicEventHints.push('Ramadan is approaching — demand for halal meats, dates, and specialty foods spikes significantly.')
+  if (month === 4) islamicEventHints.push('Eid al-Fitr is near — major orders for lamb, sweets, and festive ingredients are expected.')
+  if (month >= 5 && month <= 6) islamicEventHints.push('Eid al-Adha is coming — very high demand for lamb, goat, and beef. Suppliers should restock heavily.')
+  const germanEventHints = []
+  if (month === 12) germanEventHints.push('Christmas and year-end season — restaurant orders typically surge for catering and events.')
+  if (month === 10) germanEventHints.push('Oktoberfest season — high food service demand in Germany.')
+  if (month >= 3 && month <= 4) germanEventHints.push('Spring/Easter season — increased restaurant traffic and catering orders.')
+  const eventContext = [...islamicEventHints, ...germanEventHints].join(' ')
+
+  // Cache hit: serve if under 24h old AND same language as requested.
   if (userId && !force) {
     const { data: cached } = await supabaseAdmin
       .from('ai_insights_cache')
-      .select('summary, generated_at')
+      .select('summary, generated_at, language')
       .eq('user_id', userId)
       .maybeSingle()
     if (cached?.summary) {
       const age = Date.now() - new Date(cached.generated_at).getTime()
-      if (age < ANALYTICS_CACHE_TTL_MS) {
+      const sameLang = (cached.language || 'en') === (language || 'en')
+      if (age < ANALYTICS_CACHE_TTL_MS && sameLang) {
         return res.json({ summary: cached.summary, generated_at: cached.generated_at, cached: true })
       }
     }
   }
 
   const prompts = {
-    restaurant_owner: `Analyze this restaurant owner's procurement data and provide a 3-sentence business insight plus one actionable recommendation:\n${JSON.stringify(context)}`,
-    supplier: `Analyze this Halal supplier's business data and provide a 3-sentence insight plus one recommendation to grow sales:\n${JSON.stringify(context)}`,
-    admin: `Platform overview for ProCuro Halal marketplace. Provide a 4-sentence executive summary and flag any concerns:\n${JSON.stringify(context)}`,
+    restaurant_owner: `${langInstr}You are a food procurement analyst. Analyze this Halal restaurant owner's data.
+Data: ${JSON.stringify(context)}
+${eventContext ? `Season: ${eventContext}` : ''}
+Reply with exactly 3 bullet points (each ≤ 15 words):
+• **${isDE ? 'Ausgaben' : 'Spending'}** — total spent and main supplier
+• **${isDE ? 'Top-Produkt' : 'Top pick'}** — most ordered category or product
+• **${isDE ? 'Tipp' : 'Tip'}** — one action to save money or prepare for demand`,
+
+    supplier: `${langInstr}You are a business analyst for a Halal food supplier in Germany. Analyze this data.
+Data: ${JSON.stringify(context)}
+${eventContext ? `Season: ${eventContext}` : ''}
+Reply with exactly 4 bullet points (each ≤ 15 words):
+• **${isDE ? 'Umsatz' : 'Sales'}** — revenue and order count this period
+• **${isDE ? 'Bestseller' : 'Best seller'}** — top product by volume
+• **${isDE ? 'Lagerwarnung' : 'Stock alert'}** — any item with stock ≤ 3 (or "${isDE ? 'alles in Ordnung' : 'all good'}")
+• **${isDE ? 'Maßnahme' : 'Action'}** — one concrete step to grow or prepare`,
+
+    admin: `${langInstr}You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
+Data: ${JSON.stringify(context)}
+${eventContext ? `Season: ${eventContext}` : ''}
+Reply with exactly 3 bullet points (each ≤ 15 words):
+• **${isDE ? 'Status' : 'Health'}** — active users and order volume summary
+• **${isDE ? 'Hinweis' : 'Flag'}** — top issue or anomaly needing attention
+• **${isDE ? 'Nächster Schritt' : 'Next step'}** — one platform action to take now`,
   }
 
   const prompt = prompts[req.user.role] || prompts.restaurant_owner
@@ -146,7 +182,7 @@ router.post('/analytics-summary', verifySupabaseJWT, aiLimiter, async (req, res)
       await supabaseAdmin
         .from('ai_insights_cache')
         .upsert(
-          { user_id: userId, scope: 'analytics', summary, generated_at },
+          { user_id: userId, scope: 'analytics', summary, generated_at, language: language || 'en' },
           { onConflict: 'user_id' }
         )
     }

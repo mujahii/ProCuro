@@ -123,16 +123,17 @@ exports.handler = async (event) => {
   const isDE = language === 'de'
   const langInstr = isDE ? 'Antworte ausschließlich auf Deutsch.\n' : ''
 
-  // Cache hit: signed-in user, not forcing, and the last summary is fresh.
+  // Cache hit: signed-in user, not forcing, last summary is fresh, AND same language.
   if (userId && !force) {
     const { data: cached } = await supabase
       .from('ai_insights_cache')
-      .select('summary, generated_at')
+      .select('summary, generated_at, language')
       .eq('user_id', userId)
       .maybeSingle()
     if (cached?.summary) {
       const age = Date.now() - new Date(cached.generated_at).getTime()
-      if (age < CACHE_TTL_MS) {
+      const sameLang = (cached.language || 'en') === (language || 'en')
+      if (age < CACHE_TTL_MS && sameLang) {
         return {
           statusCode: 200,
           headers,
@@ -199,7 +200,7 @@ Reply with exactly 3 bullet points (each ≤ 15 words):
       await supabase
         .from('ai_insights_cache')
         .upsert(
-          { user_id: userId, scope: 'analytics', summary, generated_at },
+          { user_id: userId, scope: 'analytics', summary, generated_at, language: language || 'en' },
           { onConflict: 'user_id' }
         )
     }

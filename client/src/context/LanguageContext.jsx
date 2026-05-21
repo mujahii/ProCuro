@@ -719,7 +719,9 @@ const T = {
     // Avatar modal
     choosePhoto: 'Choose a photo',
     autoGenerateAvatar: 'Generate Avatar',
-    autoGenerateAvatarDesc: 'Get a unique auto-generated profile picture',
+    autoGenerateAvatarDesc: 'Click Generate to get a random avatar — keep clicking for more options.',
+    generateAvatar: 'Generate Avatar',
+    generateAnother: 'Generate Another',
     generating: 'Generating…',
 
     // Supplier profile header
@@ -1447,7 +1449,9 @@ const T = {
     // Avatar modal
     choosePhoto: 'Foto auswählen',
     autoGenerateAvatar: 'Avatar generieren',
-    autoGenerateAvatarDesc: 'Einzigartiges automatisch generiertes Profilbild erhalten',
+    autoGenerateAvatarDesc: 'Klicke auf Generieren für einen zufälligen Avatar – klicke erneut für weitere Optionen.',
+    generateAvatar: 'Avatar generieren',
+    generateAnother: 'Anderen generieren',
     generating: 'Wird generiert…',
 
     // Supplier profile header

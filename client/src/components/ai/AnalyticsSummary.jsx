@@ -141,11 +141,24 @@ export default function AnalyticsSummary({ context }) {
   useEffect(() => {
     if (context && !hasGenerated.current) {
       hasGenerated.current = true
-      generate({ force: false })
+      // If language changed since last generation (detected via localStorage),
+      // force a fresh generation even on remount so a page-navigate-away +
+      // language-change + navigate-back cycle always reflects the new language.
+      const storedLang = localStorage.getItem('procuro_ai_lang')
+      const forceLang = storedLang !== null && storedLang !== language
+      generate({ force: forceLang })
     }
   }, [context])
 
-  // Auto-regenerate in the new language when the user switches
+  // Store the language used for the last generation so remounts can detect a
+  // language change that happened while the component was unmounted.
+  useEffect(() => {
+    if (!loading && summary) {
+      localStorage.setItem('procuro_ai_lang', language)
+    }
+  }, [loading, summary, language])
+
+  // Auto-regenerate in the new language when the user switches mid-session
   useEffect(() => {
     if (prevLanguage.current !== language) {
       prevLanguage.current = language

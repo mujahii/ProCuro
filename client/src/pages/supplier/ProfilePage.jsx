@@ -17,7 +17,7 @@ import Modal from '../../components/profile/Modal'
 import SettingRow from '../../components/profile/SettingRow'
 import AvatarModal from '../../components/profile/AvatarModal'
 import PasswordModal from '../../components/profile/PasswordModal'
-import PhoneModal from '../../components/profile/PhoneModal'
+import PhoneModal, { formatPhone } from '../../components/profile/PhoneModal'
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal'
 
 const CERT_STATUS = {
@@ -1042,7 +1042,7 @@ export default function SupplierAccountPage() {
         <h3 className="font-bold text-slate-900 text-base px-4 pt-5 pb-2">{t('accountSettings')}</h3>
         <div className="divide-y divide-slate-100">
           <SettingRow label={t('changeEmailPassword')} onClick={() => setShowPasswordModal(true)} />
-          <SettingRow label={t('updatePhoneNumber')} onClick={() => setShowPhoneModal(true)} />
+          <SettingRow label={t('updatePhoneNumber')} value={profile?.phone ? formatPhone(profile.phone) : undefined} onClick={() => setShowPhoneModal(true)} />
           <SettingRow label={t('manageMyAddresses')} onClick={() => setShowAddressModal(true)} />
           <div className="flex items-center justify-between px-4 py-3">
             <span className="text-sm font-medium text-slate-700">{t('languageSprache')}</span>
@@ -1148,7 +1148,7 @@ export default function SupplierAccountPage() {
           onSaved={handleProfileSaved}
         />
       )}
-      {showPasswordModal && <PasswordModal onClose={() => setShowPasswordModal(false)} />}
+      {showPasswordModal && <PasswordModal onClose={() => setShowPasswordModal(false)} currentEmail={user?.email} />}
       {showPhoneModal && (
         <PhoneModal
           userId={user.id}

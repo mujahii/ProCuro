@@ -1,28 +1,42 @@
 import { useState, useRef } from 'react'
-import { Loader2, Wand2, Upload } from 'lucide-react'
+import { Loader2, Wand2, Upload, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../context/LanguageContext'
 import Modal from './Modal'
 
-const DICEBEAR_STYLES = ['adventurer', 'personas', 'avataaars', 'bottts', 'micah']
+// 15 hand-picked preset avatars (DiceBear CDN, fixed seeds)
+const PRESET_AVATARS = [
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Zara&backgroundColor=fde68a',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Khalid&backgroundColor=bbf7d0',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Nour&backgroundColor=bae6fd',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Fatima&backgroundColor=f5d0fe',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Omar&backgroundColor=fed7aa',
+  'https://api.dicebear.com/7.x/personas/svg?seed=Layla&backgroundColor=e0f2fe',
+  'https://api.dicebear.com/7.x/personas/svg?seed=Yusuf&backgroundColor=dcfce7',
+  'https://api.dicebear.com/7.x/personas/svg?seed=Aisha&backgroundColor=fef9c3',
+  'https://api.dicebear.com/7.x/personas/svg?seed=Hassan&backgroundColor=fce7f3',
+  'https://api.dicebear.com/7.x/personas/svg?seed=Maryam&backgroundColor=ede9fe',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Nova&backgroundColor=083a4f',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Orion&backgroundColor=1b4332',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Atlas&backgroundColor=78350f',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Lena&backgroundColor=e8f4f8',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Ahmad&backgroundColor=f0fdf4',
+]
 
-export default function AvatarModal({ userId, role, userName, onClose, onSaved }) {
+function pickRandom(exclude) {
+  const pool = exclude ? PRESET_AVATARS.filter(u => u !== exclude) : PRESET_AVATARS
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
+export default function AvatarModal({ userId, role, onClose, onSaved }) {
   const { t } = useLanguage()
   const [tab, setTab] = useState('upload')
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [saving, setSaving] = useState(false)
   const [generatedUrl, setGeneratedUrl] = useState(null)
-  const [selectedStyle, setSelectedStyle] = useState('adventurer')
   const inputRef = useRef(null)
-
-  const seed = encodeURIComponent(userName || userId || 'user')
-
-  function previewGenerated(style) {
-    setSelectedStyle(style)
-    setGeneratedUrl(`https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=e8f4f8`)
-  }
 
   function handleFileChange(e) {
     const f = e.target.files[0]
@@ -30,6 +44,10 @@ export default function AvatarModal({ userId, role, userName, onClose, onSaved }
     if (f.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB'); return }
     setFile(f)
     setPreview(URL.createObjectURL(f))
+  }
+
+  function handleGenerate() {
+    setGeneratedUrl(prev => pickRandom(prev))
   }
 
   async function handleSaveUpload() {
@@ -56,7 +74,7 @@ export default function AvatarModal({ userId, role, userName, onClose, onSaved }
   }
 
   async function handleSaveGenerated() {
-    if (!generatedUrl) { toast.error('Please select a style first'); return }
+    if (!generatedUrl) { toast.error('Generate an avatar first'); return }
     setSaving(true)
     try {
       const res = await fetch(generatedUrl)
@@ -71,9 +89,9 @@ export default function AvatarModal({ userId, role, userName, onClose, onSaved }
       }
       onSaved(publicUrl)
       onClose()
-      toast.success('Avatar generated and saved!')
+      toast.success('Avatar saved!')
     } catch {
-      toast.error('Failed to save generated avatar')
+      toast.error('Failed to save avatar')
     } finally {
       setSaving(false)
     }
@@ -90,7 +108,7 @@ export default function AvatarModal({ userId, role, userName, onClose, onSaved }
           <Upload className="w-4 h-4" /> {t('choosePhoto')}
         </button>
         <button
-          onClick={() => { setTab('generate'); if (!generatedUrl) previewGenerated(selectedStyle) }}
+          onClick={() => { setTab('generate'); if (!generatedUrl) handleGenerate() }}
           className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'generate' ? 'bg-white text-midnight shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
         >
           <Wand2 className="w-4 h-4" /> {t('autoGenerateAvatar')}
@@ -122,27 +140,29 @@ export default function AvatarModal({ userId, role, userName, onClose, onSaved }
         </>
       ) : (
         <>
-          <p className="text-xs text-slate-500 mb-3">{t('autoGenerateAvatarDesc')}</p>
-          <div className="grid grid-cols-5 gap-2 mb-4">
-            {DICEBEAR_STYLES.map(style => (
-              <button
-                key={style}
-                onClick={() => previewGenerated(style)}
-                className={`rounded-xl p-1 border-2 transition-all ${selectedStyle === style ? 'border-midnight' : 'border-transparent hover:border-slate-200'}`}
-              >
-                <img
-                  src={`https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=e8f4f8`}
-                  alt={style}
-                  className="w-full aspect-square rounded-lg"
-                />
-              </button>
-            ))}
+          <p className="text-xs text-slate-500 mb-4 text-center">{t('autoGenerateAvatarDesc')}</p>
+
+          {/* Avatar preview */}
+          <div className="flex justify-center mb-5">
+            {generatedUrl ? (
+              <img src={generatedUrl} alt="Generated avatar" className="w-28 h-28 rounded-full border-4 border-celeste shadow-md bg-white" />
+            ) : (
+              <div className="w-28 h-28 rounded-full border-4 border-dashed border-slate-200 bg-lionsmane flex items-center justify-center">
+                <Wand2 className="w-8 h-8 text-slate-300" />
+              </div>
+            )}
           </div>
-          {generatedUrl && (
-            <div className="flex justify-center mb-4">
-              <img src={generatedUrl} alt="Generated avatar" className="w-24 h-24 rounded-full border-4 border-celeste shadow-md" />
-            </div>
-          )}
+
+          {/* Single generate button */}
+          <button
+            onClick={handleGenerate}
+            disabled={saving}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-midnight text-midnight font-semibold hover:bg-midnight hover:text-white transition-colors mb-3 disabled:opacity-50"
+          >
+            <RefreshCw className="w-4 h-4" />
+            {generatedUrl ? t('generateAnother') : t('generateAvatar')}
+          </button>
+
           <div className="flex gap-3">
             <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
               {t('cancel')}

@@ -4,6 +4,22 @@ import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import Modal from './Modal'
 
+// Format a phone string with spaces for display.
+// "+491701234567" → "+49 170 1234567"
+// "01701234567"   → "0170 1234567"
+// Already-spaced strings pass through unchanged.
+export function formatPhone(raw) {
+  if (!raw) return ''
+  const digits = raw.replace(/\s+/g, '')
+  // International format: +CC XXXXXXXXX
+  const intl = digits.match(/^(\+\d{1,3})(\d{3})(\d+)$/)
+  if (intl) return `${intl[1]} ${intl[2]} ${intl[3]}`
+  // German mobile / local: 0XXX XXXXXXX
+  const local = digits.match(/^(0\d{3,4})(\d+)$/)
+  if (local) return `${local[1]} ${local[2]}`
+  return raw
+}
+
 export default function PhoneModal({ userId, currentPhone, role, onClose, onSaved }) {
   const [phone, setPhone] = useState(currentPhone || '')
   const [saving, setSaving] = useState(false)
@@ -11,11 +27,12 @@ export default function PhoneModal({ userId, currentPhone, role, onClose, onSave
   async function handleSave() {
     setSaving(true)
     try {
-      await supabase.from('users').update({ phone }).eq('id', userId)
+      const trimmed = phone.trim()
+      await supabase.from('users').update({ phone: trimmed }).eq('id', userId)
       if (role === 'supplier') {
-        await supabase.from('supplier_profiles').update({ phone }).eq('user_id', userId)
+        await supabase.from('supplier_profiles').update({ phone: trimmed }).eq('user_id', userId)
       }
-      onSaved(phone)
+      onSaved(trimmed)
       onClose()
       toast.success('Phone number updated!')
     } catch {
@@ -28,8 +45,14 @@ export default function PhoneModal({ userId, currentPhone, role, onClose, onSave
   return (
     <Modal title="Update Phone Number" onClose={onClose}>
       <div className="space-y-4">
+        {currentPhone && (
+          <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-lionsmane border border-slate-100">
+            <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">Current</span>
+            <span className="text-sm font-semibold text-slate-700">{formatPhone(currentPhone)}</span>
+          </div>
+        )}
         <div>
-          <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number</label>
+          <label className="block text-sm font-semibold text-slate-700 mb-1.5">New Phone Number</label>
           <input
             type="tel"
             value={phone}

@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 13:08 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-21 17:03 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -335,7 +335,7 @@ Audit log of all deleted accounts (self-deletion and admin deletion).
 | `deleted_by_admin_id` | UUID | NULL = self-deleted; non-NULL = admin-initiated deletion |
 
 ### `public.ai_insights_cache`
-Per-user cache for Gemini analytics summaries. TTL of 24 hours enforced in application code.
+Per-user cache for Gemini analytics summaries. TTL of 24 hours enforced in application code. Cache is language-aware: switching language invalidates the cache and forces a fresh generation.
 
 | Column | Type | Notes |
 |---|---|---|
@@ -343,6 +343,7 @@ Per-user cache for Gemini analytics summaries. TTL of 24 hours enforced in appli
 | `scope` | TEXT DEFAULT 'analytics' | |
 | `summary` | TEXT NOT NULL | Generated markdown from Gemini |
 | `generated_at` | TIMESTAMPTZ | |
+| `language` | TEXT DEFAULT 'en' | Language the summary was generated in (`en`/`de`); cache miss if language differs |
 
 ### `public.delivery_fee_rules`
 Distance-based delivery fee tiers, readable by all authenticated users, managed by admin.
@@ -574,7 +575,7 @@ Serverless equivalents of the AI routes, deployed to production alongside the Vi
 - Sends business context (revenue, orders, products, etc.) to `POST /api/ai/analytics-summary`.
 - **Caching:** Generated summaries are stored in `ai_insights_cache`. Subsequent page loads within 24 hours return the cached version without a Gemini API call.
 - **Force refresh:** User can bypass the cache with an explicit refresh button.
-- **Language toggle:** When the user switches language (EN ↔ DE), `AnalyticsSummary` automatically triggers `generate({ force: true })`, bypassing the 24h cache to regenerate the summary in the new language.
+- **Language-aware cache:** The `ai_insights_cache` table stores `language`. On load, if the cached language differs from the current UI language, the summary is regenerated. For in-session switches, a `force: true` request fires immediately. For switches made while the component was unmounted (e.g. navigating to Settings and back), a `localStorage` key (`procuro_ai_lang`) tracks the last generation language so remounts detect the mismatch and regenerate automatically.
 - **Stale fallback:** If Gemini is rate-limited and a stale cache entry exists, it is served with a `stale: true` flag.
 - **Deterministic fallback:** If both Gemini and cache fail, a plain-text summary is built from the context data client-side so the user never sees a hard error.
 
@@ -781,14 +782,14 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `PublicOnlyRoute` — Redirects authenticated users to their dashboard
 
 ### Profile
-- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device, existing behaviour) and **"Generate Avatar"** (auto-generate using DiceBear API — 5 styles: adventurer, personas, avataaars, bottts, micah; selected SVG is fetched, uploaded to the `avatars` bucket as `{userId}/avatar.svg`, and the public URL is saved). All labels fully i18n'd.
+- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device) and **"Generate Avatar"** — single "Generate" button that randomly selects from 15 pre-defined DiceBear avatars (adventurer, personas, bottts, micah styles with fixed seeds). Click again to cycle through more options. The selected SVG is fetched and uploaded to the `avatars` bucket as `{userId}/avatar.svg`. All labels fully i18n'd.
 - `DeleteAccountModal` — Confirmation dialog for account deletion
 - `Modal` — Base modal wrapper
 - `OwnerProfileModal` — Supplier-side modal showing an owner's details when viewing their order
 - `SupplierProfileModal` — Owner-side modal for supplier details
-- `PasswordModal` — Change password form
-- `PhoneModal` — Update phone number form
-- `SettingRow` — Reusable row component for the settings card
+- `PasswordModal` — Change email & password modal. Email section shows current email pre-filled with an inline "Change" sub-popup (no password required) for entering a new email. Password section (New Password + Confirm) is independent and unchanged.
+- `PhoneModal` — Update phone number form; shows formatted current phone number above the input. Exports `formatPhone(raw)` helper used by both profile pages to display phone in settings row.
+- `SettingRow` — Reusable row component for the settings card; accepts optional `value` prop to show a secondary value (used to display formatted phone number)
 
 ### Store
 - `ProductCard` — Product listing card with add-to-cart
@@ -810,7 +811,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `DateRangeFilter` (in `components/ui/`) — Reusable presets (This Week / This Month / This Year) plus a custom from-to date picker. Drives the analytics queries on owner, supplier, and admin pages. All labels (presets, custom range header, From/To, Clear, Apply) are fully i18n'd via `t()`.
 
 ### AI
-- `AnalyticsSummary` — AI insight card with cache indicator and force-refresh button; refresh is disabled (dimmed) for 24 hours after the last generation — the button re-enables only once the `ai_insights_cache` TTL expires. **Language-aware**: watches `lang` via `useLanguage`; when the language changes, automatically calls `generate({ force: true })` to regenerate the summary in the new language and update the cache.
+- `AnalyticsSummary` — AI insight card with cache indicator and force-refresh button; refresh is disabled (dimmed) for 24 hours after the last generation — the button re-enables only once the `ai_insights_cache` TTL expires. **Language-aware**: regenerates automatically whenever the active language differs from the language the cached summary was generated in — both for in-session switches (via `prevLanguage` ref) and post-navigate remounts (via `localStorage` key `procuro_ai_lang`).
 - `ChatbotFAB` — Floating action button that opens the AI assistant
 - `ChatbotDrawer` — Slide-in chat drawer for AI assistant. **Language-aware**: welcome message and suggestion chips are in the active language (EN/DE); sends `language` to the backend so Gemini responds in the selected language. Send button is wider on mobile.
 

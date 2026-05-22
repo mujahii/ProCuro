@@ -172,9 +172,11 @@ function parseSegment(seg, key) {
 }
 
 function FormattedMessage({ text }) {
+  // Collapse line breaks that split a markdown link (AI sometimes wraps [text]\n(url))
+  const normalized = text.replace(/\]\s*\n+\s*\(/g, '](')
   return (
     <span>
-      {text.split('\n').map((line, i) => {
+      {normalized.split('\n').map((line, i) => {
         const parts = line.split(/(\*\*.*?\*\*|\*.*?\*)/g)
         return (
           <span key={i}>

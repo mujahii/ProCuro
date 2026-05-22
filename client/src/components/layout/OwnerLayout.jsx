@@ -91,6 +91,7 @@ export default function OwnerLayout() {
         className={`lg:hidden fixed top-0 left-0 bottom-0 z-50 w-64 bg-white flex flex-col shadow-2xl transition-transform duration-300 ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{ paddingTop: 'var(--sat)' }}
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 flex-shrink-0">
           <span className="font-bold text-lg text-slate-900">ProCuro</span>

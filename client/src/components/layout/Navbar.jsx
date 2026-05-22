@@ -129,13 +129,17 @@ export default function Navbar({ onMenuClick }) {
             {/* Address selector — owner only */}
             {role === 'restaurant_owner' && (
               <div className="relative ml-2 sm:ml-3" ref={addrRef}>
-                {/* Mobile: compact MapPin icon */}
+                {/* Mobile: icon + short city label */}
                 <button
                   onClick={() => setAddrOpen(o => !o)}
-                  className="md:hidden p-2 text-slate-500 hover:text-midnight hover:bg-slate-100 rounded-lg transition-colors"
-                  title={selectedAddress?.street || selectedAddress?.city || t('selectAddress')}
+                  className="md:hidden flex items-center gap-1 px-2 py-1.5 text-slate-500 hover:text-midnight hover:bg-slate-100 rounded-lg transition-colors"
                 >
-                  <MapPin className="w-4 h-4" />
+                  <MapPin className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-semibold max-w-[72px] truncate">
+                    {selectedAddress
+                      ? (selectedAddress.city || selectedAddress.label || selectedAddress.street || t('selectAddress'))
+                      : t('selectAddress')}
+                  </span>
                 </button>
                 {/* Desktop: full "Delivered to / address" display */}
                 <button

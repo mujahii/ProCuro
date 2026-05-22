@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-21 23:07 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-22 18:03 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -793,7 +793,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 ## Frontend Components
 
 ### Layout
-- `Navbar` — Top navigation; role-aware links; `NotificationBell`; language toggle. **Address selector** is responsive: a compact `MapPin` icon button on mobile (< `md`) opens the same address dropdown that the full "Delivered to / address" display provides on desktop; click-outside detection uses a shared `ref`
+- `Navbar` — Top navigation; role-aware links; `NotificationBell`; language toggle. **Address selector** is responsive: on mobile (< `md`), shows a `MapPin` icon + truncated city/label text (max 72px) so owners can see their selected delivery location at a glance; on desktop shows the full "Delivered to / address" two-line button. Click-outside detection uses a shared `ref`.
 - `Footer` — Site-wide footer with links
 - `OwnerLayout` — Wrapper with owner sidebar navigation
 - `SupplierLayout` — Wrapper with supplier sidebar navigation
@@ -835,7 +835,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 ### AI
 - `AnalyticsSummary` — AI insight card with cache indicator and force-refresh button; refresh is disabled (dimmed) for 24 hours after the last generation — the button re-enables only once the `ai_insights_cache` TTL expires. **Language-aware**: regenerates automatically whenever the active language differs from the language the cached summary was generated in — both for in-session switches (via `prevLanguage` ref) and post-navigate remounts (via `localStorage` key `procuro_ai_lang`).
 - `ChatbotFAB` — Floating action button that opens the AI assistant
-- `ChatbotDrawer` — Slide-in chat drawer for AI assistant. **Language-aware**: welcome message and suggestion chips are in the active language (EN/DE); sends `language` to the backend so Gemini responds in the selected language. Send button is wider on mobile.
+- `ChatbotDrawer` — Slide-in chat drawer for AI assistant. **Language-aware**: welcome message and suggestion chips are in the active language (EN/DE); sends `language` to the backend so Gemini responds in the selected language. Send button is wider on mobile. **Markdown rendering**: `FormattedMessage` parses bold (`**`), italic (`*`), and inline links (`[text](url)`); internal `/supplier/id` links use React Router `<Link>`, external links open in a new tab. Pre-normalizes the text to collapse `]\n(` sequences that can appear when the AI wraps a link across a line break.
 
 ### UI
 - `Badge` — Generic badge/chip component
@@ -896,7 +896,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - Allows users to add ProCuro to their home screen on Android and desktop Chrome.
 - **Service-worker updates are prompt-based** (`registerType: 'prompt'`, `vite.config.js`). The SW never auto-reloads; instead `main.jsx` registers it explicitly (`virtual:pwa-register`) and shows a small "A new version is available — Update" toast that reloads only when the user clicks it. This replaced `registerType: 'autoUpdate'`, which force-reloaded the page on every detected SW change — and because browsers re-check for SW updates on every tab refocus, that produced a repeated reload loop when returning to the tab.
 - **Precache** (`workbox.globPatterns`) covers app JS/CSS/HTML/icons; `og-image.png` is excluded via `globIgnores` since it is only used for social link previews. App icons are served at sensible sizes (favicon 16/32 px, `apple-touch-icon` 180 px, PWA icon 512 px) so the offline precache stays small (~2.7 MB, down from ~5.8 MB).
-- **iOS safe area**: `index.html` sets `viewport-fit=cover` so the app extends edge-to-edge on notched iPhones. `apple-mobile-web-app-status-bar-style: black-translucent` makes the status bar transparent. The `<nav>` element receives `padding-top: var(--sat)` (where `--sat = env(safe-area-inset-top, 0px)` defined in `index.css`) so the navbar content always sits below the notch/Dynamic Island. All layout offset values in `OwnerLayout` and `SupplierLayout` (`paddingTop`, sidebar `top`) use `calc(Xrem + var(--sat))` inline styles to stay flush regardless of device.
+- **iOS safe area**: `index.html` sets `viewport-fit=cover` so the app extends edge-to-edge on notched iPhones. `apple-mobile-web-app-status-bar-style: black-translucent` makes the status bar transparent. The CSS variable `--sat = env(safe-area-inset-top, 0px)` is defined in `index.css`. Every fixed/sticky bar receives `padding-top: var(--sat)`: the `<nav>` in `Navbar.jsx`, the `<header>` in `AdminLayout`, and all three mobile side drawers (`AdminLayout` sidebar, `OwnerLayout` drawer, `SupplierLayout` drawer). All layout content-area offsets in `OwnerLayout` and `SupplierLayout` use `calc(Xrem + var(--sat))` so content stays flush on all devices.
 
 ---
 

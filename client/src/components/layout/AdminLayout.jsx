@@ -82,6 +82,7 @@ export default function AdminLayout() {
           lg:translate-x-0
           ${collapsed ? 'lg:w-16 w-64' : 'w-64 lg:w-60'}
         `}
+        style={{ paddingTop: 'var(--sat)' }}
       >
         {/* Logo row */}
         <div className={`border-b border-gray-800 flex items-center gap-2 transition-all duration-300 ${collapsed ? 'lg:justify-center lg:px-0 px-5 py-5' : 'px-5 py-5'}`}>
@@ -162,7 +163,7 @@ export default function AdminLayout() {
 
       {/* Main content */}
       <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'lg:ml-16' : 'lg:ml-60'}`}>
-        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20">
+        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20" style={{ paddingTop: 'calc(0.75rem + var(--sat))' }}>
           <div className="flex items-center gap-3">
             {/* Hamburger — mobile only */}
             <button

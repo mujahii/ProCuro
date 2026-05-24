@@ -150,40 +150,30 @@ export default function LandingPage() {
       {/* Hero Banner */}
       <section className="relative min-h-[600px] sm:min-h-[640px] flex flex-col overflow-hidden" style={{ background: '#052532' }}>
         <style>{`
-          @keyframes flowLeft  { from { transform: translateX(0);    } to { transform: translateX(-50%); } }
-          @keyframes flowRight { from { transform: translateX(-50%); } to { transform: translateX(0);    } }
+          @keyframes riseBlob {
+            0%   { transform: translateY(680px); opacity: 0; }
+            14%  { opacity: 1; }
+            86%  { opacity: 0.85; }
+            100% { transform: translateY(-680px); opacity: 0; }
+          }
         `}</style>
 
-        {/* Layered SVG waves — each SVG is 200% wide (2 full periods) for seamless looping */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {/* Wave 1 — gold/marigold, slow, fills upper portion downward */}
-          <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-            style={{ position:'absolute', top:0, left:0, width:'200%', height:'62%', opacity:0.52, filter:'blur(2px)', animation:'flowLeft 22s linear infinite' }}
-            viewBox="0 0 2880 300">
-            <path d="M0,180 C240,100 480,260 720,180 C960,100 1200,260 1440,180 C1680,100 1920,260 2160,180 C2400,100 2640,260 2880,180 L2880,0 L0,0 Z" fill="#A58D66"/>
-          </svg>
-
-          {/* Wave 2 — herb/teal, medium speed, mid band filling downward */}
-          <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-            style={{ position:'absolute', top:'18%', left:0, width:'200%', height:'68%', opacity:0.38, filter:'blur(3px)', animation:'flowRight 16s linear infinite' }}
-            viewBox="0 0 2880 300">
-            <path d="M0,100 C240,200 480,0 720,100 C960,200 1200,0 1440,100 C1680,200 1920,0 2160,100 C2400,200 2640,0 2880,100 L2880,300 L0,300 Z" fill="#5E96A4"/>
-          </svg>
-
-          {/* Wave 3 — celeste, faster, lower band filling upward from bottom */}
-          <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-            style={{ position:'absolute', bottom:0, left:0, width:'200%', height:'52%', opacity:0.32, filter:'blur(4px)', animation:'flowLeft 13s linear infinite' }}
-            viewBox="0 0 2880 300">
-            <path d="M0,120 C240,50 480,190 720,120 C960,50 1200,190 1440,120 C1680,50 1920,190 2160,120 C2400,50 2640,190 2880,120 L2880,300 L0,300 Z" fill="#C0D5D6"/>
-          </svg>
-
-          {/* Wave 4 — warm cream/lionsmane, slowest, sweeps across middle-lower */}
-          <svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none"
-            style={{ position:'absolute', top:'28%', left:0, width:'200%', height:'78%', opacity:0.22, filter:'blur(5px)', animation:'flowRight 28s linear infinite' }}
-            viewBox="0 0 2880 300">
-            <path d="M0,150 C240,80 480,220 720,150 C960,80 1200,220 1440,150 C1680,80 1920,220 2160,150 C2400,80 2640,220 2880,150 L2880,300 L0,300 Z" fill="#BFA988"/>
-          </svg>
-        </div>
+        {/* Rising brand-colour orbs */}
+        {/* Marigold / warm gold — far left */}
+        <div className="absolute left-[4%] top-0 w-[26rem] h-[26rem] rounded-full pointer-events-none"
+          style={{ background: '#A58D66', filter: 'blur(80px)', animation: 'riseBlob 15s linear infinite', animationDelay: '0s' }} />
+        {/* Celeste / light teal — right-center */}
+        <div className="absolute left-[54%] top-0 w-[22rem] h-[22rem] rounded-full pointer-events-none"
+          style={{ background: '#C0D5D6', filter: 'blur(72px)', animation: 'riseBlob 15s linear infinite', animationDelay: '-3.75s' }} />
+        {/* Herb / mid teal-green — center */}
+        <div className="absolute left-[28%] top-0 w-[20rem] h-[20rem] rounded-full pointer-events-none"
+          style={{ background: '#5E96A4', filter: 'blur(64px)', animation: 'riseBlob 15s linear infinite', animationDelay: '-7.5s' }} />
+        {/* Lionsmane / warm cream — far right */}
+        <div className="absolute left-[70%] top-0 w-[24rem] h-[24rem] rounded-full pointer-events-none"
+          style={{ background: '#BFA988', filter: 'blur(80px)', animation: 'riseBlob 15s linear infinite', animationDelay: '-11.25s' }} />
+        {/* Rose / soft mauve — left-center (new) */}
+        <div className="absolute left-[40%] top-0 w-[18rem] h-[18rem] rounded-full pointer-events-none"
+          style={{ background: '#B07B8B', filter: 'blur(60px)', animation: 'riseBlob 15s linear infinite', animationDelay: '-2s' }} />
 
         {/* Dark overlay so text stays readable */}
         <div className="absolute inset-0 bg-[#052532]/60 pointer-events-none" />

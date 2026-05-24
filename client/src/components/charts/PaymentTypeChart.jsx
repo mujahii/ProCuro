@@ -1,20 +1,23 @@
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { Banknote, CreditCard } from 'lucide-react'
+import { useLanguage } from '../../context/LanguageContext'
 
-const LABELS = {
-  bank_transfer: 'Bank Transfer',
-  cash_on_delivery: 'Cash on Delivery',
-}
 const COLORS = {
-  bank_transfer: '#083A4F',     // midnight
-  cash_on_delivery: '#D4A017',  // marigold
+  bank_transfer: '#083A4F',
+  cash_on_delivery: '#D4A017',
 }
 
 export default function PaymentTypeChart({ data = [], title = 'Orders by Payment Type' }) {
-  // data: [{ method: 'bank_transfer' | 'cash_on_delivery', count: number, total: number }]
+  const { t } = useLanguage()
+
+  const labels = {
+    bank_transfer: t('paymentBankTransfer'),
+    cash_on_delivery: t('paymentCashOnDelivery'),
+  }
+
   const pieData = data
     .filter(d => d.count > 0)
-    .map(d => ({ ...d, name: LABELS[d.method] || d.method, value: d.count }))
+    .map(d => ({ ...d, name: labels[d.method] || d.method, value: d.count }))
 
   const totalOrders = pieData.reduce((s, d) => s + d.value, 0)
   const totalGMV = data.reduce((s, d) => s + Number(d.total || 0), 0)
@@ -23,7 +26,7 @@ export default function PaymentTypeChart({ data = [], title = 'Orders by Payment
     <div className="card p-5">
       <h3 className="font-bold text-gray-900 mb-4">{title}</h3>
       {pieData.length === 0 ? (
-        <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No orders in this period</div>
+        <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('chartNoOrdersPeriod')}</div>
       ) : (
         <div className="flex flex-col sm:flex-row items-center gap-4">
           <ResponsiveContainer width={180} height={180}>
@@ -33,7 +36,7 @@ export default function PaymentTypeChart({ data = [], title = 'Orders by Payment
                   <Cell key={i} fill={COLORS[d.method] || '#9ca3af'} />
                 ))}
               </Pie>
-              <Tooltip formatter={(v, _n, ctx) => [`${v} orders · €${Number(ctx.payload.total).toFixed(2)}`, ctx.payload.name]} />
+              <Tooltip formatter={(v, _n, ctx) => [`${v} ${t('chartOrders')} · €${Number(ctx.payload.total).toFixed(2)}`, ctx.payload.name]} />
             </PieChart>
           </ResponsiveContainer>
           <div className="flex-1 space-y-2 w-full">
@@ -57,7 +60,7 @@ export default function PaymentTypeChart({ data = [], title = 'Orders by Payment
               )
             })}
             {totalGMV > 0 && (
-              <p className="text-[10px] text-gray-400 pt-1">Total GMV in period: <span className="font-bold text-gray-700">€{totalGMV.toFixed(2)}</span></p>
+              <p className="text-[10px] text-gray-400 pt-1">{t('chartTotalGMVPeriod')} <span className="font-bold text-gray-700">€{totalGMV.toFixed(2)}</span></p>
             )}
           </div>
         </div>

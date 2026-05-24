@@ -941,6 +941,11 @@ const T = {
     chartCityComparison: 'Suppliers vs Owners by City',
     chartNoData: 'No data yet',
     chartNoCityData: 'No city data yet',
+    chartNoOrdersPeriod: 'No orders in this period',
+    chartTotalGMVPeriod: 'Total GMV in period:',
+    chartOrders: 'orders',
+    paymentCashOnDelivery: 'Cash on Delivery',
+    paymentBankTransfer: 'Bank Transfer',
     // AI Insights
     aiInsightsTitle: 'AI Insights',
     aiPoweredByGemini: 'Powered by Gemini',
@@ -1909,6 +1914,11 @@ const T = {
     chartCityComparison: 'Lieferanten vs. Restaurants nach Stadt',
     chartNoData: 'Noch keine Daten',
     chartNoCityData: 'Noch keine Stadtdaten',
+    chartNoOrdersPeriod: 'Keine Bestellungen in diesem Zeitraum',
+    chartTotalGMVPeriod: 'Gesamtumsatz im Zeitraum:',
+    chartOrders: 'Bestellungen',
+    paymentCashOnDelivery: 'Nachnahme',
+    paymentBankTransfer: 'Banküberweisung',
     // AI Insights
     aiInsightsTitle: 'KI-Einblicke',
     aiPoweredByGemini: 'Powered by Gemini',

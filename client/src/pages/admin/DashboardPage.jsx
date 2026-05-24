@@ -76,7 +76,6 @@ const CITY_FALLBACK = {
   braunschweig: { lat: 52.2689, lng: 10.5268 },
   brunswick: { lat: 52.2689, lng: 10.5268 },
   osnabrück: { lat: 52.2799, lng: 8.047 },
-  osnabrück: { lat: 52.2799, lng: 8.047 },
   gelsenkirchen: { lat: 51.5177, lng: 7.0857 },
   paderborn: { lat: 51.7189, lng: 8.7575 },
   trier: { lat: 49.7488, lng: 6.6371 },

@@ -294,8 +294,8 @@ export default function AnalyticsSummary({ context }) {
         )}
       </div>
 
-        </div>{/* end inner card */}
-      </div>{/* end border ring */}
-    </div>{/* end siri wrapper */}
+        </div>
+      </div>
+    </div>
   )
 }

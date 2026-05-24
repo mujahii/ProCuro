@@ -106,22 +106,22 @@ function AIText({ text }) {
   )
 }
 
-function timeAgo(iso) {
+function timeAgo(iso, t) {
   if (!iso) return ''
   const diff = Date.now() - new Date(iso).getTime()
   const mins = Math.round(diff / 60000)
-  if (mins < 1) return 'just now'
-  if (mins < 60) return `${mins}m ago`
+  if (mins < 1) return t('aiJustNow')
+  if (mins < 60) return `${mins}${t('aiMinutesAgo')}`
   const hours = Math.round(mins / 60)
-  if (hours < 24) return `${hours}h ago`
+  if (hours < 24) return `${hours}${t('aiHoursAgo')}`
   const days = Math.round(hours / 24)
-  return `${days}d ago`
+  return `${days}${t('aiDaysAgo')}`
 }
 
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
 export default function AnalyticsSummary({ context }) {
-  const { lang: language } = useLanguage()
+  const { lang: language, t } = useLanguage()
   const [summary, setSummary] = useState('')
   const [generatedAt, setGeneratedAt] = useState(null)
   const [stale, setStale] = useState(false)
@@ -167,7 +167,7 @@ export default function AnalyticsSummary({ context }) {
       setStale(Boolean(result.stale))
       setFallback(Boolean(result.fallback))
     } catch (err) {
-      setError(err?.message || 'AI analysis is temporarily unavailable.')
+      setError(err?.message || t('aiUnavailable'))
     } finally {
       setLoading(false)
     }
@@ -182,11 +182,11 @@ export default function AnalyticsSummary({ context }) {
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h3 className="font-bold text-white text-sm tracking-wide">AI Insights</h3>
+            <h3 className="font-bold text-white text-sm tracking-wide">{t('aiInsightsTitle')}</h3>
             <p className="text-xs text-white/60">
               {generatedAt
-                ? <>Updated {timeAgo(generatedAt)}{fallback ? ' · basic mode' : stale ? ' · cached' : ''} · once / 24h</>
-                : 'Powered by Gemini'}
+                ? <>{t('aiUpdated')} {timeAgo(generatedAt, t)}{fallback ? ` · ${t('aiBasicMode')}` : stale ? ` · ${t('aiCached')}` : ''} · {t('aiOnce24h')}</>
+                : t('aiPoweredByGemini')}
             </p>
           </div>
         </div>
@@ -194,7 +194,7 @@ export default function AnalyticsSummary({ context }) {
           onClick={() => !isWithin24h && generate({ force: true })}
           disabled={loading || isWithin24h}
           className={`p-2 rounded-xl transition-colors group ${isWithin24h ? 'cursor-not-allowed opacity-30' : 'hover:bg-white/10'}`}
-          title={isWithin24h ? 'Available again in 24h' : 'Force-regenerate (uses your Gemini quota)'}
+          title={isWithin24h ? t('aiAvailableAgain24h') : t('aiForceRegenerate')}
         >
           <RefreshCw className={`w-4 h-4 text-white/70 ${loading ? 'animate-spin' : ''} ${!isWithin24h ? 'group-hover:text-white' : ''}`} />
         </button>
@@ -222,7 +222,7 @@ export default function AnalyticsSummary({ context }) {
             </div>
             <p className="text-sm text-slate-400 mb-3">{error}</p>
             <button onClick={() => generate({ force: true })} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
-              Try again
+              {t('aiTryAgain')}
             </button>
           </div>
         ) : summary ? (
@@ -232,13 +232,13 @@ export default function AnalyticsSummary({ context }) {
             <div className="w-12 h-12 bg-gradient-to-br from-midnight to-herb rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
-            <p className="text-sm font-semibold text-slate-700 mb-1">Analyse your sales data</p>
-            <p className="text-xs text-slate-400 mb-5 max-w-xs mx-auto">Get AI-powered insights on revenue, top products, and growth opportunities.</p>
+            <p className="text-sm font-semibold text-slate-700 mb-1">{t('aiAnalyseTitle')}</p>
+            <p className="text-xs text-slate-400 mb-5 max-w-xs mx-auto">{t('aiAnalyseDesc')}</p>
             <button
               onClick={() => generate({ force: false })}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors shadow-sm"
             >
-              <Sparkles className="w-3.5 h-3.5" /> Generate Insights
+              <Sparkles className="w-3.5 h-3.5" /> {t('aiGenerateButton')}
             </button>
           </div>
         )}

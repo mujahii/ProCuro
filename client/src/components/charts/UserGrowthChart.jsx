@@ -1,9 +1,9 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 
-export default function UserGrowthChart({ data = [] }) {
+export default function UserGrowthChart({ data = [], title = 'User Growth' }) {
   return (
     <div className="card p-5">
-      <h3 className="font-bold text-gray-900 mb-4">User Growth</h3>
+      <h3 className="font-bold text-gray-900 mb-4">{title}</h3>
       {data.length === 0 ? (
         <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No data yet</div>
       ) : (

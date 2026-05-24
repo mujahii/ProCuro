@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useLanguage } from '../../context/LanguageContext'
 import RevenueChart from '../../components/charts/RevenueChart'
 import OrdersByStatusChart from '../../components/charts/OrdersByStatusChart'
 import UserGrowthChart from '../../components/charts/UserGrowthChart'
@@ -215,6 +216,7 @@ function buildMapData(addressRows, supplierProfileRows, ownerProfileRows, setCit
 }
 
 export default function AdminDashboardPage() {
+  const { t } = useLanguage()
   const [range, setRange] = useState(() => rangeFromKey('year'))
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -376,18 +378,18 @@ export default function AdminDashboardPage() {
   } : null
 
   const statCards = stats ? [
-    { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Suppliers', value: stats.totalSuppliers, icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Restaurants', value: stats.totalOwners, icon: Users, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Total Orders', value: stats.totalOrders, icon: ShoppingBag, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'Pending Certificates', value: stats.pendingCerts, icon: Award, color: 'text-marigold-dark', bg: 'bg-lionsmane' },
-    { label: 'Total GMV', value: `€${stats.totalRevenue?.toFixed(2)}`, icon: Euro, color: 'text-primary', bg: 'bg-primary-100' },
+    { labelKey: 'statTotalUsers', value: stats.totalUsers, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { labelKey: 'statSuppliers', value: stats.totalSuppliers, icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { labelKey: 'statRestaurants', value: stats.totalOwners, icon: Users, color: 'text-green-600', bg: 'bg-green-50' },
+    { labelKey: 'statTotalOrders', value: stats.totalOrders, icon: ShoppingBag, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { labelKey: 'statPendingCerts', value: stats.pendingCerts, icon: Award, color: 'text-marigold-dark', bg: 'bg-lionsmane' },
+    { labelKey: 'statTotalGMV', value: `€${stats.totalRevenue?.toFixed(2)}`, icon: Euro, color: 'text-primary', bg: 'bg-primary-100' },
   ] : []
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-black text-gray-900">Overview</h1>
+        <h1 className="text-2xl font-black text-gray-900">{t('adminOverview')}</h1>
         <DateRangeFilter value={range} onChange={setRange} />
       </div>
 
@@ -398,28 +400,28 @@ export default function AdminDashboardPage() {
       ) : (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            {statCards.map(({ label, value, icon: Icon, color, bg }) => (
-              <div key={label} className="bg-white rounded-xl p-4 border border-gray-100">
+            {statCards.map(({ labelKey, value, icon: Icon, color, bg }) => (
+              <div key={labelKey} className="bg-white rounded-xl p-4 border border-gray-100">
                 <div className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center mb-3`}>
                   <Icon className={`w-5 h-5 ${color}`} />
                 </div>
                 <p className="text-2xl font-black text-gray-900">{value}</p>
-                <p className="text-xs text-gray-500 mt-1">{label}</p>
+                <p className="text-xs text-gray-500 mt-1">{t(labelKey)}</p>
               </div>
             ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <RevenueChart data={revenueSeries} title="Platform GMV Over Time" />
-            <OrdersByStatusChart data={statusBreakdown} title="All Orders by Status" />
+            <RevenueChart data={revenueSeries} title={t('chartPlatformGMV')} />
+            <OrdersByStatusChart data={statusBreakdown} title={t('chartAllOrdersByStatus')} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <PaymentTypeChart data={paymentSplit} />
-            <UserGrowthChart data={userGrowth} />
+            <PaymentTypeChart data={paymentSplit} title={t('chartOrdersByPayment')} />
+            <UserGrowthChart data={userGrowth} title={t('chartUserGrowth')} />
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <CityComparisonRadar data={cityCounts} />
-            <GermanyDotMap data={cityCoords} />
+            <CityComparisonRadar data={cityCounts} title={t('chartCityComparison')} />
+            <GermanyDotMap data={cityCoords} title={t('chartUsersGermany')} />
           </div>
           {summaryContext && <AnalyticsSummary context={summaryContext} />}
         </>

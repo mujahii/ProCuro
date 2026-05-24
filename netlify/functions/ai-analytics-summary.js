@@ -165,16 +165,17 @@ exports.handler = async (event) => {
   function buildPrompt(lang, role) {
     const de = lang === 'de'
     const instr = de ? 'Antworte ausschließlich auf Deutsch.\n' : ''
+    const noHeader = 'Do NOT include any introductory sentence or header. Start directly with the first bullet point.\n'
     const dataStr = JSON.stringify(context)
     const season = eventContext ? `Season: ${eventContext}` : ''
-    if (role === 'restaurant_owner') return `${instr}You are a food procurement analyst. Analyze this Halal restaurant owner's data.
+    if (role === 'restaurant_owner') return `${instr}${noHeader}You are a food procurement analyst. Analyze this Halal restaurant owner's data.
 Data: ${dataStr}
 ${season}
 Reply with exactly 3 bullet points (each ≤ 15 words):
 • **${de ? 'Ausgaben' : 'Spending'}** — total spent and main supplier
 • **${de ? 'Top-Produkt' : 'Top pick'}** — most ordered category or product
 • **${de ? 'Tipp' : 'Tip'}** — one action to save money or prepare for demand`
-    if (role === 'supplier') return `${instr}You are a business analyst for a Halal food supplier in Germany. Analyze this data.
+    if (role === 'supplier') return `${instr}${noHeader}You are a business analyst for a Halal food supplier in Germany. Analyze this data.
 Data: ${dataStr}
 ${season}
 Reply with exactly 4 bullet points (each ≤ 15 words):
@@ -182,7 +183,7 @@ Reply with exactly 4 bullet points (each ≤ 15 words):
 • **${de ? 'Bestseller' : 'Best seller'}** — top product by volume
 • **${de ? 'Lagerwarnung' : 'Stock alert'}** — any item with stock ≤ 3 (or "${de ? 'alles in Ordnung' : 'all good'}")
 • **${de ? 'Maßnahme' : 'Action'}** — one concrete step to grow or prepare`
-    return `${instr}You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
+    return `${instr}${noHeader}You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
 Data: ${dataStr}
 ${season}
 Reply with exactly 3 bullet points (each ≤ 15 words):

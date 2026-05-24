@@ -121,7 +121,7 @@ export default function SupplierDashboardPage() {
       )}
 
       {/* Certification status banner */}
-      {!loading && !user?.is_banned && (!supplierProfile?.is_verified || addresses.length === 0 || !supplierProfile?.city?.trim()) && (
+      {!loading && !user?.is_banned && (!supplierProfile?.is_verified || addresses.length === 0 || !supplierProfile?.city?.trim() || !certStatus.hasBank) && (
         <div className="bg-lionsmane border border-marigold-light rounded-xl p-4">
           <div className="flex items-start gap-3 mb-3">
             <AlertCircle className="w-5 h-5 text-marigold flex-shrink-0 mt-0.5" />
@@ -189,7 +189,7 @@ export default function SupplierDashboardPage() {
         </div>
       )}
 
-      {!loading && !user?.is_banned && supplierProfile?.is_verified && addresses.length > 0 && supplierProfile?.city?.trim() && (
+      {!loading && !user?.is_banned && supplierProfile?.is_verified && addresses.length > 0 && supplierProfile?.city?.trim() && certStatus.hasBank && (
         <div className="bg-herb/10 border border-herb/20 rounded-xl p-4 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-herb flex items-center justify-center flex-shrink-0 shadow-sm">
             <CheckCircle className="w-5 h-5 text-white" />

@@ -6,6 +6,34 @@ import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 
+const PRESET_AVATARS = [
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Ahmed&backgroundColor=fde68a',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Fatima&backgroundColor=fce7f3',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Mehmet&backgroundColor=bae6fd',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Koch&backgroundColor=bbf7d0',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Leila&backgroundColor=fed7aa',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Ibrahim&backgroundColor=f5d0fe',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Berlin&backgroundColor=dbeafe',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Hamburg&backgroundColor=fce7f3',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Munich&backgroundColor=dcfce7',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Maryam&backgroundColor=e0e7ff',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Yusuf&backgroundColor=f0fdf4',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Sara&backgroundColor=e8f4f8',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Mustafa&backgroundColor=ede9fe',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Halal&backgroundColor=fef9c3',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Kueche&backgroundColor=fff7ed',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Hassan&backgroundColor=fef2f2',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Frankfurt&backgroundColor=f0f9ff',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Cologne&backgroundColor=fdf4ff',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Chef&backgroundColor=e0f2fe',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Aisha&backgroundColor=dcfce7',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Omar&backgroundColor=fce7f3',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Zainab&backgroundColor=f5f0ff',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Stuttgart&backgroundColor=f0fdf4',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Jamal&backgroundColor=fff7ed',
+  'https://api.dicebear.com/7.x/lorelei/svg?seed=Duesseldorf&backgroundColor=fef3c7',
+]
+
 export default function SelectRolePage() {
   const { user, authUser, role, loading, profileLoading, refreshProfile } = useAuth()
   const navigate = useNavigate()
@@ -39,6 +67,10 @@ export default function SelectRolePage() {
         p_full_name: fullName,
       })
       if (error) throw error
+
+      // Auto-assign a random avatar for new accounts
+      const randomAvatar = PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)]
+      await supabase.rpc('update_own_avatar', { p_url: randomAvatar }).catch(() => {})
 
       await refreshProfile()
       navigate(selectedRole === 'restaurant_owner' ? '/owner/store' : '/supplier/dashboard', { replace: true })

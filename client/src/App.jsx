@@ -73,7 +73,8 @@ function AuthenticatedChatbotFAB() {
   const { user } = useAuth()
   const { pathname } = useLocation()
   const isChatPage = pathname.includes('/chat')
-  if (!user || isChatPage) return null
+  const isOnboarding = pathname === '/select-role'
+  if (!user || isChatPage || isOnboarding) return null
   return <ChatbotFAB />
 }
 

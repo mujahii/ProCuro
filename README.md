@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-22 18:03 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-24 17:16 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -24,7 +24,7 @@ The platform has three distinct roles, stored in `public.users.role`:
 
 - **Email / Password** — Users register via `register_basic` (a `SECURITY DEFINER` RPC that inserts directly into `auth.users` using `pgcrypto`). On every new auth.users row, the `on_auth_user_created` trigger fires `handle_new_user()`, which inserts a corresponding row into `public.users` with `role = NULL`.
 - **OAuth (Google)** — On first OAuth login the client calls `create_profile_from_oauth(p_role, ...)`. If the user row exists but `role` is NULL (trigger already created it), the RPC sets the role. If the row doesn't exist yet (edge case), it inserts it. Re-logins where `role` is already set return the existing profile unchanged.
-- **Role selection** — New users are sent to `/select-role` before accessing any protected page. Role is written server-side by `create_profile_from_oauth`.
+- **Role selection** — New users are sent to `/select-role` before accessing any protected page. Role is written server-side by `create_profile_from_oauth`. After role creation, a **random avatar** from the 25-preset list is auto-assigned via `update_own_avatar` so every new account has a profile picture immediately. The `ChatbotFAB` is hidden on `/select-role` (onboarding is not yet complete).
 - **Supplier onboarding** — Selecting the supplier role creates a `supplier_profiles` row at the same time.
 - **Owner onboarding** — Selecting the owner role creates an `owner_profiles` row via the `on_new_owner` trigger (fires `notify_admin_new_owner`).
 - **Protected routes** — `ProtectedRoute` and `PublicOnlyRoute` components gate access by role. Unauthenticated users are redirected to `/login`; authenticated users hitting public-only pages are redirected to their dashboard.
@@ -723,7 +723,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 | Page | Route | Description |
 |---|---|---|
-| StorePage | `/owner/store` | Browse verified suppliers and products by category; categories, sort options, and search placeholder are fully i18n'd (DE: Fleisch, Geflügel, etc.); "See All" button navigates to AllProductsPage |
+| StorePage | `/owner/store` | Browse verified suppliers and products by category; categories, sort options, and search placeholder are fully i18n'd (DE: Fleisch, Geflügel, etc.); "See All" button navigates to AllProductsPage. Shows an **incomplete profile warning** banner when any of the following are missing: phone number, city/location, Tax ID, or **bank details** (IBAN in `owner_bank_details`) — each missing field is listed by name with a "Complete Profile" button |
 | AllProductsPage | `/owner/products` | Browse all products with category/search filter |
 | CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout. Bank transfer step shows full bank info (bank name, IBAN, BIC, account holder). All cart and payment labels are fully i18n'd (EN/DE): items subtotal, delivery, VAT, amount, upload receipt, place order, back, cash on delivery note, free delivery label. **Supplier name is a clickable button** — clicking it opens `SupplierProfileModal` with the supplier's full profile card inline. |
 | OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation (pre-confirmation: any time; post-confirmation: within 3 days of supplier confirmation via `updated_at`); dispute filing |
@@ -759,7 +759,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 
 | Page | Route | Description |
 |---|---|---|
-| DashboardPage | `/supplier/dashboard` | Overview: pending orders count, revenue KPIs, quick actions. **Active Orders** count uses the same ONGOING statuses as OrdersPage (`pending_payment`, `pending_confirmation`, `confirmed`, `out_for_delivery`, `cancellation_requested`, `delivery_dispute`) — `refund_uploaded` and `completed` are excluded so the badge always matches the "Ongoing" tab count |
+| DashboardPage | `/supplier/dashboard` | Overview: pending orders count, revenue KPIs, quick actions. **Active Orders** count uses the same ONGOING statuses as OrdersPage (`pending_payment`, `pending_confirmation`, `confirmed`, `out_for_delivery`, `cancellation_requested`, `delivery_dispute`) — `refund_uploaded` and `completed` are excluded so the badge always matches the "Ongoing" tab count. **Account status banner** shows when any of the following are incomplete: Halal certificate (approved), bank details (IBAN), business address, or city. The banner lists each item with a checkmark (complete) or alert icon (missing) and "Go →" shortcuts. The "all complete" green banner requires bank details in addition to the other checks. |
 | ProductsPage | `/supplier/products` | Product catalog CRUD: add, edit, toggle active, manage stock; soft-delete with confirmation modal (sets `deleted_at` + `deleted_by`, removes from list without destroying order history); delivery fee table loaded live from `delivery_fee_rules` DB table. **Dual layout**: Mobile (`md:hidden`) shows product cards with image, name, category, price, status badge, and a **⋮ menu** (in-stock/out-of-stock toggle, edit, delete) as the call-to-action. Desktop (`hidden md:block`) shows the full table where clicking any row opens the edit modal. |
 | OrdersPage | `/supplier/orders` | Incoming order management: confirm, ship, deliver, cancel, upload refund |
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
@@ -804,7 +804,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `PublicOnlyRoute` — Redirects authenticated users to their dashboard
 
 ### Profile
-- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device → stored in `avatars` bucket as `{userId}/avatar.{ext}`) and **"Generate Avatar"** — single "Generate" button that randomly selects from 15 pre-defined DiceBear avatars. Seeds are Muslim/German names (Ahmed, Fatima, Mehmet, Leila, Ibrahim, Yusuf, Sara, Mustafa, Aisha, Omar, Zainab) and chef-related German words (Koch = cook, Küche = kitchen, Halal, Chef) across `adventurer`, `micah`, and `lorelei` styles. Clicking again cycles to a different avatar. On save, calls the `update_own_avatar(p_url)` SECURITY DEFINER RPC (bypasses the `users_update_own` WITH CHECK which rejects updates when `role IS NULL`). The RPC updates both `users.avatar_url` and `supplier_profiles.avatar_url` in one call. All labels fully i18n'd.
+- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device → stored in `avatars` bucket as `{userId}/avatar.{ext}`) and **"Generate Avatar"** — single "Generate" button that randomly selects from **25 pre-defined DiceBear avatars**. Seeds are Muslim names (Ahmed, Fatima, Mehmet, Leila, Ibrahim, Yusuf, Sara, Mustafa, Aisha, Omar, Zainab, Hassan, Maryam, Jamal), chef/business words (Koch = cook, Küche = kitchen, Halal, Chef), and major German cities (Berlin, Hamburg, Munich, Frankfurt, Cologne, Stuttgart, Düsseldorf) across `adventurer`, `micah`, and `lorelei` styles. Clicking again cycles to a different avatar. On save, calls the `update_own_avatar(p_url)` SECURITY DEFINER RPC (bypasses the `users_update_own` WITH CHECK which rejects updates when `role IS NULL`). The RPC updates both `users.avatar_url` and `supplier_profiles.avatar_url` in one call. All labels fully i18n'd.
 - `DeleteAccountModal` — Confirmation dialog for account deletion
 - `Modal` — Base modal wrapper
 - `OwnerProfileModal` — Supplier-side modal showing an owner's details when viewing their order
@@ -834,7 +834,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 
 ### AI
 - `AnalyticsSummary` — AI insight card with cache indicator and force-refresh button; refresh is disabled (dimmed) for 24 hours after the last generation — the button re-enables only once the `ai_insights_cache` TTL expires. **Language-aware**: regenerates automatically whenever the active language differs from the language the cached summary was generated in — both for in-session switches (via `prevLanguage` ref) and post-navigate remounts (via `localStorage` key `procuro_ai_lang`).
-- `ChatbotFAB` — Floating action button that opens the AI assistant
+- `ChatbotFAB` — Floating action button that opens the AI assistant. Hidden on `/select-role` (onboarding page) and all `/chat` routes.
 - `ChatbotDrawer` — Slide-in chat drawer for AI assistant. **Language-aware**: welcome message and suggestion chips are in the active language (EN/DE); sends `language` to the backend so Gemini responds in the selected language. Send button is wider on mobile. **Markdown rendering**: `FormattedMessage` parses bold (`**`), italic (`*`), and inline links (`[text](url)`); internal `/supplier/id` links use React Router `<Link>`, external links open in a new tab. Pre-normalizes the text to collapse `]\n(` sequences that can appear when the AI wraps a link across a line break.
 
 ### UI

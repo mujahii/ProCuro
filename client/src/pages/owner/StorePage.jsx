@@ -73,14 +73,16 @@ export default function StorePage() {
   useEffect(() => {
     if (!user) return
     async function checkProfile() {
-      const [{ data: u }, { data: op }] = await Promise.all([
+      const [{ data: u }, { data: op }, bankRes] = await Promise.all([
         supabase.from('users').select('phone').eq('id', user.id).single(),
         supabase.from('owner_profiles').select('city, tax_id').eq('user_id', user.id).maybeSingle(),
+        supabase.from('owner_bank_details').select('iban').eq('owner_id', user.id).maybeSingle().catch(() => ({ data: null })),
       ])
       const missing = []
       if (!u?.phone) missing.push('phone number')
       if (!op?.city) missing.push('city / location')
       if (!op?.tax_id) missing.push('Tax ID')
+      if (!bankRes?.data?.iban?.trim()) missing.push('bank details')
       setMissingFields(missing)
       setProfileComplete(missing.length === 0)
     }

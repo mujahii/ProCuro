@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-24 17:16 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-24 17:23 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -804,7 +804,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `PublicOnlyRoute` — Redirects authenticated users to their dashboard
 
 ### Profile
-- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device → stored in `avatars` bucket as `{userId}/avatar.{ext}`) and **"Generate Avatar"** — single "Generate" button that randomly selects from **25 pre-defined DiceBear avatars**. Seeds are Muslim names (Ahmed, Fatima, Mehmet, Leila, Ibrahim, Yusuf, Sara, Mustafa, Aisha, Omar, Zainab, Hassan, Maryam, Jamal), chef/business words (Koch = cook, Küche = kitchen, Halal, Chef), and major German cities (Berlin, Hamburg, Munich, Frankfurt, Cologne, Stuttgart, Düsseldorf) across `adventurer`, `micah`, and `lorelei` styles. Clicking again cycles to a different avatar. On save, calls the `update_own_avatar(p_url)` SECURITY DEFINER RPC (bypasses the `users_update_own` WITH CHECK which rejects updates when `role IS NULL`). The RPC updates both `users.avatar_url` and `supplier_profiles.avatar_url` in one call. All labels fully i18n'd.
+- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device → stored in `avatars` bucket as `{userId}/avatar.{ext}`) and **"Generate Avatar"** — single "Generate" button that cycles through all **25 pre-defined DiceBear avatars** without repetition (Fisher-Yates shuffle on mount; reshuffles after all 25 are shown). Seeds are Muslim names (Ahmed, Fatima, Mehmet, Leila, Ibrahim, Yusuf, Sara, Mustafa, Aisha, Omar, Zainab, Hassan, Maryam, Jamal), chef/business words (Koch = cook, Küche = kitchen, Halal, Chef), and major German cities (Berlin, Hamburg, Munich, Frankfurt, Cologne, Stuttgart, Düsseldorf) across `adventurer`, `micah`, and `lorelei` styles. On save, calls the `update_own_avatar(p_url)` SECURITY DEFINER RPC (bypasses the `users_update_own` WITH CHECK which rejects updates when `role IS NULL`). The RPC updates both `users.avatar_url` and `supplier_profiles.avatar_url` in one call. All labels fully i18n'd.
 - `DeleteAccountModal` — Confirmation dialog for account deletion
 - `Modal` — Base modal wrapper
 - `OwnerProfileModal` — Supplier-side modal showing an owner's details when viewing their order

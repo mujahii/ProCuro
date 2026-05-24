@@ -38,9 +38,13 @@ const PRESET_AVATARS = [
   'https://api.dicebear.com/7.x/lorelei/svg?seed=Duesseldorf&backgroundColor=fef3c7',
 ]
 
-function pickRandom(exclude) {
-  const pool = exclude ? PRESET_AVATARS.filter(u => u !== exclude) : PRESET_AVATARS
-  return pool[Math.floor(Math.random() * pool.length)]
+function shuffle(arr) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
 }
 
 export default function AvatarModal({ userId, role, onClose, onSaved }) {
@@ -51,6 +55,8 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
   const [saving, setSaving] = useState(false)
   const [generatedUrl, setGeneratedUrl] = useState(null)
   const inputRef = useRef(null)
+  const deckRef = useRef(shuffle(PRESET_AVATARS))
+  const indexRef = useRef(0)
 
   function handleFileChange(e) {
     const f = e.target.files[0]
@@ -61,7 +67,11 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
   }
 
   function handleGenerate() {
-    setGeneratedUrl(prev => pickRandom(prev))
+    if (indexRef.current >= deckRef.current.length) {
+      deckRef.current = shuffle(PRESET_AVATARS)
+      indexRef.current = 0
+    }
+    setGeneratedUrl(deckRef.current[indexRef.current++])
   }
 
   async function handleSaveUpload() {

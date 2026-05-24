@@ -159,24 +159,24 @@ export default function LandingPage() {
           }
         `}</style>
 
-        {/* Rising brand-colour orbs — mobile: small (w-28–36, blur-[28px–36px]); desktop: large (sm:w-[18rem]–[26rem]) */}
+        {/* Rising brand-colour orbs — mobile: medium (w-40–48); desktop: large (sm:w-[18rem]–[26rem]) */}
         {/* Marigold / warm gold — far left */}
-        <div className="absolute left-[4%] top-0 w-32 h-32 sm:w-[26rem] sm:h-[26rem] rounded-full pointer-events-none blur-[32px] sm:blur-[80px]"
+        <div className="absolute left-[4%] top-0 w-44 h-44 sm:w-[26rem] sm:h-[26rem] rounded-full pointer-events-none blur-[44px] sm:blur-[80px]"
           style={{ background: '#A58D66', animation: 'riseBlob 15s linear infinite', animationDelay: '0s' }} />
         {/* Celeste / light teal — right-center */}
-        <div className="absolute left-[54%] top-0 w-28 h-28 sm:w-[22rem] sm:h-[22rem] rounded-full pointer-events-none blur-[28px] sm:blur-[72px]"
+        <div className="absolute left-[54%] top-0 w-40 h-40 sm:w-[22rem] sm:h-[22rem] rounded-full pointer-events-none blur-[40px] sm:blur-[72px]"
           style={{ background: '#C0D5D6', animation: 'riseBlob 15s linear infinite', animationDelay: '-3.75s' }} />
         {/* Herb / mid teal-green — center */}
-        <div className="absolute left-[28%] top-0 w-24 h-24 sm:w-[20rem] sm:h-[20rem] rounded-full pointer-events-none blur-[24px] sm:blur-[64px]"
+        <div className="absolute left-[28%] top-0 w-36 h-36 sm:w-[20rem] sm:h-[20rem] rounded-full pointer-events-none blur-[36px] sm:blur-[64px]"
           style={{ background: '#5E96A4', animation: 'riseBlob 15s linear infinite', animationDelay: '-7.5s' }} />
         {/* Lionsmane / warm cream — far right */}
-        <div className="absolute left-[70%] top-0 w-28 h-28 sm:w-[24rem] sm:h-[24rem] rounded-full pointer-events-none blur-[28px] sm:blur-[80px]"
+        <div className="absolute left-[70%] top-0 w-40 h-40 sm:w-[24rem] sm:h-[24rem] rounded-full pointer-events-none blur-[40px] sm:blur-[80px]"
           style={{ background: '#BFA988', animation: 'riseBlob 15s linear infinite', animationDelay: '-11.25s' }} />
         {/* Rose / soft mauve — left-center */}
-        <div className="absolute left-[40%] top-0 w-20 h-20 sm:w-[18rem] sm:h-[18rem] rounded-full pointer-events-none blur-[22px] sm:blur-[60px]"
+        <div className="absolute left-[40%] top-0 w-32 h-32 sm:w-[18rem] sm:h-[18rem] rounded-full pointer-events-none blur-[32px] sm:blur-[60px]"
           style={{ background: '#B07B8B', animation: 'riseBlob 15s linear infinite', animationDelay: '-2s' }} />
         {/* Light purple / lavender — far right edge */}
-        <div className="absolute left-[82%] top-0 w-24 h-24 sm:w-[22rem] sm:h-[22rem] rounded-full pointer-events-none blur-[26px] sm:blur-[70px]"
+        <div className="absolute left-[82%] top-0 w-36 h-36 sm:w-[22rem] sm:h-[22rem] rounded-full pointer-events-none blur-[36px] sm:blur-[70px]"
           style={{ background: '#B19CD9', animation: 'riseBlob 15s linear infinite', animationDelay: '-5s' }} />
 
         {/* Dark overlay so text stays readable */}

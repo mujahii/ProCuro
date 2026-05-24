@@ -107,6 +107,23 @@ const CITY_FALLBACK = {
   jena: { lat: 50.9272, lng: 11.5899 },
   siegen: { lat: 50.8745, lng: 8.0243 },
   hildesheim: { lat: 52.1521, lng: 9.951 },
+  cottbus: { lat: 51.7563, lng: 14.3329 },
+  zwickau: { lat: 50.7168, lng: 12.4964 },
+  gera: { lat: 50.8794, lng: 12.0821 },
+  koblenz: { lat: 50.3569, lng: 7.589 },
+  bayreuth: { lat: 49.9456, lng: 11.5713 },
+  bamberg: { lat: 49.8988, lng: 10.9028 },
+  schwerin: { lat: 53.6355, lng: 11.4012 },
+  lüneburg: { lat: 53.2536, lng: 10.4042 },
+  luneburg: { lat: 53.2536, lng: 10.4042 },
+  hamm: { lat: 51.6739, lng: 7.8156 },
+  herne: { lat: 51.5368, lng: 7.2155 },
+  witten: { lat: 51.4434, lng: 7.3528 },
+  mülheim: { lat: 51.4267, lng: 6.8826 },
+  mulheim: { lat: 51.4267, lng: 6.8826 },
+  düren: { lat: 50.804, lng: 6.4838 },
+  duren: { lat: 50.804, lng: 6.4838 },
+  moers: { lat: 51.4531, lng: 6.626 },
 }
 
 function bucketDataFor(date, span) {

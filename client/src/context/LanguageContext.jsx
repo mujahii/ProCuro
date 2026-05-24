@@ -925,6 +925,19 @@ const T = {
     toastFailedUpdateUserRecord: 'Failed to update user',
     toastFailedApprove: 'Failed to approve certificate',
     toastFailedRejectCert: 'Failed to reject certificate',
+    // Admin layout
+    adminNavDashboard: 'Dashboard',
+    adminNavUsers: 'Users',
+    adminNavCertificates: 'Certificates',
+    adminNavProducts: 'Products',
+    adminNavOrders: 'Orders',
+    adminNavDeliveryFees: 'Delivery Fees',
+    adminNavReports: 'Reports',
+    adminNavChat: 'Chat',
+    adminPanelLabel: 'Admin Panel',
+    adminDashboardTitle: 'Admin Dashboard',
+    collapse: 'Collapse',
+    administrator: 'Administrator',
   },
   de: {
     // Navbar
@@ -1846,6 +1859,19 @@ const T = {
     toastFailedUpdateUserRecord: 'Benutzer konnte nicht aktualisiert werden',
     toastFailedApprove: 'Zertifikat konnte nicht genehmigt werden',
     toastFailedRejectCert: 'Zertifikat konnte nicht abgelehnt werden',
+    // Admin layout
+    adminNavDashboard: 'Dashboard',
+    adminNavUsers: 'Nutzer',
+    adminNavCertificates: 'Zertifikate',
+    adminNavProducts: 'Produkte',
+    adminNavOrders: 'Bestellungen',
+    adminNavDeliveryFees: 'Liefergebühren',
+    adminNavReports: 'Berichte',
+    adminNavChat: 'Chat',
+    adminPanelLabel: 'Admin-Panel',
+    adminDashboardTitle: 'Admin-Dashboard',
+    collapse: 'Einklappen',
+    administrator: 'Administrator',
   },
 }
 

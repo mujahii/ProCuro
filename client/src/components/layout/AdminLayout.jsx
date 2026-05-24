@@ -7,21 +7,21 @@ import { supabase } from '../../lib/supabase'
 import NotificationBell from '../ui/NotificationBell'
 import { useLanguage } from '../../context/LanguageContext'
 
-const navItems = [
-  { to: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/admin/users', icon: Users, label: 'Users' },
-  { to: '/admin/certificates', icon: Award, label: 'Certificates' },
-  { to: '/admin/products', icon: Package, label: 'Products' },
-  { to: '/admin/orders', icon: ShoppingBag, label: 'Orders' },
-  { to: '/admin/delivery-fees', icon: Truck, label: 'Delivery Fees' },
-  { to: '/admin/reports', icon: Flag, label: 'Reports', badge: true },
-  { to: '/admin/chat', icon: MessageSquare, label: 'Chat', unreadBadge: true },
+const NAV_ITEMS = [
+  { to: '/admin/dashboard', icon: LayoutDashboard, labelKey: 'adminNavDashboard' },
+  { to: '/admin/users', icon: Users, labelKey: 'adminNavUsers' },
+  { to: '/admin/certificates', icon: Award, labelKey: 'adminNavCertificates' },
+  { to: '/admin/products', icon: Package, labelKey: 'adminNavProducts' },
+  { to: '/admin/orders', icon: ShoppingBag, labelKey: 'adminNavOrders' },
+  { to: '/admin/delivery-fees', icon: Truck, labelKey: 'adminNavDeliveryFees' },
+  { to: '/admin/reports', icon: Flag, labelKey: 'adminNavReports', badge: true },
+  { to: '/admin/chat', icon: MessageSquare, labelKey: 'adminNavChat', unreadBadge: true },
 ]
 
 export default function AdminLayout() {
   const { signOut } = useAuth()
   const navigate = useNavigate()
-  const { lang, setLanguage } = useLanguage()
+  const { lang, setLanguage, t } = useLanguage()
   const [pendingReports, setPendingReports] = useState(0)
   const [unreadChats, setUnreadChats] = useState(0)
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -93,7 +93,7 @@ export default function AdminLayout() {
           </div>
           <div className={`${collapsed ? 'lg:hidden' : ''} overflow-hidden`}>
             <span className="font-bold text-lg leading-tight whitespace-nowrap">ProCuro</span>
-            <span className="block text-xs text-gray-400 whitespace-nowrap">Admin Panel</span>
+            <span className="block text-xs text-gray-400 whitespace-nowrap">{t('adminPanelLabel')}</span>
           </div>
           {/* Close button — mobile only */}
           <button
@@ -109,17 +109,17 @@ export default function AdminLayout() {
           onClick={() => setCollapsed(v => !v)}
           className={`hidden lg:flex items-center gap-2 px-3 py-2 mt-2 mx-2 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors text-xs font-medium ${collapsed ? 'justify-center' : ''}`}
         >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <><ChevronLeft className="w-4 h-4" /><span>Collapse</span></>}
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <><ChevronLeft className="w-4 h-4" /><span>{t('collapse')}</span></>}
         </button>
 
         {/* Nav items */}
         <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto">
-          {navItems.map(({ to, icon: Icon, label, badge, unreadBadge }) => (
+          {NAV_ITEMS.map(({ to, icon: Icon, labelKey, badge, unreadBadge }) => (
             <NavLink
               key={to}
               to={to}
               onClick={() => setMobileOpen(false)}
-              title={collapsed ? label : undefined}
+              title={collapsed ? t(labelKey) : undefined}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative group
                 ${collapsed ? 'lg:justify-center lg:px-0' : ''}
@@ -127,12 +127,12 @@ export default function AdminLayout() {
               }
             >
               <Icon className="w-4 h-4 flex-shrink-0" />
-              <span className={`flex-1 whitespace-nowrap ${collapsed ? 'lg:hidden' : ''}`}>{label}</span>
+              <span className={`flex-1 whitespace-nowrap ${collapsed ? 'lg:hidden' : ''}`}>{t(labelKey)}</span>
 
               {/* Tooltip on collapsed desktop */}
               {collapsed && (
                 <span className="hidden lg:group-hover:flex absolute left-full ml-2 px-2 py-1 bg-gray-700 text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none">
-                  {label}
+                  {t(labelKey)}
                 </span>
               )}
 
@@ -154,11 +154,11 @@ export default function AdminLayout() {
         <div className="px-2 py-3 border-t border-gray-800">
           <button
             onClick={handleSignOut}
-            title={collapsed ? 'Sign out' : undefined}
+            title={collapsed ? t('signOut') : undefined}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors w-full ${collapsed ? 'lg:justify-center lg:px-0' : ''}`}
           >
             <LogOut className="w-4 h-4 flex-shrink-0" />
-            <span className={collapsed ? 'lg:hidden' : ''}>Sign out</span>
+            <span className={collapsed ? 'lg:hidden' : ''}>{t('signOut')}</span>
           </button>
         </div>
       </aside>
@@ -174,7 +174,7 @@ export default function AdminLayout() {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="font-semibold text-gray-800 text-sm sm:text-base">Admin Dashboard</h1>
+            <h1 className="font-semibold text-gray-800 text-sm sm:text-base">{t('adminDashboardTitle')}</h1>
           </div>
           <div className="flex items-center gap-2">
             <NotificationBell />
@@ -196,7 +196,7 @@ export default function AdminLayout() {
             >
               {lang === 'en' ? 'DE' : 'EN'}
             </button>
-            <span className="text-sm text-gray-500 hidden sm:inline">Administrator</span>
+            <span className="text-sm text-gray-500 hidden sm:inline">{t('administrator')}</span>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">

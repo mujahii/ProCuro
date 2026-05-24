@@ -121,27 +121,28 @@ exports.handler = async (event) => {
 
   const { context, force, language } = body
   const isDE = language === 'de'
-  const langInstr = isDE ? 'Antworte ausschließlich auf Deutsch.\n' : ''
 
-  // Cache hit: signed-in user, not forcing, last summary is fresh, AND same language.
+  // Cache hit: signed-in user, not forcing, last summary is fresh.
+  // Summary is stored as JSON { en: "...", de: "..." } so either language is
+  // served from the same cache entry — no regeneration needed on language switch.
   if (userId && !force) {
     const { data: cached } = await supabase
       .from('ai_insights_cache')
-      .select('summary, generated_at, language')
+      .select('summary, generated_at')
       .eq('user_id', userId)
       .maybeSingle()
     if (cached?.summary) {
       const age = Date.now() - new Date(cached.generated_at).getTime()
-      const sameLang = (cached.language || 'en') === (language || 'en')
-      if (age < CACHE_TTL_MS && sameLang) {
+      if (age < CACHE_TTL_MS) {
+        let summaryForLang = cached.summary
+        try {
+          const parsed = JSON.parse(cached.summary)
+          if (parsed.en && parsed.de) summaryForLang = parsed[language] || parsed.en
+        } catch {}
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify({
-            summary: cached.summary,
-            generated_at: cached.generated_at,
-            cached: true,
-          }),
+          body: JSON.stringify({ summary: summaryForLang, generated_at: cached.generated_at, cached: true }),
         }
       }
     }
@@ -161,46 +162,53 @@ exports.handler = async (event) => {
   if (month >= 3 && month <= 4) germanEventHints.push('Spring/Easter season — increased restaurant traffic and catering orders.')
   const eventContext = [...islamicEventHints, ...germanEventHints].join(' ')
 
-  const prompts = {
-    restaurant_owner: `${langInstr}You are a food procurement analyst. Analyze this Halal restaurant owner's data.
-Data: ${JSON.stringify(context)}
-${eventContext ? `Season: ${eventContext}` : ''}
+  function buildPrompt(lang, role) {
+    const de = lang === 'de'
+    const instr = de ? 'Antworte ausschließlich auf Deutsch.\n' : ''
+    const dataStr = JSON.stringify(context)
+    const season = eventContext ? `Season: ${eventContext}` : ''
+    if (role === 'restaurant_owner') return `${instr}You are a food procurement analyst. Analyze this Halal restaurant owner's data.
+Data: ${dataStr}
+${season}
 Reply with exactly 3 bullet points (each ≤ 15 words):
-• **${isDE ? 'Ausgaben' : 'Spending'}** — total spent and main supplier
-• **${isDE ? 'Top-Produkt' : 'Top pick'}** — most ordered category or product
-• **${isDE ? 'Tipp' : 'Tip'}** — one action to save money or prepare for demand`,
-
-    supplier: `${langInstr}You are a business analyst for a Halal food supplier in Germany. Analyze this data.
-Data: ${JSON.stringify(context)}
-${eventContext ? `Season: ${eventContext}` : ''}
+• **${de ? 'Ausgaben' : 'Spending'}** — total spent and main supplier
+• **${de ? 'Top-Produkt' : 'Top pick'}** — most ordered category or product
+• **${de ? 'Tipp' : 'Tip'}** — one action to save money or prepare for demand`
+    if (role === 'supplier') return `${instr}You are a business analyst for a Halal food supplier in Germany. Analyze this data.
+Data: ${dataStr}
+${season}
 Reply with exactly 4 bullet points (each ≤ 15 words):
-• **${isDE ? 'Umsatz' : 'Sales'}** — revenue and order count this period
-• **${isDE ? 'Bestseller' : 'Best seller'}** — top product by volume
-• **${isDE ? 'Lagerwarnung' : 'Stock alert'}** — any item with stock ≤ 3 (or "${isDE ? 'alles in Ordnung' : 'all good'}")
-• **${isDE ? 'Maßnahme' : 'Action'}** — one concrete step to grow or prepare`,
-
-    admin: `${langInstr}You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
-Data: ${JSON.stringify(context)}
-${eventContext ? `Season: ${eventContext}` : ''}
+• **${de ? 'Umsatz' : 'Sales'}** — revenue and order count this period
+• **${de ? 'Bestseller' : 'Best seller'}** — top product by volume
+• **${de ? 'Lagerwarnung' : 'Stock alert'}** — any item with stock ≤ 3 (or "${de ? 'alles in Ordnung' : 'all good'}")
+• **${de ? 'Maßnahme' : 'Action'}** — one concrete step to grow or prepare`
+    return `${instr}You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
+Data: ${dataStr}
+${season}
 Reply with exactly 3 bullet points (each ≤ 15 words):
-• **${isDE ? 'Status' : 'Health'}** — active users and order volume summary
-• **${isDE ? 'Hinweis' : 'Flag'}** — top issue or anomaly needing attention
-• **${isDE ? 'Nächster Schritt' : 'Next step'}** — one platform action to take now`,
+• **${de ? 'Status' : 'Health'}** — active users and order volume summary
+• **${de ? 'Hinweis' : 'Flag'}** — top issue or anomaly needing attention
+• **${de ? 'Nächster Schritt' : 'Next step'}** — one platform action to take now`
   }
 
-  const prompt = prompts[profile?.role] || prompts.restaurant_owner
+  const role = profile?.role || 'restaurant_owner'
 
   try {
-    const summary = await generateWithFallback(prompt)
+    // Generate both languages in parallel — cached together so switching
+    // language in the UI is instant (no extra Gemini call needed).
+    const [summaryEN, summaryDE] = await Promise.all([
+      generateWithFallback(buildPrompt('en', role)),
+      generateWithFallback(buildPrompt('de', role)),
+    ])
+    const dual = JSON.stringify({ en: summaryEN, de: summaryDE })
     const generated_at = new Date().toISOString()
+    const summaryForLang = isDE ? summaryDE : summaryEN
 
-    // Persist for this user so subsequent loads in the next 24h are served
-    // from cache without burning Gemini quota.
     if (userId) {
       await supabase
         .from('ai_insights_cache')
         .upsert(
-          { user_id: userId, scope: 'analytics', summary, generated_at, language: language || 'en' },
+          { user_id: userId, scope: 'analytics', summary: dual, generated_at, language: 'both' },
           { onConflict: 'user_id' }
         )
     }
@@ -208,14 +216,11 @@ Reply with exactly 3 bullet points (each ≤ 15 words):
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify({ summary, generated_at, cached: false }),
+      body: JSON.stringify({ summary: summaryForLang, generated_at, cached: false }),
     }
   } catch (err) {
     console.error('Gemini analytics error:', err?.message || err, err?.stack)
 
-    // If Gemini is throttled / unavailable but we still have a cached summary,
-    // serve the stale copy instead of an error so the user keeps seeing
-    // something useful.
     if (userId) {
       const { data: stale } = await supabase
         .from('ai_insights_cache')
@@ -223,15 +228,15 @@ Reply with exactly 3 bullet points (each ≤ 15 words):
         .eq('user_id', userId)
         .maybeSingle()
       if (stale?.summary) {
+        let summaryForLang = stale.summary
+        try {
+          const parsed = JSON.parse(stale.summary)
+          if (parsed.en && parsed.de) summaryForLang = parsed[language] || parsed.en
+        } catch {}
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify({
-            summary: stale.summary,
-            generated_at: stale.generated_at,
-            cached: true,
-            stale: true,
-          }),
+          body: JSON.stringify({ summary: summaryForLang, generated_at: stale.generated_at, cached: true, stale: true }),
         }
       }
     }

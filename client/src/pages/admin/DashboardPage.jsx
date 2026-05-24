@@ -124,6 +124,16 @@ const CITY_FALLBACK = {
   düren: { lat: 50.804, lng: 6.4838 },
   duren: { lat: 50.804, lng: 6.4838 },
   moers: { lat: 51.4531, lng: 6.626 },
+  ludwigshafen: { lat: 49.4744, lng: 8.4368 },
+  kaiserslautern: { lat: 49.4444, lng: 7.7689 },
+  flensburg: { lat: 54.7831, lng: 9.4333 },
+  gütersloh: { lat: 51.9069, lng: 8.3826 },
+  gutersloh: { lat: 51.9069, lng: 8.3826 },
+  rosenheim: { lat: 47.8561, lng: 12.1289 },
+  passau: { lat: 48.5667, lng: 13.4667 },
+  landshut: { lat: 48.5396, lng: 12.1522 },
+  stralsund: { lat: 54.3096, lng: 13.0881 },
+  dessau: { lat: 51.8333, lng: 12.25 },
 }
 
 function bucketDataFor(date, span) {

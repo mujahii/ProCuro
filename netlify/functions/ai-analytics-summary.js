@@ -52,22 +52,22 @@ function buildFallbackSummary(role, context) {
   if (role === 'admin') {
     return [
       `• **Health** — Live platform overview available in the dashboard charts`,
-      `• **Action** — AI quota exhausted; the executive summary returns tomorrow or on refresh`,
+      `• **Revenue** — Check GMV chart for this period's totals`,
+      `• **Flag** — No anomalies detected from available data`,
+      `• **Next step** — AI quota exhausted; executive summary returns tomorrow or on refresh`,
     ].join('\n')
   }
   // restaurant_owner (default)
   const spend = c.totalSpendThisMonth ?? '0'
   const orders = c.totalOrdersThisMonth ?? 0
-  const allTime = c.totalSpendAllTime
   const cat = c.topCategory ?? '—'
   const top = (c.topProducts && c.topProducts[0]) || '—'
   return [
     `• **Spending** — €${spend} across ${orders} order${orders === 1 ? '' : 's'} this month`,
-    allTime ? `• **All time** — €${allTime} spent overall` : null,
-    `• **Top category** — ${cat}`,
     `• **Top pick** — ${top}`,
+    `• **Trend** — Compare with last period in your order history`,
     `• **Tip** — AI quota exhausted; richer insights return tomorrow or on refresh`,
-  ].filter(Boolean).join('\n')
+  ].join('\n')
 }
 
 exports.handler = async (event) => {
@@ -171,14 +171,15 @@ exports.handler = async (event) => {
     if (role === 'restaurant_owner') return `${instr}${noHeader}You are a food procurement analyst. Analyze this Halal restaurant owner's data.
 Data: ${dataStr}
 ${season}
-Reply with exactly 3 bullet points (each ≤ 15 words):
-• **${de ? 'Ausgaben' : 'Spending'}** — total spent and main supplier
+Reply with exactly 4 bullet points (each ≤ 18 words):
+• **${de ? 'Ausgaben' : 'Spending'}** — total spent and top supplier this period
 • **${de ? 'Top-Produkt' : 'Top pick'}** — most ordered category or product
+• **${de ? 'Trend' : 'Trend'}** — spending up, down, or stable vs. last period
 • **${de ? 'Tipp' : 'Tip'}** — one action to save money or prepare for demand`
     if (role === 'supplier') return `${instr}${noHeader}You are a business analyst for a Halal food supplier in Germany. Analyze this data.
 Data: ${dataStr}
 ${season}
-Reply with exactly 4 bullet points (each ≤ 15 words):
+Reply with exactly 4 bullet points (each ≤ 18 words):
 • **${de ? 'Umsatz' : 'Sales'}** — revenue and order count this period
 • **${de ? 'Bestseller' : 'Best seller'}** — top product by volume
 • **${de ? 'Lagerwarnung' : 'Stock alert'}** — any item with stock ≤ 3 (or "${de ? 'alles in Ordnung' : 'all good'}")
@@ -186,8 +187,9 @@ Reply with exactly 4 bullet points (each ≤ 15 words):
     return `${instr}${noHeader}You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
 Data: ${dataStr}
 ${season}
-Reply with exactly 3 bullet points (each ≤ 15 words):
-• **${de ? 'Status' : 'Health'}** — active users and order volume summary
+Reply with exactly 4 bullet points (each ≤ 18 words):
+• **${de ? 'Status' : 'Health'}** — active users and total orders this period
+• **${de ? 'Umsatz' : 'Revenue'}** — platform GMV and whether it grew this period
 • **${de ? 'Hinweis' : 'Flag'}** — top issue or anomaly needing attention
 • **${de ? 'Nächster Schritt' : 'Next step'}** — one platform action to take now`
   }

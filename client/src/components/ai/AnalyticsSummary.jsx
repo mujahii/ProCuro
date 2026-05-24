@@ -45,63 +45,68 @@ function renderInlineBold(text) {
   )
 }
 
-function InsightCard({ title, rest, meta }) {
+function PrimaryInsightCard({ title, rest, meta }) {
   const Icon = meta.icon
   return (
-    <div className={`flex gap-3 p-4 rounded-2xl border ${meta.bg} ${meta.border}`}>
-      <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm`}>
-        <Icon className="w-4 h-4 text-white" />
+    <div className={`flex flex-col gap-4 p-5 rounded-2xl border h-full ${meta.bg} ${meta.border}`}>
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm`}>
+        <Icon className="w-5 h-5 text-white" />
       </div>
-      <div className="min-w-0 flex-1">
-        <p className={`text-sm font-bold mb-0.5 ${meta.text}`}>{title.replace(/[*:]+$/, '').trim()}</p>
+      <div className="flex-1">
+        <p className={`text-base font-bold mb-1.5 ${meta.text}`}>{title.replace(/[*:]+$/, '').trim()}</p>
         {rest && <p className="text-sm text-slate-600 leading-relaxed">{renderInlineBold(rest)}</p>}
       </div>
     </div>
   )
 }
 
+function SecondaryInsightCard({ title, rest, meta }) {
+  const Icon = meta.icon
+  return (
+    <div className={`flex items-start gap-2.5 p-3 rounded-xl border ${meta.bg} ${meta.border}`}>
+      <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm mt-0.5`}>
+        <Icon className="w-3.5 h-3.5 text-white" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className={`text-xs font-bold ${meta.text}`}>{title.replace(/[*:]+$/, '').trim()}</p>
+        {rest && <p className="text-xs text-slate-500 leading-relaxed mt-0.5">{renderInlineBold(rest)}</p>}
+      </div>
+    </div>
+  )
+}
+
+function parseInsightCards(text) {
+  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean)
+  const cards = []
+  for (const line of lines) {
+    const numbered = line.match(/^\d+\.\s+\*\*([^*]+?)\*\*[\s:—–-]*(.*)$/)
+    if (numbered) { cards.push({ title: numbered[1], rest: numbered[2] }); continue }
+    const bulleted = line.match(/^[•*\-–—]\s*\*\*([^*]+?)\*\*[\s:—–-]*(.*)$/)
+    if (bulleted) { cards.push({ title: bulleted[1], rest: bulleted[2] }); continue }
+    const plain = line.match(/^[•*\-–—]\s+(.+)$/)
+    if (plain) cards.push({ title: 'Insight', rest: plain[1] })
+  }
+  return cards
+}
+
 function AIText({ text }) {
   if (!text) return null
-  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean)
-  let cardIdx = 0
-
+  const cards = parseInsightCards(text)
+  if (cards.length === 0) return null
+  const [primary, ...secondary] = cards
+  const primaryMeta = metaForTitle(primary.title, 0)
   return (
-    <div className="space-y-3">
-      {lines.map((line, idx) => {
-        // Numbered: "1. **Title:** rest"
-        const numbered = line.match(/^\d+\.\s+\*\*([^*]+?)\*\*[\s:—–-]*(.*)$/)
-        if (numbered) {
-          const [, title, rest] = numbered
-          const meta = metaForTitle(title, cardIdx++)
-          return <InsightCard key={idx} title={title} rest={rest} meta={meta} />
-        }
-        // Bulleted: "• **Title** — rest" / "- **Title**: rest" / "* **Title** rest"
-        const bulleted = line.match(/^[•*\-–—]\s*\*\*([^*]+?)\*\*[\s:—–-]*(.*)$/)
-        if (bulleted) {
-          const [, title, rest] = bulleted
-          const meta = metaForTitle(title, cardIdx++)
-          return <InsightCard key={idx} title={title} rest={rest} meta={meta} />
-        }
-        // Plain bullet without bold ("• rest" or "- rest")
-        const plainBullet = line.match(/^[•*\-–—]\s+(.+)$/)
-        if (plainBullet) {
-          const rest = plainBullet[1]
-          const meta = FALLBACK_META[cardIdx++ % FALLBACK_META.length]
-          return <InsightCard key={idx} title="Insight" rest={rest} meta={meta} />
-        }
-        if (line.startsWith('Here') || line.startsWith('Based')) {
-          return (
-            <p key={idx} className="text-xs text-slate-400 italic leading-relaxed px-1">
-              {renderInlineBold(line)}
-            </p>
-          )
-        }
-        return (
-          <p key={idx} className="text-sm text-slate-600 leading-relaxed px-1">
-            {renderInlineBold(line)}
-          </p>
-        )
-      })}
+    <div className="flex flex-col sm:flex-row gap-3">
+      <div className="sm:w-[45%]">
+        <PrimaryInsightCard title={primary.title} rest={primary.rest} meta={primaryMeta} />
+      </div>
+      {secondary.length > 0 && (
+        <div className="sm:flex-1 flex flex-col gap-2">
+          {secondary.map((card, i) => (
+            <SecondaryInsightCard key={i} title={card.title} rest={card.rest} meta={metaForTitle(card.title, i + 1)} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -203,17 +208,29 @@ export default function AnalyticsSummary({ context }) {
       {/* Body */}
       <div className="bg-white p-5">
         {loading ? (
-          <div className="space-y-3">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="flex gap-3 p-4 rounded-2xl border border-slate-100 bg-slate-50">
-                <Skeleton className="h-8 w-8 rounded-xl flex-shrink-0" />
-                <div className="flex-1 space-y-2 pt-1">
-                  <Skeleton className="h-3 w-2/5" />
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="sm:w-[45%]">
+              <div className="flex flex-col gap-4 p-5 rounded-2xl border border-slate-100 bg-slate-50 h-full">
+                <Skeleton className="h-11 w-11 rounded-xl flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-2/5" />
+                  <Skeleton className="h-3 w-full" />
                   <Skeleton className="h-3 w-4/5" />
-                  <Skeleton className="h-3 w-3/4" />
+                  <Skeleton className="h-3 w-3/5" />
                 </div>
               </div>
-            ))}
+            </div>
+            <div className="sm:flex-1 flex flex-col gap-2">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-100 bg-slate-50">
+                  <Skeleton className="h-7 w-7 rounded-lg flex-shrink-0" />
+                  <div className="flex-1 space-y-1.5 pt-0.5">
+                    <Skeleton className="h-3 w-2/5" />
+                    <Skeleton className="h-3 w-4/5" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : error ? (
           <div className="text-center py-6">

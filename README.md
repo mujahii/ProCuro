@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-25 05:24 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-25 05:52 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -764,7 +764,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | OrdersPage | `/supplier/orders` | Incoming order management: confirm, ship, deliver, cancel, upload refund |
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
 | BankDetailsPage | `/supplier/bank-details` | IBAN, BIC, account holder management |
-| ProfilePage | `/supplier/profile` | Business profile: avatar, bio, categories, cities (auto-populated from saved addresses — no manual checkbox), website, phone, account settings. **City displayed in profile header** below the business name (dot-separated if multiple cities). All modal titles (Edit Profile, Manage Addresses, Bank Details, Business Details, Upload Certificate, Edit Certificate, Update Profile Picture) are fully i18n'd via `t()` keys. |
+| ProfilePage | `/supplier/profile` | Business profile: avatar, bio, categories, cities (auto-populated from saved addresses — no manual checkbox), website, phone, account settings. **City displayed in profile header** below the business name (dot-separated if multiple cities). **Edit Profile modal shows name only** — business name and description are not editable from this modal. **Halal certification badge** (green "Halal Certified" or amber "Certificate Under Review") appears under the supplier name in the profile header — only visible when a cert has been uploaded. **Account Active badge** in Business Details card is based on profile completeness (tax ID + city + bank details) only — not on Halal certificate approval; this clearly separates profile completeness from Halal certification status. All modal titles (Edit Profile, Manage Addresses, Bank Details, Business Details, Upload Certificate, Edit Certificate, Update Profile Picture) are fully i18n'd via `t()` keys. |
 | AnalyticsPage | `/supplier/analytics` | Revenue trend, category breakdown, top products, top clients, AI summary; week/month/year + custom date-range filter. **Top Restaurant Clients** bar chart: labels are angled (−35°) with truncation at 14 chars; Y-axis uses integer ticks only (`allowDecimals={false}`). **Date bucketing**: span ≤ 60 days → daily (YYYY-MM-DD) buckets; span > 60 days → monthly (YYYY-MM) buckets — so Week and Month views show per-day bars, Year view shows per-month bars. **Sales by Product %** donut chart fills the card width with legend below (same fixed-height flex-column pattern as owner analytics). |
 
 ### Admin (`/admin/`)

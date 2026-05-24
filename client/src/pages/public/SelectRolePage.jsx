@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingCart, ChevronRight } from 'lucide-react'
+import { ShoppingCart, ChevronRight, PartyPopper, Utensils, Store } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../context/LanguageContext'
@@ -75,7 +75,7 @@ export default function SelectRolePage() {
 
       // Auto-assign a random avatar for new accounts
       const randomAvatar = PRESET_AVATARS[Math.floor(Math.random() * PRESET_AVATARS.length)]
-      await supabase.rpc('update_own_avatar', { p_url: randomAvatar }).catch(() => {})
+      try { await supabase.rpc('update_own_avatar', { p_url: randomAvatar }) } catch {}
 
       await refreshProfile()
       navigate(selectedRole === 'restaurant_owner' ? '/owner/store' : '/supplier/dashboard', { replace: true })
@@ -104,8 +104,8 @@ export default function SelectRolePage() {
             <ShoppingCart className="w-8 h-8 text-midnight" />
             <span className="text-2xl font-bold text-slate-900">ProCuro</span>
           </div>
-          <div className="mb-2">
-            <span className="text-2xl">🎉</span>
+          <div className="mb-2 flex justify-center">
+            <PartyPopper className="w-8 h-8 text-marigold" />
           </div>
           <h2 className="text-xl font-black text-slate-900 mb-2">{t('welcomeToProcuro')}</h2>
           <p className="text-sm text-slate-500 leading-relaxed">
@@ -120,7 +120,7 @@ export default function SelectRolePage() {
             disabled={selecting}
             className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-herb hover:bg-lionsmane transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="text-3xl">🍽️</span>
+            <Utensils className="w-7 h-7 text-midnight flex-shrink-0" />
             <div className="flex-1">
               <p className="font-bold text-slate-900 text-base">{t('restaurantOwner')}</p>
               <p className="text-xs text-slate-500 mt-0.5">{t('roleOwnerDesc')}</p>
@@ -133,7 +133,7 @@ export default function SelectRolePage() {
             disabled={selecting}
             className="w-full flex items-center gap-4 p-5 rounded-xl border-2 border-slate-200 hover:border-herb hover:bg-lionsmane transition-all text-left group disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <span className="text-3xl">🏪</span>
+            <Store className="w-7 h-7 text-midnight flex-shrink-0" />
             <div className="flex-1">
               <p className="font-bold text-slate-900 text-base">{t('supplier')}</p>
               <p className="text-xs text-slate-500 mt-0.5">{t('roleSupplierDesc')}</p>

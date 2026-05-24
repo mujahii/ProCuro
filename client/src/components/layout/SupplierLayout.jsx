@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Package, ShoppingBag, User, BarChart3, MessageSquare, ChevronLeft, ChevronRight, X, LogOut } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, User, BarChart3, MessageSquare, ChevronLeft, ChevronRight, X, LogOut, AlertTriangle, Clock } from 'lucide-react'
 import Navbar from './Navbar'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
@@ -77,12 +77,15 @@ export default function SupplierLayout() {
       {/* Setup / verification banner — disappears when profile complete + certificate uploaded */}
       {!bannerLoading && (profileIncomplete || certStatus !== 'approved') && (
         <div className="fixed left-0 right-0 z-20 bg-marigold text-white px-4 py-2.5 text-sm font-medium text-center flex items-center justify-center gap-3 flex-wrap" style={{ top: 'calc(4rem + var(--sat))' }}>
-          <span>
+          <span className="flex items-center gap-1.5">
+            {certStatus === 'pending'
+              ? <Clock className="w-4 h-4 flex-shrink-0" />
+              : <AlertTriangle className="w-4 h-4 flex-shrink-0" />}
             {profileIncomplete
-              ? '⚠️ Complete your business details (business name + tax ID) to start selling.'
+              ? 'Complete your business details (tax ID + address + bank) to start selling.'
               : certStatus === 'none'
-                ? '⚠️ Upload a Halal certificate to appear as verified to restaurant owners.'
-                : '🕐 Upload a Halal certificate to get verified instantly.'}
+                ? 'Upload a Halal certificate to appear as verified to restaurant owners.'
+                : 'Your Halal certificate is under review.'}
           </span>
           <button
             onClick={() => navigate('/supplier/profile')}

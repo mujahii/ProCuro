@@ -26,25 +26,17 @@ const CERT_STATUS = {
   rejected: { label: 'Rejected',       icon: XCircle,     color: 'text-red-600 bg-red-50 border-red-200' },
 }
 
-function EditProfileModal({ userId, currentName, supplierProfile, currentBio, onClose, onSaved }) {
+function EditProfileModal({ userId, currentName, onClose, onSaved }) {
   const { t } = useLanguage()
   const [name, setName] = useState(currentName || '')
-  const [businessName, setBusinessName] = useState(supplierProfile?.business_name || '')
-  const [bio, setBio] = useState(currentBio || '')
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
     if (!name.trim()) { toast.error(t('toastNameRequired')); return }
     setSaving(true)
     try {
-      await supabase.from('users').update({ full_name: name.trim(), bio: bio.trim() || null }).eq('id', userId)
-      if (supplierProfile?.id) {
-        await supabase.from('supplier_profiles').update({
-          business_name: businessName.trim() || null,
-          description: bio.trim() || null,
-        }).eq('id', supplierProfile.id)
-      }
-      onSaved({ full_name: name.trim(), business_name: businessName.trim() || null, bio: bio.trim() || null })
+      await supabase.from('users').update({ full_name: name.trim() }).eq('id', userId)
+      onSaved({ full_name: name.trim() })
       onClose()
       toast.success(t('toastProfileUpdated'))
     } catch {
@@ -66,34 +58,13 @@ function EditProfileModal({ userId, currentName, supplierProfile, currentBio, on
             placeholder="e.g. Ahmed Hassan"
           />
         </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Business Name</label>
-          <input
-            value={businessName}
-            onChange={e => setBusinessName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="e.g. Al-Nour Meats GmbH"
-          />
-          <p className="text-xs text-slate-400 mt-1">Shown under your name in the app</p>
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
-          <textarea
-            value={bio}
-            onChange={e => setBio(e.target.value)}
-            rows={3}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb resize-none"
-            placeholder="A short description about your business..."
-          />
-          <p className="text-xs text-slate-400 mt-1">Optional — tells restaurant owners about your supply business</p>
-        </div>
         <div className="flex gap-3 pt-1">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
-            Cancel
+            {t('cancel') || 'Cancel'}
           </button>
           <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save Changes
+            {t('saveChanges') || 'Save Changes'}
           </button>
         </div>
       </div>
@@ -836,10 +807,8 @@ export default function SupplierAccountPage() {
     updateProfileState({ avatar_url: url })
   }
 
-  function handleProfileSaved({ full_name, business_name, bio: newBio }) {
-    setBusinessName(business_name || '')
-    setBio(newBio || '')
-    updateProfileState({ full_name, business_name, bio: newBio })
+  function handleProfileSaved({ full_name }) {
+    updateProfileState({ full_name })
   }
 
   return (
@@ -881,6 +850,23 @@ export default function SupplierAccountPage() {
           <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
             {t('editProfile')}
           </button>
+
+          {/* Halal certification status — shown under name */}
+          {!certsLoading && (() => {
+            const approved = certs.find(c => c.status === 'approved')
+            const pending = certs.find(c => c.status === 'pending')
+            if (approved) return (
+              <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-celeste text-midnight-dark border border-celeste">
+                <CheckCircle className="w-3.5 h-3.5" /> {t('halalCertified')}
+              </span>
+            )
+            if (pending) return (
+              <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                <Clock className="w-3.5 h-3.5" /> {t('certUnderReview')}
+              </span>
+            )
+            return null
+          })()}
         </div>
       </div>
 
@@ -1009,26 +995,25 @@ export default function SupplierAccountPage() {
             )}
           </div>
 
-          {/* Verification status */}
+          {/* Account status badge — based on profile completeness, NOT certification */}
           <div className="px-4 pb-4 pt-3">
             {(() => {
-              const hasAddress = addresses.length > 0
-              const hasCitySelected = !!supplierProfile?.city?.trim()
-              const isVerified = supplierProfile?.is_verified && hasAddress && hasCitySelected
+              const hasTaxId = !!supplierProfile?.tax_id?.trim()
+              const hasCity = !!supplierProfile?.city?.trim()
+              const hasBankDetails = !!bankDetails
+              const isActive = hasTaxId && hasCity && hasBankDetails
+              const missing = [
+                !hasTaxId && t('taxIdVat'),
+                !hasCity && t('city'),
+                !hasBankDetails && t('bankDetails'),
+              ].filter(Boolean)
               return (
                 <div className={`p-3 rounded-xl border text-sm font-medium flex items-center gap-2 ${
-                  isVerified ? 'bg-lionsmane border-celeste text-midnight-dark'
-                  : !hasAddress ? 'bg-red-50 border-red-200 text-red-700'
-                  : !hasCitySelected ? 'bg-red-50 border-red-200 text-red-700'
-                  : 'bg-lionsmane border-marigold-light text-marigold-dark'
+                  isActive ? 'bg-lionsmane border-celeste text-midnight-dark' : 'bg-amber-50 border-amber-200 text-amber-800'
                 }`}>
-                  {isVerified
-                    ? <><CheckCircle className="w-4 h-4 flex-shrink-0" /> Verified — visible to restaurant owners as Halal Certified</>
-                    : !hasAddress
-                      ? <><XCircle className="w-4 h-4 flex-shrink-0" /> Add a business address to complete your profile</>
-                      : !hasCitySelected
-                        ? <><XCircle className="w-4 h-4 flex-shrink-0" /> Select at least one city in your business card</>
-                        : <><Clock className="w-4 h-4 flex-shrink-0" /> Not verified — upload your Halal certificate to get certified</>
+                  {isActive
+                    ? <><CheckCircle className="w-4 h-4 flex-shrink-0 text-herb" /> {t('accountActiveTitle')}</>
+                    : <><XCircle className="w-4 h-4 flex-shrink-0" /> {t('accountIncompleteTitle')}: {missing.join(', ')}</>
                   }
                 </div>
               )
@@ -1142,8 +1127,6 @@ export default function SupplierAccountPage() {
         <EditProfileModal
           userId={user.id}
           currentName={profile?.full_name || ''}
-          supplierProfile={supplierProfile}
-          currentBio={bio}
           onClose={() => setShowEditModal(false)}
           onSaved={handleProfileSaved}
         />

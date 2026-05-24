@@ -5,7 +5,7 @@ import { useLanguage } from '../../context/LanguageContext'
 import ProductForm from '../../components/supplier/ProductForm'
 import Badge from '../../components/ui/Badge'
 import { SkeletonTable } from '../../components/ui/Skeleton'
-import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff, X, Truck, ChevronDown, ChevronUp, MoreVertical } from 'lucide-react'
+import { Plus, Edit2, Trash2, ToggleLeft, ToggleRight, ImageOff, X, Truck, ChevronDown, ChevronUp, MoreVertical, Package } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
 
@@ -153,7 +153,7 @@ export default function SupplierProductsPage() {
 
       {products.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-4xl mb-3">📦</p>
+          <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <p className="text-gray-500 font-medium">{t('noProductsYetSupplier')}</p>
           <button onClick={() => setShowForm(true)} className="btn-primary mt-4 flex items-center gap-2 mx-auto">
             <Plus className="w-4 h-4" /> {t('addFirstProduct')}

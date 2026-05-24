@@ -5,37 +5,44 @@ import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../context/LanguageContext'
 import Modal from './Modal'
 
-// 25 hand-picked preset avatars — Muslim/German names, chefs, business owners,
-// and seeds matching major German cities across three human-face styles.
+// 30 preset avatars in three groups:
+// • adventurer + micah + lorelei → human faces for Muslim names, chefs, business owners
+// • bottts → colorful robots for German cities (visually distinct from all face styles)
 const PRESET_AVATARS = [
-  // adventurer — warm cartoon faces (Muslim names + chef/city seeds)
+  // adventurer — warm cartoon faces (Muslim names + chef)
   'https://api.dicebear.com/7.x/adventurer/svg?seed=Ahmed&backgroundColor=fde68a',
   'https://api.dicebear.com/7.x/adventurer/svg?seed=Fatima&backgroundColor=fce7f3',
   'https://api.dicebear.com/7.x/adventurer/svg?seed=Mehmet&backgroundColor=bae6fd',
   'https://api.dicebear.com/7.x/adventurer/svg?seed=Koch&backgroundColor=bbf7d0',
   'https://api.dicebear.com/7.x/adventurer/svg?seed=Leila&backgroundColor=fed7aa',
   'https://api.dicebear.com/7.x/adventurer/svg?seed=Ibrahim&backgroundColor=f5d0fe',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Berlin&backgroundColor=dbeafe',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Hamburg&backgroundColor=fce7f3',
-  'https://api.dicebear.com/7.x/adventurer/svg?seed=Munich&backgroundColor=dcfce7',
   'https://api.dicebear.com/7.x/adventurer/svg?seed=Maryam&backgroundColor=e0e7ff',
-  // micah — minimalist human faces (Muslim names + German city seeds)
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=Bilal&backgroundColor=fef9c3',
+  // micah — minimalist human faces (Muslim names + business)
   'https://api.dicebear.com/7.x/micah/svg?seed=Yusuf&backgroundColor=f0fdf4',
   'https://api.dicebear.com/7.x/micah/svg?seed=Sara&backgroundColor=e8f4f8',
   'https://api.dicebear.com/7.x/micah/svg?seed=Mustafa&backgroundColor=ede9fe',
   'https://api.dicebear.com/7.x/micah/svg?seed=Halal&backgroundColor=fef9c3',
   'https://api.dicebear.com/7.x/micah/svg?seed=Kueche&backgroundColor=fff7ed',
   'https://api.dicebear.com/7.x/micah/svg?seed=Hassan&backgroundColor=fef2f2',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Frankfurt&backgroundColor=f0f9ff',
-  'https://api.dicebear.com/7.x/micah/svg?seed=Cologne&backgroundColor=fdf4ff',
-  // lorelei — elegant professional portraits (business owners + city/chef seeds)
+  'https://api.dicebear.com/7.x/micah/svg?seed=Nour&backgroundColor=e0f2fe',
+  'https://api.dicebear.com/7.x/micah/svg?seed=Amira&backgroundColor=fdf4ff',
+  // lorelei — elegant professional portraits (Muslim names + business owners)
   'https://api.dicebear.com/7.x/lorelei/svg?seed=Chef&backgroundColor=e0f2fe',
   'https://api.dicebear.com/7.x/lorelei/svg?seed=Aisha&backgroundColor=dcfce7',
   'https://api.dicebear.com/7.x/lorelei/svg?seed=Omar&backgroundColor=fce7f3',
   'https://api.dicebear.com/7.x/lorelei/svg?seed=Zainab&backgroundColor=f5f0ff',
-  'https://api.dicebear.com/7.x/lorelei/svg?seed=Stuttgart&backgroundColor=f0fdf4',
-  'https://api.dicebear.com/7.x/lorelei/svg?seed=Jamal&backgroundColor=fff7ed',
-  'https://api.dicebear.com/7.x/lorelei/svg?seed=Duesseldorf&backgroundColor=fef3c7',
+  // bottts — colorful robots representing 10 major German cities
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Berlin&backgroundColor=dbeafe',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Hamburg&backgroundColor=fce7f3',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Munich&backgroundColor=dcfce7',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Frankfurt&backgroundColor=fef3c7',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Cologne&backgroundColor=fdf4ff',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Stuttgart&backgroundColor=f0fdf4',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Duesseldorf&backgroundColor=fff7ed',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Dortmund&backgroundColor=fff1f2',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Leipzig&backgroundColor=fef9c3',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Hannover&backgroundColor=ffe4e6',
 ]
 
 function shuffle(arr) {

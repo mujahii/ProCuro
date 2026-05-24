@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-24 17:23 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-24 17:31 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -24,7 +24,7 @@ The platform has three distinct roles, stored in `public.users.role`:
 
 - **Email / Password** — Users register via `register_basic` (a `SECURITY DEFINER` RPC that inserts directly into `auth.users` using `pgcrypto`). On every new auth.users row, the `on_auth_user_created` trigger fires `handle_new_user()`, which inserts a corresponding row into `public.users` with `role = NULL`.
 - **OAuth (Google)** — On first OAuth login the client calls `create_profile_from_oauth(p_role, ...)`. If the user row exists but `role` is NULL (trigger already created it), the RPC sets the role. If the row doesn't exist yet (edge case), it inserts it. Re-logins where `role` is already set return the existing profile unchanged.
-- **Role selection** — New users are sent to `/select-role` before accessing any protected page. Role is written server-side by `create_profile_from_oauth`. After role creation, a **random avatar** from the 25-preset list is auto-assigned via `update_own_avatar` so every new account has a profile picture immediately. The `ChatbotFAB` is hidden on `/select-role` (onboarding is not yet complete).
+- **Role selection** — New users are sent to `/select-role` before accessing any protected page. Role is written server-side by `create_profile_from_oauth`. After role creation, a **random avatar** from the 30-preset list is auto-assigned via `update_own_avatar` so every new account has a profile picture immediately. The `ChatbotFAB` is hidden on `/select-role` (onboarding is not yet complete).
 - **Supplier onboarding** — Selecting the supplier role creates a `supplier_profiles` row at the same time.
 - **Owner onboarding** — Selecting the owner role creates an `owner_profiles` row via the `on_new_owner` trigger (fires `notify_admin_new_owner`).
 - **Protected routes** — `ProtectedRoute` and `PublicOnlyRoute` components gate access by role. Unauthenticated users are redirected to `/login`; authenticated users hitting public-only pages are redirected to their dashboard.
@@ -804,7 +804,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `PublicOnlyRoute` — Redirects authenticated users to their dashboard
 
 ### Profile
-- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device → stored in `avatars` bucket as `{userId}/avatar.{ext}`) and **"Generate Avatar"** — single "Generate" button that cycles through all **25 pre-defined DiceBear avatars** without repetition (Fisher-Yates shuffle on mount; reshuffles after all 25 are shown). Seeds are Muslim names (Ahmed, Fatima, Mehmet, Leila, Ibrahim, Yusuf, Sara, Mustafa, Aisha, Omar, Zainab, Hassan, Maryam, Jamal), chef/business words (Koch = cook, Küche = kitchen, Halal, Chef), and major German cities (Berlin, Hamburg, Munich, Frankfurt, Cologne, Stuttgart, Düsseldorf) across `adventurer`, `micah`, and `lorelei` styles. On save, calls the `update_own_avatar(p_url)` SECURITY DEFINER RPC (bypasses the `users_update_own` WITH CHECK which rejects updates when `role IS NULL`). The RPC updates both `users.avatar_url` and `supplier_profiles.avatar_url` in one call. All labels fully i18n'd.
+- `AvatarModal` — Two-tab avatar picker: **"Choose a photo"** (upload from device → stored in `avatars` bucket as `{userId}/avatar.{ext}`) and **"Generate Avatar"** — single "Generate" button that cycles through all **30 pre-defined DiceBear avatars** without repetition (Fisher-Yates shuffle on mount; reshuffles after all 30 are shown). Three visual groups: (1) `adventurer` cartoon faces — Muslim names (Ahmed, Fatima, Mehmet, Leila, Ibrahim, Maryam, Bilal) + Koch; (2) `micah` minimalist faces — Muslim names (Yusuf, Sara, Mustafa, Hassan, Nour, Amira) + Halal + Kueche; (3) `lorelei` elegant portraits — Chef, Aisha, Omar, Zainab; (4) `bottts` colorful robots representing 10 major German cities — Berlin, Hamburg, Munich, Frankfurt, Cologne, Stuttgart, Düsseldorf, Dortmund, Leipzig, Hannover. City avatars use `bottts` so they are visually distinct from all face styles. On save, calls the `update_own_avatar(p_url)` SECURITY DEFINER RPC. All labels fully i18n'd.
 - `DeleteAccountModal` — Confirmation dialog for account deletion
 - `Modal` — Base modal wrapper
 - `OwnerProfileModal` — Supplier-side modal showing an owner's details when viewing their order

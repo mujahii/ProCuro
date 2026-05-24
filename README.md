@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-24 18:29 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-24 19:59 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -702,7 +702,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 | Page | Route | Description |
 |---|---|---|
-| LandingPage | `/` | Marketing homepage with hero, features, and CTA |
+| LandingPage | `/` | Marketing homepage with hero, features, and CTA. Hero section background uses four layered **SVG wave bands** (gold, teal, celeste, cream) that scroll horizontally at different speeds (13 s–28 s) using `translateX` animations (`flowLeft`/`flowRight`). Each wave SVG is 200% of viewport width (two full periods) so `translateX(-50%)` produces a seamless infinite loop with no visible seam. Waves are blurred (2–5 px), semi-transparent (22–52%), and stacked at different vertical positions and heights to create a flowing, layered depth effect. |
 | LoginPage | `/login` | Email/password login; Google OAuth button |
 | SelectRolePage | `/select-role` | Role picker for new users (owner vs supplier) |
 | RegisterOwnerPage | `/register` | Owner registration form |

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLanguage } from '../../context/LanguageContext'
 
 // SVG viewBox matches /public/Deutschland.svg (443 × 599 displayed).
 const VB = { w: 443, h: 599 }
@@ -25,6 +26,7 @@ function project(lat, lng) {
 }
 
 export default function GermanyDotMap({ data = [], title = 'Users Across Germany' }) {
+  const { t } = useLanguage()
   const [hover, setHover] = useState(null)
   // data: [{ id, city, lat, lng, role: 'supplier'|'restaurant_owner' }]
   const valid = data.filter(d => d.lat != null && d.lng != null && !isNaN(d.lat) && !isNaN(d.lng))
@@ -55,8 +57,8 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-bold text-gray-900">{title}</h3>
         <div className="flex items-center gap-3 text-[10px]">
-          <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#083A4F' }} /> Supplier</span>
-          <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#D4A017' }} /> Restaurant</span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#083A4F' }} /> {t('chartSupplier')}</span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#D4A017' }} /> {t('chartRestaurant')}</span>
         </div>
       </div>
       <div className="relative">
@@ -85,12 +87,12 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
         {hover && (
           <div className="absolute top-2 right-2 bg-white border border-gray-100 shadow-lg rounded-lg px-3 py-2 text-xs pointer-events-none">
             <p className="font-bold text-gray-900">{hover.city}</p>
-            <p className="text-gray-500 capitalize">{hover.role === 'supplier' ? 'Supplier' : 'Restaurant'}</p>
+            <p className="text-gray-500 capitalize">{hover.role === 'supplier' ? t('chartSupplier') : t('chartRestaurant')}</p>
           </div>
         )}
       </div>
       {valid.length === 0 && (
-        <p className="text-center text-xs text-gray-400 mt-3">No mapped locations yet — coordinates are required.</p>
+        <p className="text-center text-xs text-gray-400 mt-3">{t('chartNoMappedLocations')}</p>
       )}
     </div>
   )

@@ -168,30 +168,37 @@ exports.handler = async (event) => {
     const noHeader = 'Do NOT include any introductory sentence or header. Start directly with the first bullet point.\n'
     const dataStr = JSON.stringify(context)
     const season = eventContext ? `Season: ${eventContext}` : ''
+    const primaryRule = de
+      ? 'Der erste Punkt soll 2–3 Sätze mit konkreten Zahlen und Kontext sein (40–55 Wörter). Die anderen drei Punkte sind jeweils ≤ 12 Wörter.'
+      : 'The first bullet must be 2–3 sentences with real numbers and context (40–55 words). The other three bullets are each ≤ 12 words.'
+
     if (role === 'restaurant_owner') return `${instr}${noHeader}You are a food procurement analyst. Analyze this Halal restaurant owner's data.
 Data: ${dataStr}
 ${season}
-Reply with exactly 4 bullet points (each ≤ 18 words):
-• **${de ? 'Ausgaben' : 'Spending'}** — total spent and top supplier this period
-• **${de ? 'Top-Produkt' : 'Top pick'}** — most ordered category or product
-• **${de ? 'Trend' : 'Trend'}** — spending up, down, or stable vs. last period
-• **${de ? 'Tipp' : 'Tip'}** — one action to save money or prepare for demand`
+${primaryRule}
+Reply with exactly 4 bullet points:
+• **${de ? 'Ausgaben' : 'Spending'}** — [2-3 sentences: exact total spend, number of orders, top supplier by name if available, and whether spend is up or down vs. last period with % if possible]
+• **${de ? 'Top-Produkt' : 'Top pick'}** — most ordered category or product name
+• **${de ? 'Trend' : 'Trend'}** — one-line direction vs. last period
+• **${de ? 'Tipp' : 'Tip'}** — one concrete action to save money or prepare`
     if (role === 'supplier') return `${instr}${noHeader}You are a business analyst for a Halal food supplier in Germany. Analyze this data.
 Data: ${dataStr}
 ${season}
-Reply with exactly 4 bullet points (each ≤ 18 words):
-• **${de ? 'Umsatz' : 'Sales'}** — revenue and order count this period
-• **${de ? 'Bestseller' : 'Best seller'}** — top product by volume
+${primaryRule}
+Reply with exactly 4 bullet points:
+• **${de ? 'Umsatz' : 'Sales'}** — [2-3 sentences: exact revenue, order count, top buyer or region, and growth vs. last period with % if possible]
+• **${de ? 'Bestseller' : 'Best seller'}** — top product name and volume
 • **${de ? 'Lagerwarnung' : 'Stock alert'}** — any item with stock ≤ 3 (or "${de ? 'alles in Ordnung' : 'all good'}")
 • **${de ? 'Maßnahme' : 'Action'}** — one concrete step to grow or prepare`
     return `${instr}${noHeader}You are a platform analyst for ProCuro marketplace in Germany. Analyze this data.
 Data: ${dataStr}
 ${season}
-Reply with exactly 4 bullet points (each ≤ 18 words):
-• **${de ? 'Status' : 'Health'}** — active users and total orders this period
-• **${de ? 'Umsatz' : 'Revenue'}** — platform GMV and whether it grew this period
+${primaryRule}
+Reply with exactly 4 bullet points:
+• **${de ? 'Status' : 'Health'}** — [2-3 sentences: exact active user count by role, total orders this period, and overall platform activity trend]
+• **${de ? 'Umsatz' : 'Revenue'}** — platform GMV this period and growth direction
 • **${de ? 'Hinweis' : 'Flag'}** — top issue or anomaly needing attention
-• **${de ? 'Nächster Schritt' : 'Next step'}** — one platform action to take now`
+• **${de ? 'Nächster Schritt' : 'Next step'}** — one concrete platform action to take now`
   }
 
   const role = profile?.role || 'restaurant_owner'

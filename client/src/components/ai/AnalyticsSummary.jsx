@@ -47,15 +47,24 @@ function renderInlineBold(text) {
 
 function PrimaryInsightCard({ title, rest, meta }) {
   const Icon = meta.icon
+  // Split multi-sentence rest into a lead sentence + supporting detail
+  const sentences = rest ? rest.split(/(?<=\.)\s+/) : []
+  const lead = sentences[0] || rest || ''
+  const detail = sentences.slice(1).join(' ')
   return (
-    <div className={`flex flex-col gap-4 p-5 rounded-2xl border h-full ${meta.bg} ${meta.border}`}>
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm`}>
-        <Icon className="w-5 h-5 text-white" />
+    <div className={`flex flex-col gap-3 p-5 rounded-2xl border h-full ${meta.bg} ${meta.border}`}>
+      <div className="flex items-center gap-3">
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm`}>
+          <Icon className="w-5 h-5 text-white" />
+        </div>
+        <p className={`text-base font-bold leading-tight ${meta.text}`}>{title.replace(/[*:]+$/, '').trim()}</p>
       </div>
-      <div className="flex-1">
-        <p className={`text-base font-bold mb-1.5 ${meta.text}`}>{title.replace(/[*:]+$/, '').trim()}</p>
-        {rest && <p className="text-sm text-slate-600 leading-relaxed">{renderInlineBold(rest)}</p>}
-      </div>
+      {lead && (
+        <p className="text-sm font-medium text-slate-700 leading-relaxed">{renderInlineBold(lead)}</p>
+      )}
+      {detail && (
+        <p className="text-xs text-slate-500 leading-relaxed border-t border-slate-200/60 pt-2.5">{renderInlineBold(detail)}</p>
+      )}
     </div>
   )
 }
@@ -178,8 +187,26 @@ export default function AnalyticsSummary({ context }) {
     }
   }
 
+  const SIRI_GRADIENT = 'conic-gradient(from 0deg, #ff0055, #ff6d00, #ffd700, #00e5cc, #2979ff, #aa00ff, #ff0055)'
+
   return (
-    <div className="rounded-2xl overflow-hidden shadow-sm border border-slate-100">
+    <div style={{ position: 'relative' }}>
+      <style>{`
+        @keyframes siriSpin { to { transform: rotate(360deg); } }
+      `}</style>
+
+      {/* Glow halo — blurred copy of the gradient, extends 8px beyond the card */}
+      <div style={{ position: 'absolute', inset: '-8px', borderRadius: '1.375rem', overflow: 'hidden', zIndex: 0 }}>
+        <div style={{ position: 'absolute', inset: '-100%', background: SIRI_GRADIENT, animation: 'siriSpin 4s linear infinite', filter: 'blur(16px)', opacity: 0.6, willChange: 'transform' }} />
+      </div>
+
+      {/* Border ring — gradient clipped to 2.5px strip, then inner card on top */}
+      <div style={{ position: 'relative', zIndex: 1, borderRadius: '1rem', padding: '2.5px', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: '-100%', background: SIRI_GRADIENT, animation: 'siriSpin 4s linear infinite', willChange: 'transform' }} />
+
+        {/* Inner card — sits above the spinning gradient */}
+        <div style={{ position: 'relative', zIndex: 1, borderRadius: 'calc(1rem - 2.5px)', overflow: 'hidden' }}>
+
       {/* Header — gradient bar */}
       <div className="bg-gradient-to-r from-midnight to-herb px-5 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -210,13 +237,19 @@ export default function AnalyticsSummary({ context }) {
         {loading ? (
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="sm:w-[45%]">
-              <div className="flex flex-col gap-4 p-5 rounded-2xl border border-slate-100 bg-slate-50 h-full">
-                <Skeleton className="h-11 w-11 rounded-xl flex-shrink-0" />
-                <div className="flex-1 space-y-2">
+              <div className="flex flex-col gap-3 p-5 rounded-2xl border border-slate-100 bg-slate-50 h-full">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-11 w-11 rounded-xl flex-shrink-0" />
                   <Skeleton className="h-4 w-2/5" />
+                </div>
+                <div className="space-y-2">
                   <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-5/6" />
                   <Skeleton className="h-3 w-4/5" />
-                  <Skeleton className="h-3 w-3/5" />
+                </div>
+                <div className="space-y-2 border-t border-slate-200 pt-2.5">
+                  <Skeleton className="h-3 w-full" />
+                  <Skeleton className="h-3 w-3/4" />
                 </div>
               </div>
             </div>
@@ -260,6 +293,9 @@ export default function AnalyticsSummary({ context }) {
           </div>
         )}
       </div>
-    </div>
+
+        </div>{/* end inner card */}
+      </div>{/* end border ring */}
+    </div>{/* end siri wrapper */}
   )
 }

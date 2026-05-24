@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import ModalPortal from './ModalPortal'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 const REASONS = {
   product: [
@@ -56,6 +57,7 @@ const LABEL = {
 
 export default function ReportModal({ type, targetId, targetName, onClose }) {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [reason, setReason] = useState('')
   const [details, setDetails] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -63,8 +65,8 @@ export default function ReportModal({ type, targetId, targetName, onClose }) {
   const reasons = REASONS[type] || REASONS.supplier
 
   async function handleSubmit() {
-    if (!reason) return toast.error('Please select a reason')
-    if (!user) return toast.error('You must be logged in to report')
+    if (!reason) return toast.error(t('toastSelectReason'))
+    if (!user) return toast.error(t('toastMustBeLoggedIn'))
     setSubmitting(true)
     try {
       const { error } = await supabase.from('reports').insert({
@@ -93,11 +95,11 @@ export default function ReportModal({ type, targetId, targetName, onClose }) {
         })
       }
 
-      toast.success('Report submitted. Thank you.')
+      toast.success(t('toastReportSubmitted'))
       onClose()
     } catch (err) {
       console.error('Report error:', err)
-      toast.error('Failed to submit report')
+      toast.error(t('toastFailedSubmitReport'))
     } finally {
       setSubmitting(false)
     }

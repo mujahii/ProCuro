@@ -3,8 +3,10 @@ import { Eye, EyeOff, Loader2, Pencil } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import Modal from './Modal'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function PasswordModal({ onClose, currentEmail }) {
+  const { t } = useLanguage()
   // Email change sub-flow
   const [showEmailInput, setShowEmailInput] = useState(false)
   const [newEmail, setNewEmail] = useState('')
@@ -17,15 +19,15 @@ export default function PasswordModal({ onClose, currentEmail }) {
   const [savingPw, setSavingPw] = useState(false)
 
   async function handleSaveEmail() {
-    if (!newEmail.trim()) { toast.error('Please enter a new email address'); return }
-    if (newEmail.trim() === currentEmail) { toast.error('This is already your current email'); return }
+    if (!newEmail.trim()) { toast.error(t('toastEnterNewEmail')); return }
+    if (newEmail.trim() === currentEmail) { toast.error(t('toastAlreadyCurrentEmail')); return }
     setSavingEmail(true)
     try {
       const { error } = await supabase.auth.updateUser({ email: newEmail.trim() })
       if (error) throw error
       const { data: { user } } = await supabase.auth.getUser()
       await supabase.from('users').update({ email: newEmail.trim() }).eq('id', user.id)
-      toast.success('Email updated! Check your new inbox to confirm.')
+      toast.success(t('toastEmailUpdated'))
       setShowEmailInput(false)
       setNewEmail('')
     } catch (err) {
@@ -36,14 +38,14 @@ export default function PasswordModal({ onClose, currentEmail }) {
   }
 
   async function handleSavePassword() {
-    if (!password) { toast.error('Please enter a new password'); return }
-    if (password !== confirm) { toast.error('Passwords do not match'); return }
-    if (password.length < 6) { toast.error('Password must be at least 6 characters'); return }
+    if (!password) { toast.error(t('toastEnterNewPassword')); return }
+    if (password !== confirm) { toast.error(t('toastPasswordsNoMatch')); return }
+    if (password.length < 6) { toast.error(t('toastPasswordTooShort')); return }
     setSavingPw(true)
     try {
       const { error } = await supabase.auth.updateUser({ password })
       if (error) throw error
-      toast.success('Password updated!')
+      toast.success(t('toastPasswordUpdated'))
       onClose()
     } catch (err) {
       toast.error(err.message)

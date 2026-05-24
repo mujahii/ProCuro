@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import Modal from './Modal'
+import { useLanguage } from '../../context/LanguageContext'
 
 const PREFIX = '+49'
 
@@ -41,6 +42,7 @@ function formatSuffix(digits) {
 }
 
 export default function PhoneModal({ userId, currentPhone, role, onClose, onSaved }) {
+  const { t } = useLanguage()
   const [suffix, setSuffix] = useState(initSuffix(currentPhone))
   const [saving, setSaving] = useState(false)
 
@@ -54,9 +56,9 @@ export default function PhoneModal({ userId, currentPhone, role, onClose, onSave
       }
       onSaved(trimmed)
       onClose()
-      toast.success('Phone number updated!')
+      toast.success(t('toastPhoneUpdated'))
     } catch {
-      toast.error('Failed to update phone number')
+      toast.error(t('toastFailedUpdatePhone'))
     } finally {
       setSaving(false)
     }

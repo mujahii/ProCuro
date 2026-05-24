@@ -3,10 +3,12 @@ import { supabase } from '../../lib/supabase'
 import { Plus, Edit2, Trash2, X, Truck, Percent } from 'lucide-react'
 import { SkeletonTable } from '../../components/ui/Skeleton'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 const EMPTY_FORM = { min_km: '', max_km: '', fee: '', label: '' }
 
 export default function AdminDeliveryFeesPage() {
+  const { t } = useLanguage()
   const [rules, setRules] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
@@ -37,15 +39,15 @@ export default function AdminDeliveryFeesPage() {
   async function handleSaveTaxRate(e) {
     e.preventDefault()
     const val = parseFloat(taxInput)
-    if (isNaN(val) || val < 0 || val > 100) { toast.error('Enter a valid percentage between 0 and 100'); return }
+    if (isNaN(val) || val < 0 || val > 100) { toast.error(t('toastValidPercentage')); return }
     setSavingTax(true)
     const { error } = await supabase.from('platform_settings')
       .upsert({ key: 'tax_rate', value: String(val / 100) }, { onConflict: 'key' })
-    if (error) { toast.error('Failed to save tax rate'); setSavingTax(false); return }
+    if (error) { toast.error(t('toastFailedSaveTaxRate')); setSavingTax(false); return }
     setTaxRate(val / 100)
     setShowTaxForm(false)
     setSavingTax(false)
-    toast.success('Tax rate updated')
+    toast.success(t('toastTaxRateUpdated'))
   }
 
   function openAdd() {
@@ -76,14 +78,14 @@ export default function AdminDeliveryFeesPage() {
     }
     if (editRule) {
       const { data, error } = await supabase.from('delivery_fee_rules').update(payload).eq('id', editRule.id).select().single()
-      if (error) { toast.error('Failed to update'); setSaving(false); return }
+      if (error) { toast.error(t('toastFailedUpdate')); setSaving(false); return }
       setRules(prev => prev.map(r => r.id === editRule.id ? data : r).sort((a, b) => a.min_km - b.min_km))
-      toast.success('Rule updated')
+      toast.success(t('toastRuleUpdated'))
     } else {
       const { data, error } = await supabase.from('delivery_fee_rules').insert(payload).select().single()
-      if (error) { toast.error('Failed to add'); setSaving(false); return }
+      if (error) { toast.error(t('toastFailedAdd')); setSaving(false); return }
       setRules(prev => [...prev, data].sort((a, b) => a.min_km - b.min_km))
-      toast.success('Rule added')
+      toast.success(t('toastRuleAdded'))
     }
     setShowForm(false)
     setSaving(false)
@@ -92,9 +94,9 @@ export default function AdminDeliveryFeesPage() {
   async function handleDelete() {
     if (!deleteTarget) return
     const { error } = await supabase.from('delivery_fee_rules').delete().eq('id', deleteTarget.id)
-    if (error) { toast.error('Failed to delete'); return }
+    if (error) { toast.error(t('toastFailedDelete')); return }
     setRules(prev => prev.filter(r => r.id !== deleteTarget.id))
-    toast.success('Rule deleted')
+    toast.success(t('toastRuleDeleted'))
     setDeleteTarget(null)
   }
 

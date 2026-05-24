@@ -339,18 +339,18 @@ export default function ChatPage() {
 
   async function uploadFile(file, isAdmin) {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error('Only images (JPG, PNG, GIF, WebP) and PDFs are allowed')
+      toast.error(t('toastFileTypeNotAllowed'))
       return null
     }
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('File must be under 5MB')
+      toast.error(t('toastFileTooLarge'))
       return null
     }
     const ext = file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin'
     const convId = isAdmin ? adminConv?.id : selectedConv?.id
     const safeName = `${convId}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
     const { error } = await supabase.storage.from('chat-attachments').upload(safeName, file)
-    if (error) { toast.error('Upload failed: ' + error.message); return null }
+    if (error) { toast.error(t('toastUploadFailed') + ': ' + error.message); return null }
     const { data: { publicUrl } } = supabase.storage.from('chat-attachments').getPublicUrl(safeName)
     return { url: publicUrl, type: file.type }
   }
@@ -431,7 +431,7 @@ export default function ChatPage() {
     setAdminPinned(newVal)
     try { localStorage.setItem('adminPinned', newVal ? 'true' : 'false') } catch {}
     setAdminMenuOpen(false)
-    toast.success(newVal ? 'ProCuro Support pinned' : 'ProCuro Support unpinned')
+    toast.success(newVal ? t('toastSupportPinned') : t('toastSupportUnpinned'))
   }
 
   function deleteAdminConv() {
@@ -439,7 +439,7 @@ export default function ChatPage() {
     try { localStorage.setItem('adminHidden', 'true') } catch {}
     setAdminMenuOpen(false)
     setShowingAdmin(false)
-    toast.success('Chat removed from your inbox')
+    toast.success(t('toastChatRemovedFromInbox'))
   }
 
 
@@ -451,14 +451,14 @@ export default function ChatPage() {
     // in it, for both sides. The other party will see the chat disappear in
     // real time via the conversations realtime subscription.
     const { error } = await supabase.from('conversations').delete().eq('id', id)
-    if (error) { toast.error('Failed to delete chat'); return }
+    if (error) { toast.error(t('toastFailedDeleteChat')); return }
     setConversations(prev => prev.filter(c => c.id !== id))
     if (selectedConv?.id === id) { setSelectedConv(null); setMessages([]) }
     setConfirmDeleteConv(false)
     setDeleteListConvId(null)
     setDeleteModalConvId(null)
     setMenuOpenId(null)
-    toast.success('Chat deleted')
+    toast.success(t('toastChatDeleted'))
   }
 
   async function togglePin(convId) {
@@ -469,7 +469,7 @@ export default function ChatPage() {
     if (newVal) {
       const pinnedCount = conversations.filter(c => c[col]).length
       if (pinnedCount >= 3) {
-        toast.error('You can only pin up to 3 chats')
+        toast.error(t('toastMaxPinsReached'))
         setMenuOpenId(null)
         setHeaderMenuOpen(false)
         return
@@ -479,7 +479,7 @@ export default function ChatPage() {
     setConversations(prev => prev.map(c => c.id === convId ? { ...c, [col]: newVal } : c))
     setMenuOpenId(null)
     setHeaderMenuOpen(false)
-    toast.success(newVal ? 'Chat pinned' : 'Chat unpinned')
+    toast.success(newVal ? t('toastChatPinned') : t('toastChatUnpinned'))
   }
 
   function getConvName(conv) {

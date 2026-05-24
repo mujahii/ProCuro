@@ -52,7 +52,7 @@ export default function LoginPage() {
         )
       }
     } catch (err) {
-      toast.error(err.message || 'Login failed')
+      toast.error(err.message || t('toastLoginFailed'))
     } finally {
       setLoading(false)
     }
@@ -60,7 +60,7 @@ export default function LoginPage() {
 
   async function handleForgotPassword(e) {
     e.preventDefault()
-    if (!resetEmail.trim()) return toast.error('Please enter your email')
+    if (!resetEmail.trim()) return toast.error(t('toastEnterEmail'))
     setResetLoading(true)
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
       redirectTo: `${window.location.origin}/reset-password`,

@@ -361,7 +361,7 @@ export default function SupplierDashboardPage() {
               onSave={(saved) => {
                 setProducts(prev => prev.map(p => p.id === saved.id ? saved : p))
                 setEditProduct(null)
-                toast.success('Product updated!')
+                toast.success(t('toastProductUpdated'))
               }}
               onCancel={() => setEditProduct(null)}
             />

@@ -27,7 +27,7 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
-    if (!name.trim()) { toast.error('Name is required'); return }
+    if (!name.trim()) { toast.error(t('toastNameRequired')); return }
     setSaving(true)
     try {
       await supabase.from('users').update({ full_name: name.trim() }).eq('id', userId)
@@ -37,9 +37,9 @@ function EditProfileModal({ userId, currentName, currentRestaurantName, currentB
       )
       onSaved({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null })
       onClose()
-      toast.success('Profile updated!')
+      toast.success(t('toastProfileUpdated'))
     } catch {
-      toast.error('Failed to update profile')
+      toast.error(t('toastFailedUpdateProfile'))
     } finally {
       setSaving(false)
     }
@@ -124,7 +124,7 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
   }, [savedAddresses])
 
   async function detectGPS() {
-    if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
+    if (!navigator.geolocation) { toast.error(t('toastGpsNotSupported')); return }
     setGpsLoading(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -143,14 +143,14 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
             longitude: lng,
           })
           setForm(f => ({ ...f, city, latitude: lat, longitude: lng }))
-          toast.success('Location saved!')
+          toast.success(t('toastLocationSaved'))
         } catch {
-          toast.error('Could not fetch location from GPS')
+          toast.error(t('toastCouldNotFetchLocationGps'))
         } finally {
           setGpsLoading(false)
         }
       },
-      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      () => { toast.error(t('toastGpsPermDenied')); setGpsLoading(false) },
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }
@@ -165,7 +165,7 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
   }
 
   async function handleSave() {
-    if (!form.tax_id.trim()) { toast.error('Tax ID is required'); return }
+    if (!form.tax_id.trim()) { toast.error(t('toastTaxIdRequired')); return }
     setSaving(true)
     try {
       await supabase.from('owner_profiles').upsert(
@@ -182,9 +182,9 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
       )
       onSaved({ tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null, latitude: form.latitude || null, longitude: form.longitude || null })
       onClose()
-      toast.success('Business details saved!')
+      toast.success(t('toastBusinessDetailsSaved'))
     } catch {
-      toast.error('Failed to save business details')
+      toast.error(t('toastFailedSaveBusinessDetails'))
     } finally {
       setSaving(false)
     }
@@ -305,7 +305,7 @@ function AddressModal({ onClose, userId }) {
   const [gpsLoading, setGpsLoading] = useState(false)
 
   async function detectGPS() {
-    if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
+    if (!navigator.geolocation) { toast.error(t('toastGpsNotSupported')); return }
     setGpsLoading(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -322,26 +322,26 @@ function AddressModal({ onClose, userId }) {
             }
           } catch {}
           setForm(f => ({ ...f, street, postal_code, city, latitude: lat, longitude: lng }))
-          toast.success('Location detected!')
+          toast.success(t('toastGpsDetected'))
         } catch {
-          toast.error('Could not detect GPS position')
+          toast.error(t('toastGpsCouldNotDetect'))
         } finally {
           setGpsLoading(false)
         }
       },
-      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      () => { toast.error(t('toastGpsPermDenied')); setGpsLoading(false) },
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }
 
   async function handleAdd(e) {
     e.preventDefault()
-    if (!form.city) { toast.error('City is required'); return }
+    if (!form.city) { toast.error(t('toastCityRequired')); return }
     setSaving(true)
     try {
       await addAddress({ ...form, country: 'Germany' })
       setForm({ label: '', street: '', postal_code: '', city: '', latitude: null, longitude: null })
-      toast.success('Address added!')
+      toast.success(t('toastAddressAdded'))
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -352,9 +352,9 @@ function AddressModal({ onClose, userId }) {
   async function handleDelete(id) {
     try {
       await deleteAddress(id)
-      toast.success('Address removed')
+      toast.success(t('toastAddressRemoved'))
     } catch {
-      toast.error('Failed to remove address')
+      toast.error(t('toastFailedRemoveAddress'))
     }
   }
 
@@ -362,9 +362,9 @@ function AddressModal({ onClose, userId }) {
     try {
       await setDefault(id)
       await reload()
-      toast.success('Default address updated')
+      toast.success(t('toastDefaultAddressUpdated'))
     } catch {
-      toast.error('Failed to update default')
+      toast.error(t('toastFailedUpdateDefault'))
     }
   }
 
@@ -467,7 +467,7 @@ function BankModal({ userId, current, onClose, onSaved }) {
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
-    if (!form.iban.trim()) { toast.error('IBAN is required'); return }
+    if (!form.iban.trim()) { toast.error(t('toastIbanRequired')); return }
     setSaving(true)
     try {
       const { error } = await supabase
@@ -476,7 +476,7 @@ function BankModal({ userId, current, onClose, onSaved }) {
       if (error) throw error
       onSaved()
       onClose()
-      toast.success('Bank details saved!')
+      toast.success(t('toastBankDetailsSaved'))
     } catch (err) {
       toast.error(err.message)
     } finally {

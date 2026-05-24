@@ -6,8 +6,10 @@ import { CheckCircle, XCircle, ExternalLink, Loader2 } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 function CertModal({ cert, onApprove, onReject, onClose }) {
+  const { t } = useLanguage()
   const [rejectionReason, setRejectionReason] = useState('')
   const [showReject, setShowReject] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -28,7 +30,7 @@ function CertModal({ cert, onApprove, onReject, onClose }) {
   }
 
   async function handleReject() {
-    if (!rejectionReason.trim()) return toast.error('Please provide a rejection reason')
+    if (!rejectionReason.trim()) return toast.error(t('toastProvideRejectionReason'))
     setLoading(true)
     await onReject(cert.id, rejectionReason)
     setLoading(false)
@@ -112,6 +114,7 @@ function CertModal({ cert, onApprove, onReject, onClose }) {
 }
 
 export default function AdminCertificatesPage() {
+  const { t } = useLanguage()
   const [certs, setCerts] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('pending')
@@ -154,10 +157,10 @@ export default function AdminCertificatesPage() {
       }
 
       setCerts(prev => prev.map(c => c.id === certId ? { ...c, status: 'approved' } : c))
-      toast.success('Certificate approved! Supplier is now active.')
+      toast.success(t('toastCertApproved'))
       setSelected(null)
     } catch (err) {
-      toast.error(err.message || 'Failed to approve certificate')
+      toast.error(err.message || t('toastFailedApprove'))
     }
   }
 
@@ -200,12 +203,10 @@ export default function AdminCertificatesPage() {
       }
 
       setCerts(prev => prev.map(c => c.id === certId ? { ...c, status: 'rejected', rejection_reason: reason } : c))
-      toast.success(stillVerified
-        ? 'Certificate rejected. Supplier remains verified via another approved certificate.'
-        : 'Certificate rejected. Supplier has been notified.')
+      toast.success(stillVerified ? t('toastCertRejectedVerified') : t('toastCertRejectedUnverified'))
       setSelected(null)
     } catch (err) {
-      toast.error(err.message || 'Failed to reject certificate')
+      toast.error(err.message || t('toastFailedRejectCert'))
     }
   }
 

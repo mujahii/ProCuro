@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 function getImageUrl(imagePath) {
   if (!imagePath) return null
@@ -19,6 +20,7 @@ export default function ProductCard({ product, onAddToCart, onReport }) {
   const { user, role } = useAuth()
   const { addItem } = useCart()
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [imgError, setImgError] = useState(false)
   const imageUrl = getImageUrl(product.image_url)
 
@@ -34,7 +36,7 @@ export default function ProductCard({ product, onAddToCart, onReport }) {
       onAddToCart(product)
     } else {
       addItem(product, 1)
-      toast.success(`${product.name} added to cart`)
+      toast.success(`${product.name} ${t('addedToCart')}`)
     }
   }
 

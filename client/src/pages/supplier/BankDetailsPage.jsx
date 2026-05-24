@@ -44,7 +44,7 @@ export default function SupplierBankDetailsPage() {
     try {
       const bankData = { ...form, iban: form.iban.replace(/\s/g, ''), supplier_id: supplierProfile.id }
       await supabase.from('supplier_bank_details').upsert(bankData, { onConflict: 'supplier_id' })
-      toast.success('Bank details saved!')
+      toast.success(t('toastBankDetailsSaved'))
     } catch (err) {
       toast.error(err.message)
     } finally {

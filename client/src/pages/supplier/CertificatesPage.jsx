@@ -63,7 +63,7 @@ export default function SupplierCertificatesPage() {
       if (remaining.filter(c => c.status === 'approved').length === 0 && supplierProfile) {
         await supabase.from('supplier_profiles').update({ is_verified: false }).eq('id', supplierProfile.id)
       }
-      toast.success('Certificate deleted')
+      toast.success(t('toastCertDeleted'))
     } catch (err) {
       toast.error(err.message)
     }
@@ -76,7 +76,7 @@ export default function SupplierCertificatesPage() {
       win.location.href = data.signedUrl
     } else {
       win?.close()
-      toast.error(error?.message || 'Could not open certificate')
+      toast.error(error?.message || t('toastCouldNotOpenCert'))
     }
   }
 
@@ -198,9 +198,9 @@ function UploadModal({ supplierProfile, onClose, onUploaded }) {
   const inputRef = useRef(null)
 
   async function handleUpload() {
-    if (!label.trim()) { toast.error('Please enter a certificate name'); return }
-    if (!file) { toast.error('Please select a file'); return }
-    if (file.size > 5 * 1024 * 1024) { toast.error('File must be under 5MB'); return }
+    if (!label.trim()) { toast.error(t('toastEnterCertName')); return }
+    if (!file) { toast.error(t('toastSelectFile')); return }
+    if (file.size > 5 * 1024 * 1024) { toast.error(t('toastFileTooLarge')); return }
     setUploading(true)
     try {
       const ext = file.name.split('.').pop()
@@ -215,7 +215,7 @@ function UploadModal({ supplierProfile, onClose, onUploaded }) {
       }).select().single()
       await supabase.from('supplier_profiles').update({ is_verified: false }).eq('id', supplierProfile.id)
       onUploaded(cert)
-      toast.success('Certificate uploaded! Our team will review it shortly.')
+      toast.success(t('toastCertUploaded'))
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -277,7 +277,7 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
   const inputRef = useRef(null)
 
   async function handleSave() {
-    if (!label.trim()) { toast.error('Certificate name is required'); return }
+    if (!label.trim()) { toast.error(t('toastCertNameRequired')); return }
     setSaving(true)
     try {
       if (newFile) {
@@ -311,7 +311,7 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
           if (updateErr) throw updateErr
           onSaved(updated)
         }
-        toast.success('File replaced — pending review by admin.')
+        toast.success(t('toastCertFileReplaced'))
       } else {
         // Name-only change — keep existing status
         const { data: updated, error: updateErr } = await supabase.from('halal_certificates')
@@ -320,7 +320,7 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
           .select().single()
         if (updateErr) throw updateErr
         onSaved(updated)
-        toast.success('Certificate updated!')
+        toast.success(t('toastCertUpdated'))
       }
     } catch (err) {
       toast.error(err.message)

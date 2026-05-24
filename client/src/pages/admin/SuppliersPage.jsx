@@ -5,8 +5,10 @@ import { SkeletonTable } from '../../components/ui/Skeleton'
 import { Search, ToggleLeft, ToggleRight, Eye, Send, X } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function AdminSuppliersPage() {
+  const { t } = useLanguage()
   const [searchParams] = useSearchParams()
   const highlightId = searchParams.get('id')
   const highlightRef = useRef(null)
@@ -43,7 +45,7 @@ export default function AdminSuppliersPage() {
     const { error } = await supabase.from('supplier_profiles').update({ is_active: next }).eq('id', supplier.id)
     if (!error) {
       setSuppliers(prev => prev.map(s => s.id === supplier.id ? { ...s, is_active: next } : s))
-      toast.success(next ? 'Supplier activated' : 'Supplier deactivated')
+      toast.success(next ? t('toastSupplierActivated') : t('toastSupplierDeactivated'))
     }
   }
 
@@ -56,7 +58,7 @@ export default function AdminSuppliersPage() {
   }
 
   async function sendNotification() {
-    if (!notifyTitle.trim() || !notifyMsg.trim()) return toast.error('Title and message required')
+    if (!notifyTitle.trim() || !notifyMsg.trim()) return toast.error(t('toastTitleMessageRequired'))
     setSending(true)
     try {
       const { error } = await supabase.from('notifications').insert({
@@ -66,10 +68,10 @@ export default function AdminSuppliersPage() {
         type: 'admin_message',
       })
       if (error) throw error
-      toast.success('Notification sent')
+      toast.success(t('toastNotificationSent'))
       setNotifyTarget(null); setNotifyTitle(''); setNotifyMsg('')
     } catch (err) {
-      toast.error(err.message || 'Failed to send notification')
+      toast.error(err.message || t('toastFailedNotification'))
     } finally {
       setSending(false)
     }

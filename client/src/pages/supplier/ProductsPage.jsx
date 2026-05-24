@@ -98,7 +98,7 @@ export default function SupplierProductsPage() {
   async function toggleActive(product) {
     const { data } = await supabase.from('products').update({ is_active: !product.is_active }).eq('id', product.id).select().single()
     setProducts(prev => prev.map(p => p.id === product.id ? data : p))
-    toast.success(data.is_active ? 'Marked as In Stock' : 'Marked as Out of Stock')
+    toast.success(data.is_active ? t('toastMarkedInStock') : t('toastMarkedOutOfStock'))
   }
 
   function getImageUrl(path) {
@@ -141,7 +141,7 @@ export default function SupplierProductsPage() {
                 }
                 setShowForm(false)
                 setEditProduct(null)
-                toast.success(editProduct ? 'Product updated!' : 'Product added!')
+                toast.success(editProduct ? t('toastProductUpdated') : t('toastProductAdded'))
               }}
               onCancel={() => { setShowForm(false); setEditProduct(null) }}
             />

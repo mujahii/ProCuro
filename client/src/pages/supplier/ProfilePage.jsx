@@ -34,7 +34,7 @@ function EditProfileModal({ userId, currentName, supplierProfile, currentBio, on
   const [saving, setSaving] = useState(false)
 
   async function handleSave() {
-    if (!name.trim()) { toast.error('Name is required'); return }
+    if (!name.trim()) { toast.error(t('toastNameRequired')); return }
     setSaving(true)
     try {
       await supabase.from('users').update({ full_name: name.trim(), bio: bio.trim() || null }).eq('id', userId)
@@ -46,9 +46,9 @@ function EditProfileModal({ userId, currentName, supplierProfile, currentBio, on
       }
       onSaved({ full_name: name.trim(), business_name: businessName.trim() || null, bio: bio.trim() || null })
       onClose()
-      toast.success('Profile updated!')
+      toast.success(t('toastProfileUpdated'))
     } catch {
-      toast.error('Failed to update profile')
+      toast.error(t('toastFailedUpdateProfile'))
     } finally {
       setSaving(false)
     }
@@ -110,7 +110,7 @@ function AddressModal({ onClose, supplierProfileId }) {
   const [gpsLoading, setGpsLoading] = useState(false)
 
   async function detectGPS() {
-    if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
+    if (!navigator.geolocation) { toast.error(t('toastGpsNotSupported')); return }
     setGpsLoading(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -124,26 +124,26 @@ function AddressModal({ onClose, supplierProfileId }) {
             postal_code: addr.postcode || '',
             city: addr.city || addr.town || addr.village || addr.suburb || '',
           }))
-          toast.success('Location detected!')
+          toast.success(t('toastGpsDetected'))
         } catch {
-          toast.error('Could not fetch address from GPS')
+          toast.error(t('toastGpsCouldNotFetch'))
         } finally {
           setGpsLoading(false)
         }
       },
-      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      () => { toast.error(t('toastGpsPermDenied')); setGpsLoading(false) },
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }
 
   async function handleAdd(e) {
     e.preventDefault()
-    if (!form.street || !form.city) { toast.error('Please fill in Street and City'); return }
+    if (!form.street || !form.city) { toast.error(t('toastPleaseFillStreetCity')); return }
     setSaving(true)
     try {
       await addAddress({ ...form, country: 'Germany' })
       setForm({ label: '', street: '', postal_code: '', city: '' })
-      toast.success('Address added!')
+      toast.success(t('toastAddressAdded'))
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -154,9 +154,9 @@ function AddressModal({ onClose, supplierProfileId }) {
   async function handleDelete(id) {
     try {
       await deleteAddress(id)
-      toast.success('Address removed')
+      toast.success(t('toastAddressRemoved'))
     } catch {
-      toast.error('Failed to remove address')
+      toast.error(t('toastFailedRemoveAddress'))
     }
   }
 
@@ -174,9 +174,9 @@ function AddressModal({ onClose, supplierProfileId }) {
           }).eq('id', supplierProfileId)
         }
       }
-      toast.success('Default address updated')
+      toast.success(t('toastDefaultAddressUpdated'))
     } catch {
-      toast.error('Failed to update default')
+      toast.error(t('toastFailedUpdateDefault'))
     }
   }
 
@@ -306,7 +306,7 @@ function BankModal({ userId, onClose }) {
         { ...form, iban: form.iban.replace(/\s/g, ''), supplier_id: supplierProfile.id },
         { onConflict: 'supplier_id' }
       )
-      toast.success('Bank details saved!')
+      toast.success(t('toastBankDetailsSaved'))
       onClose()
     } catch (err) {
       toast.error(err.message)
@@ -396,7 +396,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
   }, [savedAddresses])
 
   async function detectGPS() {
-    if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
+    if (!navigator.geolocation) { toast.error(t('toastGpsNotSupported')); return }
     setGpsLoading(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -415,14 +415,14 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
             longitude: lng,
           })
           setForm(f => ({ ...f, city, latitude: lat, longitude: lng }))
-          toast.success('Location saved!')
+          toast.success(t('toastLocationSaved'))
         } catch {
-          toast.error('Could not fetch location from GPS')
+          toast.error(t('toastCouldNotFetchLocationGps'))
         } finally {
           setGpsLoading(false)
         }
       },
-      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      () => { toast.error(t('toastGpsPermDenied')); setGpsLoading(false) },
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }
@@ -437,7 +437,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
   }
 
   async function handleSave() {
-    if (!form.tax_id.trim()) { toast.error('Tax ID is required'); return }
+    if (!form.tax_id.trim()) { toast.error(t('toastTaxIdRequired')); return }
     setSaving(true)
     try {
       await supabase.from('supplier_profiles').update({
@@ -451,9 +451,9 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
 
       onSaved({ ...form, category: form.categories })
       onClose()
-      toast.success('Business info saved!')
+      toast.success(t('toastBusinessInfoSaved'))
     } catch {
-      toast.error('Failed to save business info')
+      toast.error(t('toastFailedSaveBusinessInfo'))
     } finally {
       setSaving(false)
     }
@@ -573,9 +573,9 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
   const inputRef = useRef(null)
 
   async function handleUpload() {
-    if (!label.trim()) { toast.error('Please enter a certificate name'); return }
-    if (!file) { toast.error('Please select a file'); return }
-    if (file.size > 5 * 1024 * 1024) { toast.error('File must be under 5MB'); return }
+    if (!label.trim()) { toast.error(t('toastEnterCertName')); return }
+    if (!file) { toast.error(t('toastSelectFile')); return }
+    if (file.size > 5 * 1024 * 1024) { toast.error(t('toastFileTooLarge')); return }
     setUploading(true)
     try {
       const ext = file.name.split('.').pop()
@@ -590,7 +590,7 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
       }).select().single()
       onUploaded(cert)
       onClose()
-      toast.success('Certificate uploaded — awaiting admin review')
+      toast.success(t('toastCertUploadedAwaitingReview'))
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -654,12 +654,12 @@ function CertEditModal({ cert, supplierProfileId, onClose, onSaved }) {
   const inputRef = useRef(null)
 
   async function handleSave() {
-    if (!label.trim()) { toast.error('Certificate name is required'); return }
+    if (!label.trim()) { toast.error(t('toastCertNameRequired')); return }
     setSaving(true)
     try {
       let fileUrl = cert.file_url
       if (newFile) {
-        if (newFile.size > 5 * 1024 * 1024) throw new Error('File must be under 5MB')
+        if (newFile.size > 5 * 1024 * 1024) throw new Error(t('toastFileTooLarge'))
         await supabase.storage.from('halal-certificates').remove([cert.file_url])
         const ext = newFile.name.split('.').pop()
         const path = `${supplierProfileId}/${Date.now()}.${ext}`
@@ -673,7 +673,7 @@ function CertEditModal({ cert, supplierProfileId, onClose, onSaved }) {
         .select().single()
       onSaved(updated)
       onClose()
-      toast.success('Certificate updated!')
+      toast.success(t('toastCertUpdated'))
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -814,7 +814,7 @@ export default function SupplierAccountPage() {
         await supabase.from('supplier_profiles').update({ is_verified: false }).eq('id', supplierProfile.id)
         setSupplierProfile(prev => ({ ...prev, is_verified: false }))
       }
-      toast.success('Certificate deleted')
+      toast.success(t('toastCertDeleted'))
     } catch (err) {
       toast.error(err.message)
     }
@@ -827,7 +827,7 @@ export default function SupplierAccountPage() {
       win.location.href = data.signedUrl
     } else {
       win?.close()
-      toast.error(error?.message || 'Could not open certificate')
+      toast.error(error?.message || t('toastCouldNotOpenCert'))
     }
   }
 

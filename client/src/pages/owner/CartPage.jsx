@@ -123,12 +123,12 @@ export default function CartPage() {
   function taxFor(subtotal) { return subtotal * taxRate }
 
   function handleReceiptFile(supplierId, file) {
-    if (file?.size > 5 * 1024 * 1024) { toast.error('File must be under 5MB'); return }
+    if (file?.size > 5 * 1024 * 1024) { toast.error(t('toastFileTooLarge')); return }
     setReceiptFiles(f => ({ ...f, [supplierId]: file }))
   }
 
   async function handlePlaceOrder() {
-    if (profile?.is_banned) { toast.error('Your account has been suspended. You cannot place orders.'); return }
+    if (profile?.is_banned) { toast.error(t('toastAccountSuspended')); return }
     if (hasBannedSupplierInCart) { toast.error(t('supplierBannedCartNotice')); return }
     if (selectedPayment === 'bank_transfer') {
       const missingReceipt = groups.find(([supplierId]) => !receiptFiles[supplierId])
@@ -145,7 +145,7 @@ export default function CartPage() {
       clearCart?.()
       setStep(3)
     } catch (err) {
-      toast.error(err.message || 'Order failed. Please try again.')
+      toast.error(err.message || t('toastOrderFailed'))
     }
   }
 
@@ -505,7 +505,7 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
   function update(field, val) { setForm(f => ({ ...f, [field]: val })) }
 
   async function detectGPS() {
-    if (!navigator.geolocation) { toast.error('GPS not supported on this device'); return }
+    if (!navigator.geolocation) { toast.error(t('toastGpsNotSupported')); return }
     setGpsLoading(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -514,22 +514,22 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
           const data = await reverseGeocode(lat, lng)
           const addr = data.address || {}
           setForm(f => ({ ...f, street: [addr.road, addr.house_number].filter(Boolean).join(' ') || '', postal_code: addr.postcode || '', city: addr.city || addr.town || addr.village || addr.suburb || '', latitude: lat, longitude: lng }))
-          toast.success('Location detected!')
-        } catch { toast.error('Could not fetch address from GPS') } finally { setGpsLoading(false) }
+          toast.success(t('toastLocationDetectedCart'))
+        } catch { toast.error(t('toastGpsCouldNotFetch')) } finally { setGpsLoading(false) }
       },
-      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      () => { toast.error(t('toastGpsPermDenied')); setGpsLoading(false) },
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }
 
   async function handleSave() {
-    if (!form.street.trim() || !form.city.trim()) { toast.error('Street and city are required'); return }
+    if (!form.street.trim() || !form.city.trim()) { toast.error(t('toastStreetCityRequired')); return }
     setSaving(true)
     try {
       const data = await addAddress(form)
       onSelect(data.id)
     } catch (err) {
-      toast.error(err.message || 'Failed to save address')
+      toast.error(err.message || t('toastFailedSaveAddress'))
       setSaving(false)
     }
   }

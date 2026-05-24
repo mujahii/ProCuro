@@ -142,7 +142,7 @@ export default function AddToCartModal({ product, onClose }) {
       await navigator.share({ title: product.name, text: `${product.name} at ${product.supplier?.business_name} on ProCuro`, url })
     } else {
       await navigator.clipboard.writeText(url)
-      toast.success('Link copied!')
+      toast.success(t('toastLinkCopied'))
     }
   }
 
@@ -152,7 +152,7 @@ export default function AddToCartModal({ product, onClose }) {
       return
     }
     addItem({ ...product, delivery_fee: deliveryFee ?? 0 }, qty)
-    toast.success(`${product.name} added to cart`)
+    toast.success(`${product.name} ${t('addedToCart')}`)
     onClose()
   }
 

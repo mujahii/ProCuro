@@ -68,7 +68,7 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
   function handleFileChange(e) {
     const f = e.target.files[0]
     if (!f) return
-    if (f.size > 5 * 1024 * 1024) { toast.error('Image must be under 5MB'); return }
+    if (f.size > 5 * 1024 * 1024) { toast.error(t('toastImageTooLarge')); return }
     setFile(f)
     setPreview(URL.createObjectURL(f))
   }
@@ -82,7 +82,7 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
   }
 
   async function handleSaveUpload() {
-    if (!file) { toast.error('Please select an image'); return }
+    if (!file) { toast.error(t('toastSelectImage')); return }
     setSaving(true)
     try {
       const ext = file.name.split('.').pop()
@@ -94,27 +94,27 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
       if (rpcError) throw rpcError
       onSaved(publicUrl)
       onClose()
-      toast.success('Profile photo updated!')
+      toast.success(t('toastPhotoUpdated'))
     } catch (err) {
       console.error('Avatar upload error:', err)
-      toast.error('Failed to upload photo')
+      toast.error(t('toastFailedUploadPhoto'))
     } finally {
       setSaving(false)
     }
   }
 
   async function handleSaveGenerated() {
-    if (!generatedUrl) { toast.error('Generate an avatar first'); return }
+    if (!generatedUrl) { toast.error(t('toastGenerateAvatarFirst')); return }
     setSaving(true)
     try {
       const { error } = await supabase.rpc('update_own_avatar', { p_url: generatedUrl })
       if (error) throw error
       onSaved(generatedUrl)
       onClose()
-      toast.success('Avatar saved!')
+      toast.success(t('toastAvatarSaved'))
     } catch (err) {
       console.error('Avatar save error:', err)
-      toast.error('Failed to save avatar')
+      toast.error(t('toastFailedSaveAvatar'))
     } finally {
       setSaving(false)
     }

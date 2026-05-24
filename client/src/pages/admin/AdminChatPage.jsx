@@ -5,12 +5,14 @@ import { formatDistanceToNow, format } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf']
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export default function AdminChatPage() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [searchParams] = useSearchParams()
   const initUserId = searchParams.get('user_id')
 
@@ -193,17 +195,17 @@ export default function AdminChatPage() {
 
   async function uploadFile(file) {
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error('Only images (JPG, PNG, GIF, WebP) and PDFs are allowed')
+      toast.error(t('toastFileTypeNotAllowed'))
       return null
     }
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('File must be under 5MB')
+      toast.error(t('toastFileTooLarge'))
       return null
     }
     const ext = file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'bin'
     const safeName = `${selectedConv.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`
     const { error } = await supabase.storage.from('chat-attachments').upload(safeName, file)
-    if (error) { toast.error('Upload failed: ' + error.message); return null }
+    if (error) { toast.error(t('toastUploadFailed') + ': ' + error.message); return null }
     const { data: { publicUrl } } = supabase.storage.from('chat-attachments').getPublicUrl(safeName)
     return { url: publicUrl, type: file.type }
   }
@@ -254,18 +256,18 @@ export default function AdminChatPage() {
     const newVal = !conv.pinned_by_admin
     await supabase.from('admin_conversations').update({ pinned_by_admin: newVal }).eq('id', convId)
     setConversations(prev => prev.map(c => c.id === convId ? { ...c, pinned_by_admin: newVal } : c))
-    toast.success(newVal ? 'Chat pinned' : 'Chat unpinned')
+    toast.success(newVal ? t('toastChatPinned') : t('toastChatUnpinned'))
     setOpenMenu(null)
   }
 
   async function deleteConversation(convId) {
     if (!convId) return
     const { error } = await supabase.from('admin_conversations').delete().eq('id', convId)
-    if (error) { toast.error('Failed to delete chat'); return }
+    if (error) { toast.error(t('toastFailedDeleteChat')); return }
     setConversations(prev => prev.filter(c => c.id !== convId))
     if (selectedConv?.id === convId) { setSelectedConv(null); setMessages([]) }
     setDeleteModalConvId(null)
-    toast.success('Chat deleted')
+    toast.success(t('toastChatDeleted'))
   }
 
   async function openProfile(conv) {

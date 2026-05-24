@@ -57,7 +57,7 @@ export default function Navbar({ onMenuClick }) {
   }
 
   async function detectGPS() {
-    if (!navigator.geolocation) { toast.error('GPS not supported'); return }
+    if (!navigator.geolocation) { toast.error(t('toastGpsNotSupported')); return }
     setGpsLoading(true)
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -75,27 +75,27 @@ export default function Navbar({ onMenuClick }) {
           } catch {}
           setAddrForm(f => ({ ...f, street, postal_code, city, latitude: lat, longitude: lng }))
         } catch {
-          toast.error('Could not detect GPS position')
+          toast.error(t('toastGpsCouldNotDetect'))
         } finally {
           setGpsLoading(false)
         }
       },
-      () => { toast.error('GPS permission denied'); setGpsLoading(false) },
+      () => { toast.error(t('toastGpsPermDenied')); setGpsLoading(false) },
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }
 
   async function handleSaveAddress(e) {
     e.preventDefault()
-    if (!addrForm.street || !addrForm.city) { toast.error('Street and city are required'); return }
+    if (!addrForm.street || !addrForm.city) { toast.error(t('toastStreetCityRequired')); return }
     setSavingAddr(true)
     try {
       await addAddress(addrForm)
-      toast.success('Address saved!')
+      toast.success(t('toastAddressSaved'))
       setAddingAddr(false)
       setAddrForm({ label: '', street: '', postal_code: '', city: '', latitude: null, longitude: null })
     } catch {
-      toast.error('Failed to save address')
+      toast.error(t('toastFailedSaveAddress'))
     } finally {
       setSavingAddr(false)
     }

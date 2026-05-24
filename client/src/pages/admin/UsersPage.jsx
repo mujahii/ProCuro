@@ -6,6 +6,7 @@ import { SkeletonTable } from '../../components/ui/Skeleton'
 import { Search, Ban, Trash2, CheckCircle, Eye, Send, X, History, ToggleLeft, ToggleRight, MessageSquare, KeyRound, MoreVertical } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 const ROLE_FILTERS = [
   { value: '', label: 'All Users' },
@@ -17,6 +18,7 @@ const ROLE_FILTERS = [
 export default function AdminUsersPage() {
   const { user: adminUser } = useAuth()
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [tab, setTab] = useState('active')
   const [users, setUsers] = useState([])
   const [deletedAccounts, setDeletedAccounts] = useState([])
@@ -65,9 +67,9 @@ export default function AdminUsersPage() {
       }
 
       setUsers(prev => prev.map(u => u.id === user.id ? { ...u, is_banned: next } : u))
-      toast.success(next ? 'User banned' : 'User unbanned')
+      toast.success(next ? t('toastUserBanned') : t('toastUserUnbanned'))
     } catch (err) {
-      toast.error(err.message || 'Failed to update user')
+      toast.error(err.message || t('toastFailedUpdateUserRecord'))
     }
   }
 
@@ -91,9 +93,9 @@ export default function AdminUsersPage() {
           link: '/owner/chat',
         })
       }
-      toast.success(next ? 'Owner account listed' : 'Owner account unlisted')
+      toast.success(next ? t('toastOwnerListed') : t('toastOwnerUnlisted'))
     } else {
-      toast.error(error.message || 'Failed to update')
+      toast.error(error.message || t('toastFailedUpdate'))
     }
   }
 
@@ -104,10 +106,10 @@ export default function AdminUsersPage() {
         redirectTo: `${window.location.origin.replace('/admin', '')}/reset-password`,
       })
       if (error) throw error
-      toast.success(`Password reset email sent to ${user.email}`)
+      toast.success(`${t('toastPasswordResetSentTo')} ${user.email}`)
       setResetTarget(null)
     } catch (err) {
-      toast.error(err.message || 'Failed to send reset email')
+      toast.error(err.message || t('toastFailedSendResetEmail'))
     } finally {
       setSendingReset(false)
     }
@@ -131,7 +133,7 @@ export default function AdminUsersPage() {
           link: '/supplier/chat',
         })
       }
-      toast.success(next ? 'Supplier activated' : 'Supplier deactivated')
+      toast.success(next ? t('toastSupplierActivated') : t('toastSupplierDeactivated'))
     }
   }
 
@@ -155,18 +157,18 @@ export default function AdminUsersPage() {
       if (error) throw error
       setUsers(prev => prev.filter(u => u.id !== deleteTarget.id))
       loadDeletedAccounts()
-      toast.success('User deleted')
+      toast.success(t('toastUserDeleted'))
       setDeleteTarget(null)
       setDeleteConfirmText('')
     } catch (err) {
-      toast.error(err.message || 'Failed to delete user')
+      toast.error(err.message || t('toastFailedUpdateUserRecord'))
     } finally {
       setDeleting(false)
     }
   }
 
   async function sendNotification() {
-    if (!notifyTitle.trim() || !notifyMsg.trim()) return toast.error('Title and message required')
+    if (!notifyTitle.trim() || !notifyMsg.trim()) return toast.error(t('toastTitleMessageRequired'))
     setSending(true)
     try {
       const { error } = await supabase.from('notifications').insert({
@@ -176,10 +178,10 @@ export default function AdminUsersPage() {
         type: 'admin_message',
       })
       if (error) throw error
-      toast.success('Notification sent')
+      toast.success(t('toastNotificationSent'))
       setNotifyTarget(null); setNotifyTitle(''); setNotifyMsg('')
     } catch (err) {
-      toast.error(err.message || 'Failed to send notification')
+      toast.error(err.message || t('toastFailedNotification'))
     } finally {
       setSending(false)
     }

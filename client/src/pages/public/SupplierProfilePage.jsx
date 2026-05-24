@@ -67,7 +67,7 @@ export default function SupplierProfilePage() {
       await navigator.share({ title: supplier.business_name, text: `Check out ${supplier.business_name} on ProCuro`, url })
     } else {
       await navigator.clipboard.writeText(url)
-      toast.success('Link copied!')
+      toast.success(t('toastLinkCopied'))
     }
   }
 
@@ -78,13 +78,13 @@ export default function SupplierProfilePage() {
       await navigator.share({ title: product.name, text: `${product.name} at ${supplier.business_name} on ProCuro`, url })
     } else {
       await navigator.clipboard.writeText(url)
-      toast.success('Link copied!')
+      toast.success(t('toastLinkCopied'))
     }
   }
 
   async function viewCert(cert) {
     if (!user) {
-      toast.error('Please log in to view this certificate')
+      toast.error(t('toastCertNotLoggedIn'))
       navigate('/login')
       return
     }
@@ -94,7 +94,7 @@ export default function SupplierProfilePage() {
       win.location.href = data.signedUrl
     } else {
       win?.close()
-      toast.error(error?.message || 'Could not open certificate')
+      toast.error(error?.message || t('toastCouldNotOpenCert'))
     }
   }
 

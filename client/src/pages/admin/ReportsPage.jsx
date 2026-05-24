@@ -5,6 +5,7 @@ import { SkeletonTable } from '../../components/ui/Skeleton'
 import { Search, CheckCircle, XCircle, Flag, X, AlertTriangle, Ban, PackageX, Send, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 const STATUS_STYLES = {
   pending: 'bg-lionsmane text-marigold-dark',
@@ -25,6 +26,7 @@ function isRestaurantType(type) { return type === 'restaurant' || type === 'user
 
 function ActionModal({ report, onClose, onActionDone }) {
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [warnMsg, setWarnMsg] = useState('')
   const [showWarnInput, setShowWarnInput] = useState(false)
@@ -66,7 +68,7 @@ function ActionModal({ report, onClose, onActionDone }) {
   }
 
   async function sendWarning() {
-    if (!warnMsg.trim()) return toast.error('Please write a warning message')
+    if (!warnMsg.trim()) return toast.error(t('toastWriteWarningMessage'))
     setLoading(true)
     try {
       let userId
@@ -88,12 +90,12 @@ function ActionModal({ report, onClose, onActionDone }) {
         admin_action: `Warning sent: "${warnMsg.trim()}"`,
         admin_action_at: new Date().toISOString(),
       }).eq('id', report.id)
-      toast.success('Warning sent')
+      toast.success(t('toastWarningSent'))
       onActionDone(report.id, 'reviewed', `Warning sent: "${warnMsg.trim()}"`)
 
       onClose()
     } catch (err) {
-      toast.error(err.message || 'Failed to send warning')
+      toast.error(err.message || t('toastFailedNotification'))
     } finally {
       setLoading(false)
     }
@@ -101,7 +103,7 @@ function ActionModal({ report, onClose, onActionDone }) {
 
   async function banSupplierAccount() {
     const uid = targetInfo?.user_id
-    if (!uid) { toast.error('Could not find supplier user ID'); return }
+    if (!uid) { toast.error(t('toastCouldNotFindSupplierUser')); return }
     setLoading(true)
     try {
       await supabase.from('users').update({ is_banned: true }).eq('id', uid)
@@ -118,11 +120,11 @@ function ActionModal({ report, onClose, onActionDone }) {
         admin_action: 'Account suspended',
         admin_action_at: new Date().toISOString(),
       }).eq('id', report.id)
-      toast.success('Account suspended and user notified')
+      toast.success(t('toastAccountSuspendedUserNotified'))
       onActionDone(report.id, 'reviewed', 'Account suspended')
       onClose()
     } catch (err) {
-      toast.error(err.message || 'Failed to suspend account')
+      toast.error(err.message || t('toastFailedUpdateUserRecord'))
     } finally {
       setLoading(false)
     }
@@ -130,7 +132,7 @@ function ActionModal({ report, onClose, onActionDone }) {
 
   async function banRestaurantAccount() {
     const uid = targetInfo?.user_id || report.target_id
-    if (!uid) { toast.error('Could not find restaurant user ID'); return }
+    if (!uid) { toast.error(t('toastCouldNotFindRestaurantUser')); return }
     setLoading(true)
     try {
       await supabase.from('users').update({ is_banned: true }).eq('id', uid)
@@ -146,11 +148,11 @@ function ActionModal({ report, onClose, onActionDone }) {
         admin_action: 'Account suspended',
         admin_action_at: new Date().toISOString(),
       }).eq('id', report.id)
-      toast.success('Account suspended and owner notified')
+      toast.success(t('toastAccountSuspendedOwnerNotified'))
       onActionDone(report.id, 'reviewed', 'Account suspended')
       onClose()
     } catch (err) {
-      toast.error(err.message || 'Failed to suspend account')
+      toast.error(err.message || t('toastFailedUpdateUserRecord'))
     } finally {
       setLoading(false)
     }
@@ -174,12 +176,12 @@ function ActionModal({ report, onClose, onActionDone }) {
         admin_action: `Product removed: "${targetInfo?.name}"`,
         admin_action_at: new Date().toISOString(),
       }).eq('id', report.id)
-      toast.success('Product deactivated and supplier notified')
+      toast.success(t('toastProductDeactivatedNotified'))
       onActionDone(report.id, 'reviewed', `Product removed: "${targetInfo?.name}"`)
 
       onClose()
     } catch (err) {
-      toast.error(err.message || 'Failed to deactivate product')
+      toast.error(err.message || t('toastFailedUpdateUserRecord'))
     } finally {
       setLoading(false)
     }

@@ -24,8 +24,8 @@ function CancelModal({ split, onCancel, onClose }) {
   const isBankTransfer = split.payment_method === 'bank_transfer'
 
   async function handleCancel() {
-    if (!reason.trim()) return toast.error('Please provide a cancellation reason')
-    if (isBankTransfer && !file) return toast.error('Please upload a refund receipt before cancelling a bank transfer order')
+    if (!reason.trim()) return toast.error(t('toastCancellationReasonReq'))
+    if (isBankTransfer && !file) return toast.error(t('toastUploadRefundForBankTransfer'))
     setLoading(true)
     await onCancel(split.id, reason.trim(), isBankTransfer ? file : null)
     setLoading(false)
@@ -111,7 +111,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
   }, [split.restaurant_owner_id])
 
   async function handleUpload() {
-    if (!file) return toast.error('Please select a receipt file')
+    if (!file) return toast.error(t('toastSelectReceiptFile'))
     setUploading(true)
     try {
       const ext = file.name.split('.').pop()
@@ -127,7 +127,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
         p_refund_receipt_url: uploadData.path,
       })
       if (rpcError) throw rpcError
-      toast.success('Refund receipt uploaded! Owner has been notified.')
+      toast.success(t('toastRefundUploaded'))
       onUploaded()
     } catch (err) {
       toast.error(err.message)
@@ -244,8 +244,8 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
   const isBankTransfer = split.payment_method === 'bank_transfer'
 
   async function handleSubmit() {
-    if (!message.trim()) return toast.error('Please write a message explaining the situation')
-    if (action === 'cancel' && isBankTransfer && !file) return toast.error('Please upload a refund receipt for bank transfer orders')
+    if (!message.trim()) return toast.error(t('toastWriteMessage'))
+    if (action === 'cancel' && isBankTransfer && !file) return toast.error(t('toastUploadRefundForBankTransfer'))
     setLoading(true)
     if (action === 'resend') {
       await onResend(split.id, message.trim())
@@ -686,8 +686,8 @@ export default function SupplierOrdersPage() {
     if (error) { toast.error(error.message); return }
     setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status } : s))
     setSelectedSplit(prev => prev?.id === splitId ? { ...prev, status } : prev)
-    const msgs = { confirmed: 'Order confirmed!', out_for_delivery: 'Marked as out for delivery!', cancelled: 'Cancellation accepted.' }
-    toast.success(msgs[status] || 'Status updated')
+    const msgs = { confirmed: t('toastOrderConfirmed'), out_for_delivery: t('toastMarkedOutForDelivery'), cancelled: t('toastCancellationAccepted') }
+    toast.success(msgs[status] || t('toastStatusUpdated'))
   }
 
   async function resendOrder(splitId, disputeMsg) {
@@ -709,7 +709,7 @@ export default function SupplierOrdersPage() {
     }
     setSplits(prev => prev.map(s => s.id === splitId ? { ...s, status: 'out_for_delivery', dispute_message: disputeMsg } : s))
     setSelectedSplit(prev => prev?.id === splitId ? { ...prev, status: 'out_for_delivery' } : prev)
-    toast.success('Order re-sent for delivery — restaurant owner notified!')
+    toast.success(t('toastOrderReSent'))
     setDisputeTarget(null)
   }
 
@@ -735,7 +735,7 @@ export default function SupplierOrdersPage() {
     if (error) { toast.error(error.message); return }
     const patch = { status: newStatus, cancellation_reason: message, dispute_message: message, refund_receipt_url: refundReceiptUrl, cancelled_by: 'supplier' }
     setSplits(prev => prev.map(s => s.id === splitId ? { ...s, ...patch } : s))
-    toast.success(refundFile ? 'Order cancelled — refund receipt uploaded.' : 'Order cancelled.')
+    toast.success(refundFile ? t('toastOrderCancelledWithRefund') : t('toastOrderCancelled'))
     setDisputeTarget(null)
     setSelectedSplit(null)
   }
@@ -766,7 +766,7 @@ export default function SupplierOrdersPage() {
 
     const patch = { status: newStatus, cancellation_reason: reason, refund_receipt_url: refundReceiptUrl, cancelled_by: 'supplier' }
     setSplits(prev => prev.map(s => s.id === splitId ? { ...s, ...patch } : s))
-    toast.success(refundFile ? 'Order cancelled — refund receipt sent to owner.' : 'Order cancelled.')
+    toast.success(refundFile ? t('toastOrderCancelledRefundSent') : t('toastOrderCancelled'))
     setCancelTarget(null)
     if (selectedSplit?.id === splitId) setSelectedSplit(null)
   }

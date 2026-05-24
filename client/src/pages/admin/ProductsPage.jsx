@@ -13,8 +13,10 @@ function getProductImageUrl(path) {
   return data?.publicUrl || null
 }
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function AdminProductsPage() {
+  const { t } = useLanguage()
   const [searchParams] = useSearchParams()
   const highlightId = searchParams.get('id')
   const highlightRef = useRef(null)
@@ -68,14 +70,14 @@ export default function AdminProductsPage() {
     setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
     setDeleteTarget(null)
     loadDeleted()
-    toast.success('Product deleted')
+    toast.success(t('toastProductDeleted'))
   }
 
   async function restoreProduct(product) {
     await supabase.from('products').update({ deleted_at: null, deleted_by: null, is_active: true }).eq('id', product.id)
     setDeletedProducts(prev => prev.filter(p => p.id !== product.id))
     loadProducts()
-    toast.success('Product restored')
+    toast.success(t('toastProductRestored'))
   }
 
   async function toggleActive(product) {

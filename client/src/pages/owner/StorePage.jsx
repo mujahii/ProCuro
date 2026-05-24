@@ -204,7 +204,7 @@ export default function StorePage() {
           setLocationBanner('denied')
         } else {
           // Timeout or unavailable — don't punish the user
-          toast.error('Could not detect location. Add it manually.')
+          toast.error(t('toastCouldNotDetectLocation'))
           setLocationBanner(null)
           sessionStorage.setItem('gps_banner_dismissed', '1')
         }
@@ -506,6 +506,7 @@ function getProductImageUrl(path) {
 
 function ProductCard({ product, onAddToCart }) {
   const imgUrl = getProductImageUrl(product.image_url)
+  const { t } = useLanguage()
 
   async function handleShare(e) {
     e.stopPropagation()
@@ -514,7 +515,7 @@ function ProductCard({ product, onAddToCart }) {
       await navigator.share({ title: product.name, text: `${product.name} at ${product.supplier?.business_name} on ProCuro`, url })
     } else {
       await navigator.clipboard.writeText(url)
-      toast.success('Link copied!')
+      toast.success(t('toastLinkCopied'))
     }
   }
 

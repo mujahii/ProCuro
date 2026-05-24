@@ -80,7 +80,7 @@ function NotReceivedModal({ split, onConfirm, onClose }) {
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit() {
-    if (!reason.trim()) { toast.error('Please describe what happened'); return }
+    if (!reason.trim()) { toast.error(t('toastDisputeDescRequired')); return }
     setLoading(true)
     await onConfirm(split.id, reason.trim())
     setLoading(false)
@@ -135,7 +135,7 @@ function CancelModal({ split, onCancel, onClose }) {
   const isBankTransfer = split.payment_method === 'bank_transfer'
 
   async function handleSubmit() {
-    if (!reason.trim()) return toast.error('Please provide a reason for cancellation')
+    if (!reason.trim()) return toast.error(t('toastCancellationReasonRequired'))
     setLoading(true)
     await onCancel(split.id, reason.trim(), split.payment_method)
     setLoading(false)
@@ -578,7 +578,7 @@ export default function OrdersPage() {
       p_status: 'delivered',
     })
     if (error) { toast.error(error.message); return }
-    toast.success('Order marked as delivered!')
+    toast.success(t('toastOrderDelivered'))
     fetchOrders()
     if (splitForRating) setRatingTarget(splitForRating)
   }
@@ -590,7 +590,7 @@ export default function OrdersPage() {
       order_split_id: split.id,
       rating,
     })
-    toast.success('Thank you for your rating!')
+    toast.success(t('toastRatingSent'))
     setRatingTarget(null)
   }
 
@@ -601,7 +601,7 @@ export default function OrdersPage() {
       p_dispute_message: reason,
     })
     if (error) { toast.error(error.message); return }
-    toast.success('Report sent to supplier. They will respond shortly.')
+    toast.success(t('toastDisputeSent'))
     setNotReceivedTarget(null)
     fetchOrders()
   }
@@ -616,9 +616,9 @@ export default function OrdersPage() {
     })
     if (error) { toast.error(error.message); return }
     if (newStatus === 'cancellation_requested') {
-      toast.success('Cancellation request sent to supplier.')
+      toast.success(t('toastCancellationRequestSent'))
     } else {
-      toast.success('Order cancelled.')
+      toast.success(t('toastOrderCancelled'))
     }
     fetchOrders()
     setCancelTarget(null)
@@ -630,7 +630,7 @@ export default function OrdersPage() {
       p_status: 'completed',
     })
     if (error) { toast.error(error.message); return }
-    toast.success('Refund confirmed! Order completed.')
+    toast.success(t('toastRefundConfirmed'))
     fetchOrders()
   }
 

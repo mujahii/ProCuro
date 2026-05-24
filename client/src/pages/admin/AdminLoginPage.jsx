@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { Shield } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function AdminLoginPage() {
   const { signIn } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,12 +19,12 @@ export default function AdminLoginPage() {
     try {
       const profile = await signIn(email, password)
       if (profile?.role !== 'admin') {
-        toast.error('Access denied. Admin only.')
+        toast.error(t('toastAdminOnly'))
         return
       }
       navigate('/admin/dashboard')
     } catch (err) {
-      toast.error(err.message || 'Login failed')
+      toast.error(err.message || t('toastLoginFailed'))
     } finally {
       setLoading(false)
     }

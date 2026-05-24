@@ -144,7 +144,7 @@ export default function LandingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col" style={{ paddingTop: 'calc(4rem + var(--sat, 0px))' }}>
       <Navbar />
 
       {/* Hero Banner */}

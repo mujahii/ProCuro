@@ -444,7 +444,7 @@ const T = {
     accountDeletedTitle: 'Goodbye & Thank You',
     accountDeletedSubtitle: 'Your account has been deleted',
     accountDeletedMessage: "We're truly sorry to see you go. It has been an honour being part of your journey, and we hope ProCuro made your work a little easier along the way. We wish you all the success and happiness in everything ahead — you will always be welcome back.",
-    accountDeletedThanks: 'Thank you for being part of the ProCuro family. We are grateful for the trust you placed in us. ✨💙',
+    accountDeletedThanks: 'Thank you for being part of the ProCuro family. We are grateful for the trust you placed in us.',
     accountDeletedCta: 'Back to Homepage',
 
     // Login / auth
@@ -1427,7 +1427,7 @@ const T = {
     accountDeletedTitle: 'Auf Wiedersehen & Danke',
     accountDeletedSubtitle: 'Ihr Konto wurde gelöscht',
     accountDeletedMessage: 'Es tut uns sehr leid, Sie gehen zu sehen. Es war uns eine Ehre, Teil Ihrer Reise zu sein, und wir hoffen, dass ProCuro Ihre Arbeit ein wenig leichter gemacht hat. Wir wünschen Ihnen alles Gute und viel Erfolg für alles, was noch kommt — Sie sind jederzeit herzlich willkommen, zurückzukehren.',
-    accountDeletedThanks: 'Vielen Dank, dass Sie Teil der ProCuro-Familie waren. Wir sind dankbar für das Vertrauen, das Sie uns entgegengebracht haben. ✨💙',
+    accountDeletedThanks: 'Vielen Dank, dass Sie Teil der ProCuro-Familie waren. Wir sind dankbar für das Vertrauen, das Sie uns entgegengebracht haben.',
     accountDeletedCta: 'Zur Startseite',
 
     // Login / auth

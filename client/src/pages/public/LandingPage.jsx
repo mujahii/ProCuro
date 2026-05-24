@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple, Package, Truck, Shield, Fish, Milk, Flame, Wheat, Plus } from 'lucide-react'
+import { CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple, Package, Truck, Shield, Fish, Milk, Flame, Wheat, Plus, Rocket } from 'lucide-react'
 import Navbar from '../../components/layout/Navbar'
 import Footer from '../../components/layout/Footer'
 import { supabase } from '../../lib/supabase'
@@ -475,7 +475,9 @@ export default function LandingPage() {
             className="bg-white rounded-2xl p-8 max-w-xs w-full text-center shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
-            <div className="text-5xl mb-4">🚀</div>
+            <div className="flex justify-center mb-4">
+              <Rocket className="w-12 h-12 text-midnight" />
+            </div>
             <h3 className="text-xl font-black text-slate-900 mb-2">{t('comingSoonTitle')}</h3>
             <p className="text-slate-500 text-sm mb-6">{t('comingSoonDesc')}</p>
             <button

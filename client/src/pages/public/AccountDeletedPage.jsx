@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { Heart } from 'lucide-react'
 import { useLanguage, LANGS } from '../../context/LanguageContext'
 
 export default function AccountDeletedPage() {
@@ -28,8 +29,10 @@ export default function AccountDeletedPage() {
       {/* Card */}
       <div className="bg-white/5 border border-white/10 backdrop-blur-sm rounded-3xl px-10 py-14 max-w-lg w-full text-center shadow-2xl">
 
-        {/* Emoji */}
-        <div className="text-6xl mb-6 leading-none">💙</div>
+        {/* Icon */}
+        <div className="flex justify-center mb-6">
+          <Heart className="w-16 h-16 text-blue-400 fill-blue-400" />
+        </div>
 
         {/* Title */}
         <h1 className="text-3xl font-bold text-white mb-2">

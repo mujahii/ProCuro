@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-24 17:31 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-24 18:29 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -727,7 +727,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | AllProductsPage | `/owner/products` | Browse all products with category/search filter |
 | CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout. Bank transfer step shows full bank info (bank name, IBAN, BIC, account holder). All cart and payment labels are fully i18n'd (EN/DE): items subtotal, delivery, VAT, amount, upload receipt, place order, back, cash on delivery note, free delivery label. **Supplier name is a clickable button** — clicking it opens `SupplierProfileModal` with the supplier's full profile card inline. |
 | OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation (pre-confirmation: any time; post-confirmation: within 3 days of supplier confirmation via `updated_at`); dispute filing |
-| ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings. All modal titles (Edit Profile, Manage Addresses, Bank Details, Business Details, Update Profile Picture) are fully i18n'd via `t()` keys. |
+| ProfilePage | `/owner/profile` | Full profile editor: avatar, bio, restaurant name, tax ID, cuisine, cities (auto-populated from saved addresses — no manual checkbox), bank details, account settings. All modal titles (Edit Profile, Manage Addresses, Bank Details, Business Details, Update Profile Picture) are fully i18n'd via `t()` keys. **City pills in the Business Details card** are derived live from `addresses` (AddressContext) — adding or removing an address updates the displayed city chips immediately without requiring an edit/save cycle. Falls back to `owner_profiles.city` when the address book is empty. |
 | AnalyticsPage | `/owner/analytics` | Spending trend, top products, pie chart of spending by category (donut fills the card, legend below in a wrapping row), top categories bar chart (category names translated, fixed 288px height matching the other charts), AI summary at the bottom; week/month/year + custom date-range filter (all labels i18n'd) |
 
 **Ban enforcement in OwnerLayout**: When `users.is_banned = true` for the logged-in owner, a dark red banner appears at the top of every owner dashboard page. All sidebar navigation links (Store, Cart, Orders, Analytics, Profile) are replaced with greyed-out non-clickable spans. The main content area is replaced with an "Account Banned" message and a button directing the user to Chat — the only feature that remains accessible. The layout adjusts its top padding dynamically based on how many banners (deactivated + banned) are visible simultaneously.

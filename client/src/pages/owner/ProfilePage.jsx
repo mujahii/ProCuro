@@ -673,20 +673,25 @@ export default function ProfilePage() {
             {businessInfo.tax_id && <CheckCircle className="w-4 h-4 text-herb flex-shrink-0" />}
           </div>
 
-          {/* City — shows all selected cities from business details */}
+          {/* City — derived live from addresses so it updates without edit/save */}
           <div className="flex items-start gap-3 px-4 py-3">
             <MapPin className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide mb-1.5">{t('city')}</p>
-              {businessInfo.city ? (
-                <div className="flex flex-wrap gap-1.5">
-                  {businessInfo.city.split(',').map(c => c.trim()).filter(Boolean).map(c => (
-                    <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-celeste text-midnight-dark">{c}</span>
-                  ))}
-                </div>
-              ) : (
-                <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">{t('addAddress')} →</button>
-              )}
+              {(() => {
+                const liveCities = [...new Set(addresses.map(a => a.city).filter(Boolean))]
+                const fallbackCities = businessInfo.city.split(',').map(c => c.trim()).filter(Boolean)
+                const pills = liveCities.length > 0 ? liveCities : fallbackCities
+                return pills.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {pills.map(c => (
+                      <span key={c} className="text-xs font-semibold px-2.5 py-1 rounded-full bg-celeste text-midnight-dark">{c}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <button onClick={() => setShowAddressModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">{t('addAddress')} →</button>
+                )
+              })()}
             </div>
           </div>
 

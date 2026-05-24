@@ -71,6 +71,48 @@ function fillPeriods(bucketMap, labelMap, from, to, span) {
   return Object.keys(all).sort().map(k => ({ month: labels[k], revenue: all[k] }))
 }
 
+function buildMapData(addressRows, supplierProfileRows, ownerProfileRows, setCityCoords, setCityCounts) {
+  const norm = s => (s || '').trim().toLowerCase()
+  const coordByCity = {}
+  const learnCoords = (city, lat, lng) => {
+    if (!city || city.includes(',') || lat == null || lng == null) return
+    const k = norm(city)
+    if (!coordByCity[k]) coordByCity[k] = { lat: Number(lat), lng: Number(lng) }
+  }
+  ;(supplierProfileRows || []).forEach(p => learnCoords(p.city, p.latitude, p.longitude))
+  ;(ownerProfileRows || []).forEach(p => learnCoords(p.city, p.latitude, p.longitude))
+  ;(addressRows || []).forEach(a => learnCoords(a.city, a.latitude, a.longitude))
+  for (const [k, v] of Object.entries(CITY_FALLBACK)) if (!coordByCity[k]) coordByCity[k] = v
+
+  const locations = new Map()
+  const addLocation = (userId, role, cityField) => {
+    if (!userId || (role !== 'supplier' && role !== 'restaurant_owner')) return
+    ;(cityField || '').split(',').map(c => c.trim()).filter(Boolean).forEach(city => {
+      const key = `${userId}|${norm(city)}`
+      if (locations.has(key)) return
+      const coord = coordByCity[norm(city)]
+      locations.set(key, { city, role, lat: coord?.lat ?? null, lng: coord?.lng ?? null })
+    })
+  }
+  ;(supplierProfileRows || []).forEach(p => addLocation(p.user_id, 'supplier', p.city))
+  ;(ownerProfileRows || []).forEach(p => addLocation(p.user_id, 'restaurant_owner', p.city))
+  ;(addressRows || []).forEach(a => addLocation(a.user_id, a.user?.role, a.city))
+  const allLocations = [...locations.values()]
+
+  setCityCoords(
+    allLocations
+      .filter(l => l.lat != null && l.lng != null)
+      .map((l, i) => ({ id: i, city: l.city, lat: l.lat, lng: l.lng, role: l.role }))
+  )
+  const cityMap = {}
+  allLocations.forEach(l => {
+    if (!cityMap[l.city]) cityMap[l.city] = { city: l.city, suppliers: 0, owners: 0 }
+    if (l.role === 'supplier') cityMap[l.city].suppliers += 1
+    else cityMap[l.city].owners += 1
+  })
+  setCityCounts(Object.values(cityMap).sort((a, b) => (b.suppliers + b.owners) - (a.suppliers + a.owners)))
+}
+
 export default function AdminDashboardPage() {
   const [range, setRange] = useState(() => rangeFromKey('year'))
   const [stats, setStats] = useState(null)
@@ -83,6 +125,35 @@ export default function AdminDashboardPage() {
   const [cityCoords, setCityCoords] = useState([])
 
   useEffect(() => { loadStats() }, [range])
+
+  useEffect(() => {
+    async function refreshMap() {
+      const [
+        { data: addressRows },
+        { data: supplierProfileRows },
+        { data: ownerProfileRows },
+      ] = await Promise.all([
+        supabase.from('addresses').select('city, latitude, longitude, user_id, user:users!user_id(role)').not('city', 'is', null),
+        supabase.from('supplier_profiles').select('user_id, city, latitude, longitude'),
+        supabase.from('owner_profiles').select('user_id, city, latitude, longitude'),
+      ])
+      buildMapData(addressRows, supplierProfileRows, ownerProfileRows, setCityCoords, setCityCounts)
+    }
+    const addrCh = supabase.channel('map-addresses')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'addresses' }, refreshMap)
+      .subscribe()
+    const supCh = supabase.channel('map-supplier-profiles')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'supplier_profiles' }, refreshMap)
+      .subscribe()
+    const ownCh = supabase.channel('map-owner-profiles')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'owner_profiles' }, refreshMap)
+      .subscribe()
+    return () => {
+      supabase.removeChannel(addrCh)
+      supabase.removeChannel(supCh)
+      supabase.removeChannel(ownCh)
+    }
+  }, [])
 
   async function loadStats() {
     setLoading(true)
@@ -187,54 +258,7 @@ export default function AdminDashboardPage() {
     }
     setUserGrowth(cumulative)
 
-    // Merge both location layers — profile home cities + relocation addresses —
-    // deduped per (user, city). A relocated user therefore shows one dot per
-    // distinct city; a user listed once shows exactly one.
-    const norm = s => (s || '').trim().toLowerCase()
-
-    // city -> {lat,lng}, learned only from single-city rows that carry coords
-    // (a multi-city profile stores one coordinate that can't be split per city).
-    const coordByCity = {}
-    const learnCoords = (city, lat, lng) => {
-      if (!city || city.includes(',') || lat == null || lng == null) return
-      const k = norm(city)
-      if (!coordByCity[k]) coordByCity[k] = { lat: Number(lat), lng: Number(lng) }
-    }
-    ;(supplierProfileRows || []).forEach(p => learnCoords(p.city, p.latitude, p.longitude))
-    ;(ownerProfileRows || []).forEach(p => learnCoords(p.city, p.latitude, p.longitude))
-    ;(addressRows || []).forEach(a => learnCoords(a.city, a.latitude, a.longitude))
-    for (const [k, v] of Object.entries(CITY_FALLBACK)) if (!coordByCity[k]) coordByCity[k] = v
-
-    const locations = new Map()
-    const addLocation = (userId, role, cityField) => {
-      if (!userId || (role !== 'supplier' && role !== 'restaurant_owner')) return
-      ;(cityField || '').split(',').map(c => c.trim()).filter(Boolean).forEach(city => {
-        const key = `${userId}|${norm(city)}`
-        if (locations.has(key)) return
-        const coord = coordByCity[norm(city)]
-        locations.set(key, { city, role, lat: coord?.lat ?? null, lng: coord?.lng ?? null })
-      })
-    }
-    ;(supplierProfileRows || []).forEach(p => addLocation(p.user_id, 'supplier', p.city))
-    ;(ownerProfileRows || []).forEach(p => addLocation(p.user_id, 'restaurant_owner', p.city))
-    ;(addressRows || []).forEach(a => addLocation(a.user_id, a.user?.role, a.city))
-    const allLocations = [...locations.values()]
-
-    // Germany map — one dot per located (user, city) that resolved to coordinates.
-    setCityCoords(
-      allLocations
-        .filter(l => l.lat != null && l.lng != null)
-        .map((l, i) => ({ id: i, city: l.city, lat: l.lat, lng: l.lng, role: l.role }))
-    )
-
-    // Radar — supplier vs owner counts per city (all cities, coords not required).
-    const cityMap = {}
-    allLocations.forEach(l => {
-      if (!cityMap[l.city]) cityMap[l.city] = { city: l.city, suppliers: 0, owners: 0 }
-      if (l.role === 'supplier') cityMap[l.city].suppliers += 1
-      else cityMap[l.city].owners += 1
-    })
-    setCityCounts(Object.values(cityMap).sort((a, b) => (b.suppliers + b.owners) - (a.suppliers + a.owners)))
+    buildMapData(addressRows, supplierProfileRows, ownerProfileRows, setCityCoords, setCityCounts)
 
     setLoading(false)
   }

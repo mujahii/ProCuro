@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-24 20:15 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-24 20:28 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -702,7 +702,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 | Page | Route | Description |
 |---|---|---|
-| LandingPage | `/` | Marketing homepage with hero, features, and CTA. Hero section background uses **five rising blob orbs** animated with `riseBlob` (`translateY` from +680 px to −680 px over 15 s, linear infinite). The five orbs and their delays (evenly spread for continuous coverage): marigold `#A58D66` at 0 s (far left), celeste `#C0D5D6` at −3.75 s (right-center), herb teal `#5E96A4` at −7.5 s (center), lionsmane cream `#BFA988` at −11.25 s (far right), and rose mauve `#B07B8B` at −2 s (left-center, new). Each orb is heavily blurred (60–80 px) and a `bg-[#052532]/60` dark overlay keeps text legible. Page top offset uses `calc(4rem + var(--sat, 0px))` so iOS safe-area inset is included and the hero badge clears the navbar on mobile; desktop behaviour unchanged (`--sat` = 0 px). |
+| LandingPage | `/` | Marketing homepage with hero, features, and CTA. Hero section background uses **five rising blob orbs** animated with `riseBlob` (`translateY` from +680 px to −680 px over 15 s, linear infinite). The five orbs and their delays (evenly spread for continuous coverage): marigold `#A58D66` at 0 s (far left), celeste `#C0D5D6` at −3.75 s (right-center), herb teal `#5E96A4` at −7.5 s (center), lionsmane cream `#BFA988` at −11.25 s (far right), and rose mauve `#B07B8B` at −2 s (left-center, new). Each orb is heavily blurred (60–80 px) and a `bg-[#052532]/60` dark overlay keeps text legible. Page top offset uses `calc(4rem + var(--sat, 0px))` so iOS safe-area inset is included and the hero badge clears the navbar on mobile; desktop behaviour unchanged (`--sat` = 0 px). Below the How It Works section, a **Mobile App Download** strip shows three store badges (App Store, Google Play, AppGallery) rendered as inline-SVG buttons on a black background. Clicking any badge opens a "Coming Soon" modal overlay (tap outside or OK to dismiss). The Google Play icon uses the official 4-colour triangle paths; the Huawei AppGallery icon uses 4 coloured ellipses forming a petal/flower pattern. |
 | LoginPage | `/login` | Email/password login; Google OAuth button |
 | SelectRolePage | `/select-role` | Role picker for new users (owner vs supplier) |
 | RegisterOwnerPage | `/register` | Owner registration form |

@@ -191,16 +191,17 @@ export default function AnalyticsSummary({ context }) {
     <div>
       <style>{`
         @keyframes aiGlow {
-          0%   { box-shadow: 0 0 18px 4px rgba(41,121,255,0.45), 0 2px 12px rgba(0,0,0,0.08); }
-          25%  { box-shadow: 0 0 22px 6px rgba(170,0,255,0.40), 0 2px 12px rgba(0,0,0,0.08); }
-          50%  { box-shadow: 0 0 22px 6px rgba(0,229,204,0.40), 0 2px 12px rgba(0,0,0,0.08); }
-          75%  { box-shadow: 0 0 22px 6px rgba(255,109,0,0.40), 0 2px 12px rgba(0,0,0,0.08); }
-          100% { box-shadow: 0 0 18px 4px rgba(41,121,255,0.45), 0 2px 12px rgba(0,0,0,0.08); }
+          0%   { box-shadow: 0 0 14px 3px rgba(41,121,255,0.30),  0 2px 10px rgba(0,0,0,0.06); }
+          20%  { box-shadow: 0 0 18px 4px rgba(120,50,255,0.26),  0 2px 10px rgba(0,0,0,0.06); }
+          40%  { box-shadow: 0 0 18px 4px rgba(0,190,175,0.26),   0 2px 10px rgba(0,0,0,0.06); }
+          60%  { box-shadow: 0 0 18px 4px rgba(255,148,0,0.24),   0 2px 10px rgba(0,0,0,0.06); }
+          80%  { box-shadow: 0 0 18px 4px rgba(220,40,185,0.24),  0 2px 10px rgba(0,0,0,0.06); }
+          100% { box-shadow: 0 0 14px 3px rgba(41,121,255,0.30),  0 2px 10px rgba(0,0,0,0.06); }
         }
       `}</style>
 
-      {/* Card with animated glow border — no spinning elements */}
-      <div style={{ borderRadius: '1rem', overflow: 'hidden', animation: 'aiGlow 6s ease-in-out infinite', willChange: 'box-shadow' }}>
+      {/* Card with ambient glow — slow colour drift, linear so each phase gets equal time */}
+      <div style={{ borderRadius: '1rem', overflow: 'hidden', animation: 'aiGlow 20s linear infinite', willChange: 'box-shadow' }}>
 
       {/* Header — gradient bar */}
       <div className="bg-gradient-to-r from-midnight to-herb px-5 py-4 flex items-center justify-between">

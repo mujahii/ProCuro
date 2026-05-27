@@ -6,10 +6,12 @@ import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { supabase } from '../../lib/supabase'
 
+const ONGOING_STATUSES = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded', 'cancellation_requested', 'delivery_dispute']
+
 const supplierNavItems = [
   { to: '/supplier/dashboard', icon: LayoutDashboard, key: 'navDashboard' },
   { to: '/supplier/products', icon: Package, key: 'navProducts' },
-  { to: '/supplier/orders', icon: ShoppingBag, key: 'navOrders' },
+  { to: '/supplier/orders', icon: ShoppingBag, key: 'navOrders', orderBadge: true },
   { to: '/supplier/analytics', icon: BarChart3, key: 'navAnalytics' },
   { to: '/supplier/chat', icon: MessageSquare, key: 'navMessages' },
   { to: '/supplier/profile', icon: User, key: 'navProfile' },
@@ -23,6 +25,8 @@ export default function SupplierLayout() {
   const [certStatus, setCertStatus] = useState(null)
   const [profileIncomplete, setProfileIncomplete] = useState(false)
   const [bannerLoading, setBannerLoading] = useState(true)
+  const [pendingOrders, setPendingOrders] = useState(0)
+  const [supplierProfileId, setSupplierProfileId] = useState(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
     () => localStorage.getItem('supplierSidebarCollapsed') === 'true'
@@ -38,6 +42,7 @@ export default function SupplierLayout() {
       .single()
       .then(({ data: sp }) => {
         if (!sp) { setBannerLoading(false); return }
+        setSupplierProfileId(sp.id)
         setProfileIncomplete(!sp.business_name || !sp.tax_id)
         if (sp.is_verified) {
           setCertStatus('approved')
@@ -56,6 +61,29 @@ export default function SupplierLayout() {
         }
       })
   }, [user, location.pathname])
+
+  useEffect(() => {
+    if (!supplierProfileId) return
+    fetchPendingOrders()
+    const channel = supabase
+      .channel('supplier-orders-badge')
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'order_splits',
+        filter: `supplier_id=eq.${supplierProfileId}`,
+      }, fetchPendingOrders)
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [supplierProfileId])
+
+  async function fetchPendingOrders() {
+    if (!supplierProfileId) return
+    const { count } = await supabase
+      .from('order_splits')
+      .select('*', { count: 'exact', head: true })
+      .eq('supplier_id', supplierProfileId)
+      .in('status', ONGOING_STATUSES)
+    setPendingOrders(count || 0)
+  }
 
   function toggleCollapsed() {
     const next = !collapsed
@@ -121,10 +149,15 @@ export default function SupplierLayout() {
           </button>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {supplierNavItems.map(({ to, icon: Icon, key }) => (
+          {supplierNavItems.map(({ to, icon: Icon, key, orderBadge }) => (
             <NavLink key={to} to={to} onClick={() => setDrawerOpen(false)} className={navLinkClass}>
               <Icon className="w-4 h-4 flex-shrink-0" />
-              {t(key)}
+              <span className="flex-1">{t(key)}</span>
+              {orderBadge && pendingOrders > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                  {pendingOrders}
+                </span>
+              )}
             </NavLink>
           ))}
         </nav>
@@ -151,19 +184,28 @@ export default function SupplierLayout() {
           style={{ top: showBanner ? 'calc(6.5rem + var(--sat))' : 'calc(4rem + var(--sat))' }}
         >
           <nav className="flex-1 px-2 py-4 space-y-1">
-            {supplierNavItems.map(({ to, icon: Icon, key }) => (
+            {supplierNavItems.map(({ to, icon: Icon, key, orderBadge }) => (
               <NavLink
                 key={to}
                 to={to}
                 title={collapsed ? t(key) : undefined}
                 className={({ isActive }) =>
-                  `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors relative ${
                     collapsed ? 'justify-center px-0' : 'gap-3 px-3'
                   } ${isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'}`
                 }
               >
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                {!collapsed && <span>{t(key)}</span>}
+                {!collapsed && <span className="flex-1">{t(key)}</span>}
+                {orderBadge && pendingOrders > 0 && (
+                  <span className={`bg-red-500 text-white text-xs font-bold rounded-full text-center ${
+                    collapsed
+                      ? 'absolute top-1 right-1 w-4 h-4 p-0 flex items-center justify-center text-[10px]'
+                      : 'px-1.5 py-0.5 min-w-[20px]'
+                  }`}>
+                    {pendingOrders}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>

@@ -29,12 +29,16 @@ export default function AdminChatPage() {
   const [unreadMap, setUnreadMap] = useState({})
   const [deleteModalConvId, setDeleteModalConvId] = useState(null)
   const [openMenu, setOpenMenu] = useState(null)
+  const [allUsers, setAllUsers] = useState({ supplier: [], restaurant_owner: [] })
+  const [userListTab, setUserListTab] = useState('supplier')
+  const [usersLoading, setUsersLoading] = useState(true)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
 
   useEffect(() => {
     if (!user) return
     loadConversations()
+    fetchAllUsers()
   }, [user])
 
   useEffect(() => {
@@ -74,6 +78,49 @@ export default function AdminChatPage() {
     ])
     if (!u) return null
     return { ...u, owner_profile: op || null, supplier_profile: sp || null }
+  }
+
+  async function fetchAllUsers() {
+    const { data: usersData } = await supabase
+      .from('users')
+      .select('id, full_name, email, role, avatar_url')
+      .in('role', ['supplier', 'restaurant_owner'])
+      .order('full_name')
+    if (!usersData) { setUsersLoading(false); return }
+
+    const supplierIds = usersData.filter(u => u.role === 'supplier').map(u => u.id)
+    const ownerIds = usersData.filter(u => u.role === 'restaurant_owner').map(u => u.id)
+
+    const [{ data: sps }, { data: ops }] = await Promise.all([
+      supplierIds.length
+        ? supabase.from('supplier_profiles').select('user_id, business_name, avatar_url').in('user_id', supplierIds)
+        : Promise.resolve({ data: [] }),
+      ownerIds.length
+        ? supabase.from('owner_profiles').select('user_id, restaurant_name').in('user_id', ownerIds)
+        : Promise.resolve({ data: [] }),
+    ])
+
+    const spMap = {}
+    ;(sps || []).forEach(sp => { spMap[sp.user_id] = sp })
+    const opMap = {}
+    ;(ops || []).forEach(op => { opMap[op.user_id] = op })
+
+    const suppliers = usersData
+      .filter(u => u.role === 'supplier')
+      .map(u => ({
+        ...u,
+        displayName: spMap[u.id]?.business_name || u.full_name || u.email || 'Supplier',
+        avatar_url: spMap[u.id]?.avatar_url || u.avatar_url,
+      }))
+    const owners = usersData
+      .filter(u => u.role === 'restaurant_owner')
+      .map(u => ({
+        ...u,
+        displayName: opMap[u.id]?.restaurant_name || u.full_name || u.email || 'Owner',
+      }))
+
+    setAllUsers({ supplier: suppliers, restaurant_owner: owners })
+    setUsersLoading(false)
   }
 
   async function loadConversations() {
@@ -312,6 +359,48 @@ export default function AdminChatPage() {
 
         {/* Conversation list */}
         <div className={`${selectedConv ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-72 lg:w-80 border-r border-gray-100 flex-shrink-0`}>
+          {/* User directory — quick-start new chat */}
+          <div className="border-b border-gray-100 flex-shrink-0">
+            <div className="px-3 pt-2.5 pb-1.5">
+              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">{t('chatDirectoryTitle')}</p>
+            </div>
+            <div className="flex border-b border-gray-100">
+              <button
+                onClick={() => setUserListTab('supplier')}
+                className={`flex-1 py-2 text-xs font-semibold transition-colors border-b-2 ${userListTab === 'supplier' ? 'border-midnight text-midnight' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+              >
+                {t('chatSuppliersTab')}
+              </button>
+              <button
+                onClick={() => setUserListTab('restaurant_owner')}
+                className={`flex-1 py-2 text-xs font-semibold transition-colors border-b-2 ${userListTab === 'restaurant_owner' ? 'border-midnight text-midnight' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+              >
+                {t('chatOwnersTab')}
+              </button>
+            </div>
+            <div className="max-h-36 overflow-y-auto">
+              {usersLoading ? (
+                <div className="py-3 text-center text-xs text-gray-400">Loading…</div>
+              ) : allUsers[userListTab].length === 0 ? (
+                <div className="py-4 text-center text-xs text-gray-400">{t('chatNoUsersFound')}</div>
+              ) : allUsers[userListTab].map(u => (
+                <button
+                  key={u.id}
+                  onClick={() => openOrCreateConv(u.id)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-lionsmane text-left transition-colors"
+                >
+                  <div className="w-7 h-7 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    {u.avatar_url
+                      ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
+                      : <span className="text-xs font-bold text-slate-500">{u.displayName?.[0]?.toUpperCase()}</span>
+                    }
+                  </div>
+                  <span className="text-xs font-medium text-gray-700 truncate flex-1">{u.displayName}</span>
+                  <MessageSquare className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="p-3 border-b border-gray-100 flex-shrink-0">
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -344,13 +433,15 @@ export default function AdminChatPage() {
                     onClick={() => handleSelectConv(conv)}
                     className="flex-1 p-4 flex items-center gap-3 text-left min-w-0"
                   >
-                    <div className="relative w-10 h-10 rounded-full bg-slate-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                      {p?.avatar_url
-                        ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
-                        : <span className="text-sm font-bold text-slate-500">{getDisplayName(conv)?.[0]?.toUpperCase()}</span>
-                      }
+                    <div className="relative w-10 h-10 flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                        {p?.avatar_url
+                          ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" />
+                          : <span className="text-sm font-bold text-slate-500">{getDisplayName(conv)?.[0]?.toUpperCase()}</span>
+                        }
+                      </div>
                       {conv.pinned_by_admin && (
-                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-marigold rounded-full flex items-center justify-center">
+                        <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-marigold rounded-full flex items-center justify-center z-10">
                           <Pin className="w-2.5 h-2.5 text-white" />
                         </span>
                       )}

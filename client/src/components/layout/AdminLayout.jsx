@@ -10,7 +10,7 @@ import { useLanguage } from '../../context/LanguageContext'
 const NAV_ITEMS = [
   { to: '/admin/dashboard', icon: LayoutDashboard, labelKey: 'adminNavDashboard' },
   { to: '/admin/users', icon: Users, labelKey: 'adminNavUsers' },
-  { to: '/admin/certificates', icon: Award, labelKey: 'adminNavCertificates' },
+  { to: '/admin/certificates', icon: Award, labelKey: 'adminNavCertificates', certBadge: true },
   { to: '/admin/products', icon: Package, labelKey: 'adminNavProducts' },
   { to: '/admin/orders', icon: ShoppingBag, labelKey: 'adminNavOrders' },
   { to: '/admin/delivery-fees', icon: Truck, labelKey: 'adminNavDeliveryFees' },
@@ -24,12 +24,14 @@ export default function AdminLayout() {
   const { lang, setLanguage, t } = useLanguage()
   const [pendingReports, setPendingReports] = useState(0)
   const [unreadChats, setUnreadChats] = useState(0)
+  const [pendingCerts, setPendingCerts] = useState(0)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
 
   useEffect(() => {
     fetchPendingReports()
     fetchUnreadChats()
+    fetchPendingCerts()
     const reportsChannel = supabase
       .channel('admin-reports-badge')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, fetchPendingReports)
@@ -38,11 +40,24 @@ export default function AdminLayout() {
       .channel('admin-chat-badge')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'admin_messages' }, fetchUnreadChats)
       .subscribe()
+    const certsChannel = supabase
+      .channel('admin-certs-badge')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'halal_certificates' }, fetchPendingCerts)
+      .subscribe()
     return () => {
       supabase.removeChannel(reportsChannel)
       supabase.removeChannel(chatsChannel)
+      supabase.removeChannel(certsChannel)
     }
   }, [])
+
+  async function fetchPendingCerts() {
+    const { count } = await supabase
+      .from('halal_certificates')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+    setPendingCerts(count || 0)
+  }
 
   async function fetchPendingReports() {
     const { count } = await supabase
@@ -114,7 +129,7 @@ export default function AdminLayout() {
 
         {/* Nav items */}
         <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ to, icon: Icon, labelKey, badge, unreadBadge }) => (
+          {NAV_ITEMS.map(({ to, icon: Icon, labelKey, badge, unreadBadge, certBadge }) => (
             <NavLink
               key={to}
               to={to}
@@ -144,6 +159,11 @@ export default function AdminLayout() {
               {unreadBadge && unreadChats > 0 && (
                 <span className={`bg-herb text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${collapsed ? 'lg:absolute lg:top-1 lg:right-1 lg:min-w-0 lg:w-4 lg:h-4 lg:p-0 lg:flex lg:items-center lg:justify-center' : ''}`}>
                   {unreadChats}
+                </span>
+              )}
+              {certBadge && pendingCerts > 0 && (
+                <span className={`bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${collapsed ? 'lg:absolute lg:top-1 lg:right-1 lg:min-w-0 lg:w-4 lg:h-4 lg:p-0 lg:flex lg:items-center lg:justify-center' : ''}`}>
+                  {pendingCerts}
                 </span>
               )}
             </NavLink>

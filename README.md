@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-28 00:19 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-28 00:29 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -673,8 +673,9 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - Separate tables: `admin_conversations` and `admin_messages`.
 - Admin views all support conversations in the Admin Chat page.
 - Supports attachments and real-time updates.
-- Admin can **pin** conversations via the ⋮ menu — pinned chats sort first in the list and show a gold pin badge on the avatar; state persisted in `pinned_by_admin` column.
+- Admin can **pin** conversations via the ⋮ menu — pinned chats sort first in the list and show a gold pin indicator **outside the avatar** (absolutely positioned over the outer wrapper, not clipped by the avatar's `overflow-hidden`); state persisted in `pinned_by_admin` column.
 - Admin can **delete** a conversation (and all its messages) via the ⋮ menu with a confirmation modal.
+- **User directory panel** at the top of the conversations list: two tabs — "Suppliers" and "Owners" — show all registered users of that role (business/restaurant name + avatar). Clicking any user immediately opens or creates an admin conversation with them, without needing to navigate to the Users page. Directory is fetched once on mount from `users` joined with `supplier_profiles` and `owner_profiles`.
 
 ---
 
@@ -779,7 +780,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | ProductsPage | `/admin/products` | Two tabs — **Active** (`deleted_at IS NULL`) and **Deleted** (`deleted_at IS NOT NULL`), mirroring the Users page Active/Deleted pattern. Active tab: activate/deactivate, view details, soft-delete with confirmation modal (sets `deleted_at`, moves the product to the Deleted tab). Deleted tab: archived products with supplier, category, price, deletion date, and a **Restore** button. Soft-deleted products are preserved in `order_items` so analytics retain history. **Mobile card layout** (`md:hidden`) for both tabs: Active card shows product name, supplier, price, status badge, and View/Toggle/Delete icon buttons; Deleted card shows name, supplier, price, deletion date, and Restore button. Desktop shows the full table (`hidden md:block`). |
 | CertificatesPage | `/admin/certificates` | Certificate review queue: approve or reject with reason. **Mobile card layout** (`md:hidden`): each cert shows supplier name, status badge, city + upload date, and a "Review →" tap target — clicking opens the review modal. Desktop shows the full table. |
 | ReportsPage | `/admin/reports` | Abuse report queue: review, record action, dismiss. Supports all report types: `product`, `supplier`, `restaurant`, `order`, `user`. ActionModal shows who filed the report ("Reported by"), the target details, and role-appropriate actions — warns/bans for suppliers, warns/suspends for restaurant accounts, deletes for products. Type filter dropdown includes all types including `restaurant`. Type badges are colour-coded (blue = product, purple = supplier, orange = restaurant). |
-| AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations). Each conversation row has a **⋮ menu** with **Pin** (toggles `pinned_by_admin`, shows gold pin badge on avatar, sorts pinned chats to top) and **Delete** (confirmation modal). Delete uses a modal overlay. Mirrors the user ChatPage ⋮ menu pattern. |
+| AdminChatPage | `/admin/chat` | Support chat with all users (admin_conversations). **User directory** at the top of the left panel: Suppliers / Owners tabs list every registered user by business name — click to instantly open or create a conversation (calls `openOrCreateConv(userId)`). Each conversation row has a **⋮ menu** with **Pin** (toggles `pinned_by_admin`, shows gold pin indicator outside the avatar so it is not clipped by `overflow-hidden`, sorts pinned chats to top) and **Delete** (confirmation modal). Delete uses a modal overlay. Mirrors the user ChatPage ⋮ menu pattern. |
 | DeliveryFeesPage | `/admin/delivery-fees` | CRUD for `delivery_fee_rules` table — add, edit, and delete distance-based delivery fee tiers; changes are reflected live in the supplier Products page delivery fee table. **Tax rate section** at the bottom: displays the current VAT rate from `platform_settings` and allows the admin to edit it via a modal (value stored as a decimal in DB, displayed as a percentage in the UI) |
 
 ### Shared
@@ -795,9 +796,9 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 ### Layout
 - `Navbar` — Top navigation; role-aware links; `NotificationBell`; language toggle. **Address selector** is responsive: on mobile (< `md`), shows a `MapPin` icon + truncated city/label text (max 72px) so owners can see their selected delivery location at a glance; on desktop shows the full "Delivered to / address" two-line button. Click-outside detection uses a shared `ref`.
 - `Footer` — Site-wide footer with links
-- `OwnerLayout` — Wrapper with owner sidebar navigation
-- `SupplierLayout` — Wrapper with supplier sidebar navigation
-- `AdminLayout` — Wrapper with admin sidebar navigation
+- `OwnerLayout` — Wrapper with owner sidebar navigation. **Live orders badge** on the "Orders" nav item (both desktop and mobile drawer): counts `order_splits` in ONGOING statuses (`pending_payment`, `pending_confirmation`, `confirmed`, `out_for_delivery`, `refund_uploaded`, `cancellation_requested`, `delivery_dispute`) joined through `orders.user_id`; no count for completed/cancelled splits. Updates via Supabase Realtime subscription on `order_splits`. In collapsed desktop mode, the badge renders as a small absolute-positioned dot (`top-1 right-1`).
+- `SupplierLayout` — Wrapper with supplier sidebar navigation. **Live orders badge** on the "Orders" nav item: counts `order_splits` in ONGOING statuses filtered by `supplier_id` (the supplier_profiles row id). Realtime subscription filtered to `supplier_id=eq.{id}` for minimal noise. Badge position adapts to collapsed sidebar (absolute dot) vs expanded (right-aligned pill).
+- `AdminLayout` — Wrapper with admin sidebar navigation. **Live certificates badge** (amber) on the "Certificates" nav item: counts `halal_certificates` where `status = 'pending'`; updates via Realtime subscription on `halal_certificates`. Joins existing red reports badge and green unread-chat badge in the sidebar, each independently tracked.
 
 ### Routing
 - `ProtectedRoute` — Redirects unauthenticated users to `/login`; enforces role access. Uses `loading || profileLoading` to avoid a flash of the SelectRole page during the async gap between `setAuthUser` and `setProfile` (React 18 batching only applies within the same synchronous block).

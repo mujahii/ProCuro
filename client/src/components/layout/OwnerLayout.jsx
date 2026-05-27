@@ -7,6 +7,17 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 
+const ONGOING_STATUSES = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded', 'cancellation_requested', 'delivery_dispute']
+
+const ownerNavItems = [
+  { to: '/owner/store', icon: ShoppingBag, key: 'navStore' },
+  { to: '/owner/cart', icon: ShoppingCart, key: 'navCart' },
+  { to: '/owner/orders', icon: Package, key: 'navOrders', orderBadge: true },
+  { to: '/owner/analytics', icon: BarChart3, key: 'navAnalytics' },
+  { to: '/owner/chat', icon: MessageSquare, key: 'navMessages' },
+  { to: '/owner/profile', icon: User, key: 'navProfile' },
+]
+
 export default function OwnerLayout() {
   const { user, signOut } = useAuth()
   const { t } = useLanguage()
@@ -18,12 +29,36 @@ export default function OwnerLayout() {
   )
   const [isActive, setIsActive] = useState(true)
   const isBanned = user?.is_banned ?? false
+  const [pendingOrders, setPendingOrders] = useState(0)
 
   useEffect(() => {
     if (!user) return
     supabase.from('owner_profiles').select('is_active').eq('user_id', user.id).maybeSingle()
       .then(({ data }) => { if (data) setIsActive(data.is_active ?? true) })
   }, [user])
+
+  useEffect(() => {
+    if (!user) return
+    fetchPendingOrders()
+    const channel = supabase
+      .channel('owner-orders-badge')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_splits' }, fetchPendingOrders)
+      .subscribe()
+    return () => supabase.removeChannel(channel)
+  }, [user])
+
+  async function fetchPendingOrders() {
+    if (!user) return
+    const { data: ords } = await supabase.from('orders').select('id').eq('user_id', user.id)
+    const ids = ords?.map(o => o.id) || []
+    if (!ids.length) { setPendingOrders(0); return }
+    const { count } = await supabase
+      .from('order_splits')
+      .select('*', { count: 'exact', head: true })
+      .in('order_id', ids)
+      .in('status', ONGOING_STATUSES)
+    setPendingOrders(count || 0)
+  }
 
   const bannerCount = (!isActive ? 1 : 0) + (isBanned ? 1 : 0)
   const topOffset = bannerCount === 0
@@ -103,14 +138,7 @@ export default function OwnerLayout() {
           </button>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {[
-            { to: '/owner/store', icon: ShoppingBag, key: 'navStore' },
-            { to: '/owner/cart', icon: ShoppingCart, key: 'navCart' },
-            { to: '/owner/orders', icon: Package, key: 'navOrders' },
-            { to: '/owner/analytics', icon: BarChart3, key: 'navAnalytics' },
-            { to: '/owner/chat', icon: MessageSquare, key: 'navMessages' },
-            { to: '/owner/profile', icon: User, key: 'navProfile' },
-          ].map(({ to, icon: Icon, key }) => {
+          {ownerNavItems.map(({ to, icon: Icon, key, orderBadge }) => {
             const blockedByBan = isBanned && to !== '/owner/chat'
             return blockedByBan ? (
               <span key={to} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 cursor-not-allowed select-none">
@@ -120,7 +148,12 @@ export default function OwnerLayout() {
             ) : (
               <NavLink key={to} to={to} onClick={() => setDrawerOpen(false)} className={navLinkClass}>
                 <Icon className="w-4 h-4 flex-shrink-0" />
-                {t(key)}
+                <span className="flex-1">{t(key)}</span>
+                {orderBadge && pendingOrders > 0 && (
+                  <span className="bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center">
+                    {pendingOrders}
+                  </span>
+                )}
               </NavLink>
             )
           })}
@@ -148,14 +181,7 @@ export default function OwnerLayout() {
           style={{ top: topOffset }}
         >
           <nav className="flex-1 px-2 py-4 space-y-1">
-            {[
-              { to: '/owner/store', icon: ShoppingBag, key: 'navStore' },
-              { to: '/owner/cart', icon: ShoppingCart, key: 'navCart' },
-              { to: '/owner/orders', icon: Package, key: 'navOrders' },
-              { to: '/owner/analytics', icon: BarChart3, key: 'navAnalytics' },
-              { to: '/owner/chat', icon: MessageSquare, key: 'navMessages' },
-              { to: '/owner/profile', icon: User, key: 'navProfile' },
-            ].map(({ to, icon: Icon, key }) => {
+            {ownerNavItems.map(({ to, icon: Icon, key, orderBadge }) => {
               const blockedByBan = isBanned && to !== '/owner/chat'
               return blockedByBan ? (
                 <span
@@ -172,13 +198,22 @@ export default function OwnerLayout() {
                   to={to}
                   title={collapsed ? t(key) : undefined}
                   className={({ isActive }) =>
-                    `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors relative ${
                       collapsed ? 'justify-center px-0' : 'gap-3 px-3'
                     } ${isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'}`
                   }
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
-                  {!collapsed && <span>{t(key)}</span>}
+                  {!collapsed && <span className="flex-1">{t(key)}</span>}
+                  {orderBadge && pendingOrders > 0 && (
+                    <span className={`bg-red-500 text-white text-xs font-bold rounded-full text-center ${
+                      collapsed
+                        ? 'absolute top-1 right-1 w-4 h-4 p-0 flex items-center justify-center text-[10px]'
+                        : 'px-1.5 py-0.5 min-w-[20px]'
+                    }`}>
+                      {pendingOrders}
+                    </span>
+                  )}
                 </NavLink>
               )
             })}

@@ -52,7 +52,7 @@ function PrimaryInsightCard({ title, rest, meta }) {
   const lead = sentences[0] || rest || ''
   const detail = sentences.slice(1).join(' ')
   return (
-    <div className={`flex flex-col gap-3 p-5 rounded-2xl border h-full ${meta.bg} ${meta.border}`}>
+    <div className={`flex flex-col gap-3 p-5 rounded-2xl border h-full bg-white ${meta.border}`}>
       <div className="flex items-center gap-3">
         <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm`}>
           <Icon className="w-5 h-5 text-white" />
@@ -72,7 +72,7 @@ function PrimaryInsightCard({ title, rest, meta }) {
 function SecondaryInsightCard({ title, rest, meta }) {
   const Icon = meta.icon
   return (
-    <div className={`flex items-start gap-2.5 p-3 rounded-xl border ${meta.bg} ${meta.border}`}>
+    <div className={`flex items-start gap-2.5 p-3 rounded-xl border bg-white ${meta.border}`}>
       <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm mt-0.5`}>
         <Icon className="w-3.5 h-3.5 text-white" />
       </div>

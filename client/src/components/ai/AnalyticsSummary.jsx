@@ -200,95 +200,98 @@ export default function AnalyticsSummary({ context }) {
         }
       `}</style>
 
-      {/* Card with ambient glow — slow colour drift, linear so each phase gets equal time */}
-      <div style={{ borderRadius: '1rem', overflow: 'hidden', animation: 'aiGlow 20s linear infinite', willChange: 'box-shadow' }}>
+      {/* Unified dark card — same gradient as Total Revenue */}
+      <div
+        className="bg-gradient-to-br from-midnight to-slate-800 text-white"
+        style={{ borderRadius: '1rem', overflow: 'hidden', animation: 'aiGlow 20s linear infinite', willChange: 'box-shadow' }}
+      >
 
-      {/* Header — gradient bar */}
-      <div className="bg-gradient-to-r from-midnight to-herb px-5 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center backdrop-blur-sm">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="font-bold text-white text-sm tracking-wide">{t('aiInsightsTitle')}</h3>
-            <p className="text-xs text-white/60">
-              {generatedAt
-                ? <>{t('aiUpdated')} {timeAgo(generatedAt, t)}{fallback ? ` · ${t('aiBasicMode')}` : stale ? ` · ${t('aiCached')}` : ''} · {t('aiOnce24h')}</>
-                : t('aiPoweredByGemini')}
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={() => !isWithin24h && generate({ force: true })}
-          disabled={loading || isWithin24h}
-          className={`p-2 rounded-xl transition-colors group ${isWithin24h ? 'cursor-not-allowed opacity-30' : 'hover:bg-white/10'}`}
-          title={isWithin24h ? t('aiAvailableAgain24h') : t('aiForceRegenerate')}
-        >
-          <RefreshCw className={`w-4 h-4 text-white/70 ${loading ? 'animate-spin' : ''} ${!isWithin24h ? 'group-hover:text-white' : ''}`} />
-        </button>
-      </div>
-
-      {/* Body */}
-      <div className="bg-white p-5">
-        {loading ? (
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="sm:w-[45%]">
-              <div className="flex flex-col gap-3 p-5 rounded-2xl border border-slate-100 bg-slate-50 h-full">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-11 w-11 rounded-xl flex-shrink-0" />
-                  <Skeleton className="h-4 w-2/5" />
-                </div>
-                <div className="space-y-2">
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-5/6" />
-                  <Skeleton className="h-3 w-4/5" />
-                </div>
-                <div className="space-y-2 border-t border-slate-200 pt-2.5">
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-3/4" />
-                </div>
-              </div>
+        {/* Header row */}
+        <div className="px-5 py-4 flex items-center justify-between border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center">
+              <Sparkles className="w-5 h-5 text-white" />
             </div>
-            <div className="sm:flex-1 flex flex-col gap-2">
-              {[0, 1, 2].map(i => (
-                <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-100 bg-slate-50">
-                  <Skeleton className="h-7 w-7 rounded-lg flex-shrink-0" />
-                  <div className="flex-1 space-y-1.5 pt-0.5">
-                    <Skeleton className="h-3 w-2/5" />
-                    <Skeleton className="h-3 w-4/5" />
+            <div>
+              <h3 className="font-bold text-white text-sm tracking-wide">{t('aiInsightsTitle')}</h3>
+              <p className="text-xs text-white/50">
+                {generatedAt
+                  ? <>{t('aiUpdated')} {timeAgo(generatedAt, t)}{fallback ? ` · ${t('aiBasicMode')}` : stale ? ` · ${t('aiCached')}` : ''} · {t('aiOnce24h')}</>
+                  : t('aiPoweredByGemini')}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => !isWithin24h && generate({ force: true })}
+            disabled={loading || isWithin24h}
+            className={`p-2 rounded-xl transition-colors group ${isWithin24h ? 'cursor-not-allowed opacity-30' : 'hover:bg-white/10'}`}
+            title={isWithin24h ? t('aiAvailableAgain24h') : t('aiForceRegenerate')}
+          >
+            <RefreshCw className={`w-4 h-4 text-white/70 ${loading ? 'animate-spin' : ''} ${!isWithin24h ? 'group-hover:text-white' : ''}`} />
+          </button>
+        </div>
+
+        {/* Body — insight cards keep their own bg colours; only the gap/padding is dark */}
+        <div className="p-5">
+          {loading ? (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="sm:w-[45%]">
+                <div className="flex flex-col gap-3 p-5 rounded-2xl border border-white/10 bg-white/10 h-full">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-11 w-11 rounded-xl flex-shrink-0 bg-white/20" />
+                    <Skeleton className="h-4 w-2/5 bg-white/20" />
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-3 w-full bg-white/20" />
+                    <Skeleton className="h-3 w-5/6 bg-white/20" />
+                    <Skeleton className="h-3 w-4/5 bg-white/20" />
+                  </div>
+                  <div className="space-y-2 border-t border-white/10 pt-2.5">
+                    <Skeleton className="h-3 w-full bg-white/20" />
+                    <Skeleton className="h-3 w-3/4 bg-white/20" />
                   </div>
                 </div>
-              ))}
+              </div>
+              <div className="sm:flex-1 flex flex-col gap-2">
+                {[0, 1, 2].map(i => (
+                  <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl border border-white/10 bg-white/10">
+                    <Skeleton className="h-7 w-7 rounded-lg flex-shrink-0 bg-white/20" />
+                    <div className="flex-1 space-y-1.5 pt-0.5">
+                      <Skeleton className="h-3 w-2/5 bg-white/20" />
+                      <Skeleton className="h-3 w-4/5 bg-white/20" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ) : error ? (
-          <div className="text-center py-6">
-            <div className="w-10 h-10 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
+          ) : error ? (
+            <div className="text-center py-6">
+              <div className="w-10 h-10 bg-red-900/40 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <AlertTriangle className="w-5 h-5 text-red-400" />
+              </div>
+              <p className="text-sm text-white/50 mb-3">{error}</p>
+              <button onClick={() => generate({ force: true })} className="text-xs text-marigold font-bold underline underline-offset-2 hover:opacity-75 transition-opacity">
+                {t('aiTryAgain')}
+              </button>
             </div>
-            <p className="text-sm text-slate-400 mb-3">{error}</p>
-            <button onClick={() => generate({ force: true })} className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
-              {t('aiTryAgain')}
-            </button>
-          </div>
-        ) : summary ? (
-          <AIText text={summary} />
-        ) : (
-          <div className="text-center py-8">
-            <div className="w-12 h-12 bg-gradient-to-br from-midnight to-herb rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-md">
-              <Sparkles className="w-6 h-6 text-white" />
+          ) : summary ? (
+            <AIText text={summary} />
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-12 h-12 bg-white/15 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
+              <p className="text-sm font-semibold text-white mb-1">{t('aiAnalyseTitle')}</p>
+              <p className="text-xs text-white/50 mb-5 max-w-xs mx-auto">{t('aiAnalyseDesc')}</p>
+              <button
+                onClick={() => generate({ force: false })}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/15 text-white text-sm font-semibold rounded-xl hover:bg-white/25 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> {t('aiGenerateButton')}
+              </button>
             </div>
-            <p className="text-sm font-semibold text-slate-700 mb-1">{t('aiAnalyseTitle')}</p>
-            <p className="text-xs text-slate-400 mb-5 max-w-xs mx-auto">{t('aiAnalyseDesc')}</p>
-            <button
-              onClick={() => generate({ force: false })}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors shadow-sm"
-            >
-              <Sparkles className="w-3.5 h-3.5" /> {t('aiGenerateButton')}
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
       </div>
     </div>

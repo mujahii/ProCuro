@@ -19,83 +19,13 @@ import PasswordModal from '../../components/profile/PasswordModal'
 import PhoneModal, { formatPhone } from '../../components/profile/PhoneModal'
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal'
 
-function EditProfileModal({ userId, currentName, currentRestaurantName, currentBio, onClose, onSaved }) {
-  const { t } = useLanguage()
-  const [name, setName] = useState(currentName || '')
-  const [restaurantName, setRestaurantName] = useState(currentRestaurantName || '')
-  const [bio, setBio] = useState(currentBio || '')
-  const [saving, setSaving] = useState(false)
-
-  async function handleSave() {
-    if (!name.trim()) { toast.error(t('toastNameRequired')); return }
-    setSaving(true)
-    try {
-      await supabase.from('users').update({ full_name: name.trim() }).eq('id', userId)
-      await supabase.from('owner_profiles').upsert(
-        { user_id: userId, restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null },
-        { onConflict: 'user_id' }
-      )
-      onSaved({ full_name: name.trim(), restaurant_name: restaurantName.trim() || null, bio: bio.trim() || null })
-      onClose()
-      toast.success(t('toastProfileUpdated'))
-    } catch {
-      toast.error(t('toastFailedUpdateProfile'))
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Modal title={t('editProfileTitle')} onClose={onClose}>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Your Name</label>
-          <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="e.g. Mohammed Ali"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Restaurant Name</label>
-          <input
-            value={restaurantName}
-            onChange={e => setRestaurantName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="e.g. Al-Nour Kitchen"
-          />
-          <p className="text-xs text-slate-400 mt-1">Shown under your name in the app</p>
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Description</label>
-          <textarea
-            value={bio}
-            onChange={e => setBio(e.target.value)}
-            rows={3}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb resize-none"
-            placeholder="A short description about your restaurant..."
-          />
-          <p className="text-xs text-slate-400 mt-1">Optional — tell suppliers a bit about your business</p>
-        </div>
-        <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
-            Cancel
-          </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            Save Changes
-          </button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
 
 function BusinessInfoModal({ userId, current, onClose, onSaved }) {
   const { t } = useLanguage()
   const normaliseCuisine = v => Array.isArray(v) ? v : (v ? [v] : [])
   const [form, setForm] = useState({
+    restaurant_name: current.restaurant_name || '',
+    bio: current.bio || '',
     tax_id: current.tax_id || '',
     city: current.city || '',
     cuisine: normaliseCuisine(current.cuisine),
@@ -171,6 +101,8 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
       await supabase.from('owner_profiles').upsert(
         {
           user_id: userId,
+          restaurant_name: form.restaurant_name.trim() || null,
+          bio: form.bio.trim() || null,
           tax_id: form.tax_id.trim(),
           city: form.city.trim() || null,
           cuisine: form.cuisine.length > 0 ? form.cuisine : null,
@@ -180,7 +112,7 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
         },
         { onConflict: 'user_id' }
       )
-      onSaved({ tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null, latitude: form.latitude || null, longitude: form.longitude || null })
+      onSaved({ restaurant_name: form.restaurant_name.trim() || null, bio: form.bio.trim() || null, tax_id: form.tax_id.trim(), city: form.city.trim() || null, cuisine: form.cuisine, website: form.website.trim() || null, latitude: form.latitude || null, longitude: form.longitude || null })
       onClose()
       toast.success(t('toastBusinessDetailsSaved'))
     } catch {
@@ -195,6 +127,25 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
   return (
     <Modal title={t('businessDetailsTitle')} onClose={onClose} maxW="max-w-md">
       <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('restaurantName')}</label>
+          <input
+            value={form.restaurant_name}
+            onChange={e => setForm(f => ({ ...f, restaurant_name: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
+            placeholder="e.g. Al-Nour Kitchen"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('description')}</label>
+          <textarea
+            value={form.bio}
+            onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
+            rows={2}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb resize-none"
+            placeholder="A short description about your restaurant..."
+          />
+        </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
             Tax ID / VAT Number <span className="text-red-500">*</span>
@@ -534,6 +485,8 @@ export default function ProfilePage() {
   const [restaurantName, setRestaurantName] = useState(profile?.restaurant_name || '')
   const [bio, setBio] = useState(profile?.bio || '')
   const [businessInfo, setBusinessInfo] = useState({
+    restaurant_name: profile?.restaurant_name || '',
+    bio: profile?.bio || '',
     tax_id: profile?.tax_id || '',
     city: profile?.city || '',
     cuisine: profile?.cuisine || [],
@@ -543,7 +496,7 @@ export default function ProfilePage() {
 
   const [showAvatarModal, setShowAvatarModal] = useState(false)
   const [avatarLightbox, setAvatarLightbox] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
+
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showPhoneModal, setShowPhoneModal] = useState(false)
   const [showAddressModal, setShowAddressModal] = useState(false)
@@ -562,6 +515,8 @@ export default function ProfilePage() {
   useEffect(() => {
     if (profile) {
       setBusinessInfo({
+        restaurant_name: profile.restaurant_name || '',
+        bio: profile.bio || '',
         tax_id: profile.tax_id || '',
         city: profile.city || '',
         cuisine: profile.cuisine || [],
@@ -574,20 +529,16 @@ export default function ProfilePage() {
     signOut()
   }
 
-  function handleAvatarSaved(url) {
+  function handleAvatarSaved(url, name) {
     setAvatarUrl(url)
-    updateProfileState({ avatar_url: url })
-  }
-
-  function handleProfileSaved({ full_name, restaurant_name: newRestaurantName, bio: newBio }) {
-    setDisplayName(full_name)
-    setRestaurantName(newRestaurantName)
-    setBio(newBio)
-    updateProfileState({ full_name, restaurant_name: newRestaurantName, bio: newBio })
+    if (name) setDisplayName(name)
+    updateProfileState({ avatar_url: url, ...(name ? { full_name: name } : {}) })
   }
 
   function handleBusinessInfoSaved(info) {
     setBusinessInfo(info)
+    if (info.restaurant_name !== undefined) setRestaurantName(info.restaurant_name || '')
+    if (info.bio !== undefined) setBio(info.bio || '')
     updateProfileState(info)
   }
 
@@ -620,10 +571,6 @@ export default function ProfilePage() {
           </div>
           <h2 className="font-bold text-slate-900 text-xl mt-3">{displayName || t('restaurantOwner')}</h2>
           <p className="text-sm text-slate-400 mt-0.5">{restaurantName || t('restaurant')}</p>
-          {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
-          <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
-            {t('editProfile')}
-          </button>
         </div>
       </div>
 
@@ -657,6 +604,34 @@ export default function ProfilePage() {
           </button>
         </div>
         <div className="divide-y divide-slate-50">
+          {/* Restaurant Name */}
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Building2 className="w-4 h-4 text-slate-300 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">{t('restaurantName')}</p>
+              {businessInfo.restaurant_name ? (
+                <p className="text-sm font-semibold text-slate-900 mt-0.5">{businessInfo.restaurant_name}</p>
+              ) : (
+                <button onClick={() => setShowBusinessInfoModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">
+                  {t('add')} →
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="flex items-start gap-3 px-4 py-3">
+            <Tag className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">{t('description')}</p>
+              {businessInfo.bio ? (
+                <p className="text-sm text-slate-600 mt-0.5 italic">"{businessInfo.bio}"</p>
+              ) : (
+                <span className="text-sm text-slate-400">{t('notSet')}</span>
+              )}
+            </div>
+          </div>
+
           {/* Tax ID */}
           <div className="flex items-center gap-3 px-4 py-3">
             <Building2 className="w-4 h-4 text-slate-300 flex-shrink-0" />
@@ -799,17 +774,7 @@ export default function ProfilePage() {
 
       {/* Modals */}
       {showAvatarModal && (
-        <AvatarModal userId={user.id} role="owner" userName={displayName} onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
-      )}
-      {showEditModal && (
-        <EditProfileModal
-          userId={user.id}
-          currentName={displayName}
-          currentRestaurantName={restaurantName}
-          currentBio={bio}
-          onClose={() => setShowEditModal(false)}
-          onSaved={handleProfileSaved}
-        />
+        <AvatarModal userId={user.id} currentName={displayName} onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
       )}
       {showPasswordModal && <PasswordModal onClose={() => setShowPasswordModal(false)} currentEmail={user?.email} />}
       {showPhoneModal && (

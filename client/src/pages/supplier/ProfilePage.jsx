@@ -26,52 +26,6 @@ const CERT_STATUS = {
   rejected: { label: 'Rejected',       icon: XCircle,     color: 'text-red-600 bg-red-50 border-red-200' },
 }
 
-function EditProfileModal({ userId, currentName, onClose, onSaved }) {
-  const { t } = useLanguage()
-  const [name, setName] = useState(currentName || '')
-  const [saving, setSaving] = useState(false)
-
-  async function handleSave() {
-    if (!name.trim()) { toast.error(t('toastNameRequired')); return }
-    setSaving(true)
-    try {
-      await supabase.from('users').update({ full_name: name.trim() }).eq('id', userId)
-      onSaved({ full_name: name.trim() })
-      onClose()
-      toast.success(t('toastProfileUpdated'))
-    } catch {
-      toast.error(t('toastFailedUpdateProfile'))
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <Modal title={t('editProfileTitle')} onClose={onClose}>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('yourName')}</label>
-          <input
-            value={name}
-            onChange={e => setName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
-            placeholder="e.g. Ahmed Hassan"
-          />
-        </div>
-        <div className="flex gap-3 pt-1">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
-            {t('cancel') || 'Cancel'}
-          </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
-            {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-            {t('saveChanges') || 'Save Changes'}
-          </button>
-        </div>
-      </div>
-    </Modal>
-  )
-}
-
 
 function AddressModal({ onClose, supplierProfileId }) {
   const { t } = useLanguage()
@@ -338,6 +292,8 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
   const { t } = useLanguage()
   const normaliseCategories = v => Array.isArray(v) ? v : (v ? [v] : [])
   const [form, setForm] = useState({
+    business_name: current.business_name || '',
+    bio: current.bio || '',
     tax_id: current.tax_id || '',
     city: current.city || '',
     latitude: current.latitude || null,
@@ -412,6 +368,8 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
     setSaving(true)
     try {
       await supabase.from('supplier_profiles').update({
+        business_name: form.business_name.trim() || null,
+        bio: form.bio.trim() || null,
         tax_id: form.tax_id.trim(),
         city: form.city.trim() || null,
         latitude: form.latitude || null,
@@ -435,6 +393,25 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
   return (
     <Modal title={t('businessDetailsTitle')} onClose={onClose} maxW="max-w-md">
       <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('businessName')}</label>
+          <input
+            value={form.business_name}
+            onChange={e => setForm(f => ({ ...f, business_name: e.target.value }))}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
+            placeholder="e.g. Al-Nour Halal Foods"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('description')}</label>
+          <textarea
+            value={form.bio}
+            onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
+            rows={2}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb resize-none"
+            placeholder="A short description about your business..."
+          />
+        </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
             Tax ID / VAT Number <span className="text-red-500">*</span>
@@ -713,7 +690,7 @@ export default function SupplierAccountPage() {
 
   const [showAvatarModal, setShowAvatarModal] = useState(false)
   const [avatarLightbox, setAvatarLightbox] = useState(false)
-  const [showEditModal, setShowEditModal] = useState(false)
+
   const [showPasswordModal, setShowPasswordModal] = useState(false)
   const [showPhoneModal, setShowPhoneModal] = useState(false)
   const [showAddressModal, setShowAddressModal] = useState(false)
@@ -802,13 +779,9 @@ export default function SupplierAccountPage() {
     }
   }
 
-  function handleAvatarSaved(url) {
+  function handleAvatarSaved(url, name) {
     setAvatarUrl(url)
-    updateProfileState({ avatar_url: url })
-  }
-
-  function handleProfileSaved({ full_name }) {
-    updateProfileState({ full_name })
+    updateProfileState({ avatar_url: url, ...(name ? { full_name: name } : {}) })
   }
 
   return (
@@ -846,10 +819,6 @@ export default function SupplierAccountPage() {
               {supplierProfile.city.split(',').map(c => c.trim()).filter(Boolean).join(' · ')}
             </p>
           )}
-          {bio && <p className="text-sm text-slate-500 italic mt-1.5">"{bio}"</p>}
-          <button onClick={() => setShowEditModal(true)} className="mt-2 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark">
-            {t('editProfile')}
-          </button>
 
           {/* Halal certification status — shown under name */}
           {!certsLoading && (() => {
@@ -865,7 +834,11 @@ export default function SupplierAccountPage() {
                 <Clock className="w-3.5 h-3.5" /> {t('certUnderReview')}
               </span>
             )
-            return null
+            return (
+              <span className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 border border-red-200">
+                <XCircle className="w-3.5 h-3.5" /> {t('notCertified')}
+              </span>
+            )
           })()}
         </div>
       </div>
@@ -900,6 +873,34 @@ export default function SupplierAccountPage() {
           </button>
         </div>
         <div className="divide-y divide-slate-50">
+          {/* Business Name */}
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Building2 className="w-4 h-4 text-slate-300 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">{t('businessName')}</p>
+              {supplierProfile?.business_name ? (
+                <p className="text-sm font-semibold text-slate-900 mt-0.5">{supplierProfile.business_name}</p>
+              ) : (
+                <button onClick={() => setShowBusinessInfoModal(true)} className="text-sm text-marigold font-semibold hover:underline mt-0.5">
+                  {t('add')} →
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="flex items-start gap-3 px-4 py-3">
+            <Tag className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">{t('description')}</p>
+              {supplierProfile?.bio ? (
+                <p className="text-sm text-slate-600 mt-0.5 italic">"{supplierProfile.bio}"</p>
+              ) : (
+                <span className="text-sm text-slate-400">{t('notSet')}</span>
+              )}
+            </div>
+          </div>
+
           {/* Tax ID */}
           <div className="flex items-center gap-3 px-4 py-3">
             <Building2 className="w-4 h-4 text-slate-300 flex-shrink-0" />
@@ -1121,15 +1122,7 @@ export default function SupplierAccountPage() {
 
       {/* Modals */}
       {showAvatarModal && (
-        <AvatarModal userId={user.id} role="supplier" userName={profile?.full_name} onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
-      )}
-      {showEditModal && (
-        <EditProfileModal
-          userId={user.id}
-          currentName={profile?.full_name || ''}
-          onClose={() => setShowEditModal(false)}
-          onSaved={handleProfileSaved}
-        />
+        <AvatarModal userId={user.id} currentName={profile?.full_name} onClose={() => setShowAvatarModal(false)} onSaved={handleAvatarSaved} />
       )}
       {showPasswordModal && <PasswordModal onClose={() => setShowPasswordModal(false)} currentEmail={user?.email} />}
       {showPhoneModal && (

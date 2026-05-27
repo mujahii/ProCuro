@@ -54,8 +54,9 @@ function shuffle(arr) {
   return a
 }
 
-export default function AvatarModal({ userId, role, onClose, onSaved }) {
+export default function AvatarModal({ userId, currentName, onClose, onSaved }) {
   const { t } = useLanguage()
+  const [name, setName] = useState(currentName || '')
   const [tab, setTab] = useState('upload')
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
@@ -64,6 +65,11 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
   const inputRef = useRef(null)
   const deckRef = useRef(shuffle(PRESET_AVATARS))
   const indexRef = useRef(0)
+
+  async function saveName() {
+    if (!name.trim()) return
+    await supabase.from('users').update({ full_name: name.trim() }).eq('id', userId)
+  }
 
   function handleFileChange(e) {
     const f = e.target.files[0]
@@ -92,11 +98,11 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
       const { error: rpcError } = await supabase.rpc('update_own_avatar', { p_url: publicUrl })
       if (rpcError) throw rpcError
-      onSaved(publicUrl)
+      await saveName()
+      onSaved(publicUrl, name.trim())
       onClose()
       toast.success(t('toastPhotoUpdated'))
     } catch (err) {
-      console.error('Avatar upload error:', err)
       toast.error(t('toastFailedUploadPhoto'))
     } finally {
       setSaving(false)
@@ -109,11 +115,11 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
     try {
       const { error } = await supabase.rpc('update_own_avatar', { p_url: generatedUrl })
       if (error) throw error
-      onSaved(generatedUrl)
+      await saveName()
+      onSaved(generatedUrl, name.trim())
       onClose()
       toast.success(t('toastAvatarSaved'))
     } catch (err) {
-      console.error('Avatar save error:', err)
       toast.error(t('toastFailedSaveAvatar'))
     } finally {
       setSaving(false)
@@ -122,6 +128,16 @@ export default function AvatarModal({ userId, role, onClose, onSaved }) {
 
   return (
     <Modal title={t('updateProfilePicTitle')} onClose={onClose}>
+      {/* Name field */}
+      <div className="mb-4">
+        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('yourName')}</label>
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb"
+          placeholder="e.g. Ahmed Hassan"
+        />
+      </div>
       {/* Tab switcher */}
       <div className="flex gap-1 bg-lionsmane rounded-xl p-1 mb-4">
         <button

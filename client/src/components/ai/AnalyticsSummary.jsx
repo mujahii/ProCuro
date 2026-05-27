@@ -187,25 +187,20 @@ export default function AnalyticsSummary({ context }) {
     }
   }
 
-  const SIRI_GRADIENT = 'conic-gradient(from 0deg, #ff0055, #ff6d00, #ffd700, #00e5cc, #2979ff, #aa00ff, #ff0055)'
-
   return (
-    <div style={{ position: 'relative' }}>
+    <div>
       <style>{`
-        @keyframes siriSpin { to { transform: rotate(360deg); } }
+        @keyframes aiGlow {
+          0%   { box-shadow: 0 0 18px 4px rgba(41,121,255,0.45), 0 2px 12px rgba(0,0,0,0.08); }
+          25%  { box-shadow: 0 0 22px 6px rgba(170,0,255,0.40), 0 2px 12px rgba(0,0,0,0.08); }
+          50%  { box-shadow: 0 0 22px 6px rgba(0,229,204,0.40), 0 2px 12px rgba(0,0,0,0.08); }
+          75%  { box-shadow: 0 0 22px 6px rgba(255,109,0,0.40), 0 2px 12px rgba(0,0,0,0.08); }
+          100% { box-shadow: 0 0 18px 4px rgba(41,121,255,0.45), 0 2px 12px rgba(0,0,0,0.08); }
+        }
       `}</style>
 
-      {/* Glow halo — blurred copy of the gradient, extends 8px beyond the card */}
-      <div style={{ position: 'absolute', inset: '-8px', borderRadius: '1.375rem', overflow: 'hidden', zIndex: 0 }}>
-        <div style={{ position: 'absolute', inset: '-100%', background: SIRI_GRADIENT, animation: 'siriSpin 4s linear infinite', filter: 'blur(16px)', opacity: 0.6, willChange: 'transform' }} />
-      </div>
-
-      {/* Border ring — gradient clipped to 2.5px strip, then inner card on top */}
-      <div style={{ position: 'relative', zIndex: 1, borderRadius: '1rem', padding: '2.5px', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: '-100%', background: SIRI_GRADIENT, animation: 'siriSpin 4s linear infinite', willChange: 'transform' }} />
-
-        {/* Inner card — sits above the spinning gradient */}
-        <div style={{ position: 'relative', zIndex: 1, borderRadius: 'calc(1rem - 2.5px)', overflow: 'hidden' }}>
+      {/* Card with animated glow border — no spinning elements */}
+      <div style={{ borderRadius: '1rem', overflow: 'hidden', animation: 'aiGlow 6s ease-in-out infinite', willChange: 'box-shadow' }}>
 
       {/* Header — gradient bar */}
       <div className="bg-gradient-to-r from-midnight to-herb px-5 py-4 flex items-center justify-between">
@@ -294,7 +289,6 @@ export default function AnalyticsSummary({ context }) {
         )}
       </div>
 
-        </div>
       </div>
     </div>
   )

@@ -861,63 +861,70 @@ export default function SupplierAccountPage() {
         </button>
       </div>
 
-      {/* Halal Certificates */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-slate-900 text-base flex items-center gap-2">
-            <FileText className="w-5 h-5 text-midnight" /> Certificates
+      {/* Halal Certificates — dark card */}
+      <div className="bg-midnight rounded-2xl shadow-sm overflow-hidden">
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-white/10">
+          <h3 className="font-bold text-white text-base flex items-center gap-2">
+            <FileText className="w-5 h-5 text-marigold" /> Certificates
           </h3>
           <button
             onClick={() => setShowCertUploadModal(true)}
-            className="text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1"
+            className="text-xs text-marigold font-bold hover:opacity-75 flex items-center gap-1 transition-opacity"
           >
             + Add
           </button>
         </div>
-        {certsLoading ? (
-          <div className="flex items-center gap-2 text-slate-400 text-sm">
-            <Loader2 className="w-4 h-4 animate-spin" /> Loading...
-          </div>
-        ) : certs.length === 0 ? (
-          <p className="text-sm text-slate-400">No certificates uploaded yet.</p>
-        ) : (
-          <div className="space-y-2.5">
-            {certs.map(cert => {
-              const status = CERT_STATUS[cert.status] || CERT_STATUS.pending
-              const Icon = status.icon
-              const displayName = cert.file_name || cert.file_url?.split('/').pop() || 'Certificate'
-              return (
-                <div key={cert.id} className="p-3 bg-lionsmane rounded-xl border border-slate-100">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <FileText className="w-7 h-7 text-slate-400 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-slate-800 truncate">{displayName}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${status.color}`}>
-                            <Icon className="w-2.5 h-2.5" /> {status.label}
-                          </span>
-                          <p className="text-xs text-slate-400">{new Date(cert.uploaded_at).toLocaleDateString()}</p>
+        <div className="p-5">
+          {certsLoading ? (
+            <div className="flex items-center gap-2 text-slate-400 text-sm">
+              <Loader2 className="w-4 h-4 animate-spin" /> Loading...
+            </div>
+          ) : certs.length === 0 ? (
+            <p className="text-sm text-slate-400">No certificates uploaded yet.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {certs.map(cert => {
+                const DARK_STATUS = {
+                  approved: { label: 'Approved',       icon: CheckCircle, color: 'text-teal-300 bg-teal-900/50 border-teal-600/40' },
+                  pending:  { label: 'Pending Review', icon: Clock,       color: 'text-amber-300 bg-amber-900/50 border-amber-600/40' },
+                  rejected: { label: 'Rejected',       icon: XCircle,     color: 'text-red-400 bg-red-900/50 border-red-600/40' },
+                }
+                const status = DARK_STATUS[cert.status] || DARK_STATUS.pending
+                const Icon = status.icon
+                const displayName = cert.file_name || cert.file_url?.split('/').pop() || 'Certificate'
+                return (
+                  <div key={cert.id} className="p-3 bg-white/10 rounded-xl border border-white/10">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <FileText className="w-7 h-7 text-slate-400 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-white truncate">{displayName}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ${status.color}`}>
+                              <Icon className="w-2.5 h-2.5" /> {status.label}
+                            </span>
+                            <p className="text-xs text-slate-400">{new Date(cert.uploaded_at).toLocaleDateString()}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <button onClick={() => viewCert(cert)} className="p-1.5 text-slate-400 hover:text-midnight transition-colors" title="View">
-                        <ExternalLink className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => setEditingCert(cert)} className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors" title="Edit">
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => setConfirmDeleteCert(cert)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="Delete">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button onClick={() => viewCert(cert)} className="p-1.5 text-slate-400 hover:text-white transition-colors" title="View">
+                          <ExternalLink className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setEditingCert(cert)} className="p-1.5 text-slate-400 hover:text-white transition-colors" title="Edit">
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setConfirmDeleteCert(cert)} className="p-1.5 text-slate-400 hover:text-red-400 transition-colors" title="Delete">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Business Details card */}

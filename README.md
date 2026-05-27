@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-28 00:35 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-28 00:38 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -765,7 +765,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 | OrdersPage | `/supplier/orders` | Incoming order management: confirm, ship, deliver, cancel, upload refund |
 | CertificatesPage | `/supplier/certificates` | Upload and manage Halal certificates; see approval status |
 | BankDetailsPage | `/supplier/bank-details` | IBAN, BIC, account holder management |
-| ProfilePage | `/supplier/profile` | Full supplier profile editor. **Pen icon on avatar** opens a combined modal for choosing/generating an avatar AND editing the user's display name — no separate "Edit Profile" button. **Business Details card** shows Business Name, Description, Tax ID, City, Categories, and Bank Details — all editable from one "Edit" button. **Halal certification badge** (green "Halal Certified" / amber "Certificate Under Review" / red "Not Certified") appears under the supplier name in the profile header, always visible. **Account Active badge** inside Business Details shows completeness based on tax ID + city + bank — independent of Halal cert status. |
+| ProfilePage | `/supplier/profile` | Full supplier profile editor. **Pen icon on avatar** opens a combined modal for choosing/generating an avatar AND editing the user's display name — no separate "Edit Profile" button. **Certificates card** appears directly below the My Sales / View Analysis action buttons — suppliers see their cert status at a glance without scrolling past Business Details. **Business Details card** (below Certificates) shows Business Name, Description, Tax ID, City, Categories, and Bank Details — all editable from one "Edit" button. **Halal certification badge** (green "Halal Certified" / amber "Certificate Under Review" / red "Not Certified") appears under the supplier name in the profile header, always visible. **Account Active badge** inside Business Details shows completeness based on tax ID + city + bank — independent of Halal cert status. |
 | AnalyticsPage | `/supplier/analytics` | Revenue trend, category breakdown, top products, top clients, AI summary; week/month/year + custom date-range filter. **Top Restaurant Clients** bar chart: labels are angled (−35°) with truncation at 14 chars; Y-axis uses integer ticks only (`allowDecimals={false}`). **Date bucketing**: span ≤ 60 days → daily (YYYY-MM-DD) buckets; span > 60 days → monthly (YYYY-MM) buckets — so Week and Month views show per-day bars, Year view shows per-month bars. **Sales by Product %** donut chart fills the card width with legend below (same fixed-height flex-column pattern as owner analytics). |
 
 ### Admin (`/admin/`)

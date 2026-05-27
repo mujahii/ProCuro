@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, ShoppingBag, Tag, Star, MessageSquare, Flag } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, ShoppingBag, Tag, Star, MessageSquare, Flag, Info } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
 import ReportModal from '../../components/ui/ReportModal'
 import SupplierProfileModal from '../../components/profile/SupplierProfileModal'
@@ -66,11 +66,19 @@ function ProductCardModal({ item, onClose }) {
 const ONGOING = ['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'refund_uploaded', 'cancellation_requested', 'delivery_dispute']
 const COMPLETED = ['delivered', 'completed', 'cancelled']
 const CANCELLABLE = ['pending_payment', 'pending_confirmation', 'confirmed']
-const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000
+const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000
 
+// Within the 5-day window → cancel button is active
 function isCancellable(split) {
   if (['pending_payment', 'pending_confirmation'].includes(split.status)) return true
-  if (split.status === 'confirmed') return Date.now() - new Date(split.updated_at).getTime() <= THREE_DAYS_MS
+  if (split.status === 'confirmed') return Date.now() - new Date(split.updated_at).getTime() <= FIVE_DAYS_MS
+  return false
+}
+
+// Past the window or already out for delivery → show greyed button + toast
+function isPastCancellationWindow(split) {
+  if (split.status === 'out_for_delivery') return true
+  if (split.status === 'confirmed') return Date.now() - new Date(split.updated_at).getTime() > FIVE_DAYS_MS
   return false
 }
 
@@ -307,6 +315,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [showReportModal, setShowReportModal] = useState(false)
   const canCancel = isCancellable(split)
+  const pastWindow = isPastCancellationWindow(split)
 
   async function handleChatWithSupplier() {
     const orderId = split.order.id.slice(0, 8).toUpperCase()
@@ -465,10 +474,29 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
             </button>
           </div>
         )}
+        {/* Cancellation policy note — shown for any confirmed/out-for-delivery order */}
+        {(canCancel || pastWindow) && (
+          <div className="flex items-start gap-2 px-1">
+            <Info className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-400 leading-relaxed">{t('cancellationPolicyNote')}</p>
+          </div>
+        )}
+
+        {/* Active cancel button — within 5 days */}
         {canCancel && (
           <button
             onClick={() => setShowCancelModal(true)}
             className="w-full py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors"
+          >
+            {t('cancelOrderTitle')}
+          </button>
+        )}
+
+        {/* Expired cancel button — past 5 days or out for delivery */}
+        {pastWindow && !canCancel && (
+          <button
+            onClick={() => toast.error(t('cancellationPeriodExpired'))}
+            className="w-full py-3 bg-slate-50 text-slate-400 font-bold rounded-xl cursor-not-allowed border border-slate-200"
           >
             {t('cancelOrderTitle')}
           </button>

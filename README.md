@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-28 00:15 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-28 00:19 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -726,7 +726,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | StorePage | `/owner/store` | Browse verified suppliers and products by category; categories, sort options, and search placeholder are fully i18n'd (DE: Fleisch, Geflügel, etc.); "See All" button navigates to AllProductsPage. Shows an **incomplete profile warning** banner when any of the following are missing: phone number, city/location, Tax ID, or **bank details** (IBAN in `owner_bank_details`) — each missing field is listed by name with a "Complete Profile" button |
 | AllProductsPage | `/owner/products` | Browse all products with category/search filter |
 | CartPage | `/owner/cart` | Multi-supplier cart; payment method selection; delivery address picker; checkout. Bank transfer step shows full bank info (bank name, IBAN, BIC, account holder). All cart and payment labels are fully i18n'd (EN/DE): items subtotal, delivery, VAT, amount, upload receipt, place order, back, cash on delivery note, free delivery label. **Supplier name is a clickable button** — clicking it opens `SupplierProfileModal` with the supplier's full profile card inline. |
-| OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation (pre-confirmation: any time; post-confirmation: within 3 days of supplier confirmation via `updated_at`); dispute filing |
+| OrdersPage | `/owner/orders` | Order history and status tracking per split; cancellation policy displayed inline under the cancel button. **Cancellation window: 5 days** from supplier confirmation (`updated_at`). Pre-confirmation → always cancellable. Within 5 days of confirmation → active red Cancel button. Past 5 days OR `out_for_delivery` → greyed Cancel button that fires a toast ("cancellation period has passed — supplier is preparing your order"). Policy note (Info icon + text) shown whenever the cancel area is visible. Dispute filing available after delivery. |
 | ProfilePage | `/owner/profile` | Full profile editor. **Pen icon on avatar** opens a combined modal for choosing/generating an avatar AND editing the user's display name — no separate "Edit Profile" button. **Business Details card** shows Restaurant Name, Description, Tax ID, City, Cuisine Type, and Bank Details — all editable from one "Edit" button. Restaurant name and description are persisted to `owner_profiles`. City pills derived live from `addresses` (AddressContext). |
 | AnalyticsPage | `/owner/analytics` | Spending trend, top products, pie chart of spending by category (donut fills the card, legend below in a wrapping row), top categories bar chart (category names translated, fixed 288px height matching the other charts), AI summary at the bottom; week/month/year + custom date-range filter (all labels i18n'd) |
 

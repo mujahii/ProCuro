@@ -1,14 +1,14 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 
 const COLORS = {
-  pending_payment: '#A58D66',
-  pending_confirmation: '#A58D66',
-  confirmed: '#407E8C',
-  out_for_delivery: '#5E96A4',
-  shipped: '#5E96A4',
-  delivered: '#083A4F',
-  completed: '#083A4F',
-  cancelled: '#EF4444',
+  pending_payment:      '#BFA988', // marigold light  — awaiting owner action
+  pending_confirmation: '#A58D66', // marigold        — awaiting supplier confirmation
+  confirmed:            '#C0D5D6', // celeste          — accepted, on its way
+  out_for_delivery:     '#5E96A4', // herb light       — in transit
+  shipped:              '#407E8C', // herb             — shipped
+  delivered:            '#1B5468', // midnight light   — arrived
+  completed:            '#083A4F', // midnight         — fully done
+  cancelled:            '#EF4444', // red              — error/void
 }
 
 const LABELS = {

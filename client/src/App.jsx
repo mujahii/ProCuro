@@ -111,8 +111,8 @@ export default function App() {
             toastOptions={{
               duration: 4000,
               success: {
-                style: { background: '#1B4332', color: '#fff' },
-                iconTheme: { primary: '#D4A017', secondary: '#fff' },
+                style: { background: '#083A4F', color: '#fff' },
+                iconTheme: { primary: '#A58D66', secondary: '#fff' },
               },
               error: {
                 style: { background: '#991B1B', color: '#fff' },

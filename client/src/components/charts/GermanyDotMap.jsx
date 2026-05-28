@@ -58,7 +58,7 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
         <h3 className="font-bold text-gray-900">{title}</h3>
         <div className="flex items-center gap-3 text-[10px]">
           <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#083A4F' }} /> {t('chartSupplier')}</span>
-          <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#D4A017' }} /> {t('chartRestaurant')}</span>
+          <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-full" style={{ background: '#A58D66' }} /> {t('chartRestaurant')}</span>
         </div>
       </div>
       <div className="relative">
@@ -73,7 +73,7 @@ export default function GermanyDotMap({ data = [], title = 'Users Across Germany
                 cx={cx}
                 cy={cy}
                 r={5}
-                fill={isSupplier ? '#083A4F' : '#D4A017'}
+                fill={isSupplier ? '#083A4F' : '#A58D66'}
                 fillOpacity="0.85"
                 stroke="#fff"
                 strokeWidth="1.5"

@@ -36,7 +36,7 @@ export default function CityComparisonRadar({ data = [], title = 'Suppliers vs O
           />
           <PolarRadiusAxis domain={[0, maxVal]} allowDecimals={false} tick={{ fontSize: 9, fill: '#9ca3af' }} />
           <Radar name={t('statSuppliers')} dataKey="suppliers" stroke="#083A4F" fill="#083A4F" fillOpacity={0.45} />
-          <Radar name={t('chartOwners')} dataKey="owners" stroke="#D4A017" fill="#D4A017" fillOpacity={0.45} />
+          <Radar name={t('chartOwners')} dataKey="owners" stroke="#A58D66" fill="#A58D66" fillOpacity={0.45} />
           <Legend wrapperStyle={{ fontSize: 11, paddingTop: 10 }} />
           <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12, border: '1px solid #e5e7eb' }} />
         </RadarChart>

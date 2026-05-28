@@ -4,7 +4,7 @@ import { useLanguage } from '../../context/LanguageContext'
 
 const COLORS = {
   bank_transfer: '#083A4F',
-  cash_on_delivery: '#D4A017',
+  cash_on_delivery: '#A58D66',
 }
 
 export default function PaymentTypeChart({ data = [], title = 'Orders by Payment Type' }) {

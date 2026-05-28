@@ -10,7 +10,7 @@ import DateRangeFilter, { rangeFromKey } from '../../components/ui/DateRangeFilt
 import { TrendingUp, ShoppingBag, Euro, Package } from 'lucide-react'
 import { SkeletonCard } from '../../components/ui/Skeleton'
 
-const COLORS = ['#083A4F', '#D4A017', '#1B4332', '#A58D66', '#40916C', '#74C69D', '#9CA3AF']
+const COLORS = ['#083A4F', '#407E8C', '#A58D66', '#5E96A4', '#BFA988', '#C0D5D6', '#9CA3AF']
 
 const CAT_KEY_MAP = {
   Meat: 'catMeat', Poultry: 'catPoultry', Seafood: 'catSeafood',

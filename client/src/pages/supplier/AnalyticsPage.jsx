@@ -8,7 +8,7 @@ import { SkeletonCard } from '../../components/ui/Skeleton'
 import DateRangeFilter, { rangeFromKey } from '../../components/ui/DateRangeFilter'
 import { Euro, ShoppingBag, Package, TrendingUp } from 'lucide-react'
 
-const COLORS = ['#1B4332', '#D4A017', '#2D6A4F', '#40916C', '#52B788', '#74C69D']
+const COLORS = ['#083A4F', '#407E8C', '#A58D66', '#5E96A4', '#BFA988', '#C0D5D6']
 
 function StatCard({ label, value, icon: Icon, color, bg }) {
   return (
@@ -230,15 +230,15 @@ export default function SupplierAnalyticsPage() {
                   <AreaChart data={revenueByMonth} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="analyticsGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#1B4332" stopOpacity={0.15} />
-                        <stop offset="95%" stopColor="#1B4332" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#407E8C" stopOpacity={0.20} />
+                        <stop offset="95%" stopColor="#407E8C" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9ca3af' }} />
                     <YAxis tick={{ fontSize: 11, fill: '#9ca3af' }} />
                     <Tooltip formatter={(v) => [`€${Number(v).toFixed(2)}`, 'Revenue']} />
-                    <Area type="monotone" dataKey="revenue" stroke="#1B4332" strokeWidth={2} fill="url(#analyticsGrad)" />
+                    <Area type="monotone" dataKey="revenue" stroke="#407E8C" strokeWidth={2} fill="url(#analyticsGrad)" />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -256,7 +256,7 @@ export default function SupplierAnalyticsPage() {
                     <XAxis type="number" tick={{ fontSize: 10, fill: '#9ca3af' }} tickFormatter={v => `€${v}`} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#6b7280' }} width={90} />
                     <Tooltip formatter={(v) => [`€${Number(v).toFixed(2)}`, 'Revenue']} />
-                    <Bar dataKey="revenue" fill="#1B4332" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="revenue" fill="#083A4F" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -316,7 +316,7 @@ export default function SupplierAnalyticsPage() {
                     />
                     <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} allowDecimals={false} />
                     <Tooltip formatter={(v) => [v, 'Orders']} />
-                    <Bar dataKey="orders" fill="#D4A017" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="orders" fill="#A58D66" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}

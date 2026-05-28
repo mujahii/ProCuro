@@ -16,8 +16,8 @@ export default function UserGrowthChart({ data = [], title = 'User Growth' }) {
             <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} />
             <Tooltip />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Line type="monotone" dataKey="owners" stroke="#1B4332" strokeWidth={2} dot={false} name={t('statRestaurants')} />
-            <Line type="monotone" dataKey="suppliers" stroke="#D4A017" strokeWidth={2} dot={false} name={t('statSuppliers')} />
+            <Line type="monotone" dataKey="owners" stroke="#083A4F" strokeWidth={2} dot={false} name={t('statRestaurants')} />
+            <Line type="monotone" dataKey="suppliers" stroke="#A58D66" strokeWidth={2} dot={false} name={t('statSuppliers')} />
           </LineChart>
         </ResponsiveContainer>
       )}

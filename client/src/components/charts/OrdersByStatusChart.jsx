@@ -1,13 +1,13 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 
 const COLORS = {
-  pending_payment: '#F59E0B',
-  pending_confirmation: '#F59E0B',
-  confirmed: '#3B82F6',
-  out_for_delivery: '#8B5CF6',
-  shipped: '#8B5CF6',
-  delivered: '#1B4332',
-  completed: '#1B4332',
+  pending_payment: '#A58D66',
+  pending_confirmation: '#A58D66',
+  confirmed: '#407E8C',
+  out_for_delivery: '#5E96A4',
+  shipped: '#5E96A4',
+  delivered: '#083A4F',
+  completed: '#083A4F',
   cancelled: '#EF4444',
 }
 

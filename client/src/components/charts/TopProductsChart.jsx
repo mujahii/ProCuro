@@ -13,7 +13,7 @@ export default function TopProductsChart({ data = [], title = 'Top Products' }) 
             <XAxis type="number" tick={{ fontSize: 10, fill: '#9ca3af' }} />
             <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#6b7280' }} width={80} />
             <Tooltip />
-            <Bar dataKey="quantity" fill="#1B4332" radius={[0, 4, 4, 0]} />
+            <Bar dataKey="quantity" fill="#083A4F" radius={[0, 4, 4, 0]} />
           </BarChart>
         </ResponsiveContainer>
       )}

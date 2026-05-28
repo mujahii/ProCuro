@@ -24,6 +24,7 @@ import PublicOnlyRoute from './components/routing/PublicOnlyRoute'
 import ChatbotFAB from './components/ai/ChatbotFAB'
 
 // Secondary public pages
+const LandingPage2 = lazy(() => import('./pages/public/LandingPage2'))
 const SelectRolePage = lazy(() => import('./pages/public/SelectRolePage'))
 const PublicSupplierProfilePage = lazy(() => import('./pages/public/SupplierProfilePage'))
 const SupplierListPage = lazy(() => import('./pages/public/SupplierListPage'))
@@ -125,6 +126,7 @@ export default function App() {
           <Routes>
             {/* Public */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/homepage-2" element={<LandingPage2 />} />
             <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
             <Route path="/register" element={<PublicOnlyRoute><RegisterOwnerPage /></PublicOnlyRoute>} />
             <Route path="/register/supplier" element={<PublicOnlyRoute><RegisterSupplierPage /></PublicOnlyRoute>} />

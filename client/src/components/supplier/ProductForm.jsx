@@ -237,7 +237,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
+          className="w-full py-3.5 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors text-sm shadow-md flex items-center justify-center gap-2 disabled:opacity-60"
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           {loading ? 'Saving...' : (product ? 'Save Changes' : 'Add Product')}

@@ -95,7 +95,7 @@ export default function HelpCenterPage() {
             <p className="text-sm text-midnight-dark">{t('helpSentDesc')} <strong>support@procuro.com</strong></p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="card p-6 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1">{t('helpNameLabel')}</label>

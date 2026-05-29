@@ -237,7 +237,7 @@ function BusinessInfoModal({ userId, current, onClose, onSaved }) {
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save
           </button>
@@ -396,7 +396,7 @@ function AddressModal({ onClose, userId }) {
               placeholder="City"
             />
           </div>
-          <button type="submit" disabled={saving} className="w-full py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button type="submit" disabled={saving} className="w-full py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Address
           </button>
@@ -465,7 +465,7 @@ function BankModal({ userId, current, onClose, onSaved }) {
         <p className="text-xs text-slate-400">These details are shared with suppliers only when they need to process a refund to you.</p>
         <div className="flex gap-3 pt-1">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">Cancel</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save
           </button>

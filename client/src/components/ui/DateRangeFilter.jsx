@@ -166,7 +166,7 @@ export default function DateRangeFilter({ value, onChange }) {
             <button
               onClick={applyCustom}
               disabled={!fromInput || !toInput}
-              className="flex-1 py-2 text-xs font-semibold bg-midnight text-white rounded-lg hover:bg-slate-800 disabled:opacity-40"
+              className="flex-1 py-2 text-xs font-semibold bg-midnight text-white rounded-xl hover:bg-midnight-dark disabled:opacity-40"
             >
               {t('applyBtn')}
             </button>

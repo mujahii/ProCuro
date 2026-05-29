@@ -240,7 +240,7 @@ export default function StorePage() {
           </div>
           <button
             onClick={() => navigate('/owner/profile')}
-            className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-marigold-dark transition-colors flex-shrink-0"
+            className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-xl hover:bg-marigold-dark transition-colors flex-shrink-0"
           >
             {t('completeProfileBtn')}
           </button>
@@ -278,7 +278,7 @@ export default function StorePage() {
             <p className="text-xs text-marigold-dark mt-0.5">{t('locationBlockedDesc')}</p>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={() => navigate('/owner/profile')} className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-lg hover:bg-marigold-dark transition-colors whitespace-nowrap">
+            <button onClick={() => navigate('/owner/profile')} className="text-xs bg-marigold text-white font-semibold px-3 py-1.5 rounded-xl hover:bg-marigold-dark transition-colors whitespace-nowrap">
               {t('addManually')}
             </button>
             <button onClick={dismissLocationBanner} className="text-marigold-light hover:text-marigold transition-colors">
@@ -414,7 +414,7 @@ export default function StorePage() {
                   <div
                     key={supplier.id}
                     onClick={() => navigate(`/supplier/${supplier.id}`)}
-                    className="flex-shrink-0 min-w-[180px] max-w-[180px] cursor-pointer bg-white rounded-xl p-4 shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-shadow"
+                    className="flex-shrink-0 min-w-[180px] max-w-[180px] cursor-pointer card card-lift p-4 flex flex-col items-center text-center"
                   >
                     <div className="w-14 h-14 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
                       {avatarUrl ? (
@@ -480,7 +480,7 @@ export default function StorePage() {
               <div className="flex justify-center mt-6">
                 <button
                   onClick={() => navigate('/owner/products')}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors shadow-sm"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors shadow-sm"
                 >
                   {t('seeAll')} <ChevronRight className="w-4 h-4" />
                 </button>

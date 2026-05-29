@@ -182,7 +182,7 @@ function AddressModal({ onClose, supplierProfileId }) {
               placeholder="City"
             />
           </div>
-          <button type="submit" disabled={saving} className="w-full py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button type="submit" disabled={saving} className="w-full py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Address
           </button>
@@ -276,7 +276,7 @@ function BankModal({ userId, onClose }) {
               <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
                 Cancel
               </button>
-              <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+              <button type="submit" disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2">
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                 Save
               </button>
@@ -504,7 +504,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save
           </button>
@@ -585,7 +585,7 @@ function CertUploadModal({ supplierProfileId, onClose, onUploaded }) {
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
             Upload
           </button>
@@ -666,7 +666,7 @@ function CertEditModal({ cert, supplierProfileId, onClose, onSaved }) {
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Changes
           </button>

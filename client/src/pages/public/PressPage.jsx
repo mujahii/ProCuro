@@ -37,7 +37,7 @@ export default function PressPage() {
         <p className="text-sm sm:text-base text-slate-500 mb-6 sm:mb-8">{t('pressSubtitle')}</p>
 
         {/* About */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+        <div className="card p-4 sm:p-6 mb-4 sm:mb-6">
           <h2 className="font-bold text-slate-900 mb-2 sm:mb-3 text-sm sm:text-base">{t('pressAboutTitle')}</h2>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{t('pressAboutDesc')}</p>
           <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-5">
@@ -51,7 +51,7 @@ export default function PressPage() {
         </div>
 
         {/* Key Facts */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+        <div className="card p-4 sm:p-6 mb-4 sm:mb-6">
           <h2 className="font-bold text-slate-900 mb-2 sm:mb-3 text-sm sm:text-base">{t('pressKeyFacts')}</h2>
           <ul className="space-y-2 text-xs sm:text-sm text-slate-600">
             {facts.map(f => (

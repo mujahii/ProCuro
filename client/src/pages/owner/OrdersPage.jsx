@@ -54,7 +54,7 @@ function ProductCardModal({ item, onClose }) {
           </div>
         </div>
         <div className="px-5 pb-5">
-          <button onClick={onClose} className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors">
+          <button onClick={onClose} className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors">
             {t('close')}
           </button>
         </div>
@@ -296,7 +296,7 @@ function RatingModal({ split, onSubmit, onSkip }) {
           <button
             onClick={handleSubmit}
             disabled={!selected || loading}
-            className="flex-1 py-2.5 bg-midnight text-white font-bold rounded-xl text-sm hover:bg-slate-800 transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 bg-midnight text-white font-bold rounded-xl text-sm hover:bg-midnight-dark transition-colors disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {t('submitRating')}
@@ -462,7 +462,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => { onMarkDelivered(split.id); onBack() }}
-              className="py-3.5 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-sm"
+              className="py-3.5 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors shadow-md text-sm"
             >
               {t('markAsDeliveredBtn')}
             </button>
@@ -710,7 +710,7 @@ export default function OrdersPage() {
       {loading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-slate-100 h-28 animate-pulse" />
+            <div key={i} className="card h-28 animate-pulse" />
           ))}
         </div>
       ) : displayed.length === 0 ? (
@@ -774,7 +774,7 @@ export default function OrdersPage() {
                   {split.status === 'out_for_delivery' && (
                     <button
                       onClick={e => { e.stopPropagation(); markDelivered(split.id) }}
-                      className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors"
+                      className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors"
                     >
                       {t('markDeliveredBtn')}
                     </button>
@@ -782,7 +782,7 @@ export default function OrdersPage() {
                   {split.status === 'refund_uploaded' && (
                     <button
                       onClick={e => { e.stopPropagation(); confirmRefund(split.id) }}
-                      className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-midnight-dark transition-colors flex items-center gap-1"
+                      className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors flex items-center gap-1"
                     >
                       <CheckCircle className="w-3.5 h-3.5" /> {t('confirmRefundBtn')}
                     </button>

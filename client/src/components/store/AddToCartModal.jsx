@@ -291,7 +291,7 @@ export default function AddToCartModal({ product, onClose }) {
             <button
               onClick={handleAdd}
               disabled={!canAdd}
-              className="flex-[2] py-3 bg-midnight text-white font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-[2] py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {supplierBanned
                 ? t('supplierBannedShort')

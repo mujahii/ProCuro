@@ -171,7 +171,7 @@ export default function AvatarModal({ userId, currentName, onClose, onSaved }) {
             <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
               {t('cancel')}
             </button>
-            <button onClick={handleSaveUpload} disabled={saving || !file} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+            <button onClick={handleSaveUpload} disabled={saving || !file} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
               {saving && <Loader2 className="w-4 h-4 animate-spin" />}
               {t('save')}
             </button>
@@ -206,7 +206,7 @@ export default function AvatarModal({ userId, currentName, onClose, onSaved }) {
             <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
               {t('cancel')}
             </button>
-            <button onClick={handleSaveGenerated} disabled={saving || !generatedUrl} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+            <button onClick={handleSaveGenerated} disabled={saving || !generatedUrl} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
               {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('generating')}</> : t('save')}
             </button>
           </div>

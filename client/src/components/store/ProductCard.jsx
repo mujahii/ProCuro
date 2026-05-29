@@ -43,7 +43,7 @@ export default function ProductCard({ product, onAddToCart, onReport }) {
   const outOfStock = product.stock_quantity === 0 || product.is_active === false
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden active:scale-[0.98] transition-transform duration-150">
+    <div className="card card-lift overflow-hidden active:scale-[0.98]">
       {/* Image */}
       <div className="relative h-40 bg-gray-100 overflow-hidden">
         {imageUrl && !imgError ? (

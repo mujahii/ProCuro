@@ -165,7 +165,7 @@ export default function Navbar({ onMenuClick }) {
                   </span>
                 </button>
                 {addrOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-slate-100 z-50 p-2">
+                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-slate-100 z-50 p-2">
                     <p className="text-xs font-bold text-slate-400 uppercase mb-2 px-2">{t('savedAddresses')}</p>
                     {addresses.map(addr => (
                       <button

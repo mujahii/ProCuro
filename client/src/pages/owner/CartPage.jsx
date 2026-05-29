@@ -162,7 +162,7 @@ export default function CartPage() {
         </div>
         <h2 className="text-xl font-bold text-slate-900 mb-2">{t('cartEmpty')}</h2>
         <p className="text-slate-500 text-sm mb-6">{t('cartEmptyMainDesc')}</p>
-        <button onClick={() => navigate('/owner/store')} className="bg-midnight text-white font-bold px-6 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md">
+        <button onClick={() => navigate('/owner/store')} className="bg-midnight text-white font-bold px-6 py-3 rounded-xl hover:bg-midnight-dark transition-colors shadow-md">
           {t('cartEmptyBrowse')}
         </button>
       </div>
@@ -184,7 +184,7 @@ export default function CartPage() {
           </div>
         )}
         <p className="text-xs text-slate-400 mb-6">{t('redirectingToStore')}</p>
-        <button onClick={() => navigate('/owner/store')} className="bg-midnight text-white font-bold px-8 py-3 rounded-lg hover:bg-slate-800 transition-colors shadow-md">
+        <button onClick={() => navigate('/owner/store')} className="bg-midnight text-white font-bold px-8 py-3 rounded-xl hover:bg-midnight-dark transition-colors shadow-md">
           {t('backToStore')}
         </button>
       </div>
@@ -217,7 +217,7 @@ export default function CartPage() {
 
         {/* Bank Transfer — per-supplier breakdown with total incl. delivery + 7% MwSt. */}
         {selectedPayment === 'bank_transfer' && (
-          <div className="bg-white rounded-xl border border-slate-100 p-5 space-y-5">
+          <div className="card p-5 space-y-5">
             {groups.map(([supplierId, group]) => {
               const bank = bankDetails[supplierId]
               const fee = feeFor(supplierId, group)
@@ -297,7 +297,7 @@ export default function CartPage() {
         <button
           onClick={handlePlaceOrder}
           disabled={!selectedPayment || loading}
-          className="w-full py-4 text-lg bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full py-4 text-lg bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : `${t('placeOrderBtn')} — €${grandTotal.toFixed(2)}`}
         </button>
@@ -477,7 +477,7 @@ export default function CartPage() {
       <button
         onClick={() => setStep(2)}
         disabled={!!profile?.is_banned || !selectedAddress || deliveryRecalcLoading || hasBannedSupplierInCart}
-        className="w-full py-4 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md text-base disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full py-4 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors shadow-md text-base disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {deliveryRecalcLoading && <Loader2 className="w-4 h-4 animate-spin" />}
         {t('continueToPayment')} — €{grandTotal.toFixed(2)}
@@ -592,7 +592,7 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
                 </div>
               </div>
               <button onClick={handleSave} disabled={saving}
-                className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 mt-2">
+                className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark disabled:opacity-50 transition-colors flex items-center justify-center gap-2 mt-2">
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                 {t('saveAddressBtn')}
               </button>

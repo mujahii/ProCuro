@@ -94,7 +94,7 @@ export default function PasswordModal({ onClose, currentEmail }) {
                 <button
                   onClick={handleSaveEmail}
                   disabled={savingEmail || !newEmail.trim()}
-                  className="flex-1 py-2.5 rounded-xl bg-midnight text-white text-sm font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 py-2.5 rounded-xl bg-midnight text-white text-sm font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {savingEmail && <Loader2 className="w-4 h-4 animate-spin" />}
                   Save
@@ -136,7 +136,7 @@ export default function PasswordModal({ onClose, currentEmail }) {
               <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">
                 Cancel
               </button>
-              <button onClick={handleSavePassword} disabled={savingPw} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
+              <button onClick={handleSavePassword} disabled={savingPw} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
                 {savingPw && <Loader2 className="w-4 h-4 animate-spin" />}
                 Update Password
               </button>

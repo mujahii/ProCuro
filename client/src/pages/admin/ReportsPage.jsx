@@ -417,7 +417,7 @@ export default function AdminReportsPage() {
       </div>
 
       {loading ? <SkeletonTable rows={6} /> : filtered.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-gray-100">
+        <div className="text-center py-16 card">
           <Flag className="w-8 h-8 text-gray-200 mx-auto mb-2" />
           <p className="text-sm text-gray-400">No reports found</p>
         </div>

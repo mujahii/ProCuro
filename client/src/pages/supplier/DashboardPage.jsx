@@ -203,7 +203,7 @@ export default function SupplierDashboardPage() {
 
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-32 bg-white rounded-xl border border-slate-100 animate-pulse" />)}
+          {[...Array(3)].map((_, i) => <div key={i} className="h-32 card animate-pulse" />)}
         </div>
       ) : (
         <>
@@ -265,7 +265,7 @@ export default function SupplierDashboardPage() {
             </div>
 
             {products.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-xl border border-slate-100">
+              <div className="text-center py-12 card">
                 <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-400 text-sm">{t('noProductsYetSupplier')}</p>
                 <button

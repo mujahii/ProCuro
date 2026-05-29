@@ -573,7 +573,7 @@ export default function AdminUsersPage() {
               <div className="flex gap-2">
                 <button
                   onClick={() => { setViewTarget(null); setNotifyTarget(viewTarget); setNotifyTitle(''); setNotifyMsg('') }}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-midnight-dark"
                 >
                   <Send className="w-4 h-4" /> Send Message
                 </button>

@@ -295,7 +295,7 @@ export default function SupplierProfilePage() {
             )}
 
             {products.length === 0 ? (
-              <div className="bg-white rounded-xl border border-slate-100 p-12 text-center">
+              <div className="card p-12 text-center">
                 <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-400 text-sm">{t('noProductsListed')}</p>
               </div>
@@ -436,7 +436,7 @@ export default function SupplierProfilePage() {
             {!profile ? (
               <button
                 onClick={() => navigate('/login')}
-                className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md"
+                className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors shadow-md"
               >
                 {t('orderFromSupplier')}
               </button>

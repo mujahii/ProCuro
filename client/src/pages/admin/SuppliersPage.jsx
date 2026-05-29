@@ -206,7 +206,7 @@ export default function AdminSuppliersPage() {
             </div>
             <button
               onClick={() => { setViewTarget(null); setNotifyTarget(viewTarget) }}
-              className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
+              className="mt-4 w-full flex items-center justify-center gap-2 py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-midnight-dark"
             >
               <Send className="w-4 h-4" /> Send Notification
             </button>

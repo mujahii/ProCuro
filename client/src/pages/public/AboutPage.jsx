@@ -33,7 +33,7 @@ export default function AboutPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-10">
           {cards.map(({ icon: Icon, titleKey, descKey }) => (
-            <div key={titleKey} className="bg-white rounded-xl p-4 sm:p-5 border border-slate-100 shadow-sm">
+            <div key={titleKey} className="card p-4 sm:p-5">
               <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-midnight mb-2 sm:mb-3" />
               <h3 className="font-bold text-slate-900 mb-1 text-sm sm:text-base">{t(titleKey)}</h3>
               <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{t(descKey)}</p>

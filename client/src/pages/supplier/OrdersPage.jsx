@@ -153,7 +153,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
       <p className="text-sm font-bold text-marigold-dark">{t('bankTransferRefundRequired')}</p>
       <p className="text-xs text-marigold-dark">Please return the payment to the restaurant owner and upload your refund receipt.</p>
       {ownerBank ? (
-        <div className="bg-white rounded-lg p-3 border border-marigold-light space-y-2">
+        <div className="bg-white rounded-xl p-3 border border-marigold-light space-y-2">
           <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Owner Bank Details</p>
           {ownerBank.bank_name && (
             <div>
@@ -188,7 +188,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          className="w-full py-2.5 border-2 border-dashed border-marigold-light rounded-lg text-sm text-marigold-dark font-medium hover:bg-marigold-light transition-colors flex items-center justify-center gap-2"
+          className="w-full py-2.5 border-2 border-dashed border-marigold-light rounded-xl text-sm text-marigold-dark font-medium hover:bg-marigold-light transition-colors flex items-center justify-center gap-2"
         >
           <Upload className="w-4 h-4" />
           {file ? file.name : t('selectRefundReceipt')}
@@ -197,7 +197,7 @@ function RefundSection({ split, supplierId, onUploaded }) {
           <button
             onClick={handleUpload}
             disabled={uploading}
-            className="w-full py-2.5 bg-marigold hover:bg-marigold-dark text-white font-bold rounded-lg text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+            className="w-full py-2.5 bg-marigold hover:bg-marigold-dark text-white font-bold rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
           >
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
             {t('uploadAndNotifyOwner')}
@@ -513,7 +513,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
             </div>
           </div>
           {split.cancellation_reason && (
-            <div className="bg-white rounded-lg p-3 border border-orange-200">
+            <div className="bg-white rounded-xl p-3 border border-orange-200">
               <p className="text-[10px] uppercase tracking-wide font-semibold text-orange-400 mb-1">{t('ownersReasonLabel')}</p>
               <p className="text-sm text-slate-700 italic">"{split.cancellation_reason}"</p>
             </div>
@@ -596,7 +596,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         )}
         {(split.status === 'pending_confirmation' || (split.status === 'pending_payment' && split.receipt_url)) && (
           <>
-            <button onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }} className="flex-1 py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
+            <button onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }} className="flex-1 py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors shadow-md flex items-center justify-center gap-2">
               <CheckCircle className="w-4 h-4" /> {t('confirmOrderBtn')}
             </button>
             <button onClick={() => onCancel(split)} className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors">
@@ -606,7 +606,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         )}
         {split.status === 'confirmed' && (
           <>
-            <button onClick={() => { onUpdateStatus(split.id, 'out_for_delivery'); onBack() }} className="flex-1 py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors shadow-md flex items-center justify-center gap-2">
+            <button onClick={() => { onUpdateStatus(split.id, 'out_for_delivery'); onBack() }} className="flex-1 py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors shadow-md flex items-center justify-center gap-2">
               <Truck className="w-4 h-4" /> {t('outForDeliveryBtn')}
             </button>
             <button onClick={() => onCancel(split)} className="flex-1 py-3 bg-red-50 text-red-600 font-bold rounded-xl hover:bg-red-100 transition-colors">
@@ -828,7 +828,7 @@ export default function SupplierOrdersPage() {
 
       {loading ? (
         <div className="space-y-4">
-          {[...Array(3)].map((_, i) => <div key={i} className="bg-white rounded-xl border border-slate-100 h-28 animate-pulse" />)}
+          {[...Array(3)].map((_, i) => <div key={i} className="card h-28 animate-pulse" />)}
         </div>
       ) : displayed.length === 0 ? (
         <div className="text-center py-16">
@@ -882,7 +882,7 @@ export default function SupplierOrdersPage() {
                     {(split.status === 'pending_confirmation' || (split.status === 'pending_payment' && split.receipt_url)) && (
                       <button
                         onClick={() => updateStatus(split.id, 'confirmed')}
-                        className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
+                        className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors flex items-center gap-1 justify-center"
                       >
                         <CheckCircle className="w-3.5 h-3.5" /> {t('confirm')}
                       </button>
@@ -898,7 +898,7 @@ export default function SupplierOrdersPage() {
                     {split.status === 'confirmed' && (
                       <button
                         onClick={() => updateStatus(split.id, 'out_for_delivery')}
-                        className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1 justify-center"
+                        className="px-3 py-1.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors flex items-center gap-1 justify-center"
                       >
                         <Truck className="w-3.5 h-3.5" /> {t('outForDeliveryBtn')}
                       </button>

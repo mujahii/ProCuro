@@ -749,7 +749,7 @@ export default function AdminChatPage() {
             <div className="p-5 border-t border-gray-100">
               <button
                 onClick={() => setProfileModal(null)}
-                className="w-full py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-slate-800"
+                className="w-full py-2.5 bg-midnight text-white rounded-xl text-sm font-semibold hover:bg-midnight-dark"
               >
                 Close
               </button>

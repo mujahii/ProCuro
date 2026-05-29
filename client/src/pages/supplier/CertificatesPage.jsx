@@ -259,7 +259,7 @@ function UploadModal({ supplierProfile, onClose, onUploaded }) {
         </div>
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">{t('cancel')}</button>
-          <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleUpload} disabled={uploading || !file || !label.trim()} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
             {t('uploadBtn')}
           </button>
@@ -363,7 +363,7 @@ function EditModal({ cert, supplierProfileId, onClose, onSaved }) {
         </div>
         <div className="flex gap-3 pt-1">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">{t('cancel')}</button>
-          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-slate-800 disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+          <button onClick={handleSave} disabled={saving} className="flex-1 py-3 rounded-xl bg-midnight text-white font-semibold hover:bg-midnight-dark disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {t('saveChanges')}
           </button>

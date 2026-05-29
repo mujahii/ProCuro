@@ -53,7 +53,7 @@ export default function PWAInstallPrompt() {
         {!isIOS && (
           <button
             onClick={install}
-            className="flex items-center gap-1.5 bg-marigold text-midnight font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-marigold-dark transition-colors"
+            className="flex items-center gap-1.5 bg-marigold text-midnight font-bold text-xs px-3 py-1.5 rounded-xl hover:bg-marigold-dark transition-colors"
           >
             <Download className="w-3.5 h-3.5" /> Install
           </button>

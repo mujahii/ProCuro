@@ -230,7 +230,7 @@ export default function AdminDeliveryFeesPage() {
         <p className="text-sm text-gray-500 mb-4">
           The tax rate applied to all orders at checkout and shown on invoices. Germany's reduced VAT rate for food (Lebensmittel) is 7%.
         </p>
-        <div className="bg-white rounded-xl border border-gray-100 p-5 flex items-center justify-between gap-4">
+        <div className="card p-5 flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Current Rate</p>
             <p className="stat-value text-2xl">
@@ -240,7 +240,7 @@ export default function AdminDeliveryFeesPage() {
           </div>
           <button
             onClick={() => { setTaxInput(taxRate != null ? String((taxRate * 100).toFixed(2)) : '7'); setShowTaxForm(true) }}
-            className="flex items-center gap-2 px-4 py-2 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors"
           >
             <Edit2 className="w-4 h-4" /> Edit Rate
           </button>

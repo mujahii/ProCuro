@@ -27,7 +27,7 @@ export default function TermsOfServicePage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-6 space-y-6 sm:space-y-8 text-xs sm:text-sm text-slate-700 leading-relaxed">
+        <div className="card p-4 sm:p-6 space-y-6 sm:space-y-8 text-xs sm:text-sm text-slate-700 leading-relaxed">
 
           <section>
             <h2 className="font-bold text-slate-900 text-base mb-2">§ 1 Geltungsbereich und Vertragspartner</h2>

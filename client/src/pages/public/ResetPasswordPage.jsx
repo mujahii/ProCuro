@@ -123,7 +123,7 @@ export default function ResetPasswordPage() {
               <button
                 type="submit"
                 disabled={saving || !password || !confirm}
-                className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                 {saving ? t('resetSavingBtn') : t('resetSetNewPassword')}

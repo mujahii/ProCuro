@@ -179,7 +179,7 @@ export default function SupplierListPage() {
 
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[...Array(6)].map((_, i) => <div key={i} className="h-32 bg-white rounded-xl border border-slate-100 animate-pulse" />)}
+            {[...Array(6)].map((_, i) => <div key={i} className="h-32 card animate-pulse" />)}
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">

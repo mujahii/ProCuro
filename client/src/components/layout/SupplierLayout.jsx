@@ -140,7 +140,7 @@ export default function SupplierLayout() {
         style={{ paddingTop: 'var(--sat)' }}
       >
         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 flex-shrink-0">
-          <span className="font-bold text-lg text-slate-900">ProCuro</span>
+          <span className="font-display font-bold text-lg text-slate-900">ProCuro</span>
           <button
             onClick={() => setDrawerOpen(false)}
             className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
@@ -215,7 +215,7 @@ export default function SupplierLayout() {
             <button
               onClick={toggleCollapsed}
               title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              className="w-full flex items-center justify-center p-2 rounded-lg bg-midnight text-white hover:bg-slate-700 transition-colors"
+              className="w-full flex items-center justify-center p-2 rounded-xl bg-midnight text-white hover:bg-midnight-light transition-colors"
             >
               {collapsed
                 ? <ChevronRight className="w-4 h-4" />

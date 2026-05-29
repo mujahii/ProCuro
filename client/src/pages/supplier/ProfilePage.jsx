@@ -293,7 +293,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
   const normaliseCategories = v => Array.isArray(v) ? v : (v ? [v] : [])
   const [form, setForm] = useState({
     business_name: current.business_name || '',
-    bio: current.bio || '',
+    description: current.description || '',
     tax_id: current.tax_id || '',
     city: current.city || '',
     latitude: current.latitude || null,
@@ -367,9 +367,9 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
     if (!form.tax_id.trim()) { toast.error(t('toastTaxIdRequired')); return }
     setSaving(true)
     try {
-      await supabase.from('supplier_profiles').update({
+      const { error } = await supabase.from('supplier_profiles').update({
         business_name: form.business_name.trim() || null,
-        bio: form.bio.trim() || null,
+        description: form.description.trim() || null,
         tax_id: form.tax_id.trim(),
         city: form.city.trim() || null,
         latitude: form.latitude || null,
@@ -377,6 +377,7 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
         category: form.categories.length > 0 ? form.categories : null,
         website: form.website.trim() || null,
       }).eq('id', supplierProfileId)
+      if (error) throw error
 
       onSaved({ ...form, category: form.categories })
       onClose()
@@ -405,8 +406,8 @@ function BusinessInfoModal({ supplierProfileId, userId, current, onClose, onSave
         <div>
           <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">{t('description')}</label>
           <textarea
-            value={form.bio}
-            onChange={e => setForm(f => ({ ...f, bio: e.target.value }))}
+            value={form.description}
+            onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             rows={2}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-herb resize-none"
             placeholder="A short description about your business..."
@@ -959,8 +960,8 @@ export default function SupplierAccountPage() {
             <Tag className="w-4 h-4 text-slate-300 flex-shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wide">{t('description')}</p>
-              {supplierProfile?.bio ? (
-                <p className="text-sm text-slate-600 mt-0.5 italic">"{supplierProfile.bio}"</p>
+              {supplierProfile?.description ? (
+                <p className="text-sm text-slate-600 mt-0.5 italic">"{supplierProfile.description}"</p>
               ) : (
                 <span className="text-sm text-slate-400">{t('notSet')}</span>
               )}

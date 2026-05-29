@@ -18,6 +18,7 @@ export default function Navbar({ onMenuClick }) {
   const { t } = useLanguage()
   const navigate = useNavigate()
 
+  const [scrolled, setScrolled] = useState(false)
   const [addrOpen, setAddrOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [addingAddr, setAddingAddr] = useState(false)
@@ -26,6 +27,12 @@ export default function Navbar({ onMenuClick }) {
   const [savingAddr, setSavingAddr] = useState(false)
   const addrRef = useRef(null)
   const userRef = useRef(null)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     function handleClick(e) {
@@ -104,7 +111,10 @@ export default function Navbar({ onMenuClick }) {
   const initials = profile?.full_name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
 
   return (
-    <nav className="bg-white border-b border-slate-200 fixed top-0 left-0 right-0 z-30 w-full" style={{ paddingTop: 'var(--sat)' }}>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-30 w-full transition-all duration-300 bg-white/85 backdrop-blur-[16px] backdrop-saturate-150 border-b ${scrolled ? 'border-slate-200 shadow-md' : 'border-transparent'}`}
+      style={{ paddingTop: 'var(--sat)' }}
+    >
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
 
@@ -123,7 +133,7 @@ export default function Navbar({ onMenuClick }) {
             {/* Logo */}
             <Link to={getHomeLink()} className="flex-shrink-0 flex items-center gap-2">
               <ShoppingCart className="w-8 h-8 text-midnight" />
-              <span className="font-bold text-xl text-midnight hidden sm:block">ProCuro</span>
+              <span className="font-display font-bold text-xl text-midnight hidden sm:block">ProCuro</span>
             </Link>
 
             {/* Address selector — owner only */}
@@ -320,10 +330,10 @@ export default function Navbar({ onMenuClick }) {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Link to="/login" className="border-2 border-slate-200 text-slate-700 hover:bg-lionsmane px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200">
+                <Link to="/login" className="border-2 border-slate-200 text-slate-700 hover:bg-lionsmane px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200">
                   {t('logIn')}
                 </Link>
-                <Link to="/register" className="bg-midnight text-white hover:bg-midnight-dark px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm">
+                <Link to="/register" className="bg-midnight text-white hover:bg-midnight-dark px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm">
                   {t('signUp')}
                 </Link>
               </div>

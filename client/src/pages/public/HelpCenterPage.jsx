@@ -57,12 +57,12 @@ export default function HelpCenterPage() {
 
         <div className="flex items-center gap-3 mb-2">
           <HelpCircle className="w-6 h-6 sm:w-7 sm:h-7 text-midnight" />
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900">{t('helpTitle')}</h1>
+          <h1 className="font-display text-xl sm:text-2xl font-black text-slate-900">{t('helpTitle')}</h1>
         </div>
         <p className="text-sm sm:text-base text-slate-500 mb-8 sm:mb-10">{t('helpSubtitle')}</p>
 
         {/* FAQ accordion */}
-        <h2 className="text-lg font-black text-slate-900 mb-4">{t('faqTitle')}</h2>
+        <h2 className="font-display text-lg font-black text-slate-900 mb-4">{t('faqTitle')}</h2>
         <div className="space-y-2 mb-10">
           {FAQ_KEYS.map(([qKey, aKey], i) => (
             <div key={qKey} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">

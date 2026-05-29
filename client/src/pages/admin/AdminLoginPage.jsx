@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
           <div className="w-14 h-14 bg-midnight rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Shield className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Admin Portal</h1>
+          <h1 className="font-display text-2xl font-bold text-white">Admin Portal</h1>
           <p className="text-slate-400 text-sm mt-1">Restricted access — admin only</p>
         </div>
 

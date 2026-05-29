@@ -89,7 +89,7 @@ export default function LoginPage() {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-2">
               <ShoppingCart className="w-8 h-8 text-midnight" />
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
+              <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
             <p className="text-slate-500 text-sm">{t('loginTagline')}</p>
           </div>
@@ -140,7 +140,7 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={resetLoading}
-                      className="w-full py-3 bg-midnight text-white font-bold rounded-lg hover:bg-midnight-dark transition-colors text-base shadow-md disabled:opacity-60"
+                      className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors text-base shadow-md disabled:opacity-60"
                     >
                       {resetLoading ? t('sending') : t('sendResetLink')}
                     </button>

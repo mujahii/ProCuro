@@ -17,7 +17,7 @@ export default function TermsOfServicePage() {
 
         <div className="flex items-center gap-3 mb-2">
           <FileText className="w-6 h-6 sm:w-7 sm:h-7 text-midnight" />
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900">{t('termsTitle')}</h1>
+          <h1 className="font-display text-xl sm:text-2xl font-black text-slate-900">{t('termsTitle')}</h1>
         </div>
         <p className="text-slate-500 text-xs sm:text-sm mb-4">{t('termsSubtitle')}</p>
         {t('termsLegalNote') && (

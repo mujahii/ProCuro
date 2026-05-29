@@ -102,12 +102,12 @@ export default function SelectRolePage() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-3">
             <ShoppingCart className="w-8 h-8 text-midnight" />
-            <span className="text-2xl font-bold text-slate-900">ProCuro</span>
+            <span className="font-display text-2xl font-bold text-slate-900">ProCuro</span>
           </div>
           <div className="mb-2 flex justify-center">
             <PartyPopper className="w-8 h-8 text-marigold" />
           </div>
-          <h2 className="text-xl font-black text-slate-900 mb-2">{t('welcomeToProcuro')}</h2>
+          <h2 className="font-display text-xl font-black text-slate-900 mb-2">{t('welcomeToProcuro')}</h2>
           <p className="text-sm text-slate-500 leading-relaxed">
             {t('accountReadyDesc')}{' '}
             <span className="font-semibold text-slate-700">{t('choiceIsPermanent')}</span>

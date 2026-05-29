@@ -32,7 +32,7 @@ export default function PressPage() {
 
         <div className="flex items-center gap-3 mb-2">
           <Newspaper className="w-6 h-6 sm:w-7 sm:h-7 text-midnight" />
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900">{t('pressTitle')}</h1>
+          <h1 className="font-display text-xl sm:text-2xl font-black text-slate-900">{t('pressTitle')}</h1>
         </div>
         <p className="text-sm sm:text-base text-slate-500 mb-6 sm:mb-8">{t('pressSubtitle')}</p>
 

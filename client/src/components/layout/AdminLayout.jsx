@@ -107,7 +107,7 @@ export default function AdminLayout() {
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div className={`${collapsed ? 'lg:hidden' : ''} overflow-hidden`}>
-            <span className="font-bold text-lg leading-tight whitespace-nowrap">ProCuro</span>
+            <span className="font-display font-bold text-lg leading-tight whitespace-nowrap">ProCuro</span>
             <span className="block text-xs text-gray-400 whitespace-nowrap">{t('adminPanelLabel')}</span>
           </div>
           {/* Close button — mobile only */}
@@ -194,7 +194,7 @@ export default function AdminLayout() {
             >
               <Menu className="w-5 h-5" />
             </button>
-            <h1 className="font-semibold text-gray-800 text-sm sm:text-base">{t('adminDashboardTitle')}</h1>
+            <h1 className="font-display font-semibold text-gray-800 text-sm sm:text-base">{t('adminDashboardTitle')}</h1>
           </div>
           <div className="flex items-center gap-2">
             <NotificationBell />

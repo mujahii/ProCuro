@@ -35,7 +35,7 @@ export default function AccountDeletedPage() {
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-white mb-2">
+        <h1 className="font-display text-3xl font-bold text-white mb-2">
           {t('accountDeletedTitle')}
         </h1>
 

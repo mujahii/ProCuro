@@ -24,7 +24,7 @@ export default function AboutPage() {
 
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
           <ShoppingCart className="w-7 h-7 sm:w-8 sm:h-8 text-midnight" />
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t('aboutTitle')}</h1>
+          <h1 className="font-display text-2xl sm:text-3xl font-black text-slate-900">{t('aboutTitle')}</h1>
         </div>
 
         <p className="text-sm sm:text-lg text-slate-600 leading-relaxed mb-6 sm:mb-8">
@@ -41,11 +41,11 @@ export default function AboutPage() {
           ))}
         </div>
 
-        <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">{t('aboutOurStory')}</h2>
+        <h2 className="font-display text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">{t('aboutOurStory')}</h2>
         <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-3 sm:mb-4">{t('aboutStoryP1')}</p>
         <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-6 sm:mb-8">{t('aboutStoryP2')}</p>
 
-        <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">{t('contactUs')}</h2>
+        <h2 className="font-display text-lg sm:text-xl font-bold text-slate-900 mb-2 sm:mb-3">{t('contactUs')}</h2>
         <p className="text-sm sm:text-base text-slate-600">
           Email: <a href="mailto:support@procuro.com" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">support@procuro.com</a><br />
           Phone: <a href="tel:+4915560608671" className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">+49 155 6060 8671</a><br />

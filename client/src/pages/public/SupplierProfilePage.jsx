@@ -179,7 +179,7 @@ export default function SupplierProfilePage() {
           )}
 
           <div className="absolute inset-x-0 bottom-0 p-5 text-white">
-            <h1 className="text-2xl font-black leading-tight">{supplier.business_name}</h1>
+            <h1 className="font-display text-2xl font-black leading-tight">{supplier.business_name}</h1>
             <div className="flex items-center gap-2 text-sm mt-1.5 flex-wrap">
               {supplier.city && (() => {
                 const cities = supplier.city.split(',').map(c => c.trim()).filter(Boolean)
@@ -264,7 +264,7 @@ export default function SupplierProfilePage() {
           <div className="md:col-span-2">
             {/* Header + See All */}
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-bold text-slate-900">{t('supplierProducts')}</h2>
+              <h2 className="font-display text-xl font-bold text-slate-900">{t('supplierProducts')}</h2>
               {filteredProducts.length > INITIAL_LIMIT && (
                 <button
                   onClick={() => setShowAll(v => !v)}

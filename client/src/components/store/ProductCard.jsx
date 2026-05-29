@@ -89,7 +89,7 @@ export default function ProductCard({ product, onAddToCart, onReport }) {
         <p className="text-[11px] text-primary font-semibold uppercase tracking-wide mb-0.5 truncate">
           {product.supplier?.business_name || 'Supplier'}
         </p>
-        <h3 className="font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2">
+        <h3 className="font-display font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2">
           {product.name}
         </h3>
 

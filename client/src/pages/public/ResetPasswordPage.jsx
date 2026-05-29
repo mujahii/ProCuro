@@ -56,7 +56,7 @@ export default function ResetPasswordPage() {
               <KeyRound className="w-5 h-5 text-midnight" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">{t('resetSetNewPassword')}</h1>
+              <h1 className="font-display text-xl font-bold text-slate-900">{t('resetSetNewPassword')}</h1>
               <p className="text-xs text-slate-400 mt-0.5">{t('resetChooseStrong')}</p>
             </div>
           </div>

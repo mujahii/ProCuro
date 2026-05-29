@@ -89,7 +89,7 @@ export default function ProductsListPage() {
 
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-slate-900">{t('allProductsTitle')}</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">{t('allProductsTitle')}</h1>
           <span className="text-sm text-slate-400">{filtered.length} {filtered.length !== 1 ? t('productCountPlural') : t('productCountSingular')}</span>
         </div>
 

@@ -90,7 +90,7 @@ export default function RegisterPage() {
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-2 mb-2">
               <ShoppingCart className="w-7 h-7 text-midnight" />
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
+              <h1 className="font-display text-3xl font-bold text-slate-900 tracking-tight">ProCuro</h1>
             </div>
             <p className="text-slate-500 text-sm">{t('createFreeAccount')}</p>
           </div>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
               </div>
             </div>
             <button type="submit" disabled={loading}
-              className="w-full py-3 bg-midnight text-white font-bold rounded-lg hover:bg-slate-800 transition-colors text-base shadow-md disabled:opacity-60">
+              className="w-full py-3 bg-midnight text-white font-bold rounded-xl hover:bg-midnight-dark transition-colors text-base shadow-md disabled:opacity-60">
               {loading ? t('creatingAccount') : t('createAccountBtn')}
             </button>
           </form>

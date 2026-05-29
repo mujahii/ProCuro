@@ -55,7 +55,7 @@ function StatItem({ target, suffix, label, decimal, started }) {
   const count = useCountUp(target, 1800, started, decimal)
   return (
     <div>
-      <p className="text-2xl sm:text-3xl font-black text-midnight">
+      <p className="font-display text-2xl sm:text-3xl font-black text-midnight">
         {decimal ? count.toFixed(1) : count.toLocaleString()}{suffix}
       </p>
       <p className="text-xs sm:text-sm text-slate-500 mt-1">{label}</p>
@@ -207,7 +207,7 @@ export default function LandingPage() {
 
           {/* Zone 2 — Main title, focal point */}
           <div>
-            <h1 className="text-3xl sm:text-5xl md:text-6xl font-black leading-tight text-lionsmane">
+            <h1 className="font-display text-3xl sm:text-5xl md:text-6xl font-black leading-tight text-lionsmane">
               {t('heroTitle')}
             </h1>
           </div>
@@ -386,7 +386,7 @@ export default function LandingPage() {
 
         {/* How It Works */}
         <section className="py-4 sm:py-8">
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 text-center mb-6 sm:mb-10">{t('howItWorks')}</h2>
+          <h2 className="font-display text-xl sm:text-2xl font-black text-slate-900 text-center mb-6 sm:mb-10">{t('howItWorks')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {HOW_IT_WORKS.map(({ icon: Icon, title, desc }, i) => (
               <div key={title} className="text-center">
@@ -406,7 +406,7 @@ export default function LandingPage() {
         {/* Mobile App Download */}
         <section className="py-4 sm:py-8 text-center border-t border-slate-100">
           <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">{t('mobileComingToMobile')}</p>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">{t('mobileTakeEverywhere')}</h2>
+          <h2 className="font-display text-xl sm:text-2xl font-black text-slate-900 mb-2">{t('mobileTakeEverywhere')}</h2>
           <p className="text-sm text-slate-500 mb-7 max-w-xs mx-auto">{t('mobileTagline')}</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-stretch max-w-2xl mx-auto w-full px-4">
 

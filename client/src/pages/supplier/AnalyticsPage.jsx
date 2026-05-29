@@ -200,7 +200,7 @@ export default function SupplierAnalyticsPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-black text-gray-900">{t('analytics')}</h1>
+        <h1 className="font-display text-2xl font-black text-gray-900">{t('analytics')}</h1>
         <DateRangeFilter value={range} onChange={setRange} />
       </div>
 

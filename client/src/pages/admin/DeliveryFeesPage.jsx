@@ -105,7 +105,7 @@ export default function AdminDeliveryFeesPage() {
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Truck className="w-6 h-6 text-primary" />
-          <h1 className="text-2xl font-black text-gray-900">Delivery Fee Rules</h1>
+          <h1 className="font-display text-2xl font-black text-gray-900">Delivery Fee Rules</h1>
         </div>
         <button onClick={openAdd} className="btn-primary flex items-center gap-2 text-sm">
           <Plus className="w-4 h-4" /> Add Rule

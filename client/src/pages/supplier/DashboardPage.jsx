@@ -107,7 +107,7 @@ export default function SupplierDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">{t('navDashboard')}</h1>
+      <h1 className="font-display text-2xl font-bold text-slate-900">{t('navDashboard')}</h1>
 
       {/* Suspended banner — highest priority */}
       {!loading && user?.is_banned && (
@@ -210,12 +210,12 @@ export default function SupplierDashboardPage() {
           {/* Stats cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Revenue */}
-            <div className="bg-gradient-to-br from-midnight to-slate-800 text-white p-6 rounded-xl shadow-md">
+            <div className="bg-gradient-to-br from-midnight to-primary-mid text-white p-6 rounded-[20px] shadow-md">
               <div className="flex items-center gap-2 mb-3">
                 <Euro className="w-5 h-5 text-herb-light" />
                 <p className="text-slate-300 text-sm font-medium">{t('totalRevenueLabel')}</p>
               </div>
-              <p className="text-3xl font-black">€{stats.totalRevenue.toFixed(2)}</p>
+              <p className="font-display text-3xl font-black">€{stats.totalRevenue.toFixed(2)}</p>
               <div className="flex items-center gap-1 mt-2">
                 <TrendingUp className="w-3.5 h-3.5 text-herb-light" />
                 <p className="text-xs text-herb-light font-medium">€{stats.monthRevenue.toFixed(2)} {t('thisMonthLabel')}</p>
@@ -225,20 +225,20 @@ export default function SupplierDashboardPage() {
             {/* Active Orders */}
             <div
               onClick={() => navigate('/supplier/orders')}
-              className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow"
+              className="card card-lift bg-white p-6 cursor-pointer"
             >
               <div className="flex items-center gap-2 mb-3">
-                <ShoppingBag className="w-5 h-5 text-blue-500" />
+                <ShoppingBag className="w-5 h-5 text-teal" />
                 <p className="text-slate-500 text-sm font-medium">{t('activeOrdersLabel')}</p>
               </div>
-              <p className="text-3xl font-black text-slate-900">{stats.activeOrders}</p>
+              <p className="stat-value text-3xl">{stats.activeOrders}</p>
               <p className="text-xs text-slate-400 mt-2">{stats.pendingOrders} {t('awaitingConfirmationLabel')}</p>
             </div>
 
             {/* Analytics link */}
             <div
               onClick={() => navigate('/supplier/analytics')}
-              className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow"
+              className="card card-lift bg-white p-6 cursor-pointer"
             >
               <div className="flex items-center gap-2 mb-3">
                 <TrendingUp className="w-5 h-5 text-midnight" />
@@ -255,7 +255,7 @@ export default function SupplierDashboardPage() {
           {/* Products */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-slate-900">{t('myProductsTitle')}</h2>
+              <h2 className="font-display text-lg font-bold text-slate-900">{t('myProductsTitle')}</h2>
               <button
                 onClick={() => navigate('/supplier/products')}
                 className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors"

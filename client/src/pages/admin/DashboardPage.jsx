@@ -388,7 +388,7 @@ export default function AdminDashboardPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-black text-gray-900">{t('adminOverview')}</h1>
+        <h1 className="font-display text-2xl font-black text-gray-900">{t('adminOverview')}</h1>
         <DateRangeFilter value={range} onChange={setRange} />
       </div>
 
@@ -400,11 +400,11 @@ export default function AdminDashboardPage() {
         <>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {statCards.map(({ labelKey, value, icon: Icon, color, bg }) => (
-              <div key={labelKey} className="bg-white rounded-xl p-4 border border-gray-100">
-                <div className={`w-9 h-9 ${bg} rounded-lg flex items-center justify-center mb-3`}>
+              <div key={labelKey} className="card p-4">
+                <div className={`w-9 h-9 ${bg} rounded-xl flex items-center justify-center mb-3`}>
                   <Icon className={`w-5 h-5 ${color}`} />
                 </div>
-                <p className="text-2xl font-black text-gray-900">{value}</p>
+                <p className="stat-value text-2xl">{value}</p>
                 <p className="text-xs text-gray-500 mt-1">{t(labelKey)}</p>
               </div>
             ))}

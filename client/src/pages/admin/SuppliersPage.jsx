@@ -94,7 +94,7 @@ export default function AdminSuppliersPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <h1 className="text-2xl font-black text-gray-900">Suppliers ({suppliers.length})</h1>
+        <h1 className="font-display text-2xl font-black text-gray-900">Suppliers ({suppliers.length})</h1>
         <div className="flex gap-2 flex-wrap">
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />

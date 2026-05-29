@@ -10,7 +10,7 @@ import { AddressProvider } from './context/AddressContext'
 import { LanguageProvider } from './context/LanguageContext'
 
 // First-paint critical (eager)
-import LandingPage from './pages/public/LandingPage'
+import LandingPage from './pages/public/LandingPage2'
 import LoginPage from './pages/public/LoginPage'
 import RegisterOwnerPage from './pages/public/RegisterOwnerPage'
 import RegisterSupplierPage from './pages/public/RegisterSupplierPage'

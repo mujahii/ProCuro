@@ -107,7 +107,7 @@ export default function AdminProductsPage() {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-        <h1 className="text-2xl font-black text-gray-900">Products</h1>
+        <h1 className="font-display text-2xl font-black text-gray-900">Products</h1>
         <div className="flex flex-wrap gap-2">
           <div className="relative flex-1 sm:flex-none">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />

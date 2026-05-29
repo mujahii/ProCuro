@@ -199,7 +199,7 @@ export default function CartPage() {
           <ArrowLeft className="w-4 h-4" /> {t('backToCart')}
         </button>
 
-        <h1 className="text-2xl font-bold text-slate-900">{t('paymentMethod')}</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">{t('paymentMethod')}</h1>
 
         <div className="grid grid-cols-2 gap-4">
           {[
@@ -308,7 +308,7 @@ export default function CartPage() {
   /* Step 1 — Cart */
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">{t('myCart')}</h1>
+      <h1 className="font-display text-2xl font-bold text-slate-900">{t('myCart')}</h1>
 
       {profile?.is_banned && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">

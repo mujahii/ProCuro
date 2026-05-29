@@ -331,7 +331,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
       </button>
 
       <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-bold text-slate-900">{t('orderDetailsTitle')}</h2>
+        <h2 className="font-display text-2xl font-bold text-slate-900">{t('orderDetailsTitle')}</h2>
         <StatusBadge status={split.status} />
       </div>
 
@@ -685,7 +685,7 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">{t('myOrders')}</h1>
+      <h1 className="font-display text-2xl font-bold text-slate-900">{t('myOrders')}</h1>
 
       <div className="flex gap-4 border-b border-slate-200">
         {[
@@ -726,7 +726,7 @@ export default function OrdersPage() {
             <div
               key={split.id}
               onClick={() => setSelectedOrder(split)}
-              className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 hover:shadow-md transition-shadow cursor-pointer"
+              className="card card-lift p-4 cursor-pointer"
             >
               {/* Header row */}
               <div className="flex items-center justify-between mb-2">

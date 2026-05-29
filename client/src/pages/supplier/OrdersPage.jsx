@@ -392,7 +392,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         <ArrowLeft className="w-4 h-4" /> {t('backToOrders')}
       </button>
       <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-bold text-slate-900">{t('orderDetailsTitle')}</h2>
+        <h2 className="font-display text-2xl font-bold text-slate-900">{t('orderDetailsTitle')}</h2>
         <StatusBadge status={split.status} />
       </div>
 
@@ -804,7 +804,7 @@ export default function SupplierOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-900">{t('orders')}</h1>
+      <h1 className="font-display text-2xl font-bold text-slate-900">{t('orders')}</h1>
 
       <div className="flex gap-4 border-b border-slate-200">
         {[

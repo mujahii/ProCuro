@@ -167,7 +167,7 @@ export default function AnalyticsPage() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-black text-gray-900">{t('analytics')}</h1>
+        <h1 className="font-display text-2xl font-black text-gray-900">{t('analytics')}</h1>
         <DateRangeFilter value={range} onChange={setRange} />
       </div>
 
@@ -190,7 +190,7 @@ export default function AnalyticsPage() {
                   <Icon className={`w-4 h-4 ${color}`} />
                   <p className="text-xs text-gray-500">{t(labelKey)}</p>
                 </div>
-                <p className="text-xl font-black text-gray-900 truncate">{value}</p>
+                <p className="stat-value text-xl truncate">{value}</p>
               </div>
             ))}
           </div>
@@ -202,7 +202,7 @@ export default function AnalyticsPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             {/* Spending share by category — donut */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="card p-5">
               <h3 className="font-bold text-gray-900 mb-2">{t('spendingByCategory')}</h3>
               {categoryPie.length === 0 ? (
                 <div className="h-[288px] flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
@@ -234,7 +234,7 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Category breakdown bar */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="card p-5">
               <h3 className="font-bold text-gray-900 mb-2">{t('topCategoriesEur')}</h3>
               {categoryBreakdown.length === 0 ? (
                 <div className="h-[288px] flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>

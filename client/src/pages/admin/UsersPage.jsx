@@ -206,7 +206,7 @@ export default function AdminUsersPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h1 className="text-2xl font-black text-gray-900">Users ({users.length})</h1>
+        <h1 className="font-display text-2xl font-black text-gray-900">Users ({users.length})</h1>
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search users..." className="pl-9 input text-sm py-2 w-56" />

@@ -387,7 +387,7 @@ export default function AdminReportsPage() {
     <div>
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <h1 className="text-2xl font-black text-gray-900">Reports</h1>
+        <h1 className="font-display text-2xl font-black text-gray-900">Reports</h1>
         {pendingCount > 0 && (
           <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{pendingCount} pending</span>
         )}

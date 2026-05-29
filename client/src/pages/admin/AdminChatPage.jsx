@@ -355,7 +355,7 @@ export default function AdminChatPage() {
         onChange={handleFileSelect}
       />
       <h1 className="text-2xl font-black text-gray-900 mb-4 flex-shrink-0">Support Chat</h1>
-      <div className="flex-1 min-h-0 flex bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="flex-1 min-h-0 flex card overflow-hidden">
 
         {/* Conversation list */}
         <div className={`${selectedConv ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-72 lg:w-80 border-r border-gray-100 flex-shrink-0`}>

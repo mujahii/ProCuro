@@ -4,6 +4,7 @@ import { Shield } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import { useLanguage } from '../../context/LanguageContext'
+import OrbBackground from '../../components/ui/OrbBackground'
 
 export default function AdminLoginPage() {
   const { signIn } = useAuth()
@@ -31,11 +32,12 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-midnight flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
+      <OrbBackground />
+      <div className="relative z-10 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-14 h-14 bg-midnight rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Shield className="w-7 h-7 text-white" />
+          <div className="w-14 h-14 bg-marigold rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <Shield className="w-7 h-7 text-midnight" />
           </div>
           <h1 className="font-display text-2xl font-bold text-white">Admin Portal</h1>
           <p className="text-slate-400 text-sm mt-1">Restricted access — admin only</p>
@@ -68,7 +70,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-midnight hover:bg-slate-800 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 shadow-md"
+              className="w-full bg-midnight hover:bg-midnight-dark text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60 shadow-md"
             >
               {loading ? 'Signing in...' : 'Sign In as Admin'}
             </button>

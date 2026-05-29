@@ -51,7 +51,7 @@ export default function CareersPage() {
         <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-3 sm:mb-4">{t('careersOpenPositions')}</h2>
         <div className="space-y-3 sm:space-y-4 mb-8 sm:mb-10">
           {openings.map(job => (
-            <div key={job.titleKey} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-5">
+            <div key={job.titleKey} className="card p-4 sm:p-5">
               <div className="flex flex-wrap items-start justify-between gap-2 mb-2">
                 <h3 className="font-bold text-slate-900 text-sm sm:text-base">{t(job.titleKey)}</h3>
                 <span className="text-[10px] sm:text-xs font-semibold bg-celeste text-midnight-dark px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">{t(job.typeKey)}</span>

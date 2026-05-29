@@ -281,7 +281,7 @@ export default function SupplierDashboardPage() {
                   {pageProducts.map(product => (
                     <div
                       key={product.id}
-                      className="bg-white rounded-xl shadow-sm border border-slate-100 p-3 flex gap-4 items-center"
+                      className="card p-3 flex gap-4 items-center"
                     >
                       <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
                         {product.image_url ? (

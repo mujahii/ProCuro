@@ -65,7 +65,7 @@ export default function HelpCenterPage() {
         <h2 className="font-display text-lg font-black text-slate-900 mb-4">{t('faqTitle')}</h2>
         <div className="space-y-2 mb-10">
           {FAQ_KEYS.map(([qKey, aKey], i) => (
-            <div key={qKey} className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+            <div key={qKey} className="card overflow-hidden">
               <button
                 onClick={() => setOpenFaq(openFaq === i ? null : i)}
                 className="w-full flex items-center justify-between px-5 py-4 text-left gap-3"

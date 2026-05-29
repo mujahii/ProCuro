@@ -40,7 +40,7 @@ export default function AdminOrdersPage() {
       </div>
 
       {loading ? <SkeletonTable rows={6} /> : (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="card overflow-hidden">
           <table className="w-full">
             <thead className="bg-lionsmane border-b border-gray-100">
               <tr>

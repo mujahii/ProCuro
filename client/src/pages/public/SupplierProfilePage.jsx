@@ -307,7 +307,7 @@ export default function SupplierProfilePage() {
                     <div
                       key={product.id}
                       onClick={() => profile?.role === 'restaurant_owner' && canOrder && setSelectedProduct(product)}
-                      className={`bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 transition-colors ${profile?.role === 'restaurant_owner' && canOrder ? 'cursor-pointer hover:border-herb' : 'opacity-60'}`}
+                      className={`card p-4 flex gap-4 transition-colors ${profile?.role === 'restaurant_owner' && canOrder ? 'cursor-pointer hover:border-herb' : 'opacity-60'}`}
                     >
                       <div className="w-20 h-20 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0">
                         {imgUrl ? (
@@ -361,7 +361,7 @@ export default function SupplierProfilePage() {
           {/* Sidebar — 1/3 width */}
           <div className="space-y-4">
             {/* About + Certifications in one card with dividers */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="card overflow-hidden">
               {/* About */}
               <div className="p-5">
                 <h3 className="font-bold text-slate-900 mb-2">{t('supplierAbout')}</h3>

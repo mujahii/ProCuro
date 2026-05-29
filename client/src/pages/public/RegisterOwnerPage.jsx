@@ -4,6 +4,7 @@ import { Eye, EyeOff, ShoppingCart, Check } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../context/LanguageContext'
+import OrbBackground from '../../components/ui/OrbBackground'
 import toast from 'react-hot-toast'
 
 const GoogleLogo = () => (
@@ -83,8 +84,9 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-midnight flex items-center justify-center p-4 py-10">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+    <div className="relative min-h-screen flex items-center justify-center p-4 py-10 overflow-hidden">
+      <OrbBackground />
+      <div className="relative z-10 bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
         <div className="p-8">
           {/* Logo */}
           <div className="text-center mb-8">

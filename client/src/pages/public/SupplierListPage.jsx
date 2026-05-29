@@ -210,7 +210,7 @@ export default function SupplierListPage() {
                 <div
                   key={supplier.id}
                   onClick={() => navigate(`/supplier/${supplier.id}`)}
-                  className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 flex gap-4 cursor-pointer hover:shadow-md transition-shadow"
+                  className="card p-4 flex gap-4 cursor-pointer hover:shadow-md transition-shadow"
                 >
                   <div className="w-20 h-20 rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center flex-shrink-0">
                     {supplier.avatar_url ? (

@@ -4,6 +4,7 @@ import { ShoppingCart, ChevronRight, PartyPopper, Utensils, Store } from 'lucide
 import { useAuth } from '../../context/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../context/LanguageContext'
+import OrbBackground from '../../components/ui/OrbBackground'
 import toast from 'react-hot-toast'
 
 const PRESET_AVATARS = [
@@ -96,8 +97,9 @@ export default function SelectRolePage() {
   if (!authUser) return null
 
   return (
-    <div className="min-h-screen bg-midnight flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl p-8">
+    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden">
+      <OrbBackground />
+      <div className="relative z-10 bg-white w-full max-w-md rounded-2xl shadow-2xl p-8">
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-3">

@@ -789,7 +789,7 @@ export default function SupplierAccountPage() {
     <div className="max-w-lg mx-auto space-y-4 py-4">
 
       {/* Profile Header */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="h-28 bg-gradient-to-r from-midnight to-slate-800" />
         <div className="px-8 pb-7 text-center -mt-14">
           <div className="relative inline-block">
@@ -848,14 +848,14 @@ export default function SupplierAccountPage() {
       <div className="grid grid-cols-2 gap-3">
         <button
           onClick={() => navigate('/supplier/orders')}
-          className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
+          className="card p-5 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
         >
           <Package className="w-6 h-6 text-midnight" />
           <span className="text-sm font-semibold text-slate-700">{t('mySales')}</span>
         </button>
         <button
           onClick={() => navigate('/supplier/analytics')}
-          className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
+          className="card p-5 flex flex-col items-center gap-2 hover:shadow-md transition-shadow"
         >
           <TrendingUp className="w-6 h-6 text-midnight" />
           <span className="text-sm font-semibold text-slate-700">{t('viewAnalysis')}</span>
@@ -929,7 +929,7 @@ export default function SupplierAccountPage() {
       </div>
 
       {/* Business Details card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="flex items-center justify-between px-4 pt-5 pb-2">
           <h3 className="font-bold text-slate-900 text-base">{t('businessDetails')}</h3>
           <button
@@ -1091,7 +1091,7 @@ export default function SupplierAccountPage() {
       </div>
 
       {/* Account Settings */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="card overflow-hidden">
         <h3 className="font-bold text-slate-900 text-base px-4 pt-5 pb-2">{t('accountSettings')}</h3>
         <div className="divide-y divide-slate-100">
           <SettingRow label={t('changeEmailPassword')} onClick={() => setShowPasswordModal(true)} />

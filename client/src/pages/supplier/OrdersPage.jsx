@@ -397,7 +397,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
       </div>
 
       {/* Restaurant owner card */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 space-y-3">
+      <div className="card p-5 space-y-3">
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{t('deliveryToLabel')}</p>
           <button
@@ -461,7 +461,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+      <div className="card p-6">
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">{t('orderIdLabel')}</p>
@@ -843,7 +843,7 @@ export default function SupplierOrdersPage() {
             <div
               key={split.id}
               onClick={() => setSelectedSplit(split)}
-              className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 hover:shadow-md transition-shadow cursor-pointer"
+              className="card p-6 hover:shadow-md transition-shadow cursor-pointer"
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>

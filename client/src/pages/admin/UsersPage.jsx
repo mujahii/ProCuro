@@ -252,7 +252,7 @@ export default function AdminUsersPage() {
           {/* Mobile card list - deleted accounts */}
           <div className="flex flex-col gap-3 md:hidden">
             {deletedAccounts.map(d => (
-              <div key={d.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+              <div key={d.id} className="card p-4">
                 <p className="text-sm font-medium text-gray-700 truncate">{d.email || '—'}</p>
                 <div className="flex items-center gap-2 mt-2">
                   {roleBadge(d.role)}
@@ -264,7 +264,7 @@ export default function AdminUsersPage() {
             {deletedAccounts.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted accounts</p>}
           </div>
           {/* Desktop table */}
-          <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="hidden md:block card overflow-hidden">
             <table className="w-full">
               <thead className="bg-lionsmane border-b border-gray-100">
                 <tr>
@@ -294,7 +294,7 @@ export default function AdminUsersPage() {
         {/* Mobile card list - active users */}
         <div className="flex flex-col gap-3 md:hidden">
           {filtered.map(u => (
-            <div key={u.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+            <div key={u.id} className="card p-4">
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-gray-900 truncate">{u.full_name || '—'}</p>
@@ -378,7 +378,7 @@ export default function AdminUsersPage() {
           {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No users found</p>}
         </div>
         {/* Desktop table */}
-        <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="hidden md:block card overflow-hidden">
           <table className="w-full">
             <thead className="bg-lionsmane border-b border-gray-100">
               <tr>

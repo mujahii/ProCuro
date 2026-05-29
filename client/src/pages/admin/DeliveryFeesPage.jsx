@@ -119,7 +119,7 @@ export default function AdminDeliveryFeesPage() {
       </p>
 
       {loading ? <SkeletonTable rows={4} /> : (
-        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="card overflow-hidden">
           <table className="w-full">
             <thead className="bg-lionsmane border-b border-gray-100">
               <tr>
@@ -233,7 +233,7 @@ export default function AdminDeliveryFeesPage() {
         <div className="bg-white rounded-xl border border-gray-100 p-5 flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Current Rate</p>
-            <p className="text-2xl font-black text-midnight">
+            <p className="stat-value text-2xl">
               {taxRate != null ? `${(taxRate * 100).toFixed(1)}%` : '—'}
             </p>
             <p className="text-xs text-gray-400 mt-1">Applied at checkout &amp; on PDF invoices</p>

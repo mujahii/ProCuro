@@ -149,7 +149,7 @@ export default function AdminProductsPage() {
           {/* Mobile card list - deleted products */}
           <div className="flex flex-col gap-3 md:hidden">
             {filteredDeleted.map(p => (
-              <div key={p.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+              <div key={p.id} className="card p-4">
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <p className="text-sm font-semibold text-gray-900">{p.name}</p>
                   <span className="text-sm font-bold text-midnight-dark flex-shrink-0">€{Number(p.price).toFixed(2)}</span>
@@ -166,7 +166,7 @@ export default function AdminProductsPage() {
             {filteredDeleted.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No deleted products</p>}
           </div>
           {/* Desktop table */}
-          <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="hidden md:block card overflow-hidden">
             <table className="w-full">
               <thead className="bg-lionsmane border-b border-gray-100">
                 <tr>
@@ -235,7 +235,7 @@ export default function AdminProductsPage() {
             {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No products found</p>}
           </div>
           {/* Desktop table */}
-          <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="hidden md:block card overflow-hidden">
             <table className="w-full">
               <thead className="bg-lionsmane border-b border-gray-100">
                 <tr>

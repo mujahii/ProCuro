@@ -429,7 +429,7 @@ export default function AdminReportsPage() {
               <button
                 key={r.id}
                 onClick={() => setSelected(r)}
-                className="w-full text-left bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:border-midnight/20 transition-colors"
+                className="w-full text-left card card-lift p-4"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${typeStyle(r.type)}`}>
@@ -460,7 +460,7 @@ export default function AdminReportsPage() {
           </div>
 
           {/* Desktop table */}
-          <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="hidden md:block card overflow-hidden">
             <table className="w-full">
               <thead className="bg-lionsmane border-b border-gray-100">
                 <tr>

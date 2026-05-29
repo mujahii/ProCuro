@@ -76,7 +76,7 @@ export default function PressPage() {
         </div>
 
         {/* Brand Assets Note */}
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+        <div className="card p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
           <div className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-100 rounded-xl flex items-center justify-center flex-shrink-0">
             <Download className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
           </div>

@@ -12,14 +12,14 @@ const COLORS = ['#083A4F', '#407E8C', '#A58D66', '#5E96A4', '#BFA988', '#C0D5D6'
 
 function StatCard({ label, value, icon: Icon, color, bg }) {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+    <div className="card p-5">
       <div className="flex items-center gap-2 mb-3">
         <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${bg || 'bg-celeste'}`}>
           <Icon className={`w-4 h-4 ${color}`} />
         </div>
         <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{label}</p>
       </div>
-      <p className="text-2xl font-black text-gray-900">{value}</p>
+      <p className="stat-value text-2xl">{value}</p>
     </div>
   )
 }
@@ -221,7 +221,7 @@ export default function SupplierAnalyticsPage() {
           {/* Row 1: Line chart + Bar chart */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             {/* Revenue trend */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="card p-5">
               <h3 className="font-bold text-gray-900 mb-4">{t('revenueTrend')}</h3>
               {revenueByMonth.length === 0 ? (
                 <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
@@ -245,7 +245,7 @@ export default function SupplierAnalyticsPage() {
             </div>
 
             {/* Revenue per product bar */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="card p-5">
               <h3 className="font-bold text-gray-900 mb-4">{t('revenueByProduct')}</h3>
               {revenueByProduct.length === 0 ? (
                 <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
@@ -266,7 +266,7 @@ export default function SupplierAnalyticsPage() {
           {/* Row 2: Donut chart + Top clients */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             {/* Donut - best selling by % */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="card p-5">
               <h3 className="font-bold text-gray-900 mb-4">{t('salesByProductPct')}</h3>
               {salesByProduct.length === 0 ? (
                 <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
@@ -298,7 +298,7 @@ export default function SupplierAnalyticsPage() {
             </div>
 
             {/* Top clients */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="card p-5">
               <h3 className="font-bold text-gray-900 mb-4">{t('topRestaurantClients')}</h3>
               {topClients.length === 0 ? (
                 <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>

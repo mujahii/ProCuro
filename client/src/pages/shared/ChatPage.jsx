@@ -528,7 +528,7 @@ export default function ChatPage() {
         onChange={handleFileSelect}
       />
       <h1 className="text-2xl font-black text-slate-900 mb-4 flex-shrink-0">Messages</h1>
-      <div className="flex-1 min-h-0 flex bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="flex-1 min-h-0 flex card overflow-hidden">
 
         {/* Conversation list */}
         <div className={`${selectedConv || showingAdmin ? 'hidden md:flex' : 'flex'} flex-col w-full md:w-72 lg:w-80 border-r border-slate-100 flex-shrink-0`}>

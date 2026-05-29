@@ -428,7 +428,7 @@ export default function CartPage() {
       </div>
 
       {/* Order summary */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+      <div className="card p-5">
         <h3 className="font-bold text-slate-900 mb-4">{t('orderSummary')}</h3>
         <div className="space-y-2 mb-3">
           {groups.map(([supplierId, group]) => {

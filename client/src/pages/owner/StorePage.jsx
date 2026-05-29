@@ -348,7 +348,7 @@ export default function StorePage() {
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-100 h-72 animate-pulse" />
+                <div key={i} className="card h-72 animate-pulse" />
               ))}
             </div>
           ) : sortedProducts.length === 0 ? (
@@ -462,7 +462,7 @@ export default function StorePage() {
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-100 h-72 animate-pulse" />
+                  <div key={i} className="card h-72 animate-pulse" />
                 ))}
               </div>
             ) : (
@@ -522,7 +522,7 @@ function ProductCard({ product, onAddToCart }) {
   return (
     <div
       onClick={onAddToCart}
-      className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
+      className="card overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
     >
       <div className="relative h-40 bg-slate-100">
         {imgUrl ? (

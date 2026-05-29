@@ -346,7 +346,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+      <div className="card p-6">
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">{t('orderIdLabel')}</p>

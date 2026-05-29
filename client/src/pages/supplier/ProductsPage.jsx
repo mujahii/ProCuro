@@ -168,7 +168,7 @@ export default function SupplierProductsPage() {
           {products.map(product => {
             const imgUrl = getImageUrl(product.image_url)
             return (
-              <div key={product.id} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+              <div key={product.id} className="card p-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                     {imgUrl

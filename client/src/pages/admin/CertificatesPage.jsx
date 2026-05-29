@@ -230,7 +230,7 @@ export default function AdminCertificatesPage() {
           {/* Mobile card list */}
           <div className="flex flex-col gap-3 md:hidden">
             {filtered.map(cert => (
-              <button key={cert.id} onClick={() => setSelected(cert)} className="w-full text-left bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+              <button key={cert.id} onClick={() => setSelected(cert)} className="w-full text-left card p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <p className="text-sm font-semibold text-gray-900">{cert.supplier?.business_name || '—'}</p>
                   <Badge status={cert.status} />
@@ -244,7 +244,7 @@ export default function AdminCertificatesPage() {
             {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No certificates</p>}
           </div>
           {/* Desktop table */}
-          <div className="hidden md:block bg-white rounded-xl border border-gray-100 overflow-hidden">
+          <div className="hidden md:block card overflow-hidden">
             <table className="w-full">
               <thead className="bg-lionsmane border-b border-gray-100">
                 <tr>

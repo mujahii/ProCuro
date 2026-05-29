@@ -305,8 +305,14 @@ export default function AdminUsersPage() {
                       {u.is_banned ? 'Banned' : 'Active'}
                     </span>
                     {u.role === 'supplier' && u.supplier_profile && (
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${u.supplier_profile.is_active ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
-                        {u.supplier_profile.is_active ? 'Listed' : 'Unlisted'}
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        !u.supplier_profile.is_active
+                          ? 'bg-orange-50 text-orange-600'
+                          : u.supplier_profile.is_verified
+                            ? 'bg-green-50 text-green-700'
+                            : 'bg-amber-50 text-amber-700'
+                      }`}>
+                        {!u.supplier_profile.is_active ? 'Unlisted' : u.supplier_profile.is_verified ? 'Listed' : 'Incomplete'}
                       </span>
                     )}
                     {u.role === 'restaurant_owner' && (
@@ -529,7 +535,7 @@ export default function AdminUsersPage() {
                     ['Category', Array.isArray(viewTarget.supplier_profile.category) ? viewTarget.supplier_profile.category.join(', ') : viewTarget.supplier_profile.category],
                     ['Rating', viewTarget.supplier_profile.rating != null ? `${Number(viewTarget.supplier_profile.rating).toFixed(1)} ★` : '—'],
                     ['Verified', viewTarget.supplier_profile.is_verified ? 'Yes' : 'No'],
-                    ['Listed', viewTarget.supplier_profile.is_active ? 'Yes' : 'No'],
+                    ['Listed', viewTarget.supplier_profile.is_active && viewTarget.supplier_profile.is_verified ? 'Yes' : viewTarget.supplier_profile.is_active ? 'Incomplete' : 'No'],
                     ['Website', viewTarget.supplier_profile.website],
                   ].map(([label, val]) => val && (
                     <div key={label} className="flex justify-between border-b border-gray-50 pb-2">

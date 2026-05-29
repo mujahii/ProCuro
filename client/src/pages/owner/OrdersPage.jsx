@@ -689,8 +689,8 @@ export default function OrdersPage() {
 
       <div className="flex gap-4 border-b border-slate-200">
         {[
-          { id: 'ongoing', label: t('ongoingOrdersTab'), count: ongoingSplits.length },
-          { id: 'completed', label: t('completedOrdersTab'), count: completedSplits.length },
+          { id: 'ongoing', label: t('ongoingOrdersTab'), count: ongoingSplits.length, showCount: true },
+          { id: 'completed', label: t('completedOrdersTab'), count: completedSplits.length, showCount: false },
         ].map(tab_ => (
           <button
             key={tab_.id}
@@ -698,7 +698,7 @@ export default function OrdersPage() {
             className={`pb-2 px-1 text-sm font-bold transition-colors flex items-center gap-1.5 ${tab === tab_.id ? 'text-midnight border-b-2 border-midnight' : 'text-slate-400 hover:text-slate-600'}`}
           >
             {tab_.label}
-            {tab_.count > 0 && (
+            {tab_.showCount && tab_.count > 0 && (
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${tab === tab_.id ? 'bg-celeste text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
                 {tab_.count}
               </span>

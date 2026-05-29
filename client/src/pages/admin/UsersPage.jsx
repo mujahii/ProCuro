@@ -301,22 +301,24 @@ export default function AdminUsersPage() {
                   <p className="text-xs text-gray-400 truncate">{u.email}</p>
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {roleBadge(u.role)}
+                    {/* Ban status */}
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${u.is_banned ? 'bg-red-50 text-red-600' : 'bg-lionsmane text-midnight-dark'}`}>
                       {u.is_banned ? 'Banned' : 'Active'}
                     </span>
+                    {/* Verified / listing status — separate from ban */}
                     {u.role === 'supplier' && u.supplier_profile && (
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${
                         !u.supplier_profile.is_active
-                          ? 'bg-orange-50 text-orange-600'
+                          ? 'bg-orange-50 text-orange-600 border-orange-200'
                           : u.supplier_profile.is_verified
-                            ? 'bg-green-50 text-green-700'
-                            : 'bg-amber-50 text-amber-700'
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
                       }`}>
-                        {!u.supplier_profile.is_active ? 'Unlisted' : u.supplier_profile.is_verified ? 'Listed' : 'Incomplete'}
+                        {!u.supplier_profile.is_active ? 'Unlisted' : u.supplier_profile.is_verified ? 'Verified' : 'Incomplete'}
                       </span>
                     )}
                     {u.role === 'restaurant_owner' && (
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${(u.owner_profile?.is_active ?? true) ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${(u.owner_profile?.is_active ?? true) ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
                         {(u.owner_profile?.is_active ?? true) ? 'Listed' : 'Unlisted'}
                       </span>
                     )}
@@ -387,6 +389,7 @@ export default function AdminUsersPage() {
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden md:table-cell">Business</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Joined</th>
                 <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase hidden lg:table-cell">Verified</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
@@ -404,22 +407,31 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3 hidden lg:table-cell text-xs text-gray-500">
                     {u.created_at ? format(new Date(u.created_at), 'dd MMM yyyy') : '—'}
                   </td>
+                  {/* STATUS — ban state only */}
                   <td className="px-4 py-3">
-                    <div className="flex flex-col gap-1">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${u.is_banned ? 'bg-red-50 text-red-600' : 'bg-lionsmane text-midnight-dark'}`}>
-                        {u.is_banned ? 'Banned' : 'Active'}
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-fit ${u.is_banned ? 'bg-red-50 text-red-600' : 'bg-lionsmane text-midnight-dark'}`}>
+                      {u.is_banned ? 'Banned' : 'Active'}
+                    </span>
+                  </td>
+                  {/* VERIFIED — listing/verification state in its own column */}
+                  <td className="px-4 py-3 hidden lg:table-cell">
+                    {u.role === 'supplier' && u.supplier_profile && (
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border w-fit inline-block ${
+                        !u.supplier_profile.is_active
+                          ? 'bg-orange-50 text-orange-600 border-orange-200'
+                          : u.supplier_profile.is_verified
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}>
+                        {!u.supplier_profile.is_active ? 'Unlisted' : u.supplier_profile.is_verified ? 'Verified' : 'Incomplete'}
                       </span>
-                      {u.role === 'supplier' && u.supplier_profile && (
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${u.supplier_profile.is_active ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
-                          {u.supplier_profile.is_active ? 'Listed' : 'Unlisted'}
-                        </span>
-                      )}
-                      {u.role === 'restaurant_owner' && (
-                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full w-fit ${(u.owner_profile?.is_active ?? true) ? 'bg-green-50 text-green-700' : 'bg-orange-50 text-orange-600'}`}>
-                          {(u.owner_profile?.is_active ?? true) ? 'Listed' : 'Unlisted'}
-                        </span>
-                      )}
-                    </div>
+                    )}
+                    {u.role === 'restaurant_owner' && (
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full border w-fit inline-block ${(u.owner_profile?.is_active ?? true) ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
+                        {(u.owner_profile?.is_active ?? true) ? 'Listed' : 'Unlisted'}
+                      </span>
+                    )}
+                    {u.role === 'admin' && <span className="text-xs text-gray-400">—</span>}
                   </td>
                   <td className="px-3 py-3 text-right">
                     <div className="relative inline-block">

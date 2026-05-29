@@ -105,9 +105,11 @@ function AIText({ text }) {
   const [primary, ...secondary] = cards
   const primaryMeta = metaForTitle(primary.title, 0)
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
-      <div className="sm:w-[45%]">
-        <PrimaryInsightCard title={primary.title} rest={primary.rest} meta={primaryMeta} />
+    <div className="flex flex-col sm:flex-row sm:items-stretch gap-3">
+      <div className="sm:w-[45%] flex">
+        <div className="flex-1">
+          <PrimaryInsightCard title={primary.title} rest={primary.rest} meta={primaryMeta} />
+        </div>
       </div>
       {secondary.length > 0 && (
         <div className="sm:flex-1 flex flex-col gap-2">

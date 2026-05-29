@@ -27,6 +27,7 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [supplierFilter, setSupplierFilter] = useState('')
+  const [stockFilter, setStockFilter] = useState('')
   const [suppliers, setSuppliers] = useState([])
   const [toggleTarget, setToggleTarget] = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
@@ -98,7 +99,10 @@ export default function AdminProductsPage() {
     const matchSearch = !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.supplier?.business_name?.toLowerCase().includes(search.toLowerCase())
     const matchCat = !categoryFilter || p.category === categoryFilter
     const matchSupplier = !supplierFilter || p.supplier?.id === supplierFilter
-    return matchSearch && matchCat && matchSupplier
+    const matchStock = !stockFilter
+      || (stockFilter === 'in' && p.stock_quantity > 0)
+      || (stockFilter === 'out' && p.stock_quantity === 0)
+    return matchSearch && matchCat && matchSupplier && matchStock
   })
   const filteredDeleted = deletedProducts.filter(p =>
     !search || p.name?.toLowerCase().includes(search.toLowerCase()) || p.supplier?.business_name?.toLowerCase().includes(search.toLowerCase())
@@ -122,6 +126,11 @@ export default function AdminProductsPage() {
               <select value={supplierFilter} onChange={e => setSupplierFilter(e.target.value)} className="input text-sm py-2 flex-1 sm:flex-none sm:w-44">
                 <option value="">All suppliers</option>
                 {suppliers.map(s => <option key={s.id} value={s.id}>{s.business_name}</option>)}
+              </select>
+              <select value={stockFilter} onChange={e => setStockFilter(e.target.value)} className="input text-sm py-2 flex-1 sm:flex-none sm:w-36">
+                <option value="">All stock</option>
+                <option value="in">In Stock</option>
+                <option value="out">Out of Stock</option>
               </select>
             </>
           )}

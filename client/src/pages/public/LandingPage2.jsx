@@ -785,31 +785,20 @@ const WY_STYLES = `
 
 /* ── CTA banner ── */
 .wy-cta-section {
-  background: var(--wy-primary-dark);
+  background: #052532;
   padding: 72px 24px;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
-.wy-cta-section::before {
-  content: '';
+.wy-cta-overlay {
   position: absolute;
-  width: 500px; height: 500px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(64,126,140,0.25) 0%, transparent 60%);
-  top: -180px; left: -60px;
+  inset: 0;
+  background: rgba(5,37,50,0.58);
   pointer-events: none;
+  z-index: 1;
 }
-.wy-cta-section::after {
-  content: '';
-  position: absolute;
-  width: 400px; height: 400px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(165,141,102,0.20) 0%, transparent 60%);
-  bottom: -120px; right: -40px;
-  pointer-events: none;
-}
-.wy-cta-inner { max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
+.wy-cta-inner { max-width: 680px; margin: 0 auto; position: relative; z-index: 2; }
 .wy-cta-title {
   font-family: var(--wy-ff-display);
   font-size: clamp(26px, 4vw, 42px);
@@ -880,20 +869,20 @@ const WY_STYLES = `
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: #fff;
-  border: 1px solid var(--wy-border);
-  color: var(--wy-text);
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.22);
+  color: #fff;
   padding: 12px 20px;
   border-radius: 14px;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+  transition: background 0.2s, transform 0.2s, border-color 0.2s;
   font-family: var(--wy-ff-body);
   flex: 1;
-  box-shadow: var(--wy-shadow-sm);
+  backdrop-filter: blur(8px);
 }
-.wy-app-btn:hover { background: var(--wy-surface); transform: translateY(-2px); }
-.wy-app-btn-text-sm { font-size: 9px; color: #94a3b8; display: block; line-height: 1; margin-bottom: 3px; }
-.wy-app-btn-text { font-size: 13px; font-weight: 600; display: block; line-height: 1; color: var(--wy-text); }
+.wy-app-btn:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.40); transform: translateY(-2px); }
+.wy-app-btn-text-sm { font-size: 9px; color: rgba(255,255,255,0.65); display: block; line-height: 1; margin-bottom: 3px; }
+.wy-app-btn-text { font-size: 13px; font-weight: 600; display: block; line-height: 1; color: #fff; }
 
 /* ── footer ── */
 .wy-footer {
@@ -1256,12 +1245,18 @@ export default function LandingPage2() {
           {/* Desktop orbs (larger, more blur) — injected via media style */}
           <style>{`
             @media (min-width: 640px) {
-              .wy-orb:nth-child(1)  { width: 416px !important; height: 416px !important; filter: blur(80px) !important; }
-              .wy-orb:nth-child(2)  { width: 352px !important; height: 352px !important; filter: blur(72px) !important; }
-              .wy-orb:nth-child(3)  { width: 320px !important; height: 320px !important; filter: blur(64px) !important; }
-              .wy-orb:nth-child(4)  { width: 384px !important; height: 384px !important; filter: blur(80px) !important; }
-              .wy-orb:nth-child(5)  { width: 288px !important; height: 288px !important; filter: blur(60px) !important; }
-              .wy-orb:nth-child(6)  { width: 352px !important; height: 352px !important; filter: blur(70px) !important; }
+              .wy-hero .wy-orb:nth-child(1) { width: 416px !important; height: 416px !important; filter: blur(80px) !important; }
+              .wy-hero .wy-orb:nth-child(2) { width: 352px !important; height: 352px !important; filter: blur(72px) !important; }
+              .wy-hero .wy-orb:nth-child(3) { width: 320px !important; height: 320px !important; filter: blur(64px) !important; }
+              .wy-hero .wy-orb:nth-child(4) { width: 384px !important; height: 384px !important; filter: blur(80px) !important; }
+              .wy-hero .wy-orb:nth-child(5) { width: 288px !important; height: 288px !important; filter: blur(60px) !important; }
+              .wy-hero .wy-orb:nth-child(6) { width: 352px !important; height: 352px !important; filter: blur(70px) !important; }
+              .wy-cta-section .wy-orb:nth-child(1) { width: 380px !important; height: 380px !important; filter: blur(76px) !important; }
+              .wy-cta-section .wy-orb:nth-child(2) { width: 320px !important; height: 320px !important; filter: blur(68px) !important; }
+              .wy-cta-section .wy-orb:nth-child(3) { width: 300px !important; height: 300px !important; filter: blur(60px) !important; }
+              .wy-cta-section .wy-orb:nth-child(4) { width: 360px !important; height: 360px !important; filter: blur(76px) !important; }
+              .wy-cta-section .wy-orb:nth-child(5) { width: 260px !important; height: 260px !important; filter: blur(56px) !important; }
+              .wy-cta-section .wy-orb:nth-child(6) { width: 320px !important; height: 320px !important; filter: blur(65px) !important; }
             }
           `}</style>
 
@@ -1441,6 +1436,16 @@ export default function LandingPage2() {
 
         {/* ── CTA / mobile app section ── */}
         <section className="wy-cta-section">
+          {/* Same rising-orb animation as hero — offset positions/delays for visual variety */}
+          <div className="wy-orb" style={{ left: '8%',  width: 160, height: 160, background: '#A58D66', animationDelay: '-3s',   filter: 'blur(40px)' }} />
+          <div className="wy-orb" style={{ left: '58%', width: 144, height: 144, background: '#5E96A4', animationDelay: '-10s',  filter: 'blur(36px)' }} />
+          <div className="wy-orb" style={{ left: '32%', width: 136, height: 136, background: '#C0D5D6', animationDelay: '-17s',  filter: 'blur(34px)' }} />
+          <div className="wy-orb" style={{ left: '74%', width: 150, height: 150, background: '#BFA988', animationDelay: '-24s',  filter: 'blur(38px)' }} />
+          <div className="wy-orb" style={{ left: '44%', width: 120, height: 120, background: '#B07B8B', animationDelay: '-6s',   filter: 'blur(30px)' }} />
+          <div className="wy-orb" style={{ left: '84%', width: 136, height: 136, background: '#B19CD9', animationDelay: '-13s',  filter: 'blur(34px)' }} />
+
+          <div className="wy-cta-overlay" />
+
           <div className="wy-cta-inner wy-reveal">
             <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(192,213,214,0.6)', marginBottom: 14 }}>
               {t('mobileComingToMobile')}
@@ -1450,7 +1455,7 @@ export default function LandingPage2() {
 
             <div className="wy-app-btns">
               <button className="wy-app-btn" onClick={() => setShowComingSoon(true)}>
-                <svg width="20" height="24" viewBox="0 0 24 28" fill="#083A4F">
+                <svg width="20" height="24" viewBox="0 0 24 28" fill="#fff">
                   <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" transform="scale(1 1.15) translate(0 -1)" />
                 </svg>
                 <div className="text-left">

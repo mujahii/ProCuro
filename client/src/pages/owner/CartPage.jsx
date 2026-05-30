@@ -395,7 +395,7 @@ export default function CartPage() {
                         <div className="flex items-center gap-2">
                           <button onClick={() => updateQty(item.productId, item.quantity - 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors"><Minus className="w-3 h-3 text-slate-600" /></button>
                           <span className="w-6 text-center text-sm font-bold text-midnight">{item.quantity}</span>
-                          <button onClick={() => updateQty(item.productId, item.quantity + 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors"><Plus className="w-3 h-3 text-slate-600" /></button>
+                          <button onClick={() => updateQty(item.productId, Math.min(item.product.stock_quantity ?? Infinity, item.quantity + 1))} disabled={item.quantity >= (item.product.stock_quantity ?? Infinity)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"><Plus className="w-3 h-3 text-slate-600" /></button>
                         </div>
                         <button onClick={() => removeItem(item.productId)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-50 text-red-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>

@@ -44,7 +44,8 @@ export default function AddToCartModal({ product, onClose }) {
   const [supplierBanned, setSupplierBanned] = useState(false)
 
   const price = Number(product.price)
-  const inStock = product.is_active
+  const stockQty = Number(product.stock_quantity ?? 0)
+  const inStock = product.is_active && stockQty > 0
   const total = price * qty * (1 - appliedDiscount)
   const imgUrl = getProductImageUrl(product.image_url)
   const canAdd = inStock && !supplierBanned
@@ -248,8 +249,9 @@ export default function AddToCartModal({ product, onClose }) {
                   >-</button>
                   <span className="font-bold w-8 text-center text-slate-900">{qty}</span>
                   <button
-                    onClick={() => setQty(q => q + 1)}
-                    className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-lionsmane text-slate-700 font-bold"
+                    onClick={() => setQty(q => Math.min(stockQty, q + 1))}
+                    disabled={qty >= stockQty}
+                    className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-lionsmane text-slate-700 font-bold disabled:opacity-40 disabled:cursor-not-allowed"
                   >+</button>
                 </div>
               </div>

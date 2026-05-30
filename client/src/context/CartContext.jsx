@@ -17,12 +17,13 @@ export function CartProvider({ children }) {
   }, [items])
 
   function addItem(product, quantity = 1) {
+    const stockCap = product.stock_quantity ?? Infinity
     setItems(prev => {
       const existing = prev.find(i => i.productId === product.id)
       if (existing) {
         return prev.map(i =>
           i.productId === product.id
-            ? { ...i, quantity: i.quantity + quantity }
+            ? { ...i, quantity: Math.min(i.quantity + quantity, stockCap) }
             : i
         )
       }

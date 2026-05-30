@@ -75,7 +75,7 @@ export default function OwnerLayout() {
 
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-      isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'
+      isActive ? 'bg-midnight text-white' : 'text-midnight/70 hover:bg-lionsmane hover:text-midnight'
     }`
 
   return (
@@ -132,7 +132,7 @@ export default function OwnerLayout() {
           <span className="font-display font-bold text-lg text-slate-900">ProCuro</span>
           <button
             onClick={() => setDrawerOpen(false)}
-            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+            className="p-1.5 hover:bg-lionsmane rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-slate-500" />
           </button>
@@ -200,7 +200,7 @@ export default function OwnerLayout() {
                   className={({ isActive }) =>
                     `flex items-center py-2.5 rounded-lg text-sm font-medium transition-colors relative ${
                       collapsed ? 'justify-center px-0' : 'gap-3 px-3'
-                    } ${isActive ? 'bg-midnight text-white' : 'text-slate-600 hover:bg-lionsmane'}`
+                    } ${isActive ? 'bg-midnight text-white' : 'text-midnight/70 hover:bg-lionsmane hover:text-midnight'}`
                   }
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />

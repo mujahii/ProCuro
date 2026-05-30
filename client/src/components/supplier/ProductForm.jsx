@@ -228,7 +228,7 @@ export default function ProductForm({ product, supplierId, onSave, onCancel }) {
             {form.is_active && <Check className="w-3.5 h-3.5 text-white" />}
           </div>
           <div className="text-left">
-            <span className="font-semibold text-slate-900 text-sm">Product Available</span>
+            <span className="font-semibold text-midnight text-sm">Product Available</span>
             <p className="text-xs text-slate-400 mt-0.5">{form.is_active ? 'Visible and orderable' : 'Hidden from store'}</p>
           </div>
         </button>

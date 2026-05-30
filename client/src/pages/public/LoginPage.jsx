@@ -117,7 +117,7 @@ export default function LoginPage() {
                 <>
                   <button
                     onClick={() => setForgotMode(false)}
-                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 mb-5 transition-colors"
+                    className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-midnight mb-5 transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" /> {t('backToLoginBtn')}
                   </button>

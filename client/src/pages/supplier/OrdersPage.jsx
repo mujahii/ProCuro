@@ -36,7 +36,7 @@ function CancelModal({ split, onCancel, onClose }) {
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <h3 className="font-bold text-slate-900 text-lg">{t('cancelOrderTitle')}</h3>
+          <h3 className="font-bold text-midnight text-lg">{t('cancelOrderTitle')}</h3>
         </div>
 
         {isBankTransfer && (
@@ -260,7 +260,7 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
       <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center gap-3 mb-4">
           <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-          <h3 className="font-bold text-slate-900 text-lg">{t('respondToDisputeTitle')}</h3>
+          <h3 className="font-bold text-midnight text-lg">{t('respondToDisputeTitle')}</h3>
         </div>
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-4 space-y-1.5">
           <p className="text-sm font-semibold text-orange-800">{t('ownerReportedNonDelivery')}</p>
@@ -392,7 +392,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         <ArrowLeft className="w-4 h-4" /> {t('backToOrders')}
       </button>
       <div className="flex items-center gap-3">
-        <h2 className="font-display text-2xl font-bold text-slate-900">{t('orderDetailsTitle')}</h2>
+        <h2 className="font-display text-2xl font-bold text-midnight">{t('orderDetailsTitle')}</h2>
         <StatusBadge status={split.status} />
       </div>
 
@@ -422,7 +422,7 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           <div className="flex-1 space-y-1.5">
             <button
               onClick={() => setShowOwnerModal(true)}
-              className="font-bold text-slate-900 text-base hover:text-midnight transition-colors text-left underline-offset-2 hover:underline"
+              className="font-bold text-midnight text-base hover:text-midnight transition-colors text-left underline-offset-2 hover:underline"
             >
               {ownerInfo?.restaurant_name || ownerInfo?.full_name || 'Restaurant Owner'}
             </button>
@@ -465,15 +465,15 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">{t('orderIdLabel')}</p>
-            <p className="font-bold text-slate-900">#{split.id.slice(0, 8).toUpperCase()}</p>
+            <p className="font-bold text-midnight">#{split.id.slice(0, 8).toUpperCase()}</p>
           </div>
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">{t('datePlacedLabel')}</p>
-            <p className="font-semibold text-slate-900">{format(new Date(split.created_at), 'dd MMM yyyy, HH:mm')}</p>
+            <p className="font-semibold text-midnight">{format(new Date(split.created_at), 'dd MMM yyyy, HH:mm')}</p>
           </div>
           <div>
             <p className="text-xs text-slate-500 font-medium mb-1">{t('paymentMethod')}</p>
-            <p className="font-semibold text-slate-900 capitalize">{split.payment_method?.replace(/_/g, ' ')}</p>
+            <p className="font-semibold text-midnight capitalize">{split.payment_method?.replace(/_/g, ' ')}</p>
             {split.payment_method === 'bank_transfer' && split.receipt_url && (
               <div className="mt-1">
                 <PaymentReceiptDisplay path={split.receipt_url} />
@@ -486,18 +486,18 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
           </div>
         </div>
         <div>
-          <p className="text-sm font-bold text-slate-900 mb-3">{t('itemsOrderedLabel')}</p>
+          <p className="text-sm font-bold text-midnight mb-3">{t('itemsOrderedLabel')}</p>
           <div className="bg-lionsmane p-4 rounded-xl space-y-2">
             {split.order_items?.map(item => (
               <div key={item.id} className="flex justify-between text-sm">
                 <span className="text-slate-700">{item.quantity}× {item.product?.name}</span>
-                <span className="font-semibold text-slate-900">€{(item.price_at_time * item.quantity).toFixed(2)}</span>
+                <span className="font-semibold text-midnight">€{(item.price_at_time * item.quantity).toFixed(2)}</span>
               </div>
             ))}
           </div>
         </div>
         <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
-          <span className="text-xl font-bold text-slate-900">{t('totalLabel')}</span>
+          <span className="text-xl font-bold text-midnight">{t('totalLabel')}</span>
           <span className="text-2xl font-bold text-midnight">€{Number(split.subtotal).toFixed(2)}</span>
         </div>
       </div>
@@ -804,7 +804,7 @@ export default function SupplierOrdersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl font-bold text-slate-900">{t('orders')}</h1>
+      <h1 className="font-display text-2xl font-bold text-midnight">{t('orders')}</h1>
 
       <div className="flex gap-4 border-b border-slate-200">
         {[
@@ -871,7 +871,7 @@ export default function SupplierOrdersPage() {
                   )}
                 </div>
                 <div className="flex items-center gap-3" onClick={e => e.stopPropagation()}>
-                  <span className="text-xl font-bold text-slate-900">€{Number(split.subtotal).toFixed(2)}</span>
+                  <span className="text-xl font-bold text-midnight">€{Number(split.subtotal).toFixed(2)}</span>
                   <div className="flex flex-col gap-2">
                     <button
                       onClick={() => setSelectedSplit(split)}

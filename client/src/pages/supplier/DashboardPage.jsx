@@ -107,7 +107,7 @@ export default function SupplierDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl font-bold text-slate-900">{t('navDashboard')}</h1>
+      <h1 className="font-display text-2xl font-bold text-midnight">{t('navDashboard')}</h1>
 
       {/* Suspended banner — highest priority */}
       {!loading && user?.is_banned && (
@@ -225,27 +225,31 @@ export default function SupplierDashboardPage() {
             {/* Active Orders */}
             <div
               onClick={() => navigate('/supplier/orders')}
-              className="card card-lift bg-white p-6 cursor-pointer"
+              className="card card-lift p-6 cursor-pointer"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <ShoppingBag className="w-5 h-5 text-teal" />
-                <p className="text-slate-500 text-sm font-medium">{t('activeOrdersLabel')}</p>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-celeste/30 flex items-center justify-center flex-shrink-0">
+                  <ShoppingBag className="w-4 h-4 text-herb-dark" />
+                </div>
+                <p className="text-herb-dark text-sm font-semibold">{t('activeOrdersLabel')}</p>
               </div>
               <p className="stat-value text-3xl">{stats.activeOrders}</p>
-              <p className="text-xs text-slate-400 mt-2">{stats.pendingOrders} {t('awaitingConfirmationLabel')}</p>
+              <p className="text-xs text-herb mt-2 font-medium">{stats.pendingOrders} {t('awaitingConfirmationLabel')}</p>
             </div>
 
             {/* Analytics link */}
             <div
               onClick={() => navigate('/supplier/analytics')}
-              className="card card-lift bg-white p-6 cursor-pointer"
+              className="card card-lift p-6 cursor-pointer"
             >
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-5 h-5 text-midnight" />
-                <p className="text-slate-500 text-sm font-medium">{t('analytics')}</p>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-marigold/15 flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-4 h-4 text-marigold-dark" />
+                </div>
+                <p className="text-marigold-dark text-sm font-semibold">{t('analytics')}</p>
               </div>
-              <p className="text-lg font-bold text-slate-900">{t('seeFullAnalysis')}</p>
-              <p className="text-xs text-slate-400 mt-2">{t('chartsTrendsAI')}</p>
+              <p className="font-display text-lg font-bold text-midnight">{t('seeFullAnalysis')}</p>
+              <p className="text-xs text-herb mt-2">{t('chartsTrendsAI')}</p>
             </div>
           </div>
 
@@ -255,7 +259,7 @@ export default function SupplierDashboardPage() {
           {/* Products */}
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-lg font-bold text-slate-900">{t('myProductsTitle')}</h2>
+              <h2 className="font-display text-lg font-bold text-midnight">{t('myProductsTitle')}</h2>
               <button
                 onClick={() => navigate('/supplier/products')}
                 className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors"
@@ -266,8 +270,8 @@ export default function SupplierDashboardPage() {
 
             {products.length === 0 ? (
               <div className="text-center py-12 card">
-                <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">{t('noProductsYetSupplier')}</p>
+                <Package className="w-10 h-10 text-celeste mx-auto mb-3" />
+                <p className="text-herb text-sm">{t('noProductsYetSupplier')}</p>
                 <button
                   onClick={() => navigate('/supplier/products')}
                   className="mt-3 text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark"
@@ -283,7 +287,7 @@ export default function SupplierDashboardPage() {
                       key={product.id}
                       className="card p-3 flex gap-4 items-center"
                     >
-                      <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-slate-100">
+                      <div className="relative w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-lionsmane">
                         {product.image_url ? (
                           <img
                             src={getImageUrl(product.image_url)}
@@ -291,26 +295,26 @@ export default function SupplierDashboardPage() {
                             className={`w-full h-full object-cover ${!product.is_active ? 'grayscale opacity-60' : ''}`}
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-slate-300">
+                          <div className="w-full h-full flex items-center justify-center text-marigold/50">
                             <Package className="w-8 h-8" />
                           </div>
                         )}
                         {!product.is_active && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-[9px] font-bold text-slate-600 bg-white/80 px-1 py-0.5 rounded">{t('outOfStockText')}</span>
+                          <div className="absolute inset-0 flex items-center justify-center bg-midnight/40">
+                            <span className="text-[9px] font-bold text-white px-1.5 py-0.5 rounded-full bg-midnight/60">{t('outOfStockText')}</span>
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-slate-900 text-sm truncate">{product.name}</p>
-                        <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5 ${product.is_active ? 'bg-lionsmane text-midnight-dark' : 'bg-slate-100 text-slate-500'}`}>
+                        <p className="font-bold text-midnight text-sm truncate">{product.name}</p>
+                        <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5 border ${product.is_active ? 'bg-herb/10 text-herb-dark border-herb/20' : 'bg-red-50 text-red-600 border-red-200'}`}>
                           {product.is_active ? t('inStock') : t('outOfStockText')}
                         </span>
-                        <p className="text-sm font-bold text-slate-900 mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-slate-400">/ {product.unit_type}</span></p>
+                        <p className="text-sm font-bold text-midnight mt-1">€{Number(product.price).toFixed(2)} <span className="text-xs font-normal text-herb">/ {product.unit_type}</span></p>
                       </div>
                       <button
                         onClick={() => setEditProduct(product)}
-                        className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors flex-shrink-0"
+                        className="p-2 text-herb hover:text-midnight hover:bg-lionsmane rounded-xl transition-colors flex-shrink-0"
                       >
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
                       </button>
@@ -347,10 +351,10 @@ export default function SupplierDashboardPage() {
         <ModalPortal><div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl my-6 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h2 className="text-xl font-bold text-slate-900">{t('editProductBtn')}</h2>
+              <h2 className="text-xl font-bold text-midnight">{t('editProductBtn')}</h2>
               <button
                 onClick={() => setEditProduct(null)}
-                className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-500"
+                className="p-2 hover:bg-lionsmane rounded-xl transition-colors text-slate-500"
               >
                 <X className="w-5 h-5" />
               </button>

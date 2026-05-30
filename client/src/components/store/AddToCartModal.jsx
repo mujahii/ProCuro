@@ -189,14 +189,14 @@ export default function AddToCartModal({ product, onClose }) {
           {/* Name + Price */}
           <div className="flex justify-between items-start mb-2">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900">{product.name}</h2>
+              <h2 className="text-2xl font-bold text-midnight">{product.name}</h2>
               <button
                 onClick={() => { onClose(); navigate(`/supplier/${product.supplier_id}`) }}
                 className="text-midnight font-bold text-lg hover:underline text-left"
               >{product.supplier?.business_name}</button>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-slate-900">€{price.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-midnight">€{price.toFixed(2)}</p>
               <p className="text-xs text-slate-400">{t('perUnit')} {product.unit_type}</p>
             </div>
           </div>
@@ -244,12 +244,12 @@ export default function AddToCartModal({ product, onClose }) {
                 <div className="flex items-center gap-4 ml-auto">
                   <button
                     onClick={() => setQty(q => Math.max(1, q - 1))}
-                    className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-700 font-bold"
+                    className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-lionsmane text-slate-700 font-bold"
                   >-</button>
                   <span className="font-bold w-8 text-center text-slate-900">{qty}</span>
                   <button
                     onClick={() => setQty(q => q + 1)}
-                    className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-700 font-bold"
+                    className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center hover:bg-lionsmane text-slate-700 font-bold"
                   >+</button>
                 </div>
               </div>

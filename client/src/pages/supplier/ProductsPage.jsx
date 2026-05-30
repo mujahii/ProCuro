@@ -122,10 +122,10 @@ export default function SupplierProductsPage() {
         <ModalPortal><div className="fixed inset-0 z-50 bg-black/50 flex items-start justify-center p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl my-6 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h2 className="text-xl font-bold text-slate-900">{editProduct ? t('editProductBtn') : t('addNewProductBtn')}</h2>
+              <h2 className="text-xl font-bold text-midnight">{editProduct ? t('editProductBtn') : t('addNewProductBtn')}</h2>
               <button
                 onClick={() => { setShowForm(false); setEditProduct(null) }}
-                className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-500"
+                className="p-2 hover:bg-lionsmane rounded-xl transition-colors text-slate-500"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -153,7 +153,7 @@ export default function SupplierProductsPage() {
 
       {products.length === 0 ? (
         <div className="text-center py-16">
-          <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+          <Package className="w-12 h-12 text-celeste mx-auto mb-3" />
           <p className="text-gray-500 font-medium">{t('noProductsYetSupplier')}</p>
           <button onClick={() => setShowForm(true)} className="btn-primary mt-4 flex items-center gap-2 mx-auto">
             <Plus className="w-4 h-4" /> {t('addFirstProduct')}

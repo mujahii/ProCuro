@@ -216,7 +216,7 @@ export default function SupplierListPage() {
                     {supplier.avatar_url ? (
                       <img src={supplier.avatar_url} alt={supplier.business_name} className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-2xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
+                      <span className="text-2xl font-black text-marigold">{supplier.business_name?.[0]}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

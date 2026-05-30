@@ -160,7 +160,7 @@ export default function CartPage() {
         <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
           <Package className="w-10 h-10 text-slate-400" />
         </div>
-        <h2 className="text-xl font-bold text-slate-900 mb-2">{t('cartEmpty')}</h2>
+        <h2 className="text-xl font-bold text-midnight mb-2">{t('cartEmpty')}</h2>
         <p className="text-slate-500 text-sm mb-6">{t('cartEmptyMainDesc')}</p>
         <button onClick={() => navigate('/owner/store')} className="bg-midnight text-white font-bold px-6 py-3 rounded-xl hover:bg-midnight-dark transition-colors shadow-md">
           {t('cartEmptyBrowse')}
@@ -176,7 +176,7 @@ export default function CartPage() {
         <div className="w-20 h-20 bg-celeste rounded-full flex items-center justify-center mb-6">
           <CheckCircle className="w-10 h-10 text-midnight" />
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">{t('orderPlacedTitle')}</h1>
+        <h1 className="text-3xl font-bold text-midnight mb-2">{t('orderPlacedTitle')}</h1>
         <p className="text-slate-500 mb-2">{t('orderPlacedDesc')}</p>
         {orderIds.length > 0 && (
           <div className="space-y-1 mb-6">
@@ -199,7 +199,7 @@ export default function CartPage() {
           <ArrowLeft className="w-4 h-4" /> {t('backToCart')}
         </button>
 
-        <h1 className="font-display text-2xl font-bold text-slate-900">{t('paymentMethod')}</h1>
+        <h1 className="font-display text-2xl font-bold text-midnight">{t('paymentMethod')}</h1>
 
         <div className="grid grid-cols-2 gap-4">
           {[
@@ -225,7 +225,7 @@ export default function CartPage() {
               const supplierGrandTotal = group.subtotal + fee + tax
               return (
                 <div key={supplierId}>
-                  <p className="font-bold text-slate-900 mb-2">{group.supplier?.business_name}</p>
+                  <p className="font-bold text-midnight mb-2">{group.supplier?.business_name}</p>
                   {bank ? (
                     <div className="bg-lionsmane p-3 rounded-lg text-sm space-y-1 mb-3">
                       {bank.bank_name && (
@@ -308,7 +308,7 @@ export default function CartPage() {
   /* Step 1 — Cart */
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="font-display text-2xl font-bold text-slate-900">{t('myCart')}</h1>
+      <h1 className="font-display text-2xl font-bold text-midnight">{t('myCart')}</h1>
 
       {profile?.is_banned && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
@@ -329,7 +329,7 @@ export default function CartPage() {
           <p className="text-xs text-slate-500 font-medium">{t('deliveringTo')}</p>
           {selectedAddress ? (
             <>
-              <p className="text-sm font-semibold text-slate-900 truncate">
+              <p className="text-sm font-semibold text-midnight truncate">
                 {[selectedAddress.street, selectedAddress.house_number].filter(Boolean).join(' ') || selectedAddress.label}
               </p>
               <p className="text-xs text-slate-400 truncate">
@@ -363,7 +363,7 @@ export default function CartPage() {
               <div className={`px-5 py-3 border-b flex items-center justify-between ${supplierIsBanned ? 'bg-red-50 border-red-200' : 'bg-lionsmane border-slate-100'}`}>
                 <button
                   onClick={() => setProfileModalId(supplierId)}
-                  className="font-bold text-slate-900 text-sm flex items-center gap-2 hover:text-midnight hover:underline underline-offset-2 transition-colors"
+                  className="font-bold text-midnight text-sm flex items-center gap-2 hover:text-midnight hover:underline underline-offset-2 transition-colors"
                 >
                   {group.supplier?.business_name || 'Supplier'}
                   {supplierIsBanned && (
@@ -386,15 +386,15 @@ export default function CartPage() {
                           {imgUrl ? <img src={imgUrl} alt={item.product.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-slate-300"><Package className="w-6 h-6" /></div>}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-slate-900 text-sm leading-tight">{item.product.name}</p>
+                          <p className="font-semibold text-midnight text-sm leading-tight">{item.product.name}</p>
                           <p className="text-xs text-slate-400 mt-0.5">€{Number(item.product.price).toFixed(2)} / {item.product.unit_type}</p>
                         </div>
-                        <p className="text-sm font-bold text-slate-900 flex-shrink-0">€{(item.product.price * item.quantity).toFixed(2)}</p>
+                        <p className="text-sm font-bold text-midnight flex-shrink-0">€{(item.product.price * item.quantity).toFixed(2)}</p>
                       </div>
                       <div className="flex items-center justify-between pl-[68px]">
                         <div className="flex items-center gap-2">
                           <button onClick={() => updateQty(item.productId, item.quantity - 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors"><Minus className="w-3 h-3 text-slate-600" /></button>
-                          <span className="w-6 text-center text-sm font-bold text-slate-900">{item.quantity}</span>
+                          <span className="w-6 text-center text-sm font-bold text-midnight">{item.quantity}</span>
                           <button onClick={() => updateQty(item.productId, item.quantity + 1)} className="w-7 h-7 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors"><Plus className="w-3 h-3 text-slate-600" /></button>
                         </div>
                         <button onClick={() => removeItem(item.productId)} className="w-7 h-7 rounded-full flex items-center justify-center hover:bg-red-50 text-red-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -429,7 +429,7 @@ export default function CartPage() {
 
       {/* Order summary */}
       <div className="card p-5">
-        <h3 className="font-bold text-slate-900 mb-4">{t('orderSummary')}</h3>
+        <h3 className="font-bold text-midnight mb-4">{t('orderSummary')}</h3>
         <div className="space-y-2 mb-3">
           {groups.map(([supplierId, group]) => {
             const fee = feeFor(supplierId, group)
@@ -538,7 +538,7 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
     <ModalPortal><div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 px-4 pb-0 sm:pb-4">
       <div className="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col">
         <div className="flex items-center justify-between p-5 border-b border-slate-100 flex-shrink-0">
-          <h3 className="font-bold text-slate-900">{showForm ? t('addNewAddress') : t('deliveryAddress')}</h3>
+          <h3 className="font-bold text-midnight">{showForm ? t('addNewAddress') : t('deliveryAddress')}</h3>
           <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600"><X className="w-5 h-5" /></button>
         </div>
         <div className="overflow-y-auto flex-1 p-5 space-y-3">
@@ -551,7 +551,7 @@ function AddressPickerModal({ addresses, selectedAddress, onSelect, onClose }) {
                   <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${selectedAddress?.id === addr.id ? 'text-midnight' : 'text-slate-400'}`} />
                   <div className="min-w-0">
                     {addr.label && <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-0.5">{addr.label}</p>}
-                    <p className="text-sm font-semibold text-slate-900">{[addr.street, addr.house_number].filter(Boolean).join(' ')}</p>
+                    <p className="text-sm font-semibold text-midnight">{[addr.street, addr.house_number].filter(Boolean).join(' ')}</p>
                     <p className="text-xs text-slate-400">{[addr.postal_code, addr.city, addr.country].filter(Boolean).join(', ')}</p>
                   </div>
                   {selectedAddress?.id === addr.id && <CheckCircle className="w-4 h-4 text-herb ml-auto flex-shrink-0 mt-0.5" />}

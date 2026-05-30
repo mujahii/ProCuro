@@ -367,7 +367,7 @@ export default function StorePage() {
         <>
           {/* Categories */}
           <div>
-            <h2 className="text-lg font-bold text-slate-900 mb-4 px-1">{t('categoriesLabel')}</h2>
+            <h2 className="text-lg font-bold text-midnight mb-4 px-1">{t('categoriesLabel')}</h2>
             <div
               className="flex overflow-x-auto pb-2 scrollbar-hide justify-between gap-2"
               style={{ WebkitOverflowScrolling: 'touch' }}
@@ -397,7 +397,7 @@ export default function StorePage() {
           {/* Recommended Suppliers */}
           <div>
             <div className="flex justify-between items-end mb-4 px-1">
-              <h2 className="text-lg font-bold text-slate-900">{t('recommendedSuppliers')}</h2>
+              <h2 className="text-lg font-bold text-midnight">{t('recommendedSuppliers')}</h2>
               <button onClick={() => navigate('/suppliers')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">
                 {t('seeAll')} <ChevronRight className="w-4 h-4" />
               </button>
@@ -420,12 +420,12 @@ export default function StorePage() {
                       {avatarUrl ? (
                         <img src={avatarUrl} alt={supplier.business_name} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xl font-black text-slate-400">{supplier.business_name?.[0]}</span>
+                        <span className="text-xl font-black text-marigold">{supplier.business_name?.[0]}</span>
                       )}
                     </div>
-                    <h3 className="font-bold text-slate-900 text-sm truncate w-full">{supplier.business_name}</h3>
+                    <h3 className="font-bold text-midnight text-sm truncate w-full">{supplier.business_name}</h3>
                     {supplier.city && (
-                      <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5 truncate w-full justify-center">
+                      <p className="text-xs text-herb flex items-center gap-1 mt-0.5 truncate w-full justify-center">
                         <MapPin className="w-3 h-3 flex-shrink-0" />{supplier.city}
                       </p>
                     )}
@@ -452,7 +452,7 @@ export default function StorePage() {
           {/* Recommended Products */}
           <div>
             <div className="flex justify-between items-end mb-4 px-1">
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="text-lg font-bold text-midnight">
                 {selectedCategory !== 'All'
                   ? t(CATEGORY_KEYS.find(c => c.value === selectedCategory)?.key || 'catOther')
                   : t('recommendedOrders')}
@@ -552,14 +552,14 @@ function ProductCard({ product, onAddToCart }) {
         </button>
       </div>
       <div className="p-4">
-        <h3 className="font-bold text-slate-900 text-base mb-1">{product.name}</h3>
+        <h3 className="font-bold text-midnight text-base mb-1">{product.name}</h3>
         {product.description && (
           <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
         )}
         <p className="text-xs text-slate-400 mb-3">{product.supplier?.business_name}</p>
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
+            <span className="text-lg font-bold text-midnight">€{Number(product.price).toFixed(2)}</span>
             <span className="text-xs text-slate-400 ml-1">/ {product.unit_type}</span>
           </div>
           <button

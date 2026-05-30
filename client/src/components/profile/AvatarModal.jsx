@@ -142,13 +142,13 @@ export default function AvatarModal({ userId, currentName, onClose, onSaved }) {
       <div className="flex gap-1 bg-lionsmane rounded-xl p-1 mb-4">
         <button
           onClick={() => setTab('upload')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'upload' ? 'bg-white text-midnight shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'upload' ? 'bg-white text-midnight shadow-sm' : 'text-slate-500 hover:text-midnight'}`}
         >
           <Upload className="w-4 h-4" /> {t('choosePhoto')}
         </button>
         <button
           onClick={() => { setTab('generate'); if (!generatedUrl) handleGenerate() }}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'generate' ? 'bg-white text-midnight shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-colors ${tab === 'generate' ? 'bg-white text-midnight shadow-sm' : 'text-slate-500 hover:text-midnight'}`}
         >
           <Wand2 className="w-4 h-4" /> {t('autoGenerateAvatar')}
         </button>

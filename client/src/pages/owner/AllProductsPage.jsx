@@ -78,10 +78,10 @@ export default function AllProductsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-lg hover:bg-lionsmane transition-colors">
           <ArrowLeft className="w-5 h-5 text-slate-600" />
         </button>
-        <h1 className="text-xl font-bold text-slate-900">{t('allProductsTitle')}</h1>
+        <h1 className="text-xl font-bold text-midnight">{t('allProductsTitle')}</h1>
       </div>
 
       {/* Search + Sort */}
@@ -205,14 +205,14 @@ function ProductCard({ product, onAddToCart }) {
         )}
       </div>
       <div className="p-4">
-        <h3 className="font-bold text-slate-900 text-base mb-1">{product.name}</h3>
+        <h3 className="font-bold text-midnight text-base mb-1">{product.name}</h3>
         {product.description && (
           <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
         )}
         <p className="text-xs font-bold text-midnight-dark mb-3">{product.supplier?.business_name}</p>
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
+            <span className="text-lg font-bold text-midnight">€{Number(product.price).toFixed(2)}</span>
             <span className="text-xs text-slate-400 ml-1">/ {product.unit_type}</span>
           </div>
           <button

@@ -527,7 +527,7 @@ export default function ChatPage() {
         accept="image/jpeg,image/png,image/gif,image/webp,application/pdf"
         onChange={handleFileSelect}
       />
-      <h1 className="text-2xl font-black text-slate-900 mb-4 flex-shrink-0">Messages</h1>
+      <h1 className="text-2xl font-black text-midnight mb-4 flex-shrink-0">Messages</h1>
       <div className="flex-1 min-h-0 flex card overflow-hidden">
 
         {/* Conversation list */}
@@ -553,7 +553,7 @@ export default function ChatPage() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-900 text-sm">ProCuro Support</p>
+                  <p className="font-semibold text-midnight text-sm">ProCuro Support</p>
                   <p className="text-xs text-slate-400">Admin team</p>
                 </div>
                 {adminUnread > 0 && (
@@ -604,7 +604,7 @@ export default function ChatPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm truncate ${unread > 0 ? 'font-black text-slate-900' : 'font-semibold text-slate-900'}`}>{getConvName(conv)}</p>
+                      <p className={`text-sm truncate ${unread > 0 ? 'font-black text-midnight' : 'font-semibold text-midnight'}`}>{getConvName(conv)}</p>
                       {role === 'restaurant_owner' && conv.supplier?.city && (
                         <p className="text-xs text-slate-400 truncate">{conv.supplier.city}</p>
                       )}
@@ -657,20 +657,20 @@ export default function ChatPage() {
         {showingAdmin && (
           <div className="flex-1 flex flex-col min-w-0">
             <div className="p-4 border-b border-slate-100 flex items-center gap-3 flex-shrink-0">
-              <button onClick={() => setShowingAdmin(false)} className="md:hidden p-1.5 hover:bg-slate-100 rounded-lg">
+              <button onClick={() => setShowingAdmin(false)} className="md:hidden p-1.5 hover:bg-lionsmane rounded-lg">
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
               </button>
               <div className="w-9 h-9 rounded-full bg-midnight flex items-center justify-center flex-shrink-0">
                 <Shield className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-slate-900 text-sm">ProCuro Support</p>
+                <p className="font-bold text-midnight text-sm">ProCuro Support</p>
                 <p className="text-xs text-slate-400">Admin team · Usually responds within 24h</p>
               </div>
               <div className="relative flex-shrink-0" data-conv-menu>
                 <button
                   onClick={() => setAdminMenuOpen(o => !o)}
-                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-lionsmane rounded-lg transition-colors"
                 >
                   <MoreVertical className="w-4 h-4 text-slate-500" />
                 </button>
@@ -727,7 +727,7 @@ export default function ChatPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || sending}
-                className="p-2 text-slate-400 hover:text-midnight hover:bg-slate-100 rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
+                className="p-2 text-slate-400 hover:text-midnight hover:bg-lionsmane rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
                 title="Attach image or PDF (max 5MB)"
               >
                 {uploading ? <Loader2 className="w-5 h-5 animate-spin text-herb" /> : <Paperclip className="w-5 h-5" />}
@@ -756,7 +756,7 @@ export default function ChatPage() {
         {!showingAdmin && selectedConv ? (
           <div className="flex-1 flex flex-col min-w-0">
             <div className="p-4 border-b border-slate-100 flex items-center gap-3 flex-shrink-0">
-              <button onClick={() => setSelectedConv(null)} className="md:hidden p-1.5 hover:bg-slate-100 rounded-lg">
+              <button onClick={() => setSelectedConv(null)} className="md:hidden p-1.5 hover:bg-lionsmane rounded-lg">
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
               </button>
               <button
@@ -777,7 +777,7 @@ export default function ChatPage() {
                     if (role === 'restaurant_owner' && selectedConv.supplier?.id) setSupplierProfileModal(selectedConv.supplier)
                     else if (role === 'supplier' && selectedConv.owner) setOwnerProfileModal(selectedConv.owner)
                   }}
-                  className="font-bold text-slate-900 text-sm hover:text-midnight transition-colors"
+                  className="font-bold text-midnight text-sm hover:text-midnight transition-colors"
                 >
                   {getConvName(selectedConv)}
                 </button>
@@ -792,7 +792,7 @@ export default function ChatPage() {
               <div className="relative flex-shrink-0" data-conv-menu>
                 <button
                   onClick={() => setHeaderMenuOpen(o => !o)}
-                  className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-lionsmane rounded-lg transition-colors"
                 >
                   <MoreVertical className="w-4 h-4 text-slate-500" />
                 </button>
@@ -879,7 +879,7 @@ export default function ChatPage() {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading || sending}
-                className="p-2 text-slate-400 hover:text-midnight hover:bg-slate-100 rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
+                className="p-2 text-slate-400 hover:text-midnight hover:bg-lionsmane rounded-full transition-colors flex-shrink-0 disabled:opacity-40"
                 title="Attach image or PDF (max 5MB)"
               >
                 {uploading ? <Loader2 className="w-5 h-5 animate-spin text-herb" /> : <Paperclip className="w-5 h-5" />}
@@ -919,7 +919,7 @@ export default function ChatPage() {
             <div className="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-6 h-6 text-red-500" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 text-center mb-1">Delete conversation?</h3>
+            <h3 className="text-base font-bold text-midnight text-center mb-1">Delete conversation?</h3>
             <p className="text-sm text-slate-500 text-center mb-6">
               This will remove the chat from your inbox. The other person can still see it.
             </p>

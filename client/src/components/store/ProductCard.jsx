@@ -45,7 +45,7 @@ export default function ProductCard({ product, onAddToCart, onReport }) {
   return (
     <div className="card card-lift overflow-hidden active:scale-[0.98]">
       {/* Image */}
-      <div className="relative h-40 bg-gray-100 overflow-hidden">
+      <div className="relative h-40 bg-lionsmane overflow-hidden">
         {imageUrl && !imgError ? (
           <img
             src={imageUrl}
@@ -56,13 +56,13 @@ export default function ProductCard({ product, onAddToCart, onReport }) {
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-            <ImageOff className="w-8 h-8 text-gray-200" />
+            <ImageOff className="w-8 h-8 text-marigold/40" />
           </div>
         )}
 
         {/* Category badge */}
         <div className="absolute top-2 left-2">
-          <span className="bg-white/90 backdrop-blur-sm text-primary text-xs px-2.5 py-1 rounded-full font-semibold shadow-sm">
+          <span className="bg-white/90 backdrop-blur-sm text-midnight text-xs px-2.5 py-1 rounded-full font-semibold shadow-sm">
             {product.category}
           </span>
         </div>
@@ -70,7 +70,7 @@ export default function ProductCard({ product, onAddToCart, onReport }) {
         {/* Discount badge */}
         {discountPct > 0 && (
           <div className="absolute top-2 right-2">
-            <span className="bg-accent text-white text-xs px-2 py-0.5 rounded-full font-bold">
+            <span className="bg-marigold text-midnight text-xs px-2 py-0.5 rounded-full font-bold">
               -{discountPct}%
             </span>
           </div>
@@ -78,29 +78,29 @@ export default function ProductCard({ product, onAddToCart, onReport }) {
 
         {/* Out of stock overlay */}
         {outOfStock && (
-          <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-            <span className="bg-gray-700 text-white text-xs font-bold px-3 py-1 rounded-full">Sold Out</span>
+          <div className="absolute inset-0 bg-midnight/50 flex items-center justify-center">
+            <span className="bg-midnight text-white text-xs font-bold px-3 py-1 rounded-full">Sold Out</span>
           </div>
         )}
       </div>
 
       {/* Content */}
       <div className="p-3.5">
-        <p className="text-[11px] text-primary font-semibold uppercase tracking-wide mb-0.5 truncate">
+        <p className="text-[11px] text-herb font-semibold uppercase tracking-wide mb-0.5 truncate">
           {product.supplier?.business_name || 'Supplier'}
         </p>
-        <h3 className="font-display font-bold text-gray-900 text-sm leading-snug line-clamp-2 mb-2">
+        <h3 className="font-display font-bold text-midnight text-sm leading-snug line-clamp-2 mb-2">
           {product.name}
         </h3>
 
         <div className="flex items-end justify-between">
           <div>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-base font-black text-gray-900">€{displayPrice.toFixed(2)}</span>
-              <span className="text-xs text-gray-400">/{product.unit_type}</span>
+              <span className="text-base font-black text-midnight">€{displayPrice.toFixed(2)}</span>
+              <span className="text-xs text-herb">/{product.unit_type}</span>
             </div>
             {discountPct > 0 && (
-              <span className="text-xs text-gray-400 line-through">€{Number(product.price).toFixed(2)}</span>
+              <span className="text-xs text-herb/60 line-through">€{Number(product.price).toFixed(2)}</span>
             )}
           </div>
 

@@ -502,39 +502,54 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         </div>
       </div>
 
-      {/* Owner cancellation request */}
+      {/* Cancellation request / auto-cancel banner */}
       {split.status === 'cancellation_requested' && (
         <div className="bg-orange-50 border border-orange-300 rounded-xl p-4 space-y-3">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-bold text-orange-800">{t('cancellationRequestedByOwner')}</p>
-              <p className="text-xs text-orange-700 mt-0.5">{t('ownerWantsCancelNote')}</p>
+              {split.cancelled_by === 'system' ? (
+                <>
+                  <p className="text-sm font-bold text-orange-800">{t('autoExpiredCancelTitle')}</p>
+                  <p className="text-xs text-orange-700 mt-0.5">{t('autoExpiredSupplierMsg')}</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-bold text-orange-800">{t('cancellationRequestedByOwner')}</p>
+                  <p className="text-xs text-orange-700 mt-0.5">{t('ownerWantsCancelNote')}</p>
+                </>
+              )}
             </div>
           </div>
-          {split.cancellation_reason && (
+          {split.cancelled_by !== 'system' && split.cancellation_reason && (
             <div className="bg-white rounded-xl p-3 border border-orange-200">
               <p className="text-[10px] uppercase tracking-wide font-semibold text-orange-400 mb-1">{t('ownersReasonLabel')}</p>
               <p className="text-sm text-slate-700 italic">"{split.cancellation_reason}"</p>
             </div>
           )}
-          {split.payment_method === 'bank_transfer' ? (
-            <p className="text-xs text-orange-700">{t('paidViaBankTransferCancelNote')}</p>
+          {split.cancelled_by === 'system' ? (
+            split.payment_method === 'bank_transfer' && (
+              <p className="text-xs text-orange-700">{t('paidViaBankTransferCancelNote')}</p>
+            )
           ) : (
-            <div className="flex gap-2">
-              <button
-                onClick={() => { onUpdateStatus(split.id, 'cancelled'); onBack() }}
-                className="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
-              >
-                <CheckCircle className="w-4 h-4" /> {t('acceptBtn')}
-              </button>
-              <button
-                onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }}
-                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
-              >
-                <XCircle className="w-4 h-4" /> {t('rejectBtn')}
-              </button>
-            </div>
+            split.payment_method === 'bank_transfer' ? (
+              <p className="text-xs text-orange-700">{t('paidViaBankTransferCancelNote')}</p>
+            ) : (
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { onUpdateStatus(split.id, 'cancelled'); onBack() }}
+                  className="flex-1 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+                >
+                  <CheckCircle className="w-4 h-4" /> {t('acceptBtn')}
+                </button>
+                <button
+                  onClick={() => { onUpdateStatus(split.id, 'confirmed'); onBack() }}
+                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+                >
+                  <XCircle className="w-4 h-4" /> {t('rejectBtn')}
+                </button>
+              </div>
+            )
           )}
         </div>
       )}
@@ -542,9 +557,9 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
       {split.status === 'cancelled' && (split.cancellation_reason || split.cancelled_by) && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
           <p className="font-semibold mb-1">
-            {t('cancelledByLabel')} {split.cancelled_by === 'supplier' ? t('cancelledByYouText') : split.cancelled_by === 'owner' ? t('restaurantOwner') : split.cancelled_by === 'admin' ? 'ProCuro Admin' : 'Unknown'}
+            {t('cancelledByLabel')} {split.cancelled_by === 'supplier' ? t('cancelledByYouText') : split.cancelled_by === 'owner' ? t('restaurantOwner') : split.cancelled_by === 'admin' ? 'ProCuro Admin' : split.cancelled_by === 'system' ? t('cancelledBySystem') : 'Unknown'}
           </p>
-          {split.cancellation_reason && <p className="text-red-500">{split.cancellation_reason}</p>}
+          {split.cancelled_by !== 'system' && split.cancellation_reason && <p className="text-red-500">{split.cancellation_reason}</p>}
         </div>
       )}
 
@@ -735,6 +750,7 @@ export default function SupplierOrdersPage() {
 
   async function loadOrders(supplierId) {
     setLoading(true)
+    await supabase.rpc('auto_cancel_expired_pending_orders')
     const [splitsRes, ratingsRes] = await Promise.all([
       supabase
         .from('order_splits')
@@ -959,8 +975,8 @@ export default function SupplierOrdersPage() {
                   )}
                   {split.status === 'cancelled' && (
                     <p className="text-xs text-red-500 mt-1 bg-red-50 px-2 py-1 rounded-lg">
-                      {t('cancelledByLabel')} {split.cancelled_by === 'supplier' ? t('cancelledByYouText') : split.cancelled_by === 'owner' ? t('restaurantOwner') : 'admin'}
-                      {split.cancellation_reason ? `: ${split.cancellation_reason}` : ''}
+                      {t('cancelledByLabel')} {split.cancelled_by === 'supplier' ? t('cancelledByYouText') : split.cancelled_by === 'owner' ? t('restaurantOwner') : split.cancelled_by === 'system' ? t('cancelledBySystem') : 'ProCuro Admin'}
+                      {split.cancelled_by !== 'system' && split.cancellation_reason ? `: ${split.cancellation_reason}` : ''}
                     </p>
                   )}
                   {split.status === 'delivery_dispute' && (

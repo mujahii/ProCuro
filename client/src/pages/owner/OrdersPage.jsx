@@ -337,11 +337,24 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
 
       {/* Cancellation requested banner */}
       {split.status === 'cancellation_requested' && (
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-          <p className="text-sm font-bold text-orange-800">{t('cancellationPendingTitle')}</p>
-          <p className="text-xs text-orange-700 mt-1">{t('cancellationPendingDesc')}</p>
-          {split.cancellation_reason && (
-            <p className="text-xs text-orange-600 mt-2 italic">"{split.cancellation_reason}"</p>
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-1.5">
+          {split.cancelled_by === 'system' ? (
+            <>
+              <p className="text-sm font-bold text-orange-800">{t('autoExpiredCancelTitle')}</p>
+              <p className="text-xs text-orange-700 leading-relaxed">
+                {split.payment_method === 'bank_transfer'
+                  ? t('autoExpiredOwnerBankTransferMsg')
+                  : t('autoExpiredOwnerCodMsg')}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-sm font-bold text-orange-800">{t('cancellationPendingTitle')}</p>
+              <p className="text-xs text-orange-700 mt-1">{t('cancellationPendingDesc')}</p>
+              {split.cancellation_reason && (
+                <p className="text-xs text-orange-600 mt-2 italic">"{split.cancellation_reason}"</p>
+              )}
+            </>
           )}
         </div>
       )}
@@ -415,7 +428,7 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
             {t('orderCancelledTitle')}
             {split.cancelled_by && (
               <span className="font-normal text-red-400 ml-2">
-                — {split.cancelled_by === 'supplier' ? t('cancelledBySupplierText') : t('cancelledByYouText')}
+                — {split.cancelled_by === 'supplier' ? t('cancelledBySupplierText') : split.cancelled_by === 'system' ? t('cancelledBySystem') : t('cancelledByYouText')}
               </span>
             )}
           </p>
@@ -597,6 +610,7 @@ export default function OrdersPage() {
 
   async function fetchOrders() {
     setLoading(true)
+    await supabase.rpc('auto_cancel_expired_pending_orders')
     const [ordersRes, ratingsRes] = await Promise.all([
       supabase
         .from('orders')
@@ -782,8 +796,12 @@ export default function OrdersPage() {
               {/* Status notes */}
               {split.cancellation_reason && (
                 <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded-lg">
-                  {split.status === 'cancellation_requested' ? t('cancelledPendingLabel') : (split.cancelled_by === 'supplier' ? t('cancelledBySupplierLabel') : t('cancelledByYouLabel'))}
-                  {' '}{split.cancellation_reason}
+                  {split.cancelled_by === 'system'
+                    ? t('autoExpiredCancelTitle')
+                    : split.status === 'cancellation_requested'
+                      ? t('cancelledPendingLabel')
+                      : split.cancelled_by === 'supplier' ? t('cancelledBySupplierLabel') : t('cancelledByYouLabel')}
+                  {split.cancelled_by !== 'system' && <>{' '}{split.cancellation_reason}</>}
                 </p>
               )}
               {split.status === 'delivery_dispute' && (

@@ -33,7 +33,7 @@ export default function AdminOrdersPage() {
         <h1 className="font-display text-2xl font-black text-gray-900">All Orders</h1>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input text-sm py-2 w-48">
           <option value="">All statuses</option>
-          {['pending_payment', 'pending_confirmation', 'confirmed', 'shipped', 'delivered', 'cancelled'].map(s => (
+          {['pending_payment', 'pending_confirmation', 'confirmed', 'out_for_delivery', 'delivered', 'completed', 'cancellation_requested', 'cancelled'].map(s => (
             <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
           ))}
         </select>

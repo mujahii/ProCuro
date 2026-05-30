@@ -307,7 +307,7 @@ function RatingModal({ split, onSubmit, onSkip }) {
   )
 }
 
-function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDelivered, onCancelRequest, onConfirmRefund }) {
+function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDelivered, onCancelRequest, onConfirmRefund, ratedSplitIds, onRate }) {
   const navigate = useNavigate()
   const { t } = useLanguage()
   const [showCancelModal, setShowCancelModal] = useState(false)
@@ -501,6 +501,19 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
             {t('cancelOrderTitle')}
           </button>
         )}
+        {split.status === 'delivered' && ratedSplitIds && !ratedSplitIds.has(split.id) && (
+          <button
+            onClick={() => onRate(split)}
+            className="w-full flex items-center justify-center gap-2 py-2.5 bg-marigold/10 border border-marigold/30 text-marigold-dark font-semibold rounded-xl hover:bg-marigold/20 transition-colors text-sm"
+          >
+            <Star className="w-4 h-4 fill-marigold text-marigold" /> {t('rateSupplier') || 'Rate Supplier'}
+          </button>
+        )}
+        {split.status === 'delivered' && ratedSplitIds && ratedSplitIds.has(split.id) && (
+          <div className="w-full flex items-center justify-center gap-2 py-2.5 text-sm text-herb font-semibold">
+            <Star className="w-4 h-4 fill-herb text-herb" /> {t('rated') || 'Rated'}
+          </div>
+        )}
         <button
           onClick={handleChatWithSupplier}
           className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-lionsmane transition-colors text-sm"
@@ -570,6 +583,7 @@ export default function OrdersPage() {
   const [cancelTarget, setCancelTarget] = useState(null)
   const [notReceivedTarget, setNotReceivedTarget] = useState(null)
   const [ratingTarget, setRatingTarget] = useState(null)
+  const [ratedSplitIds, setRatedSplitIds] = useState(new Set())
   const [taxRate, setTaxRate] = useState(0.07)
 
   useEffect(() => {
@@ -583,19 +597,26 @@ export default function OrdersPage() {
 
   async function fetchOrders() {
     setLoading(true)
-    const { data } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        order_splits(
+    const [ordersRes, ratingsRes] = await Promise.all([
+      supabase
+        .from('orders')
+        .select(`
           *,
-          supplier:supplier_profiles(business_name, avatar_url),
-          order_items(*, product:products(name, unit_type, image_url, description))
-        )
-      `)
-      .eq('restaurant_owner_id', user.id)
-      .order('created_at', { ascending: false })
-    setOrders(data || [])
+          order_splits(
+            *,
+            supplier:supplier_profiles(business_name, avatar_url),
+            order_items(*, product:products(name, unit_type, image_url, description))
+          )
+        `)
+        .eq('restaurant_owner_id', user.id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('supplier_ratings')
+        .select('order_split_id')
+        .eq('owner_id', user.id),
+    ])
+    setOrders(ordersRes.data || [])
+    setRatedSplitIds(new Set((ratingsRes.data || []).map(r => r.order_split_id)))
     setLoading(false)
   }
 
@@ -612,13 +633,15 @@ export default function OrdersPage() {
   }
 
   async function submitRating(split, rating) {
-    await supabase.from('supplier_ratings').insert({
+    const { error } = await supabase.from('supplier_ratings').insert({
       supplier_id: split.supplier_id,
       owner_id: user.id,
       order_split_id: split.id,
       rating,
     })
+    if (error) { toast.error(error.message); return }
     toast.success(t('toastRatingSent'))
+    setRatedSplitIds(prev => new Set([...prev, split.id]))
     setRatingTarget(null)
   }
 
@@ -671,15 +694,33 @@ export default function OrdersPage() {
 
   if (selectedOrder) {
     return (
-      <OrderDetailView
-        split={selectedOrder}
-        profile={profile}
-        onBack={() => { setSelectedOrder(null); fetchOrders() }}
-        onMarkDelivered={markDelivered}
-        onMarkNotDelivered={(splitToReport) => setNotReceivedTarget(splitToReport)}
-        onCancelRequest={cancelOrder}
-        onConfirmRefund={confirmRefund}
-      />
+      <>
+        <OrderDetailView
+          split={selectedOrder}
+          profile={profile}
+          onBack={() => { setSelectedOrder(null); fetchOrders() }}
+          onMarkDelivered={markDelivered}
+          onMarkNotDelivered={(splitToReport) => setNotReceivedTarget(splitToReport)}
+          onCancelRequest={cancelOrder}
+          onConfirmRefund={confirmRefund}
+          ratedSplitIds={ratedSplitIds}
+          onRate={setRatingTarget}
+        />
+        {notReceivedTarget && (
+          <NotReceivedModal
+            split={notReceivedTarget}
+            onConfirm={markNotDelivered}
+            onClose={() => setNotReceivedTarget(null)}
+          />
+        )}
+        {ratingTarget && (
+          <RatingModal
+            split={ratingTarget}
+            onSubmit={submitRating}
+            onSkip={() => setRatingTarget(null)}
+          />
+        )}
+      </>
     )
   }
 
@@ -778,6 +819,19 @@ export default function OrdersPage() {
                     >
                       {t('markDeliveredBtn')}
                     </button>
+                  )}
+                  {split.status === 'delivered' && !ratedSplitIds.has(split.id) && (
+                    <button
+                      onClick={e => { e.stopPropagation(); setRatingTarget({ ...split, order: { restaurant_owner_id: user.id } }) }}
+                      className="flex items-center gap-1 px-3 py-1.5 bg-marigold/10 border border-marigold/30 text-marigold-dark text-sm font-semibold rounded-xl hover:bg-marigold/20 transition-colors"
+                    >
+                      <Star className="w-3.5 h-3.5 fill-marigold text-marigold" /> {t('rateSupplier') || 'Rate Supplier'}
+                    </button>
+                  )}
+                  {split.status === 'delivered' && ratedSplitIds.has(split.id) && (
+                    <span className="flex items-center gap-1 px-3 py-1.5 text-xs text-herb font-semibold">
+                      <Star className="w-3 h-3 fill-herb text-herb" /> {t('rated') || 'Rated'}
+                    </span>
                   )}
                   {split.status === 'refund_uploaded' && (
                     <button

@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, ExternalLink, MessageSquare, Flag } from 'lucide-react'
+import { Package, CheckCircle, Truck, XCircle, AlertTriangle, ChevronRight, ArrowLeft, Upload, Loader2, MapPin, Phone, ExternalLink, MessageSquare, Flag, Star } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
 import ReportModal from '../../components/ui/ReportModal'
 import OwnerProfileModal from '../../components/profile/OwnerProfileModal'
@@ -351,7 +351,7 @@ function DisputeResponseModal({ split, onResend, onCancel, onClose }) {
 }
 
 
-function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload, onDispute }) {
+function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, onReload, onDispute, ratedOwnerSplitIds, onRate }) {
   const navigate = useNavigate()
   const { t } = useLanguage()
   const [ownerInfo, setOwnerInfo] = useState(null)
@@ -616,6 +616,20 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
         )}
       </div>
 
+      {split.status === 'delivered' && ratedOwnerSplitIds && !ratedOwnerSplitIds.has(split.id) && (
+        <button
+          onClick={() => onRate(split)}
+          className="w-full flex items-center justify-center gap-2 py-2.5 bg-marigold/10 border border-marigold/30 text-marigold-dark font-semibold rounded-xl hover:bg-marigold/20 transition-colors text-sm"
+        >
+          <Star className="w-4 h-4 fill-marigold text-marigold" /> {t('rateOwner') || 'Rate Owner'}
+        </button>
+      )}
+      {split.status === 'delivered' && ratedOwnerSplitIds && ratedOwnerSplitIds.has(split.id) && (
+        <div className="w-full flex items-center justify-center gap-2 py-2.5 text-sm text-herb font-semibold">
+          <Star className="w-4 h-4 fill-herb text-herb" /> {t('rated') || 'Rated'}
+        </div>
+      )}
+
       <div className="flex justify-center pt-2">
         <button
           onClick={() => setShowReportModal(true)}
@@ -645,6 +659,57 @@ function OrderDetailView({ split, supplierId, onBack, onUpdateStatus, onCancel, 
   )
 }
 
+/* ── Owner Rating Modal ──────────────────────────────────────── */
+function OwnerRatingModal({ split, ownerName, onSubmit, onSkip }) {
+  const { t } = useLanguage()
+  const [hovered, setHovered] = useState(0)
+  const [selected, setSelected] = useState(0)
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit() {
+    if (!selected) return
+    setLoading(true)
+    await onSubmit(split, selected)
+    setLoading(false)
+  }
+
+  return (
+    <ModalPortal><div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl text-center">
+        <div className="w-16 h-16 bg-lionsmane rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-celeste">
+          <span className="text-xl font-bold text-midnight">{ownerName?.[0]?.toUpperCase() || '?'}</span>
+        </div>
+        <h3 className="text-lg font-bold text-midnight mb-1">{t('ratingOrderDelivered')}</h3>
+        <p className="text-sm text-slate-500 mb-5">
+          {t('ratingHowWouldYouRate') || 'How would you rate'} <span className="font-semibold text-midnight">{ownerName}</span>?
+        </p>
+        <div className="flex items-center justify-center gap-2 mb-6">
+          {[1, 2, 3, 4, 5].map(star => (
+            <button key={star} onMouseEnter={() => setHovered(star)} onMouseLeave={() => setHovered(0)} onClick={() => setSelected(star)} className="transition-transform hover:scale-110">
+              <Star className="w-10 h-10 transition-colors" fill={(hovered || selected) >= star ? '#f59e0b' : 'none'} stroke={(hovered || selected) >= star ? '#f59e0b' : '#cbd5e1'} strokeWidth={1.5} />
+            </button>
+          ))}
+        </div>
+        {selected > 0 && (
+          <p className="text-sm font-semibold text-marigold mb-4">
+            {['', t('ratingPoor'), t('ratingFair'), t('ratingGoodLabel'), t('ratingVeryGood'), t('ratingExcellent')][selected]}
+          </p>
+        )}
+        <div className="flex gap-3">
+          <button onClick={onSkip} className="flex-1 py-2.5 border-2 border-slate-200 text-slate-600 font-semibold rounded-xl text-sm hover:bg-lionsmane transition-colors">
+            {t('skipBtn')}
+          </button>
+          <button onClick={handleSubmit} disabled={!selected || loading}
+            className="flex-1 py-2.5 bg-midnight text-white font-bold rounded-xl text-sm hover:bg-midnight-dark transition-colors disabled:opacity-40 flex items-center justify-center gap-2">
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+            {t('submitRating')}
+          </button>
+        </div>
+      </div>
+    </div></ModalPortal>
+  )
+}
+
 export default function SupplierOrdersPage() {
   const { user } = useAuth()
   const { t } = useLanguage()
@@ -655,6 +720,8 @@ export default function SupplierOrdersPage() {
   const [cancelTarget, setCancelTarget] = useState(null)
   const [selectedSplit, setSelectedSplit] = useState(null)
   const [disputeTarget, setDisputeTarget] = useState(null)
+  const [ownerRatingTarget, setOwnerRatingTarget] = useState(null)
+  const [ratedOwnerSplitIds, setRatedOwnerSplitIds] = useState(new Set())
 
   useEffect(() => {
     if (user) init()
@@ -668,14 +735,36 @@ export default function SupplierOrdersPage() {
 
   async function loadOrders(supplierId) {
     setLoading(true)
-    const { data, error } = await supabase
-      .from('order_splits')
-      .select(`*, order_items(*, product:products(name, unit_type))`)
-      .eq('supplier_id', supplierId)
-      .order('created_at', { ascending: false })
-    if (error) console.error('loadOrders error:', error)
-    setSplits(data || [])
+    const [splitsRes, ratingsRes] = await Promise.all([
+      supabase
+        .from('order_splits')
+        .select(`*, owner:orders!inner(restaurant_owner_id, owner_profile:owner_profiles(restaurant_name)), order_items(*, product:products(name, unit_type))`)
+        .eq('supplier_id', supplierId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('owner_ratings')
+        .select('order_split_id')
+        .eq('supplier_id', supplierId),
+    ])
+    if (splitsRes.error) console.error('loadOrders error:', splitsRes.error)
+    setSplits(splitsRes.data || [])
+    setRatedOwnerSplitIds(new Set((ratingsRes.data || []).map(r => r.order_split_id)))
     setLoading(false)
+  }
+
+  async function submitOwnerRating(split, rating) {
+    const ownerId = split.owner?.restaurant_owner_id
+    if (!ownerId || !supplierProfile?.id) return
+    const { error } = await supabase.from('owner_ratings').insert({
+      supplier_id: supplierProfile.id,
+      owner_id: ownerId,
+      order_split_id: split.id,
+      rating,
+    })
+    if (error) { toast.error(error.message); return }
+    toast.success(t('toastRatingSent'))
+    setRatedOwnerSplitIds(prev => new Set([...prev, split.id]))
+    setOwnerRatingTarget(null)
   }
 
   async function updateStatus(splitId, status) {
@@ -786,9 +875,19 @@ export default function SupplierOrdersPage() {
           onCancel={s => setCancelTarget(s)}
           onReload={() => supplierProfile && loadOrders(supplierProfile.id)}
           onDispute={s => setDisputeTarget(s)}
+          ratedOwnerSplitIds={ratedOwnerSplitIds}
+          onRate={setOwnerRatingTarget}
         />
         {cancelTarget && (
           <CancelModal split={cancelTarget} onCancel={cancelOrder} onClose={() => setCancelTarget(null)} />
+        )}
+        {ownerRatingTarget && (
+          <OwnerRatingModal
+            split={ownerRatingTarget}
+            ownerName={ownerRatingTarget.owner?.owner_profile?.restaurant_name || t('restaurantOwner')}
+            onSubmit={submitOwnerRating}
+            onSkip={() => setOwnerRatingTarget(null)}
+          />
         )}
         {disputeTarget && (
           <DisputeResponseModal
@@ -879,6 +978,19 @@ export default function SupplierOrdersPage() {
                     >
                       {t('viewDetails')} <ChevronRight className="w-4 h-4" />
                     </button>
+                    {split.status === 'delivered' && !ratedOwnerSplitIds.has(split.id) && (
+                      <button
+                        onClick={e => { e.stopPropagation(); setOwnerRatingTarget(split) }}
+                        className="flex items-center justify-center gap-1 px-3 py-1.5 bg-marigold/10 border border-marigold/30 text-marigold-dark text-sm font-semibold rounded-xl hover:bg-marigold/20 transition-colors"
+                      >
+                        <Star className="w-3.5 h-3.5 fill-marigold text-marigold" /> {t('rateOwner') || 'Rate Owner'}
+                      </button>
+                    )}
+                    {split.status === 'delivered' && ratedOwnerSplitIds.has(split.id) && (
+                      <span className="flex items-center justify-center gap-1 px-3 py-1.5 text-xs text-herb font-semibold">
+                        <Star className="w-3 h-3 fill-herb text-herb" /> {t('rated') || 'Rated'}
+                      </span>
+                    )}
                     {(split.status === 'pending_confirmation' || (split.status === 'pending_payment' && split.receipt_url)) && (
                       <button
                         onClick={() => updateStatus(split.id, 'confirmed')}
@@ -928,6 +1040,14 @@ export default function SupplierOrdersPage() {
           onResend={resendOrder}
           onCancel={cancelFromDispute}
           onClose={() => setDisputeTarget(null)}
+        />
+      )}
+      {ownerRatingTarget && (
+        <OwnerRatingModal
+          split={ownerRatingTarget}
+          ownerName={ownerRatingTarget.owner?.owner_profile?.restaurant_name || t('restaurantOwner')}
+          onSubmit={submitOwnerRating}
+          onSkip={() => setOwnerRatingTarget(null)}
         />
       )}
     </div>

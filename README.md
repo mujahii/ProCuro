@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-05-30 01:30 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-05-30 10:52 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -747,6 +747,8 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 All ban checks read `supplier_profiles → users(is_banned)` via Supabase's foreign-key embedding syntax (`users:user_id(is_banned)`), so the ban state propagates automatically once the admin toggles `users.is_banned`.
 
+**Stock floor enforcement in `AddToCartModal` and `CartPage`**: `AddToCartModal` derives `stockQty` from `product.stock_quantity` and treats the product as out-of-stock when `stockQty === 0` (even if `is_active = true`). The `+` quantity button is disabled and clamped at `stockQty` so the owner cannot select more than available stock before adding to cart. A parallel cap in `CartContext.addItem` prevents the accumulated cart quantity from exceeding `stock_quantity` when the same product is added multiple times. The cart-page `+` button applies the same ceiling so the limit holds even after the modal is closed. Zero-stock products render a "Currently Out of Stock" banner and an "Unavailable" (disabled) primary button instead of the quantity selector.
+
 **Banned restaurant owners — supplier view (mirror)**: When a restaurant owner has `users.is_banned = true`, the supplier sees the ban surfaced in two places:
 
 | Surface | Behaviour |
@@ -860,7 +862,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 |---|---|---|
 | `AuthContext` | `context/AuthContext.jsx` | `user`, `authUser`, `profile`, `role`, `loading`, `profileLoading`, `signIn`, `signOut`, `refreshProfile`, `updateProfileState`. The provider `value` is memoized (`useMemo`) and the `onAuthStateChange` handler only refetches the profile when the **user id actually changes** — Supabase fires `SIGNED_IN`/`TOKEN_REFRESHED` on every tab refocus, so unconditional refetching previously caused a refetch storm. The profile query is deferred out of the auth callback (`setTimeout(0)`) to avoid the documented `onAuthStateChange` deadlock; `profileLoading` is set to `true` before the deferred fetch and `false` after, so `ProtectedRoute` shows a spinner rather than flashing `/select-role`. In `signIn()`, the profile is fetched before calling `setAuthUser`/`setProfile` so both state updates are batched into one render (no flash). |
 | `AddressContext` | `context/AddressContext.jsx` | Address book CRUD, default address management. When a new address is added, automatically syncs the city into `supplier_profiles.city` / `owner_profiles.city` (appending to the comma-separated list if not already present) so the Business Details card reflects new addresses immediately without requiring an edit+save cycle. |
-| `CartContext` | `context/CartContext.jsx` | Cart items, add/remove/clear, grouped by supplier |
+| `CartContext` | `context/CartContext.jsx` | Cart items, add/remove/clear, grouped by supplier. Persisted to **`localStorage`** (`procuro_cart` key) — cart survives page navigation within the same browser session but does not sync across devices or tabs |
 | `LanguageContext` | `context/LanguageContext.jsx` | `lang` (`en`/`de`), `t(key)` translation function, persisted to `localStorage` |
 
 ---

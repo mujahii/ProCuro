@@ -290,8 +290,8 @@ export default function StorePage() {
 
       {/* Search bar with filter */}
       <div className="flex gap-2">
-        <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-slate-100">
-          <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
+        <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-celeste/40">
+          <Search className="w-5 h-5 text-herb/60 mr-3 flex-shrink-0" />
           <input
             type="text"
             placeholder={t('searchProductsPlaceholder')}
@@ -304,7 +304,7 @@ export default function StorePage() {
         <div className="relative" ref={filterRef}>
           <button
             onClick={() => setFilterOpen(o => !o)}
-            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-midnight text-white border-midnight' : 'bg-white text-slate-700 border-slate-100 hover:border-slate-300'}`}
+            className={`h-12 flex items-center gap-2 px-4 rounded-xl border shadow-sm text-sm font-semibold transition-colors ${sortBy ? 'bg-midnight text-white border-midnight' : 'bg-white text-midnight border-celeste/40 hover:border-herb hover:bg-lionsmane'}`}
           >
             <Filter className="w-4 h-4" />
             <span className="hidden sm:inline">{t(sortBy ? (SORT_OPTION_KEYS.find(o => o.value === sortBy)?.key || 'sortLabel') : 'sortLabel')}</span>
@@ -335,10 +335,10 @@ export default function StorePage() {
               <button
                 key={value}
                 onClick={() => setSelectedCategory(selectedCategory === value ? 'All' : value)}
-                className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${
                   selectedCategory === value
-                    ? 'bg-midnight text-white'
-                    : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
+                    ? 'bg-midnight text-white border-midnight'
+                    : 'bg-white text-midnight/70 border-celeste/50 hover:border-herb hover:bg-lionsmane hover:text-midnight'
                 }`}
               >
                 {t(key)}
@@ -382,12 +382,12 @@ export default function StorePage() {
                   <div className={`w-20 h-20 rounded-2xl shadow-sm border flex items-center justify-center transition-all ${
                     selectedCategory === value
                       ? 'bg-lionsmane border-herb shadow-md'
-                      : 'bg-white border-slate-100 group-hover:border-celeste-dark group-hover:shadow-md'
+                      : 'bg-white border-celeste/40 group-hover:border-herb group-hover:shadow-md group-hover:bg-lionsmane'
                   }`}>
-                    <Icon className={`w-9 h-9 ${selectedCategory === value ? 'text-midnight' : 'text-slate-400 group-hover:text-herb'}`} />
+                    <Icon className={`w-9 h-9 ${selectedCategory === value ? 'text-midnight' : 'text-herb/50 group-hover:text-midnight'}`} />
                   </div>
                   <span className={`text-xs font-medium whitespace-nowrap ${
-                    selectedCategory === value ? 'text-midnight-dark font-bold' : 'text-slate-600 group-hover:text-slate-900'
+                    selectedCategory === value ? 'text-midnight font-bold' : 'text-midnight/60 group-hover:text-midnight'
                   }`}>{t(key)}</span>
                 </div>
               ))}
@@ -402,9 +402,9 @@ export default function StorePage() {
                 {t('seeAll')} <ChevronRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="flex overflow-x-auto gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
+            <div className="flex overflow-x-auto items-stretch gap-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 scrollbar-hide">
               {suppliers.length === 0 ? (
-                <p className="text-sm text-slate-400 py-2">{t('noSuppliersYetStore')}</p>
+                <p className="text-sm text-herb py-2">{t('noSuppliersYetStore')}</p>
               ) : suppliers.map(supplier => {
                 const avatarUrl = supplier.avatar_url
                 const certs = supplier.halal_certificates || []
@@ -414,32 +414,34 @@ export default function StorePage() {
                   <div
                     key={supplier.id}
                     onClick={() => navigate(`/supplier/${supplier.id}`)}
-                    className="flex-shrink-0 min-w-[180px] max-w-[180px] cursor-pointer card card-lift p-4 flex flex-col items-center text-center"
+                    className="flex-shrink-0 w-[176px] cursor-pointer card card-lift p-4 flex flex-col items-center text-center"
                   >
-                    <div className="w-14 h-14 rounded-full bg-slate-100 mb-3 overflow-hidden flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-full bg-lionsmane mb-3 overflow-hidden flex items-center justify-center flex-shrink-0">
                       {avatarUrl ? (
                         <img src={avatarUrl} alt={supplier.business_name} className="w-full h-full object-cover" />
                       ) : (
                         <span className="text-xl font-black text-marigold">{supplier.business_name?.[0]}</span>
                       )}
                     </div>
-                    <h3 className="font-bold text-midnight text-sm truncate w-full">{supplier.business_name}</h3>
-                    {supplier.city && (
-                      <p className="text-xs text-herb flex items-center gap-1 mt-0.5 truncate w-full justify-center">
-                        <MapPin className="w-3 h-3 flex-shrink-0" />{supplier.city}
-                      </p>
-                    )}
-                    {supplier.rating > 0 && (
-                      <div className="flex items-center gap-1 mt-1 text-xs text-marigold">
-                        <span>★</span> {Number(supplier.rating).toFixed(1)}
-                      </div>
-                    )}
+                    <div className="flex-1 flex flex-col w-full">
+                      <h3 className="font-display font-bold text-midnight text-sm w-full line-clamp-2 leading-tight">{supplier.business_name}</h3>
+                      {supplier.city && (
+                        <p className="text-xs text-herb flex items-center gap-1 mt-1 truncate w-full justify-center">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />{supplier.city}
+                        </p>
+                      )}
+                      {supplier.rating > 0 && (
+                        <div className="flex items-center justify-center gap-1 mt-1 text-xs text-marigold font-semibold">
+                          <span>★</span> {Number(supplier.rating).toFixed(1)}
+                        </div>
+                      )}
+                    </div>
                     {isVerified ? (
-                      <div className="mt-2 flex items-center gap-1 bg-lionsmane text-midnight-dark px-2 py-0.5 rounded-full text-[10px] font-medium border border-celeste">
+                      <div className="mt-3 flex items-center gap-1 bg-herb/10 text-herb-dark px-2 py-1 rounded-full text-[10px] font-semibold border border-herb/20 w-fit">
                         <CheckCircle className="w-3 h-3" /> {t('halalCertified')}
                       </div>
                     ) : isPending ? (
-                      <div className="mt-2 flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-marigold/20 text-marigold-dark border border-marigold-light">
+                      <div className="mt-3 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold bg-marigold/15 text-marigold-dark border border-marigold-light w-fit">
                         <HalalBadge status="pending" size={12} /> Pending Review
                       </div>
                     ) : null}

@@ -328,15 +328,15 @@ export default function SupplierDashboardPage() {
                     <button
                       onClick={() => setPage(p => Math.max(0, p - 1))}
                       disabled={page === 0}
-                      className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors disabled:opacity-40"
+                      className="w-8 h-8 rounded-full border border-celeste/50 flex items-center justify-center hover:border-herb transition-colors disabled:opacity-40"
                     >
                       <ChevronLeft className="w-4 h-4 text-slate-600" />
                     </button>
-                    <span className="text-sm text-slate-500">{page + 1} / {totalPages}</span>
+                    <span className="text-sm text-midnight/60">{page + 1} / {totalPages}</span>
                     <button
                       onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                       disabled={page >= totalPages - 1}
-                      className="w-8 h-8 rounded-full border border-slate-200 flex items-center justify-center hover:border-slate-400 transition-colors disabled:opacity-40"
+                      className="w-8 h-8 rounded-full border border-celeste/50 flex items-center justify-center hover:border-herb transition-colors disabled:opacity-40"
                     >
                       <ChevronRight className="w-4 h-4 text-slate-600" />
                     </button>
@@ -354,7 +354,7 @@ export default function SupplierDashboardPage() {
               <h2 className="text-xl font-bold text-midnight">{t('editProductBtn')}</h2>
               <button
                 onClick={() => setEditProduct(null)}
-                className="p-2 hover:bg-lionsmane rounded-xl transition-colors text-slate-500"
+                className="p-2 hover:bg-lionsmane rounded-xl transition-colors text-herb"
               >
                 <X className="w-5 h-5" />
               </button>

@@ -178,7 +178,7 @@ export default function SupplierLayout() {
       >
         {/* Desktop collapsible sidebar */}
         <aside
-          className={`hidden lg:flex flex-col bg-white border-r border-slate-100 fixed left-0 bottom-0 z-20 transition-all duration-200 ${
+          className={`hidden lg:flex flex-col bg-white border-r border-celeste/30 fixed left-0 bottom-0 z-20 transition-all duration-200 ${
             collapsed ? 'w-14' : 'w-56'
           }`}
           style={{ top: showBanner ? 'calc(6.5rem + var(--sat))' : 'calc(4rem + var(--sat))' }}

@@ -95,8 +95,8 @@ export default function ProductsListPage() {
 
         {/* Search + Sort */}
         <div className="flex gap-2">
-          <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-slate-100">
-            <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
+          <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-celeste/40">
+            <Search className="w-5 h-5 text-herb/60 mr-3 flex-shrink-0" />
             <input
               type="text"
               placeholder={t('searchProductsPlaceholder')}

@@ -170,7 +170,7 @@ export default function SupplierProductsPage() {
             return (
               <div key={product.id} className="card p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-lionsmane flex-shrink-0">
                     {imgUrl
                       ? <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
                       : <div className="w-full h-full flex items-center justify-center"><ImageOff className="w-5 h-5 text-gray-300" /></div>
@@ -185,7 +185,7 @@ export default function SupplierProductsPage() {
                     <div className="relative">
                       <button
                         onClick={e => { e.stopPropagation(); setOpenMenu(openMenu === product.id ? null : product.id) }}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"
+                        className="p-2 hover:bg-lionsmane rounded-xl transition-colors text-herb"
                       >
                         <MoreVertical className="w-4 h-4" />
                       </button>
@@ -248,7 +248,7 @@ export default function SupplierProductsPage() {
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-lionsmane flex-shrink-0">
                           {imgUrl ? (
                             <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" loading="lazy" />
                           ) : (
@@ -264,7 +264,7 @@ export default function SupplierProductsPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell">
-                      <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">{product.category}</span>
+                      <span className="text-xs bg-celeste/30 text-midnight px-2 py-1 rounded-full">{product.category}</span>
                     </td>
                     <td className="px-4 py-3 text-sm font-semibold">€{Number(product.price).toFixed(2)}</td>
                     <td className="px-4 py-3">
@@ -274,7 +274,7 @@ export default function SupplierProductsPage() {
                       <div className="relative inline-block">
                         <button
                           onClick={() => setOpenMenu(openMenu === product.id ? null : product.id)}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-400"
+                          className="p-2 hover:bg-lionsmane rounded-xl transition-colors text-herb"
                         >
                           <MoreVertical className="w-4 h-4" />
                         </button>
@@ -320,7 +320,7 @@ export default function SupplierProductsPage() {
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold text-gray-900">{t('deleteProductTitle')}</h2>
-              <button onClick={() => setDeleteTarget(null)} className="p-1 rounded-lg hover:bg-gray-100"><X className="w-5 h-5" /></button>
+              <button onClick={() => setDeleteTarget(null)} className="p-1 rounded-lg hover:bg-lionsmane"><X className="w-5 h-5" /></button>
             </div>
             <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-5">
               <p className="text-sm font-semibold text-red-700 mb-1">{t('deleteProductWarning')}</p>

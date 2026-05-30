@@ -86,8 +86,8 @@ export default function AllProductsPage() {
 
       {/* Search + Sort */}
       <div className="flex gap-2">
-        <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-slate-100">
-          <Search className="w-5 h-5 text-slate-400 mr-3 flex-shrink-0" />
+        <div className="flex-1 h-12 flex items-center bg-white rounded-xl px-4 shadow-sm border border-celeste/40">
+          <Search className="w-5 h-5 text-herb/60 mr-3 flex-shrink-0" />
           <input
             type="text"
             placeholder={t('searchProductsPlaceholder')}
@@ -130,7 +130,7 @@ export default function AllProductsPage() {
             className={`text-xs font-medium px-3 py-1.5 rounded-full transition-colors ${
               activeCategory === value
                 ? 'bg-midnight text-white'
-                : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-400'
+                : 'bg-white text-midnight/70 border border-celeste/50 hover:border-herb hover:bg-lionsmane hover:text-midnight'
             }`}
           >
             {t(key)}
@@ -161,7 +161,7 @@ export default function AllProductsPage() {
             <button
               onClick={loadMore}
               disabled={loading}
-              className="w-full py-3 border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-lionsmane transition-colors disabled:opacity-50"
+              className="w-full py-3 border border-celeste/40 rounded-xl text-sm font-semibold text-midnight/60 hover:bg-lionsmane transition-colors disabled:opacity-50"
             >
               {loading ? t('loading') : t('seeAll')}
             </button>
@@ -184,7 +184,7 @@ function ProductCard({ product, onAddToCart }) {
       onClick={onAddToCart}
       className="card overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
     >
-      <div className="relative h-40 bg-slate-100">
+      <div className="relative h-40 bg-lionsmane">
         {imgUrl ? (
           <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" />
         ) : (

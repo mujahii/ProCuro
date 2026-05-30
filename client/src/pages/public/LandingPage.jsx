@@ -94,6 +94,7 @@ const WY_STYLES = `
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 999;
+  padding-top: env(safe-area-inset-top, 0px);
   background: rgba(255,255,255,0.84);
   backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
@@ -202,9 +203,10 @@ const WY_STYLES = `
   background: rgba(5,37,50,0.55);
   z-index: 1098;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s;
 }
-.wy-mobile-overlay.wy-open { opacity: 1; }
+.wy-mobile-overlay.wy-open { opacity: 1; pointer-events: auto; }
 .wy-mobile-drawer {
   position: fixed;
   top: 0;
@@ -1021,7 +1023,7 @@ const WY_STYLES = `
   .wy-header-actions .wy-btn-login,
   .wy-header-actions .wy-btn-header-cta { display: none; }
   .wy-mobile-toggle { display: flex; }
-  .wy-mobile-overlay { display: block; }
+  .wy-mobile-overlay { display: block; pointer-events: none; }
   .wy-stats-inner { grid-template-columns: 1fr 1fr; }
   .wy-stat-divider:nth-child(2) { border-right: none; }
   .wy-stat-divider:nth-child(1),

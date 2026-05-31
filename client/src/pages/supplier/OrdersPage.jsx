@@ -754,7 +754,7 @@ export default function SupplierOrdersPage() {
     const [splitsRes, ratingsRes] = await Promise.all([
       supabase
         .from('order_splits')
-        .select(`*, owner:orders!inner(restaurant_owner_id, owner_profile:owner_profiles(restaurant_name)), order_items(*, product:products(name, unit_type))`)
+        .select(`*, order_items(*, product:products(name, unit_type))`)
         .eq('supplier_id', supplierId)
         .order('created_at', { ascending: false }),
       supabase
@@ -769,7 +769,7 @@ export default function SupplierOrdersPage() {
   }
 
   async function submitOwnerRating(split, rating) {
-    const ownerId = split.owner?.restaurant_owner_id
+    const ownerId = split.restaurant_owner_id
     if (!ownerId || !supplierProfile?.id) return
     const { error } = await supabase.from('owner_ratings').insert({
       supplier_id: supplierProfile.id,

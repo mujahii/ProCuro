@@ -2006,6 +2006,10 @@ export function LanguageProvider({ children }) {
     try { return localStorage.getItem('procuro_lang') || 'en' } catch { return 'en' }
   })
 
+  // Synchronous: set <html lang> before first paint so it is correct on initial load,
+  // not just after the async useEffect fires on subsequent changes.
+  try { document.documentElement.setAttribute('lang', localStorage.getItem('procuro_lang') || 'en') } catch {}
+
   useEffect(() => {
     document.documentElement.lang = lang
   }, [lang])

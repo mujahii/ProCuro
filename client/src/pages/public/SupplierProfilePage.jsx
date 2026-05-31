@@ -377,12 +377,13 @@ export default function SupplierProfilePage() {
                   ))}
                 </div>
               )}
-              {supplier.phone && (
-                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
-                  <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  <a href={`tel:${supplier.phone}`} className="text-sm text-midnight-dark font-medium hover:underline">{fmtPhone(supplier.phone)}</a>
-                </div>
-              )}
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
+                <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                {supplier.phone
+                  ? <a href={`tel:${supplier.phone}`} className="text-sm text-midnight-dark font-medium hover:underline">{fmtPhone(supplier.phone)}</a>
+                  : <span className="text-sm text-slate-400 italic">{t('notSet')}</span>
+                }
+              </div>
               {addresses.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-slate-100">
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">{t('supplierLocations')}</p>

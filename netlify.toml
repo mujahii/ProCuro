@@ -6,6 +6,9 @@
 [functions]
   directory = "netlify/functions"
 
+[functions."auto-cancel-orders"]
+  schedule = "0 2 * * *"
+
 [dev]
   command = "npm run dev"
   port = 3000

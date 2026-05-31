@@ -62,7 +62,6 @@ const SupplierDashboardPage = lazy(() => import('./pages/supplier/DashboardPage'
 const SupplierProductsPage = lazy(() => import('./pages/supplier/ProductsPage'))
 const SupplierOrdersPage = lazy(() => import('./pages/supplier/OrdersPage'))
 const SupplierAnalyticsPage = lazy(() => import('./pages/supplier/AnalyticsPage'))
-const SupplierCertificatesPage = lazy(() => import('./pages/supplier/CertificatesPage'))
 const SupplierBankDetailsPage = lazy(() => import('./pages/supplier/BankDetailsPage'))
 const SupplierAccountPage = lazy(() => import('./pages/supplier/ProfilePage'))
 
@@ -175,7 +174,6 @@ export default function App() {
               <Route path="products" element={<SupplierProductsPage />} />
               <Route path="orders" element={<SupplierOrdersPage />} />
               <Route path="analytics" element={<SupplierAnalyticsPage />} />
-              <Route path="certificates" element={<SupplierCertificatesPage />} />
               <Route path="bank-details" element={<SupplierBankDetailsPage />} />
               <Route path="chat" element={<ChatPage />} />
               <Route path="profile" element={<SupplierAccountPage />} />

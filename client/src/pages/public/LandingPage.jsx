@@ -177,6 +177,20 @@ const WY_STYLES = `
   box-shadow: 0 4px 14px rgba(165,141,102,0.4);
 }
 .wy-btn-header-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+.wy-btn-lang {
+  font-family: var(--wy-ff-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--wy-muted);
+  background: none;
+  border: 1.5px solid var(--wy-border);
+  padding: 6px 13px;
+  border-radius: 50px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.wy-btn-lang:hover { color: var(--wy-primary); border-color: var(--wy-primary); background: var(--wy-sand); }
 
 /* ── mobile toggle ── */
 .wy-mobile-toggle {
@@ -1097,7 +1111,7 @@ function WyStatsBar() {
 export default function LandingPage() {
   const navigate = useNavigate()
   const { user, authUser, role, loading } = useAuth()
-  const { t } = useLanguage()
+  const { t, lang, setLanguage } = useLanguage()
 
   const [selectedCategory, setSelectedCategory]  = useState('All')
   const [showComingSoon, setShowComingSoon]        = useState(false)
@@ -1203,6 +1217,9 @@ export default function LandingPage() {
             </nav>
 
             <div className="wy-header-actions">
+              <button className="wy-btn-lang" onClick={() => setLanguage(lang === 'en' ? 'de' : 'en')}>
+                {lang === 'en' ? 'DE' : 'EN'}
+              </button>
               <button className="wy-btn-login"      onClick={() => navigate('/login')}>{t('login')}</button>
               <button className="wy-btn-header-cta" onClick={() => navigate('/register')}>{t('getStarted')}</button>
               <button className="wy-mobile-toggle"  onClick={() => setDrawerOpen(true)} aria-label="Open menu">
@@ -1223,6 +1240,9 @@ export default function LandingPage() {
           <button className="wy-drawer-link" onClick={() => { navigate('/about');     setDrawerOpen(false) }}>{t('about')}</button>
           <button className="wy-drawer-link" onClick={() => { navigate('/help');      setDrawerOpen(false) }}>{t('help')}</button>
           <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <button className="wy-btn-lang" style={{ alignSelf: 'flex-start' }} onClick={() => setLanguage(lang === 'en' ? 'de' : 'en')}>
+              {lang === 'en' ? 'DE' : 'EN'}
+            </button>
             <button className="wy-btn-login"      style={{ width: '100%' }}                            onClick={() => { navigate('/login');    setDrawerOpen(false) }}>{t('login')}</button>
             <button className="wy-btn-primary"    style={{ width: '100%', justifyContent: 'center' }} onClick={() => { navigate('/register'); setDrawerOpen(false) }}>{t('getStarted')}</button>
           </div>

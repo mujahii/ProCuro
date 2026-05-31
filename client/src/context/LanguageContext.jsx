@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useState, useEffect } from 'react'
 
 const LanguageContext = createContext()
 
@@ -2004,11 +2004,14 @@ export function LanguageProvider({ children }) {
     try { return localStorage.getItem('procuro_lang') || 'en' } catch { return 'en' }
   })
 
+  useEffect(() => {
+    document.documentElement.lang = lang
+  }, [lang])
+
   function setLanguage(l) {
     if (!LANGS.includes(l)) return
     setLang(l)
     try { localStorage.setItem('procuro_lang', l) } catch {}
-    try { document.documentElement.lang = l } catch {}
   }
 
   function t(key) {

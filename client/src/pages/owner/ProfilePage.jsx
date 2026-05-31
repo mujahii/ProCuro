@@ -254,6 +254,7 @@ function AddressModal({ onClose, userId }) {
   const [form, setForm] = useState({ label: '', street: '', postal_code: '', city: '', latitude: null, longitude: null })
   const [saving, setSaving] = useState(false)
   const [gpsLoading, setGpsLoading] = useState(false)
+  const [confirmDeleteAddr, setConfirmDeleteAddr] = useState(null)
 
   async function detectGPS() {
     if (!navigator.geolocation) { toast.error(t('toastGpsNotSupported')); return }
@@ -345,7 +346,7 @@ function AddressModal({ onClose, userId }) {
                     Set Favorite
                   </button>
                 )}
-                <button onClick={() => handleDelete(addr.id)} className="text-red-400 hover:text-red-600 transition-colors">
+                <button onClick={() => setConfirmDeleteAddr(addr)} className="text-red-400 hover:text-red-600 transition-colors">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -353,6 +354,29 @@ function AddressModal({ onClose, userId }) {
           ))
         )}
       </div>
+
+      {confirmDeleteAddr && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-100 rounded-xl">
+          <p className="text-sm font-semibold text-red-700 mb-1">{t('areYouSure')}</p>
+          <p className="text-xs text-red-600 mb-3">
+            <span className="font-semibold">{confirmDeleteAddr.label || confirmDeleteAddr.street}</span> {t('willBeRemoved')}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setConfirmDeleteAddr(null)}
+              className="flex-1 py-2 rounded-lg border border-slate-200 text-sm text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+            >
+              {t('cancel')}
+            </button>
+            <button
+              onClick={() => { handleDelete(confirmDeleteAddr.id); setConfirmDeleteAddr(null) }}
+              className="flex-1 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors"
+            >
+              {t('delete')}
+            </button>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleAdd}>
         <div className="flex items-center justify-between mb-3">

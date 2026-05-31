@@ -215,6 +215,13 @@ export default function CartPage() {
           ))}
         </div>
 
+        {selectedPayment === 'bank_transfer' && (
+          <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
+            <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <p className="text-sm">{t('bankTransferReceiptHint')}</p>
+          </div>
+        )}
+
         {/* Bank Transfer — per-supplier breakdown with total incl. delivery + 7% MwSt. */}
         {selectedPayment === 'bank_transfer' && (
           <div className="card p-5 space-y-5">

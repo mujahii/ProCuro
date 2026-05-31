@@ -112,22 +112,22 @@ export default function AdminProductsPage() {
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <h1 className="font-display text-2xl font-black text-gray-900">Products</h1>
-        <div className="flex flex-wrap gap-2">
-          <div className="relative flex-1 sm:flex-none">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+          <div className="relative col-span-2 sm:col-auto sm:flex-none">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..." className="pl-9 input text-sm py-2 w-full sm:w-48" />
           </div>
           {tab === 'active' && (
             <>
-              <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="input text-sm py-2 flex-1 sm:flex-none sm:w-36">
+              <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="input text-sm py-2 sm:flex-none sm:w-36">
                 <option value="">All categories</option>
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-              <select value={supplierFilter} onChange={e => setSupplierFilter(e.target.value)} className="input text-sm py-2 flex-1 sm:flex-none sm:w-44">
+              <select value={supplierFilter} onChange={e => setSupplierFilter(e.target.value)} className="input text-sm py-2 sm:flex-none sm:w-44">
                 <option value="">All suppliers</option>
                 {suppliers.map(s => <option key={s.id} value={s.id}>{s.business_name}</option>)}
               </select>
-              <select value={stockFilter} onChange={e => setStockFilter(e.target.value)} className="input text-sm py-2 flex-1 sm:flex-none sm:w-36">
+              <select value={stockFilter} onChange={e => setStockFilter(e.target.value)} className="input text-sm py-2 sm:flex-none sm:w-36">
                 <option value="">All stock</option>
                 <option value="in">In Stock</option>
                 <option value="out">Out of Stock</option>

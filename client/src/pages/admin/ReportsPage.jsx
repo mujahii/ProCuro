@@ -424,12 +424,12 @@ export default function AdminReportsPage() {
       ) : (
         <>
           {/* Mobile card list */}
-          <div className="flex flex-col gap-3 md:hidden">
+          <div className="flex flex-col gap-3 md:hidden overflow-hidden">
             {filtered.map(r => (
               <button
                 key={r.id}
                 onClick={() => setSelected(r)}
-                className="w-full text-left card card-lift p-4"
+                className="w-full text-left card card-lift p-4 overflow-hidden"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${typeStyle(r.type)}`}>

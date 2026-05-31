@@ -112,7 +112,7 @@ export default function Navbar({ onMenuClick }) {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-30 w-full transition-all duration-300 bg-white/85 backdrop-blur-[16px] backdrop-saturate-150 border-b ${scrolled ? 'border-slate-200 shadow-md' : 'border-transparent'}`}
+      className={`fixed top-0 left-0 right-0 z-30 w-full transition-all duration-300 bg-white border-b ${scrolled ? 'border-slate-200 shadow-md' : 'border-transparent'}`}
       style={{ paddingTop: 'var(--sat)' }}
     >
       <div className="px-4 sm:px-6 lg:px-8">

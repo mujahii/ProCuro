@@ -8,12 +8,17 @@ import { useLanguage } from '../../context/LanguageContext'
 const PREFIX = '+49'
 
 // Format a stored phone string for display in SettingRow.
-// "+491701234567" → "+49 170 1234567"
+// "+4915560608671" → "+49 155 60608671"
 export function formatPhone(raw) {
   if (!raw) return ''
   const stripped = raw.replace(/\s+/g, '')
-  const intl = stripped.match(/^(\+\d{1,3})(\d{3})(\d+)$/)
-  if (intl) return `${intl[1]} ${intl[2]} ${intl[3]}`
+  if (stripped.startsWith('+49')) {
+    const rest = stripped.slice(3)
+    if (!rest) return '+49'
+    const net = rest.slice(0, 3)
+    const sub = rest.slice(3)
+    return sub ? `+49 ${net} ${sub}` : `+49 ${net}`
+  }
   const local = stripped.match(/^(0\d{3,4})(\d+)$/)
   if (local) return `${local[1]} ${local[2]}`
   return raw
@@ -75,18 +80,19 @@ export default function PhoneModal({ userId, currentPhone, role, onClose, onSave
         )}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">New Phone Number</label>
-          <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-herb">
-            <span className="px-4 py-3 text-sm font-semibold text-slate-600 bg-slate-50 border-r border-slate-200 select-none whitespace-nowrap">
+          <div className="relative border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-herb bg-white">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500 pointer-events-none select-none">
               {PREFIX}
             </span>
             <input
               type="tel"
               value={suffix}
               onChange={e => setSuffix(formatSuffix(e.target.value))}
-              className="flex-1 px-4 py-3 text-sm focus:outline-none bg-white"
-              placeholder="170 1234567"
+              className="w-full pl-14 pr-4 py-3 text-sm focus:outline-none bg-transparent"
+              placeholder="155 1234567"
             />
           </div>
+          <p className="text-xs text-slate-400 mt-1">Format: +49 155 1234567</p>
         </div>
         <div className="flex gap-3 pt-1">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-lionsmane transition-colors">

@@ -128,13 +128,13 @@ export default function OwnerLayout() {
         }`}
         style={{ paddingTop: 'var(--sat)' }}
       >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-100 flex-shrink-0">
-          <span className="font-display font-bold text-lg text-slate-900">ProCuro</span>
+        <div className="h-16 flex items-center justify-between px-4 border-b border-midnight/30 flex-shrink-0 bg-midnight">
+          <span className="font-display font-bold text-lg text-white">ProCuro</span>
           <button
             onClick={() => setDrawerOpen(false)}
-            className="p-1.5 hover:bg-lionsmane rounded-lg transition-colors"
+            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5 text-white/70" />
           </button>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">

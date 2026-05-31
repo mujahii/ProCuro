@@ -184,7 +184,7 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main content */}
-      <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'lg:ml-16' : 'lg:ml-60'}`}>
+      <div className={`flex-1 min-w-0 flex flex-col min-h-screen transition-all duration-300 ${collapsed ? 'lg:ml-16' : 'lg:ml-60'}`}>
         <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-0 z-20" style={{ paddingTop: 'calc(0.75rem + var(--sat))' }}>
           <div className="flex items-center gap-3">
             {/* Hamburger — mobile only */}
@@ -219,7 +219,7 @@ export default function AdminLayout() {
             <span className="text-sm text-gray-500 hidden sm:inline">{t('administrator')}</span>
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-6">
+        <main className="flex-1 min-w-0 overflow-x-hidden p-4 sm:p-6">
           <Outlet />
         </main>
       </div>

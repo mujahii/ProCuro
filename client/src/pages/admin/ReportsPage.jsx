@@ -399,15 +399,15 @@ export default function AdminReportsPage() {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search reports..." className="pl-9 input text-sm py-2 w-full" />
         </div>
-        <div className="flex gap-2">
-          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="input text-sm py-2 flex-1 sm:w-36">
+        <div className="flex gap-2 min-w-0">
+          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className="input text-sm py-2 flex-1 min-w-0 sm:w-36">
             <option value="">All types</option>
             <option value="product">Products</option>
             <option value="supplier">Suppliers</option>
-            <option value="user">Restaurant Owners</option>
-            <option value="restaurant">Restaurants (legacy)</option>
+            <option value="user">Owners</option>
+            <option value="restaurant">Restaurants</option>
           </select>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input text-sm py-2 flex-1 sm:w-36">
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input text-sm py-2 flex-1 min-w-0 sm:w-36">
             <option value="">All statuses</option>
             <option value="pending">Pending</option>
             <option value="reviewed">Reviewed</option>
@@ -429,28 +429,28 @@ export default function AdminReportsPage() {
               <button
                 key={r.id}
                 onClick={() => setSelected(r)}
-                className="w-full text-left card card-lift p-4 overflow-hidden"
+                className="w-full min-w-0 text-left card card-lift p-4 overflow-hidden"
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${typeStyle(r.type)}`}>
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${typeStyle(r.type)}`}>
                     <Flag className="w-3 h-3" />
                     {typeLabel(r.type)}
                   </span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${STATUS_STYLES[r.status]}`}>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize shrink-0 ${STATUS_STYLES[r.status]}`}>
                     {r.status}
                   </span>
                 </div>
-                <p className="text-sm font-bold text-gray-900 mb-0.5">{r.target_name || '—'}</p>
-                <p className="text-xs text-gray-500 mb-1">{r.reason}</p>
+                <p className="text-sm font-bold text-gray-900 mb-0.5 truncate">{r.target_name || '—'}</p>
+                <p className="text-xs text-gray-500 mb-1 truncate">{r.reason}</p>
                 {r.details && (
                   <p className="text-xs text-gray-400 truncate mb-1">{r.details}</p>
                 )}
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-gray-400">
+                <div className="flex items-center justify-between gap-2 mt-2 min-w-0">
+                  <p className="text-xs text-gray-400 truncate min-w-0 flex-1">
                     {r.reporter?.full_name || r.reporter?.email || '—'}
                     {r.created_at && ` · ${format(new Date(r.created_at), 'dd MMM yyyy')}`}
                   </p>
-                  <span className="text-xs text-midnight font-semibold">{r.status === 'pending' ? 'Review →' : 'View →'}</span>
+                  <span className="text-xs text-midnight font-semibold shrink-0">{r.status === 'pending' ? 'Review →' : 'View →'}</span>
                 </div>
                 {r.admin_action && (
                   <p className="text-[11px] text-gray-400 mt-1 truncate">{r.admin_action}</p>

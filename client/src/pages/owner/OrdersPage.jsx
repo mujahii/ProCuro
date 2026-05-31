@@ -653,7 +653,16 @@ export default function OrdersPage() {
       order_split_id: split.id,
       rating,
     })
-    if (error) { toast.error(error.message); return }
+    if (error) {
+      if (error.code === '23505') {
+        toast.error(t('toastAlreadyRated'))
+        setRatedSplitIds(prev => new Set([...prev, split.id]))
+        setRatingTarget(null)
+      } else {
+        toast.error(error.message)
+      }
+      return
+    }
     toast.success(t('toastRatingSent'))
     setRatedSplitIds(prev => new Set([...prev, split.id]))
     setRatingTarget(null)

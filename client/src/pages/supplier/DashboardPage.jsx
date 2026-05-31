@@ -210,15 +210,15 @@ export default function SupplierDashboardPage() {
           {/* Stats cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Revenue */}
-            <div className="bg-gradient-to-br from-midnight to-primary-mid text-white p-6 rounded-[20px] shadow-md">
+            <div className="card p-6">
               <div className="flex items-center gap-2 mb-3">
-                <Euro className="w-5 h-5 text-herb-light" />
-                <p className="text-slate-300 text-sm font-medium">{t('totalRevenueLabel')}</p>
+                <Euro className="w-5 h-5 text-herb" />
+                <p className="text-slate-500 text-sm font-medium">{t('totalRevenueLabel')}</p>
               </div>
-              <p className="font-display text-3xl font-black">€{stats.totalRevenue.toFixed(2)}</p>
+              <p className="font-display text-3xl font-black text-midnight">€{stats.totalRevenue.toFixed(2)}</p>
               <div className="flex items-center gap-1 mt-2">
-                <TrendingUp className="w-3.5 h-3.5 text-herb-light" />
-                <p className="text-xs text-herb-light font-medium">€{stats.monthRevenue.toFixed(2)} {t('thisMonthLabel')}</p>
+                <TrendingUp className="w-3.5 h-3.5 text-herb" />
+                <p className="text-xs text-herb font-medium">€{stats.monthRevenue.toFixed(2)} {t('thisMonthLabel')}</p>
               </div>
             </div>
 

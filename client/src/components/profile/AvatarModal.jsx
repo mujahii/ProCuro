@@ -43,6 +43,17 @@ const PRESET_AVATARS = [
   'https://api.dicebear.com/7.x/bottts/svg?seed=Dortmund&backgroundColor=fff1f2',
   'https://api.dicebear.com/7.x/bottts/svg?seed=Leipzig&backgroundColor=fef9c3',
   'https://api.dicebear.com/7.x/bottts/svg?seed=Hannover&backgroundColor=ffe4e6',
+  // bottts — famous German castles & landmarks
+  'https://api.dicebear.com/7.x/bottts/svg?seed=BrandenburgerTor&backgroundColor=bfdbfe',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Neuschwanstein&backgroundColor=e0f2fe',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=KoelnerDom&backgroundColor=f1f5f9',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Elbphilharmonie&backgroundColor=cffafe',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=HeidelbergSchloss&backgroundColor=fce7f3',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=NuernbergBurg&backgroundColor=fef3c7',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=DresdenZwinger&backgroundColor=fef9c3',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Frauenkirche&backgroundColor=fff7ed',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Roemerberg&backgroundColor=f0fdf4',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=Wartburg&backgroundColor=d1fae5',
 ]
 
 function shuffle(arr) {

@@ -7,6 +7,7 @@ import { useAddresses } from '../../context/AddressContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { supabase } from '../../lib/supabase'
 import { forwardGeocode } from '../../lib/geocode'
+import { haversineKm } from '../../lib/haversine'
 import ModalPortal from '../ui/ModalPortal'
 import ReportModal from '../ui/ReportModal'
 import toast from 'react-hot-toast'
@@ -16,15 +17,6 @@ function getProductImageUrl(path) {
   if (path.startsWith('http')) return path
   const { data } = supabase.storage.from('product-images').getPublicUrl(path)
   return data?.publicUrl || null
-}
-
-function haversineKm(lat1, lng1, lat2, lng2) {
-  const R = 6371
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 }
 
 export default function AddToCartModal({ product, onClose }) {

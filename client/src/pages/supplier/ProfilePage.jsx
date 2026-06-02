@@ -7,7 +7,7 @@ import { useLanguage, LANGS } from '../../context/LanguageContext'
 import { reverseGeocode } from '../../lib/geocode'
 import {
   LogOut, Loader2, User, FileText, CheckCircle, Clock, XCircle,
-  ExternalLink, ChevronRight, X, Eye, EyeOff, Upload,
+  ExternalLink, Upload,
   Package, TrendingUp, Star, Trash2, CreditCard, Pencil, Navigation,
   Building2, MapPin, Tag
 } from 'lucide-react'
@@ -17,7 +17,8 @@ import Modal from '../../components/profile/Modal'
 import SettingRow from '../../components/profile/SettingRow'
 import AvatarModal from '../../components/profile/AvatarModal'
 import PasswordModal from '../../components/profile/PasswordModal'
-import PhoneModal, { formatPhone } from '../../components/profile/PhoneModal'
+import PhoneModal from '../../components/profile/PhoneModal'
+import { formatPhone } from '../../lib/formatPhone'
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal'
 
 const CERT_STATUS = {

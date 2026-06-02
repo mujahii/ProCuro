@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapPin, Phone, Store, X, ExternalLink, MessageSquare, Flag, Loader2, Ban } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
-import { fmtPhone } from '../../lib/formatPhone'
+import { formatPhone } from '../../lib/formatPhone'
 import { useLanguage } from '../../context/LanguageContext'
 import ModalPortal from '../ui/ModalPortal'
 import ReportModal from '../ui/ReportModal'
@@ -107,7 +107,7 @@ export default function OwnerProfileModal({
                     <div>
                       <p className="text-[10px] uppercase tracking-wide text-slate-400 font-semibold mb-0.5">Phone</p>
                       <a href={`tel:${ownerInfo.phone}`} className="text-sm font-medium text-herb hover:text-herb-dark hover:underline">
-                        {fmtPhone(ownerInfo.phone)}
+                        {formatPhone(ownerInfo.phone)}
                       </a>
                     </div>
                   </div>

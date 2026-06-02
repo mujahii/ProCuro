@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple,
   Package, Truck, Shield, Fish, Milk, Flame, Wheat, Plus, Rocket,
-  Menu, X, ArrowRight, Star, TrendingUp, Users, ShoppingBag
+  X, TrendingUp, Users, ShoppingBag
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'

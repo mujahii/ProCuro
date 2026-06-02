@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { Send, MessageSquare, ArrowLeft, Package, Shield, Paperclip, FileText, MoreVertical, Pin, Trash2, Loader2, X, Ban } from 'lucide-react'
+import { Send, MessageSquare, ArrowLeft, Package, Shield, Paperclip, FileText, MoreVertical, Pin, Trash2, Loader2, Ban } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { de } from 'date-fns/locale'
 import { supabase } from '../../lib/supabase'

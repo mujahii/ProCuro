@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -6,7 +6,7 @@ import { useAddresses } from '../../context/AddressContext'
 import { useLanguage, LANGS } from '../../context/LanguageContext'
 import { reverseGeocode } from '../../lib/geocode'
 import {
-  LogOut, Loader2, User, ChevronRight, X, Eye, EyeOff,
+  LogOut, Loader2, User,
   Package, TrendingUp, Star, Trash2, Pencil, Navigation,
   Building2, MapPin, Tag, CheckCircle, CreditCard
 } from 'lucide-react'
@@ -16,7 +16,8 @@ import Modal from '../../components/profile/Modal'
 import SettingRow from '../../components/profile/SettingRow'
 import AvatarModal from '../../components/profile/AvatarModal'
 import PasswordModal from '../../components/profile/PasswordModal'
-import PhoneModal, { formatPhone } from '../../components/profile/PhoneModal'
+import PhoneModal from '../../components/profile/PhoneModal'
+import { formatPhone } from '../../lib/formatPhone'
 import DeleteAccountModal from '../../components/profile/DeleteAccountModal'
 
 

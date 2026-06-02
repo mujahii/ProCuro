@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink, X, Share2, Ban } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { formatPhone } from '../../lib/formatPhone'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import Navbar from '../../components/layout/Navbar'
@@ -11,12 +12,6 @@ import ReportModal from '../../components/ui/ReportModal'
 import toast from 'react-hot-toast'
 
 const INITIAL_LIMIT = 6
-
-function fmtPhone(p) {
-  if (!p || p.includes(' ')) return p
-  if (p.startsWith('+49') && p.length > 3) return `+49 ${p.slice(3, 6)} ${p.slice(6)}`
-  return p
-}
 
 function getProductImageUrl(path) {
   if (!path) return null
@@ -208,7 +203,7 @@ export default function SupplierProfilePage() {
               {supplier.phone && (
                 <a href={`tel:${supplier.phone}`} className="flex items-center gap-1 hover:text-celeste transition-colors" onClick={e => e.stopPropagation()}>
                   <Phone className="w-3.5 h-3.5" />
-                  <span>{fmtPhone(supplier.phone)}</span>
+                  <span>{formatPhone(supplier.phone)}</span>
                 </a>
               )}
               {isHalalCertified && (
@@ -380,7 +375,7 @@ export default function SupplierProfilePage() {
               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100">
                 <Phone className="w-4 h-4 text-slate-400 flex-shrink-0" />
                 {supplier.phone
-                  ? <a href={`tel:${supplier.phone}`} className="text-sm text-midnight-dark font-medium hover:underline">{fmtPhone(supplier.phone)}</a>
+                  ? <a href={`tel:${supplier.phone}`} className="text-sm text-midnight-dark font-medium hover:underline">{formatPhone(supplier.phone)}</a>
                   : <span className="text-sm text-slate-400 italic">{t('notSet')}</span>
                 }
               </div>

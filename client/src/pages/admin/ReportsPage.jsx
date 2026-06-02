@@ -228,18 +228,22 @@ function ActionModal({ report, onClose, onActionDone }) {
               {report.details}
             </div>
           )}
-          {(report.type === 'supplier' || report.type === 'product' || isRestaurantType(report.type)) && (
+          {report.type === 'product' && (
             <button
-              onClick={() => {
-                onClose()
-                if (report.type === 'supplier') navigate(`/admin/suppliers?id=${report.target_id}`)
-                else if (report.type === 'product') navigate(`/admin/products?id=${report.target_id}`)
-                else navigate(`/admin/users`)
-              }}
+              onClick={() => { onClose(); navigate(`/admin/products?id=${report.target_id}`) }}
               className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors mt-1"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              View {typeLabel(report.type)} in Admin Panel
+              View Product in Admin Panel
+            </button>
+          )}
+          {(report.type === 'supplier' || isRestaurantType(report.type)) && (
+            <button
+              onClick={() => { onClose(); navigate('/admin/users') }}
+              className="flex items-center gap-1.5 text-xs text-herb font-bold underline underline-offset-2 hover:text-herb-dark transition-colors mt-1"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              View User in Admin Panel
             </button>
           )}
         </div>

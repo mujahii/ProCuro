@@ -422,7 +422,7 @@ export default function AdminDashboardPage() {
             <CityComparisonRadar data={cityCounts} title={t('chartCityComparison')} />
             <GermanyDotMap data={cityCoords} title={t('chartUsersGermany')} />
           </div>
-          {summaryContext && <AnalyticsSummary context={summaryContext} />}
+          {summaryContext && <div className="mb-8"><AnalyticsSummary context={summaryContext} /></div>}
         </>
       )}
     </div>

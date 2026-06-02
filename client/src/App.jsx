@@ -105,7 +105,8 @@ export default function App() {
       <CartProvider>
         <AddressProvider>
           <Toaster
-            position="top-right"
+            position="top-center"
+            containerStyle={{ top: 'calc(4.5rem + var(--sat))' }}
             toastOptions={{
               duration: 4000,
               success: {

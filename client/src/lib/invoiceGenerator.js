@@ -8,9 +8,11 @@ const TEXT = [26, 26, 26]
 const MUTED = [100, 100, 100]
 const ACCENT_TINT = [220, 200, 130]   // soft marigold for header subtext
 
-export function generateInvoice(order, splits, ownerProfile, taxRate = 0.07) {
+export function generateInvoice(order, splits, ownerProfile, taxRate = 0.07, isReceipt = false) {
   const doc = new jsPDF()
   const pageWidth = doc.internal.pageSize.getWidth()
+  const docTitle = isReceipt ? 'QUITTUNG' : 'RECHNUNG'
+  const filePrefix = isReceipt ? 'ProCuro-Quittung' : 'ProCuro-Rechnung'
 
   // Header — midnight blue brand bar
   doc.setFillColor(...MIDNIGHT)
@@ -28,11 +30,11 @@ export function generateInvoice(order, splits, ownerProfile, taxRate = 0.07) {
   doc.setTextColor(...ACCENT_TINT)
   doc.text('Halal-Lieferkette, vereinfacht', 20, 32)
 
-  // Invoice details (white text on midnight header)
+  // Document type & reference (white text on midnight header)
   doc.setTextColor(255, 255, 255)
   doc.setFontSize(20)
   doc.setFont('helvetica', 'bold')
-  doc.text('RECHNUNG', pageWidth - 20, 22, { align: 'right' })
+  doc.text(docTitle, pageWidth - 20, 22, { align: 'right' })
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(...ACCENT_TINT)
@@ -42,7 +44,7 @@ export function generateInvoice(order, splits, ownerProfile, taxRate = 0.07) {
   doc.setTextColor(...TEXT)
   doc.setFontSize(11)
   doc.setFont('helvetica', 'bold')
-  doc.text('Rechnungsempfänger:', 20, 57)
+  doc.text(isReceipt ? 'Empfänger:' : 'Rechnungsempfänger:', 20, 57)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(10)
   let billY = 65
@@ -59,7 +61,8 @@ export function generateInvoice(order, splits, ownerProfile, taxRate = 0.07) {
     doc.text(`Steuer-/USt-IdNr.: ${ownerProfile.tax_id}`, 20, billY)
     doc.setTextColor(...TEXT)
   }
-  doc.text(`Datum: ${new Date(order.created_at).toLocaleDateString('de-DE')}`, pageWidth - 20, 57, { align: 'right' })
+  const dateLabel = isReceipt ? 'Lieferdatum' : 'Datum'
+  doc.text(`${dateLabel}: ${new Date(order.created_at).toLocaleDateString('de-DE')}`, pageWidth - 20, 57, { align: 'right' })
 
   let yPos = 90
 
@@ -148,10 +151,15 @@ export function generateInvoice(order, splits, ownerProfile, taxRate = 0.07) {
   doc.setTextColor(...MUTED)
   doc.setFont('helvetica', 'italic')
   doc.setFontSize(9)
-  doc.text('Alle Lieferanten auf ProCuro sind Halal-zertifiziert und verifiziert.', pageWidth / 2, yPos, { align: 'center' })
+  doc.text(
+    isReceipt
+      ? 'Vielen Dank für Ihre Bestellung. Diese Quittung bestätigt die erfolgte Lieferung.'
+      : 'Alle Lieferanten auf ProCuro sind Halal-zertifiziert und verifiziert.',
+    pageWidth / 2, yPos, { align: 'center' }
+  )
   doc.setTextColor(...MIDNIGHT)
   doc.setFont('helvetica', 'bold')
   doc.text('procuro.de', pageWidth / 2, yPos + 6, { align: 'center' })
 
-  doc.save(`ProCuro-Rechnung-${order.id.slice(0, 8).toUpperCase()}.pdf`)
+  doc.save(`${filePrefix}-${order.id.slice(0, 8).toUpperCase()}.pdf`)
 }

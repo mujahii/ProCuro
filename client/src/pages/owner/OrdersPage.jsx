@@ -533,12 +533,17 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
         >
           <MessageSquare className="w-4 h-4 text-midnight" /> {t('chatWithSupplierBtn')}
         </button>
-        <button
-          onClick={() => generateInvoice(split.order, [split], profile, taxRate)}
-          className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-lionsmane transition-colors text-sm"
-        >
-          <Download className="w-4 h-4" /> {t('downloadInvoice')}
-        </button>
+        {(() => {
+          const isDelivered = ['delivered', 'completed'].includes(split.status)
+          return (
+            <button
+              onClick={() => generateInvoice(split.order, [split], profile, taxRate, isDelivered)}
+              className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-lionsmane transition-colors text-sm"
+            >
+              <Download className="w-4 h-4" /> {isDelivered ? t('downloadReceipt') : t('downloadInvoice')}
+            </button>
+          )
+        })()}
       </div>
 
       <div className="flex justify-center pt-2">

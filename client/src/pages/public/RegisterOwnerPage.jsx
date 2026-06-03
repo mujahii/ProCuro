@@ -53,6 +53,10 @@ export default function RegisterPage() {
   }
 
   async function handleOAuth(provider) {
+    if (provider === 'apple') {
+      toast('Apple Sign In coming soon!', { icon: '🍎' })
+      return
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: window.location.origin + '/select-role' },

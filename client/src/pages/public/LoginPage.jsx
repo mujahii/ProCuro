@@ -76,7 +76,7 @@ export default function LoginPage() {
 
   async function handleOAuth(provider) {
     if (provider === 'apple') {
-      toast('Apple Sign In coming soon!', { icon: '🍎' })
+      toast('Apple Sign In coming soon!')
       return
     }
     const { error } = await supabase.auth.signInWithOAuth({

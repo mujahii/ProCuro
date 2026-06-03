@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col" style={{ paddingTop: 'calc(4rem + var(--sat))' }}>
       <Navbar />
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm">

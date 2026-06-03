@@ -240,7 +240,7 @@ export default function OwnerLayout() {
             collapsed ? 'lg:ml-14' : 'lg:ml-56'
           }`}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-6">
             {isBanned && !pathname.startsWith('/owner/chat') ? (
               <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
                 <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">

@@ -193,12 +193,12 @@ export default function AnalyticsSummary({ context }) {
     <div>
       <style>{`
         @keyframes aiGlow {
-          0%   { box-shadow: 0 0 14px 3px rgba(41,121,255,0.30),  0 2px 10px rgba(0,0,0,0.06); }
-          20%  { box-shadow: 0 0 18px 4px rgba(120,50,255,0.26),  0 2px 10px rgba(0,0,0,0.06); }
-          40%  { box-shadow: 0 0 18px 4px rgba(0,190,175,0.26),   0 2px 10px rgba(0,0,0,0.06); }
-          60%  { box-shadow: 0 0 18px 4px rgba(255,148,0,0.24),   0 2px 10px rgba(0,0,0,0.06); }
-          80%  { box-shadow: 0 0 18px 4px rgba(220,40,185,0.24),  0 2px 10px rgba(0,0,0,0.06); }
-          100% { box-shadow: 0 0 14px 3px rgba(41,121,255,0.30),  0 2px 10px rgba(0,0,0,0.06); }
+          0%   { box-shadow: 0 0 32px 12px rgba(41,121,255,0.45),  0 4px 16px rgba(0,0,0,0.10); }
+          20%  { box-shadow: 0 0 36px 14px rgba(120,50,255,0.40),  0 4px 16px rgba(0,0,0,0.10); }
+          40%  { box-shadow: 0 0 36px 14px rgba(0,190,175,0.40),   0 4px 16px rgba(0,0,0,0.10); }
+          60%  { box-shadow: 0 0 36px 14px rgba(255,148,0,0.38),   0 4px 16px rgba(0,0,0,0.10); }
+          80%  { box-shadow: 0 0 36px 14px rgba(220,40,185,0.38),  0 4px 16px rgba(0,0,0,0.10); }
+          100% { box-shadow: 0 0 32px 12px rgba(41,121,255,0.45),  0 4px 16px rgba(0,0,0,0.10); }
         }
       `}</style>
 

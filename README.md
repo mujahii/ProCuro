@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-06-02 20:17 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-06-03 10:11 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -598,6 +598,7 @@ Serverless equivalents of the AI routes, deployed to production alongside the Vi
 - **Range-change stability:** On both owner and supplier analytics pages, the AI context is captured once (on the very first data load) via an `aiContextSet` ref gate and a stable `aiContext` state. `AnalyticsSummary` is rendered outside the `loading ? skeletons : content` block so it stays mounted across range changes. Switching between This Week / This Month / This Year / Custom does **not** trigger re-generation; only a language change or cache expiry does.
 - **Stale fallback:** If Gemini is rate-limited and a stale cache entry exists, it is served with a `stale: true` flag.
 - **Deterministic fallback:** If both Gemini and cache fail, a plain-text summary is built from the context data client-side so the user never sees a hard error.
+- **Glow animation:** The dark card has a continuous `aiGlow` CSS keyframe animation cycling through blue → purple → teal → orange → pink (20s linear, `willChange: 'box-shadow'`). `box-shadow` is 32–36px blur with a 12–14px spread so the coloured halo visibly bleeds beyond the card edges on all screen sizes, including narrow mobile viewports.
 
 ---
 
@@ -812,7 +813,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - `OwnerProfileModal` — Supplier-side modal showing an owner's details when viewing their order
 - `SupplierProfileModal` — Owner-side modal for supplier details
 - `PasswordModal` — Change email & password modal. Email section shows current email pre-filled with an inline "Change" sub-popup (no password required) for entering a new email. Password section (New Password + Confirm) is independent and unchanged.
-- `PhoneModal` — Update phone number form; shows formatted current phone above the input. The `+49` country code is rendered as a fixed non-editable prefix pill (outside the `<input>`); the editable field only accepts the digits after it, auto-spaced as `NNN XXXXXXXX` on every keystroke. On save, stores as `+49 NNN XXXXXXXX`. Phone display formatting is provided by the shared `formatPhone(raw)` helper in `client/src/lib/formatPhone.js` (handles both `+49XXXXXXXXX` and local `0XXX XXXXXXX` formats) — imported here and reused by the owner/supplier profile pages, the owner profile modal, and the public supplier profile (previously each defined its own copy).
+- `PhoneModal` — Update phone number form; shows formatted current phone above the input. The `+49` country code is rendered as a fixed non-editable prefix pill (outside the `<input>`); the editable field only accepts the digits after it, auto-spaced as `NNN XXXXXXXX` on every keystroke. On save, stores as `+49 NNN XXXXXXXX`. The input container has no visible border at rest — only a `focus-within:ring-2 focus-within:ring-herb` focus ring appears on interaction — so the field blends cleanly against the modal background. Phone display formatting is provided by the shared `formatPhone(raw)` helper in `client/src/lib/formatPhone.js` (handles both `+49XXXXXXXXX` and local `0XXX XXXXXXX` formats) — imported here and reused by the owner/supplier profile pages, the owner profile modal, and the public supplier profile (previously each defined its own copy).
 - `SettingRow` — Reusable row component for the settings card; accepts optional `value` prop to show a secondary value (used to display formatted phone number)
 
 ### Store
@@ -899,7 +900,8 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 - Allows users to add ProCuro to their home screen on Android and desktop Chrome.
 - **Service-worker updates are prompt-based** (`registerType: 'prompt'`, `vite.config.js`). The SW never auto-reloads; instead `main.jsx` registers it explicitly (`virtual:pwa-register`) and shows a small "A new version is available — Update" toast that reloads only when the user clicks it. This replaced `registerType: 'autoUpdate'`, which force-reloaded the page on every detected SW change — and because browsers re-check for SW updates on every tab refocus, that produced a repeated reload loop when returning to the tab.
 - **Precache** (`workbox.globPatterns`) covers app JS/CSS/HTML/icons; `og-image.png` is excluded via `globIgnores` since it is only used for social link previews. App icons are served at sensible sizes (favicon 16/32 px, `apple-touch-icon` 180 px, PWA icon 512 px) so the offline precache stays small (~2.7 MB, down from ~5.8 MB).
-- **iOS safe area**: `index.html` sets `viewport-fit=cover` so the app extends edge-to-edge on notched iPhones. `apple-mobile-web-app-status-bar-style: black-translucent` makes the status bar transparent. The CSS variable `--sat = env(safe-area-inset-top, 0px)` is defined in `index.css`. Every fixed/sticky bar receives `padding-top: var(--sat)`: the `<nav>` in `Navbar.jsx`, the `<header>` in `AdminLayout`, and all three mobile side drawers (`AdminLayout` sidebar, `OwnerLayout` drawer, `SupplierLayout` drawer). All layout content-area offsets in `OwnerLayout` and `SupplierLayout` use `calc(Xrem + var(--sat))` so content stays flush on all devices.
+- **iOS safe area**: `index.html` sets `viewport-fit=cover` so the app extends edge-to-edge on notched iPhones. `apple-mobile-web-app-status-bar-style: black-translucent` makes the status bar transparent. The CSS variable `--sat = env(safe-area-inset-top, 0px)` is defined in `index.css`. Every fixed/sticky bar receives `padding-top: var(--sat)`: the `<nav>` in `Navbar.jsx`, the `<header>` in `AdminLayout`, and all three mobile side drawers (`AdminLayout` sidebar, `OwnerLayout` drawer, `SupplierLayout` drawer). All layout content-area offsets in `OwnerLayout` and `SupplierLayout` use `calc(Xrem + var(--sat))` so content stays flush on all devices. **All 9 public pages** (About, Help Center, Privacy Policy, Terms, Press, Careers, Supplier List, Products List, Reset Password) also use `calc(4rem + var(--sat))` as inline `paddingTop` style (replacing `pt-16`) so the back-button and page title are never hidden behind the Navbar on devices where `--sat > 0`.
+- **Mobile browser scroll**: `html { overflow-x: hidden }` is now set alongside the existing `body { overflow-x: hidden }`. Setting it only on `body` can create an implicit stacking context on iOS Safari that prevents body-level scroll when the page is taller than the viewport. Setting it on both restores native scroll. Additionally, the main content wrapper in `SupplierLayout` and `OwnerLayout` receives `pb-24 lg:pb-6` so the bottom content is not obscured by the mobile browser's toolbar chrome.
 
 ---
 

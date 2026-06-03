@@ -15,7 +15,7 @@ export default function AboutPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-lionsmane flex flex-col pt-16">
+    <div className="min-h-screen bg-lionsmane flex flex-col" style={{ paddingTop: 'calc(4rem + var(--sat))' }}>
       <Navbar />
       <main className="max-w-3xl mx-auto px-4 py-8 sm:py-12 flex-grow w-full">
         <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-500 hover:text-slate-900 text-sm mb-6 sm:mb-8 transition-colors">

@@ -225,11 +225,12 @@ export default function SupplierLayout() {
           </div>
         </aside>
 
-        {/* Main content */}
+        {/* Main content — explicit height makes it the scroll container on iOS mobile browser */}
         <main
-          className={`flex-1 min-w-0 transition-all duration-200 ${
+          className={`flex-1 min-w-0 overflow-y-auto transition-all duration-200 ${
             collapsed ? 'lg:ml-14' : 'lg:ml-56'
           }`}
+          style={{ height: `calc(100dvh - ${showBanner ? '8.25rem' : '4rem'} - var(--sat))` }}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-6">
             <Outlet />

@@ -66,6 +66,11 @@ export default function OwnerLayout() {
     : bannerCount === 1
       ? 'calc(6.5rem + var(--sat))'
       : 'calc(9rem + var(--sat))'
+  const mainHeight = bannerCount === 0
+    ? 'calc(100dvh - 4rem - var(--sat))'
+    : bannerCount === 1
+      ? 'calc(100dvh - 6.5rem - var(--sat))'
+      : 'calc(100dvh - 9rem - var(--sat))'
 
   function toggleCollapsed() {
     const next = !collapsed
@@ -234,11 +239,12 @@ export default function OwnerLayout() {
           </div>
         </aside>
 
-        {/* Main content — shifts right based on sidebar width */}
+        {/* Main content — explicit height makes it the scroll container on iOS mobile browser */}
         <main
-          className={`flex-1 min-w-0 transition-all duration-200 ${
+          className={`flex-1 min-w-0 overflow-y-auto transition-all duration-200 ${
             collapsed ? 'lg:ml-14' : 'lg:ml-56'
           }`}
+          style={{ height: mainHeight }}
         >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 lg:pb-6">
             {isBanned && !pathname.startsWith('/owner/chat') ? (

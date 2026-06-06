@@ -253,13 +253,16 @@ export default function ChatbotDrawer({ open, onClose }) {
           : 'translate-x-full lg:translate-x-0 lg:opacity-0 lg:scale-95 lg:pointer-events-none'
         }`}
     >
-      {/* Header */}
-      <div className="bg-gradient-to-r from-midnight to-herb p-4 flex justify-between items-center text-white flex-shrink-0">
+      {/* Header — paddingTop accounts for status bar on full-screen mobile */}
+      <div
+        className="bg-gradient-to-r from-midnight to-herb px-4 pb-4 flex justify-between items-center text-white flex-shrink-0 lg:pt-4"
+        style={{ paddingTop: 'calc(1rem + var(--sat))' }}
+      >
         <h3 className="font-bold flex items-center gap-2 text-sm">
           <Sparkles className="w-4 h-4" />
           ProCuro AI Assistant
         </h3>
-        <button onClick={onClose} className="hover:opacity-75 transition-opacity">
+        <button onClick={onClose} className="p-1 hover:opacity-75 transition-opacity">
           <X className="w-5 h-5" />
         </button>
       </div>

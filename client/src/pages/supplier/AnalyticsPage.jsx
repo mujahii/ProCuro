@@ -250,8 +250,8 @@ export default function SupplierAnalyticsPage() {
               {revenueByProduct.length === 0 ? (
                 <div className="h-48 flex items-center justify-center text-gray-400 text-sm">{t('noDataForPeriod')}</div>
               ) : (
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={revenueByProduct} layout="vertical" margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={revenueByProduct} layout="vertical" margin={{ top: 8, right: 10, left: 0, bottom: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" horizontal={false} />
                     <XAxis type="number" tick={{ fontSize: 10, fill: '#9ca3af' }} tickFormatter={v => `€${v}`} />
                     <YAxis dataKey="name" type="category" tick={{ fontSize: 10, fill: '#6b7280' }} width={90} />

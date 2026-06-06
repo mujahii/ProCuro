@@ -379,12 +379,12 @@ export default function StorePage() {
                   className="flex flex-col items-center gap-2 cursor-pointer group flex-shrink-0 outline-none select-none"
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <div className={`w-14 h-14 rounded-xl shadow-sm border flex items-center justify-center transition-all ${
+                  <div className={`w-16 h-16 rounded-2xl border-2 shadow-sm flex items-center justify-center transition-all ${
                     selectedCategory === value
                       ? 'bg-lionsmane border-herb shadow-md'
-                      : 'bg-white border-celeste/40 group-hover:border-herb group-hover:shadow-md group-hover:bg-lionsmane'
+                      : 'bg-white border-slate-200 group-hover:border-celeste group-hover:shadow-md'
                   }`}>
-                    <Icon className={`w-6 h-6 ${selectedCategory === value ? 'text-midnight' : 'text-herb/50 group-hover:text-midnight'}`} />
+                    <Icon className={`w-6 h-6 ${selectedCategory === value ? 'text-midnight' : 'text-slate-400 group-hover:text-herb'}`} />
                   </div>
                   <span className={`text-xs font-medium whitespace-nowrap ${
                     selectedCategory === value ? 'text-midnight font-bold' : 'text-midnight/60 group-hover:text-midnight'

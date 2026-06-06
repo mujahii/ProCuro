@@ -64,7 +64,7 @@ export default function PhoneModal({ userId, currentPhone, role, onClose, onSave
         )}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1.5">New Phone Number</label>
-          <div className="relative rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-herb bg-white">
+          <div className="relative border border-slate-200 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-herb bg-white">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-500 pointer-events-none select-none">
               {PREFIX}
             </span>
@@ -72,7 +72,7 @@ export default function PhoneModal({ userId, currentPhone, role, onClose, onSave
               type="tel"
               value={suffix}
               onChange={e => setSuffix(formatSuffix(e.target.value))}
-              className="w-full pl-14 pr-4 py-3 text-sm focus:outline-none bg-transparent"
+              className="w-full pl-14 pr-4 py-3 text-sm border-0 outline-none bg-transparent"
               placeholder="155 1234567"
             />
           </div>

@@ -63,7 +63,7 @@ export default function SupplierDashboardPage() {
 
     const [splitsRes, productsRes, itemsRes] = await Promise.all([
       supabase.from('order_splits').select('*').eq('supplier_id', supplierId),
-      supabase.from('products').select('*').eq('supplier_id', supplierId).order('created_at', { ascending: false }),
+      supabase.from('products').select('*').eq('supplier_id', supplierId).is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('order_items').select('*, product:products(name, category), order_split:order_splits!inner(supplier_id)').eq('order_split.supplier_id', supplierId),
     ])
 

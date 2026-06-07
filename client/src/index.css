@@ -9,6 +9,7 @@
     --color-surface:      #E5E1DD;
     --color-text:         #083A4F;
     --sat:                env(safe-area-inset-top, 0px);
+    --sab:                max(env(safe-area-inset-bottom, 0px), 12px);
 
     /* ProCuro design tokens — navy/teal/marigold design system */
     --pro-primary:        #083A4F;

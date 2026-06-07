@@ -900,6 +900,38 @@ const WY_STYLES = `
 .wy-app-btn-text-sm { font-size: 9px; color: rgba(255,255,255,0.65); display: block; line-height: 1; margin-bottom: 3px; }
 .wy-app-btn-text { font-size: 13px; font-weight: 600; display: block; line-height: 1; color: #fff; }
 
+/* ── mission quote ── */
+.wy-mission {
+  background: #fff;
+  padding: 72px 24px;
+  text-align: center;
+}
+.wy-mission-label {
+  font-family: var(--wy-ff-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--wy-marigold);
+  margin-bottom: 20px;
+}
+.wy-mission-quote {
+  font-family: var(--wy-ff-display);
+  font-size: clamp(20px, 3vw, 30px);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--wy-primary);
+  max-width: 680px;
+  margin: 0 auto 36px;
+}
+.wy-mission-divider {
+  width: 48px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--wy-marigold), var(--wy-celeste));
+  margin: 0 auto;
+}
+
 /* ── footer ── */
 .wy-footer {
   background: var(--wy-primary-dark);
@@ -1515,6 +1547,13 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* ── mission quote ── */}
+        <section className="wy-mission wy-reveal">
+          <p className="wy-mission-label">{t('landingMissionLabel')}</p>
+          <blockquote className="wy-mission-quote">"{t('landingMissionQuote')}"</blockquote>
+          <div className="wy-mission-divider" />
+        </section>
+
         {/* ── footer ── */}
         <footer className="wy-footer">
           <div className="wy-footer-grid">
@@ -1522,10 +1561,20 @@ export default function LandingPage() {
               <span className="wy-footer-logo">ProCuro</span>
               <p className="wy-footer-tagline">{t('heroSubtitle')}</p>
               <div style={{ display: 'flex', gap: 8 }}>
-                {[TrendingUp, Users, ShoppingBag].map((Icon, i) => (
-                  <div key={i} style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Icon size={15} color="rgba(192,213,214,0.5)" />
-                  </div>
+                {[
+                  { Icon: TrendingUp, to: '/about' },
+                  { Icon: Users, to: '/suppliers' },
+                  { Icon: ShoppingBag, to: '/products' },
+                ].map(({ Icon, to }, i) => (
+                  <button
+                    key={i}
+                    onClick={() => navigate(to)}
+                    style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s, border-color 0.2s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.14)'; e.currentTarget.style.borderColor = 'rgba(192,213,214,0.35)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; }}
+                  >
+                    <Icon size={15} color="rgba(192,213,214,0.7)" />
+                  </button>
                 ))}
               </div>
             </div>

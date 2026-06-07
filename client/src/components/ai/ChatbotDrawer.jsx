@@ -323,7 +323,7 @@ export default function ChatbotDrawer({ open, onClose }) {
       </div>
 
       {/* Input */}
-      <div className="p-3 bg-white border-t border-slate-100 flex gap-2 flex-shrink-0">
+      <div className="px-3 pt-3 bg-white border-t border-slate-100 flex gap-2 flex-shrink-0" style={{ paddingBottom: 'calc(0.75rem + var(--sab))' }}>
         <input
           type="text"
           value={input}

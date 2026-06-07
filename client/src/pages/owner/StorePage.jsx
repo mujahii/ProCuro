@@ -394,6 +394,45 @@ export default function StorePage() {
             </div>
           </div>
 
+          {/* Recommended Products */}
+          <div>
+            <div className="flex justify-between items-end mb-4 px-1">
+              <h2 className="text-lg font-bold text-midnight">
+                {selectedCategory !== 'All'
+                  ? t(CATEGORY_KEYS.find(c => c.value === selectedCategory)?.key || 'catOther')
+                  : t('recommendedOrders')}
+              </h2>
+              <button onClick={() => navigate('/owner/products')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">{t('seeAll')} <ChevronRight className="w-4 h-4" /></button>
+            </div>
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="card h-72 animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {sortedProducts.map(product => (
+                  <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} />
+
+                ))}
+              </div>
+            )}
+            {!loading && sortedProducts.length === 0 && (
+              <div className="text-center py-12 text-slate-400">No products found</div>
+            )}
+            {!loading && sortedProducts.length > 0 && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => navigate('/owner/products')}
+                  className="flex items-center gap-2 px-6 py-2.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors shadow-sm"
+                >
+                  {t('seeAll')} <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Recommended Suppliers */}
           <div>
             <div className="flex justify-between items-end mb-4 px-1">
@@ -449,45 +488,6 @@ export default function StorePage() {
                 )
               })}
             </div>
-          </div>
-
-          {/* Recommended Products */}
-          <div>
-            <div className="flex justify-between items-end mb-4 px-1">
-              <h2 className="text-lg font-bold text-midnight">
-                {selectedCategory !== 'All'
-                  ? t(CATEGORY_KEYS.find(c => c.value === selectedCategory)?.key || 'catOther')
-                  : t('recommendedOrders')}
-              </h2>
-              <button onClick={() => navigate('/owner/products')} className="text-sm text-herb font-bold underline underline-offset-2 hover:text-herb-dark flex items-center gap-1">{t('seeAll')} <ChevronRight className="w-4 h-4" /></button>
-            </div>
-            {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="card h-72 animate-pulse" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sortedProducts.map(product => (
-                  <ProductCard key={product.id} product={product} onAddToCart={() => setSelectedProduct(product)} />
-
-                ))}
-              </div>
-            )}
-            {!loading && sortedProducts.length === 0 && (
-              <div className="text-center py-12 text-slate-400">No products found</div>
-            )}
-            {!loading && sortedProducts.length > 0 && (
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={() => navigate('/owner/products')}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-midnight text-white text-sm font-semibold rounded-xl hover:bg-midnight-dark transition-colors shadow-sm"
-                >
-                  {t('seeAll')} <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
           </div>
         </>
       )}

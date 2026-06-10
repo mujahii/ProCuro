@@ -229,7 +229,7 @@ const WY_STYLES = `
   height: 100%;
   background: #fff;
   z-index: 1099;
-  padding: 80px 24px 32px;
+  padding: max(80px, calc(var(--sat, 0px) + 60px)) 24px 32px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -239,7 +239,7 @@ const WY_STYLES = `
 .wy-mobile-drawer.wy-open { right: 0; }
 .wy-drawer-close {
   position: absolute;
-  top: 20px; right: 20px;
+  top: max(20px, calc(var(--sat, 0px) + 12px)); right: 20px;
   background: var(--wy-surface);
   border: none;
   width: 36px; height: 36px;
@@ -1206,10 +1206,17 @@ export default function LandingPage() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  /* scroll reveal */
+  /* scroll reveal — re-runs on language change so DOM nodes rebuilt by React
+     get wy-reveal--visible restored via the immediate viewport scan */
   useEffect(() => {
     const els = document.querySelectorAll('.wy-reveal')
     if (!els.length) return
+    els.forEach(el => {
+      const r = el.getBoundingClientRect()
+      if (r.top < window.innerHeight && r.bottom > 0) {
+        el.classList.add('wy-reveal--visible')
+      }
+    })
     const observer = new IntersectionObserver(
       (entries) => entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -1221,7 +1228,7 @@ export default function LandingPage() {
     )
     els.forEach(el => observer.observe(el))
     return () => observer.disconnect()
-  }, [products, suppliers])
+  }, [products, suppliers, lang])
 
   /* body scroll lock when drawer open */
   useEffect(() => {

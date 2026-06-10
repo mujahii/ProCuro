@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom'
 import { ShoppingCart, Mail, Phone, Globe } from 'lucide-react'
-import { useLanguage, LANGS } from '../../context/LanguageContext'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function Footer() {
-  const { lang, setLanguage, t } = useLanguage()
+  const { t } = useLanguage()
   return (
     <footer className="bg-midnight text-celeste py-8 sm:py-12 mt-8 sm:mt-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8">
         <div className="col-span-2 sm:col-span-1">
           <h3 className="font-display text-white text-base sm:text-lg font-bold mb-2 sm:mb-4 flex items-center gap-2">
             <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-herb-light" /> ProCuro
@@ -47,22 +47,6 @@ export default function Footer() {
               <span>Paderborn, Germany</span>
             </li>
           </ul>
-        </div>
-        <div className="col-span-2 sm:col-span-1">
-          <h4 className="font-display text-white font-bold mb-3 sm:mb-4 text-xs sm:text-sm uppercase tracking-wide">Language / Sprache</h4>
-          <div className="inline-flex items-center gap-0.5 bg-white/10 rounded-lg p-0.5">
-            {LANGS.map(l => (
-              <button
-                key={l}
-                onClick={() => setLanguage(l)}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase transition-colors ${
-                  lang === l ? 'bg-white text-midnight shadow-sm' : 'text-celeste hover:text-white'
-                }`}
-              >
-                {l}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-slate-800 text-center text-[11px] sm:text-xs opacity-50">

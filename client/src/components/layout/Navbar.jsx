@@ -15,7 +15,8 @@ export default function Navbar({ onMenuClick }) {
   const { user, role, profile, signOut } = useAuth()
   const { itemCount } = useCart()
   const { addresses, selectedAddress, selectAddress, addAddress } = useAddresses()
-  const { t } = useLanguage()
+  const { t, lang, setLanguage } = useLanguage()
+  const location = useLocation()
   const navigate = useNavigate()
 
   const [scrolled, setScrolled] = useState(false)
@@ -131,10 +132,16 @@ export default function Navbar({ onMenuClick }) {
             )}
 
             {/* Logo */}
-            <Link to={getHomeLink()} className="flex-shrink-0 flex items-center gap-2">
-              <ShoppingCart className="w-8 h-8 text-midnight" />
-              <span className="font-display font-bold text-xl text-midnight hidden sm:block">ProCuro</span>
-            </Link>
+            {user ? (
+              <Link to={getHomeLink()} className="flex-shrink-0 flex items-center gap-2">
+                <ShoppingCart className="w-8 h-8 text-midnight" />
+                <span className="font-display font-bold text-xl text-midnight hidden sm:block">ProCuro</span>
+              </Link>
+            ) : (
+              <Link to="/" className="flex-shrink-0">
+                <span className="font-display font-bold text-xl" style={{ background: 'linear-gradient(90deg, #083A4F, #407E8C)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>ProCuro</span>
+              </Link>
+            )}
 
             {/* Address selector — owner only */}
             {role === 'restaurant_owner' && (
@@ -258,12 +265,23 @@ export default function Navbar({ onMenuClick }) {
             )}
           </div>
 
+          {/* Center nav — public pages only, desktop */}
+          {!user && (
+            <nav className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
+              <Link to="/products" className="text-sm font-medium text-midnight/70 hover:text-midnight transition-colors">{t('products')}</Link>
+              <Link to="/suppliers" className="text-sm font-medium text-midnight/70 hover:text-midnight transition-colors">{t('suppliers')}</Link>
+              <Link to="/about" className="text-sm font-medium text-midnight/70 hover:text-midnight transition-colors">{t('about')}</Link>
+              <Link to="/help" className="text-sm font-medium text-midnight/70 hover:text-midnight transition-colors">{t('help')}</Link>
+            </nav>
+          )}
+
           {/* Right */}
           <div className="flex items-center gap-2 sm:gap-4 relative">
             {user ? (
               <>
                 <ChatIcon />
                 <NotificationBell />
+
 
                 {/* Cart — owner only */}
                 {role === 'restaurant_owner' && (
@@ -330,11 +348,17 @@ export default function Navbar({ onMenuClick }) {
               </>
             ) : (
               <div className="flex items-center gap-2">
-                <Link to="/login" className="border-2 border-slate-200 text-slate-700 hover:bg-lionsmane px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200">
+                <button
+                  onClick={() => setLanguage(lang === 'en' ? 'de' : 'en')}
+                  className="px-3 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-midnight hover:bg-lionsmane transition-colors"
+                >
+                  {lang === 'en' ? 'DE' : 'EN'}
+                </button>
+                <Link to="/login" className="border border-slate-200 text-slate-700 hover:bg-lionsmane px-4 py-2 rounded-xl text-sm font-medium transition-colors">
                   {t('logIn')}
                 </Link>
-                <Link to="/register" className="bg-midnight text-white hover:bg-midnight-dark px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm">
-                  {t('signUp')}
+                <Link to="/register" className="bg-midnight text-white hover:bg-midnight-dark px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm hidden sm:block">
+                  {t('getStarted')}
                 </Link>
               </div>
             )}

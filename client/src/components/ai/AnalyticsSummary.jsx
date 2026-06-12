@@ -195,12 +195,11 @@ export default function AnalyticsSummary({ context }) {
     <div>
       <style>{`
         @keyframes aiGlow {
-          0%   { box-shadow: 0 0 32px 12px rgba(41,121,255,0.45),  0 4px 16px rgba(0,0,0,0.10); }
-          20%  { box-shadow: 0 0 36px 14px rgba(120,50,255,0.40),  0 4px 16px rgba(0,0,0,0.10); }
-          40%  { box-shadow: 0 0 36px 14px rgba(0,190,175,0.40),   0 4px 16px rgba(0,0,0,0.10); }
-          60%  { box-shadow: 0 0 36px 14px rgba(255,148,0,0.38),   0 4px 16px rgba(0,0,0,0.10); }
-          80%  { box-shadow: 0 0 36px 14px rgba(220,40,185,0.38),  0 4px 16px rgba(0,0,0,0.10); }
-          100% { box-shadow: 0 0 32px 12px rgba(41,121,255,0.45),  0 4px 16px rgba(0,0,0,0.10); }
+          0%   { box-shadow: 0 0 32px 12px rgba(8,58,79,0.60),     0 4px 16px rgba(0,0,0,0.12); }
+          25%  { box-shadow: 0 0 36px 14px rgba(64,126,140,0.55),  0 4px 16px rgba(0,0,0,0.12); }
+          50%  { box-shadow: 0 0 36px 14px rgba(192,213,214,0.50), 0 4px 16px rgba(0,0,0,0.12); }
+          75%  { box-shadow: 0 0 36px 14px rgba(165,141,102,0.50), 0 4px 16px rgba(0,0,0,0.12); }
+          100% { box-shadow: 0 0 32px 12px rgba(8,58,79,0.60),     0 4px 16px rgba(0,0,0,0.12); }
         }
       `}</style>
 

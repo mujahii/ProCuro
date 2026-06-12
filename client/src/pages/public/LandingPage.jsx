@@ -1601,12 +1601,12 @@ export default function LandingPage() {
             <div>
               <div className="wy-footer-col-title">{t('suppliers')}</div>
               <button className="wy-footer-link" onClick={() => navigate('/register/supplier')}>{t('registerAsSupplier')}</button>
-              <button className="wy-footer-link" onClick={() => navigate('/login')}>{t('login')}</button>
+              <button className="wy-footer-link" onClick={() => navigate('/login')}>{t('logIn')}</button>
               <button className="wy-footer-link" onClick={() => navigate('/help')}>{t('help')}</button>
             </div>
           </div>
           <div className="wy-footer-bottom">
-            <div className="wy-footer-copy">© 2025 ProCuro. {t('allRightsReserved') || 'All rights reserved.'}</div>
+            <div className="wy-footer-copy">{t('footerCopyright')}</div>
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
               <button className="wy-footer-link" style={{ margin: 0 }} onClick={() => navigate('/privacy')}>{t('privacyPolicy')}</button>
               <button className="wy-footer-link" style={{ margin: 0 }} onClick={() => navigate('/terms')}>{t('termsOfService')}</button>

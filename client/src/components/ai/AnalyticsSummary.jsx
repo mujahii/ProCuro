@@ -72,7 +72,7 @@ function PrimaryInsightCard({ title, rest, meta }) {
 function SecondaryInsightCard({ title, rest, meta }) {
   const Icon = meta.icon
   return (
-    <div className={`flex items-start gap-2.5 p-3 rounded-xl border bg-white ${meta.border}`}>
+    <div className={`w-full flex items-start gap-2.5 p-3 rounded-xl border bg-white ${meta.border}`}>
       <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${meta.iconBg} shadow-sm mt-0.5`}>
         <Icon className="w-3.5 h-3.5 text-white" />
       </div>
@@ -114,7 +114,9 @@ function AIText({ text }) {
       {secondary.length > 0 && (
         <div className="sm:flex-1 flex flex-col gap-2">
           {secondary.map((card, i) => (
-            <SecondaryInsightCard key={i} title={card.title} rest={card.rest} meta={metaForTitle(card.title, i + 1)} />
+            <div key={i} className="flex-1 flex">
+              <SecondaryInsightCard title={card.title} rest={card.rest} meta={metaForTitle(card.title, i + 1)} />
+            </div>
           ))}
         </div>
       )}

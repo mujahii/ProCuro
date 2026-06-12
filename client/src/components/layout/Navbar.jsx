@@ -16,7 +16,6 @@ export default function Navbar({ onMenuClick }) {
   const { itemCount } = useCart()
   const { addresses, selectedAddress, selectAddress, addAddress } = useAddresses()
   const { t, lang, setLanguage } = useLanguage()
-  const location = useLocation()
   const navigate = useNavigate()
 
   const [scrolled, setScrolled] = useState(false)

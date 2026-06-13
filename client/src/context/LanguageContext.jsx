@@ -307,6 +307,9 @@ const T = {
     footerTermsOfService: 'Terms of Service',
     footerCopyright: '© 2026 ProCuro GmbH. All rights reserved.',
     footerTagline: 'Empowering Halal businesses with seamless procurement and inventory solutions across Germany.',
+    footerColProducts: 'Products',
+    footerColCompany: 'Company',
+    footerColForSuppliers: 'For Suppliers',
 
     // Store / Products
     categoriesLabel: 'Categories',
@@ -1315,6 +1318,9 @@ const T = {
     footerTermsOfService: 'AGB',
     footerCopyright: '© 2026 ProCuro GmbH. Alle Rechte vorbehalten.',
     footerTagline: 'Halal-Unternehmen mit nahtloser Beschaffung und Lagerverwaltung in ganz Deutschland stärken.',
+    footerColProducts: 'Produkte',
+    footerColCompany: 'Unternehmen',
+    footerColForSuppliers: 'Für Lieferanten',
 
     // Store / Products
     categoriesLabel: 'Kategorien',

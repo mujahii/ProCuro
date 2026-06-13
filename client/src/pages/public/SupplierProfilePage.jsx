@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { MapPin, CheckCircle, Package, ArrowLeft, FileText, Eye, Flag, MessageSquare, Phone, ExternalLink, X, Share2, Ban } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { formatPhone } from '../../lib/formatPhone'
@@ -91,6 +91,11 @@ export default function SupplierProfilePage({ noShell = false }) {
       win?.close()
       toast.error(error?.message || t('toastCouldNotOpenCert'))
     }
+  }
+
+  // Redirect owners from the public URL to their sidebar-equipped layout (after all hooks)
+  if (!noShell && profile?.role === 'restaurant_owner' && id) {
+    return <Navigate to={`/owner/supplier/${id}`} replace />
   }
 
   if (loading) {

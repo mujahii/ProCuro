@@ -1557,7 +1557,6 @@ export default function LandingPage() {
         {/* ── mission quote ── */}
         <section className="wy-mission wy-reveal">
           <p className="wy-mission-label">{t('landingMissionLabel')}</p>
-          <blockquote className="wy-mission-quote">"{t('landingMissionQuote')}"</blockquote>
           <div className="wy-mission-divider" />
         </section>
 
@@ -1566,7 +1565,6 @@ export default function LandingPage() {
           <div className="wy-footer-grid">
             <div>
               <span className="wy-footer-logo">ProCuro</span>
-              <p className="wy-footer-tagline">{t('footerTagline')}</p>
               <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                 {[
                   { Icon: TrendingUp, to: '/about' },
@@ -1584,7 +1582,7 @@ export default function LandingPage() {
                   </button>
                 ))}
               </div>
-              <p style={{ fontSize: 12, color: 'rgba(192,213,214,0.50)', lineHeight: 1.6, maxWidth: 260 }}>{t('heroSubtitle')}</p>
+              <p style={{ fontSize: 12, color: 'rgba(192,213,214,0.50)', lineHeight: 1.6, maxWidth: 260, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{t('heroSubtitle')}</p>
             </div>
             <div>
               <div className="wy-footer-col-title">{t('footerCompany')}</div>

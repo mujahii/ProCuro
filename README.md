@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-06-13 20:23 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-06-14 01:26 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -576,6 +576,8 @@ Serverless equivalents of the AI routes, deployed to production alongside the Vi
 |---|---|---|
 | `ai-chat.js` | `POST /.netlify/functions/ai-chat` | Proxies to Gemini 2.5 Flash (with 2.5-flash-lite → 2.0-flash-lite fallback chain); verifies Supabase JWT; accepts `language` field — appends German instruction to system prompt when `language === 'de'` |
 | `ai-analytics-summary.js` | `POST /.netlify/functions/ai-analytics-summary` | Generates AI analytics summary; checks `ai_insights_cache` (24h TTL); falls back to a deterministic text summary if Gemini quota is exceeded; accepts `language` field — prefixes prompts with German instruction and uses German bullet headers when `language === 'de'` |
+| `auto-cancel-orders.js` | CRON `0 2 * * *` (daily 02:00 UTC) | Automatically cancels orders stuck in `pending_payment` or `pending_confirmation` past their configured timeout window |
+| `geocode-addresses.js` | CRON `0 3 * * *` (daily 03:00 UTC) | Finds all `addresses` rows where `latitude IS NULL AND city IS NOT NULL`, deduplicates by city, queries Nominatim (`postal_code + city, Germany`) for coordinates, and bulk-updates `latitude`/`longitude`. Respects Nominatim's 1 req/sec policy (1100ms sleep between requests). Processes up to 100 addresses per run. Ensures every user-added address is eventually geocodable for the admin Germany map. |
 
 ---
 
@@ -694,7 +696,9 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - Per split: items subtotal + **`{rate}%` MwSt. (Lebensmittel)** line (percentage shown dynamically from `platform_settings.tax_rate`) + supplier total + payment method (Barzahlung bei Lieferung / Banküberweisung).
 - `generateInvoice(order, splits, ownerProfile, taxRate = 0.07)` — accepts an optional `taxRate` parameter (fetched from `platform_settings` by the caller); falls back to 0.07 if not supplied.
 - Grand total box shows the full order total across all suppliers.
-- File saved as `ProCuro-Rechnung-<ID>.pdf`.
+- **Download mechanism**: uses `doc.output('blob')` + `URL.createObjectURL()` + a programmatic anchor click. This approach works reliably across browsers, iOS, and PWA contexts — `doc.save()` (jsPDF's internal method) is not used as it fails in certain mobile/PWA environments.
+- `OrdersPage` wraps every `generateInvoice()` call in a try/catch that shows a bilingual `toast.error` on failure.
+- File saved as `ProCuro-Rechnung-<ID>.pdf` (invoices) or `ProCuro-Quittung-<ID>.pdf` (receipts).
 
 ---
 
@@ -704,7 +708,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 
 | Page | Route | Description |
 |---|---|---|
-| LandingPage | `/` | Marketing homepage, navy/teal/marigold design system. Self-contained component with `wy-` prefixed scoped CSS (`<style>` block, zero Tailwind collision). Fonts: IBM Plex Sans (body) + Plus Jakarta Sans (display headings). **Frosted-glass sticky header** (`backdrop-filter: blur(16px)`, `.wy-scrolled` adds shadow/border past 20px scroll) with logo, centre nav, Login + Get Started CTAs, and a ≤900px right-slide mobile drawer. **Hero**: dark `#052532` background with **six rising blob orbs** (`wy-rise` keyframes `translateY(680px → -680px)` 15s desktop / `wy-rise-mobile` 28s mobile; colours marigold/celeste/herb/lionsmane/rose/lavender), `rgba(5,37,50,0.6)` overlay, centered 4-zone layout (eyebrow badge → H1 → subtitle+CTAs → trust badges). **Stats bar**: `IntersectionObserver` count-up, gradient text (midnight→teal). Category filter chips, horizontal product scroll (marigold `+` button), supplier grid with Halal badge, **How It Works** 3 lift-cards. **CTA "Take ProCuro Everywhere"**: same dark `#052532` + rising-orb animation as hero, marigold CTA + ghost buttons, 3 frosted-glass app-store badges (Coming Soon modal). **Mission quote section**: white `#fff` section between the app-store CTA and footer — centered `landingMissionLabel` eyebrow + large bold `landingMissionQuote` blockquote + gradient divider bar; scroll-reveal animated, fully i18n'd (EN + DE). **Footer**: dark navy 4-col grid; three icon buttons (`TrendingUp → /about`, `Users → /suppliers`, `ShoppingBag → /products`) are interactive with hover state. Scroll-reveal via `.wy-reveal → .wy-reveal--visible` (threshold 0.12, stagger `d1–d5`). All strings i18n'd. Was previously prototyped as `/homepage-2` (LandingPage2.jsx, now removed). |
+| LandingPage | `/` | Marketing homepage, navy/teal/marigold design system. Self-contained component with `wy-` prefixed scoped CSS (`<style>` block, zero Tailwind collision). Fonts: IBM Plex Sans (body) + Plus Jakarta Sans (display headings). **Frosted-glass sticky header** (`backdrop-filter: blur(16px)`, `.wy-scrolled` adds shadow/border past 20px scroll) with logo, centre nav, Login + Get Started CTAs, and a ≤900px right-slide mobile drawer. **Hero**: dark `#052532` background with **six rising blob orbs** (`wy-rise` keyframes `translateY(680px → -680px)` 15s desktop / `wy-rise-mobile` 28s mobile; colours marigold/celeste/herb/lionsmane/rose/lavender), `rgba(5,37,50,0.6)` overlay, centered 4-zone layout (eyebrow badge → H1 → subtitle+CTAs → trust badges). **Stats bar**: `IntersectionObserver` count-up, gradient text (midnight→teal). Category filter chips, horizontal product scroll (marigold `+` button), supplier grid with Halal badge, **How It Works** 3 lift-cards. **CTA "Take ProCuro Everywhere"**: same dark `#052532` + rising-orb animation as hero, marigold CTA + ghost buttons, 3 frosted-glass app-store badges (Coming Soon modal). **Mission section**: white `#fff` section between the app-store CTA and footer — `landingMissionLabel` eyebrow + gradient divider bar; scroll-reveal animated, fully i18n'd (EN + DE). **Footer**: dark navy 4-col grid — column 1: ProCuro logo, three icon buttons (`TrendingUp → /about`, `Users → /suppliers`, `ShoppingBag → /products`), `heroSubtitle` text (2-line clamped, `WebkitLineClamp: 2`); columns 2–4: COMPANY / RESOURCES / CONTACT link lists. Scroll-reveal via `.wy-reveal → .wy-reveal--visible` (threshold 0.12, stagger `d1–d5`). All strings i18n'd. Was previously prototyped as `/homepage-2` (LandingPage2.jsx, now removed). |
 | LoginPage | `/login` | Email/password login; Google OAuth button |
 | SelectRolePage | `/select-role` | Role picker for new users (owner vs supplier) |
 | RegisterOwnerPage | `/register` | Owner registration form |

@@ -609,7 +609,14 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
           const isDelivered = ['delivered', 'completed'].includes(split.status)
           return (
             <button
-              onClick={() => generateInvoice(split.order, [split], profile, taxRate, isDelivered)}
+              onClick={() => {
+                try {
+                  generateInvoice(split.order, [split], profile, taxRate, isDelivered)
+                } catch (err) {
+                  toast.error(t('toastInvoiceError') || 'Could not generate PDF. Please try again.')
+                  console.error('Invoice generation failed:', err)
+                }
+              }}
               className="w-full flex items-center justify-center gap-2 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-lionsmane transition-colors text-sm"
             >
               <Download className="w-4 h-4" /> {isDelivered ? t('downloadReceipt') : t('downloadInvoice')}

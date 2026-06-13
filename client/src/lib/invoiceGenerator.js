@@ -161,5 +161,15 @@ export function generateInvoice(order, splits, ownerProfile, taxRate = 0.07, isR
   doc.setFont('helvetica', 'bold')
   doc.text('procuro.de', pageWidth / 2, yPos + 6, { align: 'center' })
 
-  doc.save(`${filePrefix}-${order.id.slice(0, 8).toUpperCase()}.pdf`)
+  const filename = `${filePrefix}-${order.id.slice(0, 8).toUpperCase()}.pdf`
+  // Use blob + anchor for reliable cross-browser/PWA downloads
+  const blob = doc.output('blob')
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  setTimeout(() => URL.revokeObjectURL(url), 500)
 }

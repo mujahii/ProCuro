@@ -9,6 +9,9 @@
 [functions."auto-cancel-orders"]
   schedule = "0 2 * * *"
 
+[functions."geocode-addresses"]
+  schedule = "0 3 * * *"
+
 [dev]
   command = "npm run dev"
   port = 3000

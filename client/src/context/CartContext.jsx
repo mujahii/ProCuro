@@ -1,20 +1,39 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { useAuth } from './AuthContext'
 
 const CartContext = createContext(null)
 
+function cartKey(userId) {
+  return userId ? `procuro_cart_${userId}` : 'procuro_cart_guest'
+}
+
 export function CartProvider({ children }) {
+  const { authUser } = useAuth()
+  const userId = authUser?.id ?? null
+
   const [items, setItems] = useState(() => {
     try {
-      const saved = localStorage.getItem('procuro_cart')
+      const saved = localStorage.getItem(cartKey(userId))
       return saved ? JSON.parse(saved) : []
     } catch {
       return []
     }
   })
 
+  // Reload from the correct per-user key whenever the logged-in user changes
   useEffect(() => {
-    localStorage.setItem('procuro_cart', JSON.stringify(items))
-  }, [items])
+    try {
+      const saved = localStorage.getItem(cartKey(userId))
+      setItems(saved ? JSON.parse(saved) : [])
+    } catch {
+      setItems([])
+    }
+  }, [userId])
+
+  // Persist to the correct per-user key on every change
+  useEffect(() => {
+    localStorage.setItem(cartKey(userId), JSON.stringify(items))
+  }, [items, userId])
 
   function addItem(product, quantity = 1) {
     setItems(prev => {

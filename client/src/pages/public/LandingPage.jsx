@@ -1566,8 +1566,8 @@ export default function LandingPage() {
           <div className="wy-footer-grid">
             <div>
               <span className="wy-footer-logo">ProCuro</span>
-              <p className="wy-footer-tagline">{t('heroSubtitle')}</p>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <p className="wy-footer-tagline">{t('footerTagline')}</p>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
                 {[
                   { Icon: TrendingUp, to: '/about' },
                   { Icon: Users, to: '/suppliers' },
@@ -1584,16 +1584,16 @@ export default function LandingPage() {
                   </button>
                 ))}
               </div>
+              <p style={{ fontSize: 12, color: 'rgba(192,213,214,0.50)', lineHeight: 1.6, maxWidth: 260 }}>{t('heroSubtitle')}</p>
             </div>
             <div>
-              <div className="wy-footer-col-title">{t('footerColProducts')}</div>
-              <button className="wy-footer-link" onClick={() => navigate('/products')}>{t('featuredProducts')}</button>
-              <button className="wy-footer-link" onClick={() => navigate('/suppliers')}>{t('featuredSuppliers')}</button>
-              <button className="wy-footer-link" onClick={() => navigate('/register')}>{t('getStarted')}</button>
-            </div>
-            <div>
-              <div className="wy-footer-col-title">{t('footerColCompany')}</div>
+              <div className="wy-footer-col-title">{t('footerCompany')}</div>
               <button className="wy-footer-link" onClick={() => navigate('/about')}>{t('footerAboutUs')}</button>
+              <button className="wy-footer-link" onClick={() => navigate('/careers')}>{t('footerCareers')}</button>
+              <button className="wy-footer-link" onClick={() => navigate('/press')}>{t('footerPress')}</button>
+            </div>
+            <div>
+              <div className="wy-footer-col-title">{t('footerResources')}</div>
               <button className="wy-footer-link" onClick={() => navigate('/help')}>{t('footerHelpCenter')}</button>
               <button className="wy-footer-link" onClick={() => navigate('/privacy')}>{t('footerPrivacyPolicy')}</button>
               <button className="wy-footer-link" onClick={() => navigate('/terms')}>{t('footerTermsOfService')}</button>

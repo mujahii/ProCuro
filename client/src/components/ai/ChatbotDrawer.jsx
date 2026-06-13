@@ -64,6 +64,14 @@ const WELCOME = {
   },
 }
 
+function needsAddressContext(text) {
+  return /near(est|by)?\s*(me|supplier|to\s*me)|closest.*supplier|in\s+my\s+(city|area|vicinity|neighbourhood|neighborhood)|around\s+me|in\s+meiner\s+(nähe|umgebung|stadt)|nächste[rn]?\s+lieferant/i.test(text)
+}
+
+function needsOrderContext(text) {
+  return /when\s+(will|am|do|is).*?(receiv|arriv|get|deliver)|my\s+order.*?(status|when|where|arriv|track)|track.*?order|order.*?(arriv|deliver|status|when|track)|wann\s+(erhalte|kommt|bekomme)|meine\s+bestellung|bestellung.*?(status|wann|verfolg)/i.test(text)
+}
+
 async function fetchContext(user) {
   if (!user) return {}
 
@@ -215,27 +223,100 @@ export default function ChatbotDrawer({ open, onClose }) {
     }
   }, [open, role, language])
 
-  async function send(text) {
-    const trimmed = (text || input).trim()
-    if (!trimmed || loading) return
-    setInput('')
-    setShowSuggestions(false)
-    setMessages(prev => [...prev, { role: 'user', content: trimmed }])
+  async function sendToAI(trimmed, extraContext = {}) {
     setLoading(true)
-
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const context = await fetchContext(user)
-      const response = await askGemini(trimmed, context, session?.access_token ?? '', { language })
+      const response = await askGemini(trimmed, { ...context, ...extraContext }, session?.access_token ?? '', { language })
       setMessages(prev => [...prev, { role: 'assistant', content: response }])
     } catch {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, I\'m having trouble connecting right now. Please try again in a moment.',
+        content: language === 'de'
+          ? 'Entschuldigung, es gibt gerade ein Verbindungsproblem. Bitte versuche es erneut.'
+          : 'Sorry, I\'m having trouble connecting right now. Please try again in a moment.',
       }])
     } finally {
       setLoading(false)
     }
+  }
+
+  async function send(text, extraContext = null) {
+    const trimmed = (text || input).trim()
+    if (!trimmed || loading) return
+    setInput('')
+    setShowSuggestions(false)
+
+    // If extraContext is already resolved (user picked from a choice), skip detection
+    if (extraContext !== null) {
+      setMessages(prev => [...prev, { role: 'user', content: trimmed }])
+      await sendToAI(trimmed, extraContext)
+      return
+    }
+
+    // Detect if the query needs address or order disambiguation for restaurant owners
+    if (role === 'restaurant_owner' && user?.id) {
+      if (needsAddressContext(trimmed)) {
+        const { data: addresses } = await supabase.from('addresses').select('id, label, street, house_number, postal_code, city, latitude, longitude').eq('user_id', user.id)
+        if (addresses && addresses.length > 1) {
+          setMessages(prev => [...prev,
+            { role: 'user', content: trimmed },
+            { role: 'choice', kind: 'address', question: t('chatbotWhichAddress'), choices: addresses, originalQuery: trimmed },
+          ])
+          return
+        }
+        if (addresses?.length === 1) {
+          setMessages(prev => [...prev, { role: 'user', content: trimmed }])
+          await sendToAI(trimmed, { selectedAddress: addresses[0] })
+          return
+        }
+      }
+
+      if (needsOrderContext(trimmed)) {
+        const { data: splits } = await supabase
+          .from('order_splits')
+          .select('id, status, subtotal, created_at, estimated_delivery_at, supplier:supplier_profiles(business_name)')
+          .eq('restaurant_owner_id', user.id)
+          .not('status', 'in', '("delivered","completed","cancelled")')
+          .order('created_at', { ascending: false })
+          .limit(8)
+        const orders = splits && splits.length > 0 ? splits : null
+        // Fall back to recent orders if no ongoing ones
+        const { data: fallback } = orders ? { data: null } : await supabase
+          .from('order_splits')
+          .select('id, status, subtotal, created_at, estimated_delivery_at, supplier:supplier_profiles(business_name)')
+          .eq('restaurant_owner_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
+        const orderChoices = orders || fallback
+        if (orderChoices && orderChoices.length > 1) {
+          setMessages(prev => [...prev,
+            { role: 'user', content: trimmed },
+            { role: 'choice', kind: 'order', question: t('chatbotWhichOrder'), choices: orderChoices, originalQuery: trimmed },
+          ])
+          return
+        }
+        if (orderChoices?.length === 1) {
+          setMessages(prev => [...prev, { role: 'user', content: trimmed }])
+          await sendToAI(trimmed, { focusedOrder: orderChoices[0] })
+          return
+        }
+      }
+    }
+
+    setMessages(prev => [...prev, { role: 'user', content: trimmed }])
+    await sendToAI(trimmed)
+  }
+
+  function pickChoice(msg, choice) {
+    const label = msg.kind === 'address'
+      ? [choice.street, choice.house_number].filter(Boolean).join(' ') + (choice.city ? `, ${choice.city}` : '')
+      : `${choice.supplier?.business_name} — €${Number(choice.subtotal).toFixed(2)}`
+    const extra = msg.kind === 'address' ? { selectedAddress: choice } : { focusedOrder: choice }
+    // Replace the choice bubble with a user selection bubble, then answer
+    setMessages(prev => prev.filter(m => m !== msg).concat([{ role: 'user', content: label }]))
+    sendToAI(msg.originalQuery, extra)
   }
 
   return (
@@ -269,7 +350,40 @@ export default function ChatbotDrawer({ open, onClose }) {
 
       {/* Messages */}
       <div className="flex-1 p-3 overflow-y-auto space-y-3 bg-lionsmane">
-        {messages.map((msg, i) => (
+        {messages.map((msg, i) => {
+          if (msg.role === 'choice') {
+            return (
+              <div key={i} className="flex items-end gap-2 justify-start">
+                <div className="w-6 h-6 rounded-full bg-midnight flex items-center justify-center flex-shrink-0 mb-1">
+                  <Bot className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="max-w-[84%] bg-white border border-slate-200 rounded-2xl rounded-bl-none shadow-sm p-3">
+                  <p className="text-xs font-semibold text-slate-600 mb-2">{msg.question}</p>
+                  <div className="flex flex-col gap-1.5">
+                    {msg.choices.map((choice, ci) => {
+                      const label = msg.kind === 'address'
+                        ? [choice.street, choice.house_number].filter(Boolean).join(' ') || choice.label || choice.city
+                        : choice.supplier?.business_name || `Order ${choice.id.slice(0, 6)}`
+                      const sub = msg.kind === 'address'
+                        ? [choice.postal_code, choice.city].filter(Boolean).join(', ')
+                        : `€${Number(choice.subtotal).toFixed(2)} · ${new Date(choice.created_at).toLocaleDateString()}`
+                      return (
+                        <button
+                          key={ci}
+                          onClick={() => pickChoice(msg, choice)}
+                          className="text-left px-3 py-2 rounded-xl border border-slate-200 bg-lionsmane hover:bg-celeste hover:border-celeste-dark transition-colors"
+                        >
+                          <p className="text-xs font-semibold text-midnight leading-snug">{label}</p>
+                          {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )
+          }
+          return (
           <div key={i} className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             {msg.role === 'assistant' && (
               <div className="w-6 h-6 rounded-full bg-midnight flex items-center justify-center flex-shrink-0 mb-1">
@@ -286,7 +400,8 @@ export default function ChatbotDrawer({ open, onClose }) {
               <FormattedMessage text={msg.content} />
             </div>
           </div>
-        ))}
+          )
+        })}
 
         {/* Suggestion chips — only shown before first user message */}
         {showSuggestions && suggestions.length > 0 && (

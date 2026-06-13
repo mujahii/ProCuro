@@ -398,6 +398,15 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
 
       <OrderTracker status={split.status} t={t} />
 
+      {split.estimated_delivery_at && !['delivered', 'completed', 'cancelled', 'cancellation_requested', 'delivery_dispute'].includes(split.status) && (
+        <div className="flex items-center gap-2 px-1">
+          <Clock className="w-4 h-4 text-herb flex-shrink-0" />
+          <p className="text-sm text-slate-600">
+            {t('estimatedDelivery')}: <span className="font-semibold text-midnight">{format(new Date(split.estimated_delivery_at), 'd MMM yyyy')}</span>
+          </p>
+        </div>
+      )}
+
       {/* Cancellation requested banner */}
       {split.status === 'cancellation_requested' && (
         <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 space-y-1.5">
@@ -891,6 +900,14 @@ export default function OrdersPage() {
                 <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded-lg flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                   {t('disputeResolvedLabel')} "{split.dispute_message}"
+                </p>
+              )}
+
+              {/* Estimated delivery */}
+              {split.estimated_delivery_at && !['delivered', 'completed', 'cancelled', 'cancellation_requested', 'delivery_dispute'].includes(split.status) && (
+                <p className="text-xs text-herb font-medium mt-2 flex items-center gap-1">
+                  <Clock className="w-3 h-3 flex-shrink-0" />
+                  {t('estimatedDelivery')}: {format(new Date(split.estimated_delivery_at), 'd MMM yyyy')}
                 </p>
               )}
 

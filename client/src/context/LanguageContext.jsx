@@ -426,6 +426,11 @@ const T = {
     noMessagesHello: 'No messages yet. Say hello!',
     visitSupplierStart: 'Visit a supplier profile to start a conversation',
     chatbotAskPlaceholder: 'Ask me anything...',
+    chatbotWhichAddress: 'Which address are you asking about?',
+    chatbotWhichOrder: 'Which order do you mean?',
+
+    // Estimated delivery
+    estimatedDelivery: 'Estimated Delivery',
 
     // Date range filter
     dateFilterWeek: 'This Week',
@@ -1437,6 +1442,11 @@ const T = {
     noMessagesHello: 'Noch keine Nachrichten. Sag Hallo!',
     visitSupplierStart: 'Besuche ein Lieferantenprofil, um ein Gespräch zu beginnen',
     chatbotAskPlaceholder: 'Frag mich irgendetwas...',
+    chatbotWhichAddress: 'Welche Adresse meinst du?',
+    chatbotWhichOrder: 'Welche Bestellung meinst du?',
+
+    // Estimated delivery
+    estimatedDelivery: 'Voraussichtliche Lieferung',
 
     // Date range filter
     dateFilterWeek: 'Diese Woche',

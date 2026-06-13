@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X, Navigation, AlertTriangle, Ban } from 'lucide-react'
+import { Minus, Plus, Trash2, Upload, CheckCircle, Loader2, CreditCard, Banknote, ArrowLeft, MapPin, Package, Truck, ChevronRight, X, Navigation, AlertTriangle, Ban, CalendarDays } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { reverseGeocode, forwardGeocode } from '../../lib/geocode'
 import { haversineKm } from '../../lib/haversine'
@@ -12,6 +12,24 @@ import { useLanguage } from '../../context/LanguageContext'
 import toast from 'react-hot-toast'
 import ModalPortal from '../../components/ui/ModalPortal'
 import SupplierProfileModal from '../../components/profile/SupplierProfileModal'
+
+function addBusinessDays(date, n) {
+  const d = new Date(date)
+  let added = 0
+  while (added < n) {
+    d.setDate(d.getDate() + 1)
+    const day = d.getDay()
+    if (day !== 0 && day !== 6) added++
+  }
+  return d
+}
+
+function estimatedDeliveryDays(km) {
+  if (km < 40) return 1
+  if (km < 80) return 2
+  if (km < 120) return 3
+  return 5
+}
 
 function getProductImageUrl(path) {
   if (!path) return null
@@ -34,6 +52,7 @@ export default function CartPage() {
   const [orderIds, setOrderIds] = useState([])
   const [showAddressPicker, setShowAddressPicker] = useState(false)
   const [deliveryFees, setDeliveryFees] = useState({})
+  const [deliveryEstimates, setDeliveryEstimates] = useState({})
   const [deliveryRecalcLoading, setDeliveryRecalcLoading] = useState(false)
   const [bannedSupplierIds, setBannedSupplierIds] = useState(new Set())
   const [taxRate, setTaxRate] = useState(0.07)
@@ -66,7 +85,7 @@ export default function CartPage() {
     let cancelled = false
     async function recalcAll() {
       if (groups.length === 0) return
-      if (!selectedAddress) { if (!cancelled) setDeliveryFees({}); return }
+      if (!selectedAddress) { if (!cancelled) { setDeliveryFees({}); setDeliveryEstimates({}) }; return }
       setDeliveryRecalcLoading(true)
       try {
         let ownerLat = selectedAddress.latitude || null
@@ -81,14 +100,17 @@ export default function CartPage() {
           supabase.from('delivery_fee_rules').select('*').order('min_km', { ascending: true }),
         ])
         const fees = {}
+        const estimates = {}
+        const now = new Date()
         for (const sid of supplierIds) {
           const sp = (suppliers || []).find(s => s.id === sid)
           if (!ownerLat || !ownerLng || !sp?.latitude || !sp?.longitude) { fees[sid] = 0; continue }
           const km = haversineKm(ownerLat, ownerLng, sp.latitude, sp.longitude)
           const rule = (rules || []).find(r => km >= r.min_km && (r.max_km === null || km < r.max_km))
           fees[sid] = rule ? Number(rule.fee) : 0
+          estimates[sid] = addBusinessDays(now, estimatedDeliveryDays(km)).toISOString()
         }
-        if (!cancelled) setDeliveryFees(fees)
+        if (!cancelled) { setDeliveryFees(fees); setDeliveryEstimates(estimates) }
       } finally { if (!cancelled) setDeliveryRecalcLoading(false) }
     }
     recalcAll()
@@ -136,7 +158,7 @@ export default function CartPage() {
     }
     const fullGroups = {}
     for (const [supplierId, group] of groups) {
-      fullGroups[supplierId] = { ...group, paymentMethod: selectedPayment, receiptFile: receiptFiles[supplierId] || null }
+      fullGroups[supplierId] = { ...group, paymentMethod: selectedPayment, receiptFile: receiptFiles[supplierId] || null, estimatedDeliveryAt: deliveryEstimates[supplierId] || null }
     }
     try {
       const totalWithTaxAndDelivery = groups.reduce((s, [sid, g]) => s + g.subtotal + feeFor(sid, g) + taxFor(g.subtotal), 0)
@@ -428,6 +450,14 @@ export default function CartPage() {
                   <span>{t('supplierTotal')}</span>
                   <span>€{(group.subtotal + deliveryFee + tax).toFixed(2)}</span>
                 </div>
+                {deliveryEstimates[supplierId] && (
+                  <div className="flex items-center gap-1.5 pt-1 border-t border-slate-100">
+                    <CalendarDays className="w-3 h-3 text-herb flex-shrink-0" />
+                    <span className="text-xs text-herb font-medium">
+                      {t('estimatedDelivery')}: {new Date(deliveryEstimates[supplierId]).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )

@@ -46,7 +46,7 @@ When mentioning a restaurant owner from the context, write as: [OwnerName](/supp
 Use this link format ONLY when you have the exact ID from the context data. Never invent IDs.`
 
   const roleGuide = {
-    restaurant_owner: `You are helping a restaurant owner manage Halal food procurement. Help them track orders, monitor spending, find and suggest suppliers near them, and optimize purchasing. If they ask about nearby suppliers, list the ones in the context whose city matches or is closest to the owner's city. If they ask to order from a supplier, tell them to click the supplier link to open their store.`,
+    restaurant_owner: `You are helping a restaurant owner manage Halal food procurement. Help them track orders, monitor spending, find and suggest suppliers near them, and optimize purchasing. If a "selectedAddress" is present in context, use that address's city/postal_code for distance and location comparisons instead of ownerCity. If a "focusedOrder" is present in context, answer specifically about that order (status, estimated delivery, supplier, items). If they ask about nearby suppliers, list the ones in the context whose city matches or is closest to the selected or owner's city. If they ask to order from a supplier, tell them to click the supplier link to open their store.`,
     supplier: `You are helping a Halal food supplier manage their business on ProCuro. Help them understand orders, inventory, and sales. If asked about top restaurant owners or who ordered most, reference the owner data in context.`,
     admin: `You are helping a ProCuro platform administrator. Help them understand platform metrics, manage users, and identify issues or opportunities.`,
   }

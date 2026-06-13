@@ -44,6 +44,7 @@ export function usePlaceOrder() {
         payment_method: group.paymentMethod,
         receipt_url: group.receiptUrl,
         subtotal: Number(group.subtotal) || 0,
+        estimated_delivery_at: group.estimatedDeliveryAt || null,
         items: group.items.map(item => ({
           product_id: item.productId,
           quantity: item.quantity,

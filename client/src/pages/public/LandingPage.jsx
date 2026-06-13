@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   CheckCircle, MapPin, ChevronRight, Drumstick, Beef, Leaf, Coffee, Apple,
   Package, Truck, Shield, Fish, Milk, Flame, Wheat, Plus, Rocket,
-  X, TrendingUp, Users, ShoppingBag
+  X, TrendingUp, Users, ShoppingBag, Mail, Phone
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
@@ -1599,10 +1599,19 @@ export default function LandingPage() {
               <button className="wy-footer-link" onClick={() => navigate('/terms')}>{t('footerTermsOfService')}</button>
             </div>
             <div>
-              <div className="wy-footer-col-title">{t('footerColForSuppliers')}</div>
-              <button className="wy-footer-link" onClick={() => navigate('/register/supplier')}>{t('registerAsSupplier')}</button>
-              <button className="wy-footer-link" onClick={() => navigate('/login')}>{t('logIn')}</button>
-              <button className="wy-footer-link" onClick={() => navigate('/help')}>{t('footerHelpCenter')}</button>
+              <div className="wy-footer-col-title">{t('footerContact')}</div>
+              <div className="wy-footer-link" style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'default' }}>
+                <Mail size={13} style={{ opacity: 0.5, flexShrink: 0 }} />
+                <a href="mailto:support@procuro.com" className="wy-footer-link" style={{ margin: 0 }}>support@procuro.com</a>
+              </div>
+              <div className="wy-footer-link" style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'default' }}>
+                <Phone size={13} style={{ opacity: 0.5, flexShrink: 0 }} />
+                <a href="tel:+4915560608671" className="wy-footer-link" style={{ margin: 0 }}>+49 155 6060 8671</a>
+              </div>
+              <div className="wy-footer-link" style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'default' }}>
+                <MapPin size={13} style={{ opacity: 0.5, flexShrink: 0 }} />
+                <span>Paderborn, Germany</span>
+              </div>
             </div>
           </div>
           <div className="wy-footer-bottom">

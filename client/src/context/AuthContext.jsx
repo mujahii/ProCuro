@@ -95,7 +95,6 @@ export function AuthProvider({ children }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut({ scope: 'global' })
-    localStorage.removeItem('procuro_cart')
     currentUserId.current = null
     setAuthUser(null)
     setProfile(null)

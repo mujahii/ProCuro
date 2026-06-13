@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, ShoppingBag, Star, MessageSquare, Flag, Info } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, ShoppingBag, Star, MessageSquare, Flag, Info, Clock, Truck } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
 import ReportModal from '../../components/ui/ReportModal'
 import SupplierProfileModal from '../../components/profile/SupplierProfileModal'
@@ -307,6 +307,67 @@ function RatingModal({ split, onSubmit, onSkip }) {
   )
 }
 
+const TRACKER_STEPS = [
+  { statuses: ['pending_payment', 'pending_confirmation'], icon: Clock,        labelKey: 'statusPendingConfirmation' },
+  { statuses: ['confirmed'],                               icon: CheckCircle,  labelKey: 'statusConfirmed' },
+  { statuses: ['out_for_delivery'],                        icon: Truck,        labelKey: 'statusOutForDelivery' },
+  { statuses: ['delivered', 'completed'],                  icon: Package,      labelKey: 'statusDelivered' },
+]
+const NEGATIVE_STATUSES = ['cancelled', 'cancellation_requested', 'refund_uploaded', 'delivery_dispute']
+
+function OrderTracker({ status, t }) {
+  const isNegative = NEGATIVE_STATUSES.includes(status)
+  const currentIdx = TRACKER_STEPS.findIndex(s => s.statuses.includes(status))
+
+  const nodes = TRACKER_STEPS.flatMap((step, i) => {
+    const Icon = step.icon
+    const isDone = !isNegative && currentIdx > i
+    const isActive = !isNegative && currentIdx === i
+    const stepNode = (
+      <div key={`step-${i}`} className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+        <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${
+          isDone   ? 'bg-herb shadow-sm' :
+          isActive ? 'bg-midnight shadow-sm' :
+                     'bg-slate-100'
+        }`}>
+          <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isDone || isActive ? 'text-white' : 'text-slate-300'}`} />
+        </div>
+        <span className={`text-[9px] sm:text-[10px] font-semibold text-center leading-tight px-0.5 ${
+          isDone   ? 'text-herb-dark' :
+          isActive ? 'text-midnight' :
+                     'text-slate-300'
+        }`}>{t(step.labelKey)}</span>
+      </div>
+    )
+    const arrowNode = i < TRACKER_STEPS.length - 1 ? (
+      <ChevronRight key={`arrow-${i}`} className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 mt-2.5 sm:mt-3 ${
+        isDone ? 'text-herb' : 'text-slate-200'
+      }`} />
+    ) : null
+    return arrowNode ? [stepNode, arrowNode] : [stepNode]
+  })
+
+  if (isNegative) {
+    nodes.push(
+      <ChevronRight key="neg-arrow" className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 mt-2.5 sm:mt-3 text-red-200" />,
+      <div key="neg-step" className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-100 flex items-center justify-center">
+          <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+        </div>
+        <span className="text-[9px] sm:text-[10px] font-semibold text-red-500 text-center leading-tight">
+          {status === 'delivery_dispute' ? t('statusDeliveryDispute') || t('statusCancelled') : t('statusCancelled')}
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="card p-4 sm:p-5">
+      <div className="flex items-start">{nodes}</div>
+    </div>
+  )
+}
+
 function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDelivered, onCancelRequest, onConfirmRefund, ratedSplitIds, onRate }) {
   const navigate = useNavigate()
   const { t } = useLanguage()
@@ -334,6 +395,8 @@ function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDel
         <h2 className="font-display text-2xl font-bold text-midnight">{t('orderDetailsTitle')}</h2>
         <StatusBadge status={split.status} />
       </div>
+
+      <OrderTracker status={split.status} t={t} />
 
       {/* Cancellation requested banner */}
       {split.status === 'cancellation_requested' && (

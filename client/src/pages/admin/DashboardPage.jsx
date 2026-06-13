@@ -185,13 +185,24 @@ function buildMapData(addressRows, supplierProfileRows, ownerProfileRows, setCit
   ;(addressRows || []).forEach(a => learnCoords(a.city, a.latitude, a.longitude))
   for (const [k, v] of Object.entries(CITY_FALLBACK)) if (!coordByCity[k]) coordByCity[k] = v
 
+  const lookupCoord = city => {
+    const k = norm(city)
+    if (coordByCity[k]) return coordByCity[k]
+    // district names like "Frankfurt-Süd" → try base city "frankfurt"
+    for (const sep of ['-', ' ']) {
+      const base = k.split(sep)[0]
+      if (base && base !== k && coordByCity[base]) return coordByCity[base]
+    }
+    return null
+  }
+
   const locations = new Map()
   const addLocation = (userId, role, cityField) => {
     if (!userId || (role !== 'supplier' && role !== 'restaurant_owner')) return
     ;(cityField || '').split(',').map(c => c.trim()).filter(Boolean).forEach(city => {
       const key = `${userId}|${norm(city)}`
       if (locations.has(key)) return
-      const coord = coordByCity[norm(city)]
+      const coord = lookupCoord(city)
       locations.set(key, { city, role, lat: coord?.lat ?? null, lng: coord?.lng ?? null })
     })
   }

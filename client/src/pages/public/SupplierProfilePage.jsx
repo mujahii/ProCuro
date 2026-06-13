@@ -20,7 +20,7 @@ function getProductImageUrl(path) {
   return data?.publicUrl || null
 }
 
-export default function SupplierProfilePage() {
+export default function SupplierProfilePage({ noShell = false }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const { profile, user } = useAuth()
@@ -94,6 +94,11 @@ export default function SupplierProfilePage() {
   }
 
   if (loading) {
+    if (noShell) return (
+      <div className="flex items-center justify-center py-24">
+        <div className="w-8 h-8 border-2 border-midnight border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
     return (
       <div className="min-h-screen bg-lionsmane flex flex-col" style={{ paddingTop: 'calc(4rem + var(--sat))' }}>
         <Navbar />
@@ -105,6 +110,12 @@ export default function SupplierProfilePage() {
   }
 
   if (!supplier) {
+    if (noShell) return (
+      <div className="flex flex-col items-center justify-center text-center px-4 py-24">
+        <p className="text-slate-400 mb-4">Supplier not found</p>
+        <button onClick={() => navigate(-1)} className="text-herb font-bold underline underline-offset-2 hover:text-herb-dark">Go back</button>
+      </div>
+    )
     return (
       <div className="min-h-screen bg-lionsmane flex flex-col" style={{ paddingTop: 'calc(4rem + var(--sat))' }}>
         <Navbar />
@@ -123,9 +134,7 @@ export default function SupplierProfilePage() {
   const filteredProducts = activeCategory ? products.filter(p => p.category === activeCategory) : products
   const visibleProducts = showAll ? filteredProducts : filteredProducts.slice(0, INITIAL_LIMIT)
 
-  return (
-    <div className="min-h-screen bg-lionsmane flex flex-col" style={{ paddingTop: 'calc(4rem + var(--sat))' }}>
-      <Navbar />
+  const inner = (
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
         <div className="flex items-center justify-between mb-6">
           <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors">
@@ -447,14 +456,30 @@ export default function SupplierProfilePage() {
           </div>
         </div>
       </main>
+  )
 
+  if (noShell) return (
+    <>
+      {inner}
       {selectedProduct && (
         <AddToCartModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
       )}
       {showReportModal && supplier && (
         <ReportModal type="supplier" targetId={supplier.id} targetName={supplier.business_name} onClose={() => setShowReportModal(false)} />
       )}
+    </>
+  )
 
+  return (
+    <div className="min-h-screen bg-lionsmane flex flex-col" style={{ paddingTop: 'calc(4rem + var(--sat))' }}>
+      <Navbar />
+      {inner}
+      {selectedProduct && (
+        <AddToCartModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+      )}
+      {showReportModal && supplier && (
+        <ReportModal type="supplier" targetId={supplier.id} targetName={supplier.business_name} onClose={() => setShowReportModal(false)} />
+      )}
       <Footer />
     </div>
   )

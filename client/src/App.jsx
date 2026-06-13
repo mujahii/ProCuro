@@ -166,6 +166,7 @@ export default function App() {
               <Route path="analytics" element={<OwnerAnalyticsPage />} />
               <Route path="chat" element={<ChatPage />} />
               <Route path="profile" element={<OwnerProfilePage />} />
+              <Route path="supplier/:id" element={<PublicSupplierProfilePage noShell />} />
             </Route>
 
             {/* Supplier */}

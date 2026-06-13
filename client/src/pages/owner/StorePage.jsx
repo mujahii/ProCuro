@@ -452,7 +452,7 @@ export default function StorePage() {
                 return (
                   <div
                     key={supplier.id}
-                    onClick={() => navigate(`/supplier/${supplier.id}`)}
+                    onClick={() => navigate(`/owner/supplier/${supplier.id}`)}
                     className="flex-shrink-0 w-[176px] cursor-pointer card card-lift p-4 flex flex-col items-center text-center"
                   >
                     <div className="w-14 h-14 rounded-full bg-lionsmane mb-3 overflow-hidden flex items-center justify-center flex-shrink-0">

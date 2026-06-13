@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-06-13 16:50 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-06-13 16:57 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -711,7 +711,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 | RegisterSupplierPage | `/register/supplier` | Supplier registration form with business fields |
 | ResetPasswordPage | `/reset-password` | Supabase Auth password reset |
 | SupplierListPage | `/suppliers` | Browseable list of verified suppliers with distance, rating, categories |
-| SupplierProfilePage | `/supplier/:id` | Full supplier profile: bio, cities, Halal badge, products |
+| SupplierProfilePage | `/supplier/:id` | Full supplier profile: bio, cities, Halal badge, products. Also mounted at `/owner/supplier/:id` (with `noShell` prop) so restaurant owners see it inside their layout with the sidebar intact. |
 | ProductsListPage | `/products` | All active products across all verified suppliers |
 | AboutPage | `/about` | Company information |
 | CareersPage | `/careers` | Careers page |

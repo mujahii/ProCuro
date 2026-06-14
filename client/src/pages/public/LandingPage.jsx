@@ -95,10 +95,10 @@ const WY_STYLES = `
   top: 0; left: 0; right: 0;
   z-index: 999;
   padding-top: env(safe-area-inset-top, 0px);
-  background: rgba(5,37,50,0.55);
-  backdrop-filter: blur(12px) saturate(140%);
-  -webkit-backdrop-filter: blur(12px) saturate(140%);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-bottom: 1px solid transparent;
   transition: box-shadow 0.3s var(--wy-ease), border-color 0.3s var(--wy-ease), background 0.3s var(--wy-ease);
 }
 .wy-header.wy-scrolled {
@@ -120,16 +120,13 @@ const WY_STYLES = `
   font-family: var(--wy-ff-display);
   font-size: 22px;
   font-weight: 800;
-  color: #fff;
-  text-decoration: none;
-  letter-spacing: -0.5px;
-  flex-shrink: 0;
-}
-.wy-header.wy-scrolled .wy-logo {
   background: var(--wy-grad-text);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
 }
 .wy-header-nav {
   display: flex;
@@ -142,7 +139,7 @@ const WY_STYLES = `
   font-family: var(--wy-ff-body);
   font-size: 14px;
   font-weight: 500;
-  color: rgba(255,255,255,0.75);
+  color: var(--wy-muted);
   padding: 6px 14px;
   border-radius: 8px;
   cursor: pointer;
@@ -151,25 +148,21 @@ const WY_STYLES = `
   transition: color 0.2s, background 0.2s;
   white-space: nowrap;
 }
-.wy-nav-link:hover { color: #fff; background: rgba(255,255,255,0.1); }
-.wy-header.wy-scrolled .wy-nav-link { color: var(--wy-muted); }
-.wy-header.wy-scrolled .wy-nav-link:hover { color: var(--wy-primary); background: var(--wy-sand); }
+.wy-nav-link:hover { color: var(--wy-primary); background: var(--wy-sand); }
 .wy-header-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .wy-btn-login {
   font-family: var(--wy-ff-body);
   font-size: 14px;
   font-weight: 600;
-  color: rgba(255,255,255,0.9);
+  color: var(--wy-primary);
   background: none;
-  border: 2px solid rgba(255,255,255,0.35);
+  border: 2px solid var(--wy-border);
   padding: 8px 20px;
   border-radius: 50px;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
 }
-.wy-btn-login:hover { border-color: rgba(255,255,255,0.8); color: #fff; }
-.wy-header.wy-scrolled .wy-btn-login { color: var(--wy-primary); border-color: var(--wy-border); }
-.wy-header.wy-scrolled .wy-btn-login:hover { border-color: var(--wy-primary); }
+.wy-btn-login:hover { border-color: var(--wy-primary); }
 .wy-btn-header-cta {
   font-family: var(--wy-ff-body);
   font-size: 14px;
@@ -188,18 +181,16 @@ const WY_STYLES = `
   font-family: var(--wy-ff-body);
   font-size: 13px;
   font-weight: 700;
-  color: rgba(255,255,255,0.8);
+  color: var(--wy-muted);
   background: none;
-  border: 1.5px solid rgba(255,255,255,0.3);
+  border: 1.5px solid var(--wy-border);
   padding: 6px 13px;
   border-radius: 50px;
   cursor: pointer;
   letter-spacing: 0.5px;
   transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
-.wy-btn-lang:hover { color: #fff; border-color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.1); }
-.wy-header.wy-scrolled .wy-btn-lang { color: var(--wy-muted); border-color: var(--wy-border); }
-.wy-header.wy-scrolled .wy-btn-lang:hover { color: var(--wy-primary); border-color: var(--wy-primary); background: var(--wy-sand); }
+.wy-btn-lang:hover { color: var(--wy-primary); border-color: var(--wy-primary); background: var(--wy-sand); }
 
 /* ── mobile toggle ── */
 .wy-mobile-toggle {
@@ -215,11 +206,10 @@ const WY_STYLES = `
   display: block;
   width: 22px;
   height: 2px;
-  background: rgba(255,255,255,0.85);
+  background: var(--wy-primary);
   border-radius: 2px;
-  transition: background 0.3s, transform 0.3s, opacity 0.3s;
+  transition: transform 0.3s, opacity 0.3s;
 }
-.wy-header.wy-scrolled .wy-mobile-toggle span { background: var(--wy-primary); }
 .wy-mobile-overlay {
   display: none;
   position: fixed;
@@ -933,10 +923,6 @@ const WY_STYLES = `
   color: var(--wy-primary);
   max-width: 680px;
   margin: 0 auto 36px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 .wy-mission-divider {
   width: 48px;

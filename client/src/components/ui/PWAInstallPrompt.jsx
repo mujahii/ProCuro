@@ -12,6 +12,14 @@ export default function PWAInstallPrompt() {
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone
     setIsIOS(ios)
 
+    // Pick up event captured early in main.jsx before React mounted
+    if (window.__pwaInstallEvent) {
+      setInstallPrompt(window.__pwaInstallEvent)
+      window.__pwaInstallEvent = null
+      return
+    }
+
+    // Also listen for the event if it fires after mount
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e) }
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)

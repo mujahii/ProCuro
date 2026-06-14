@@ -5,6 +5,13 @@ import { registerSW } from 'virtual:pwa-register'
 import App from './App.jsx'
 import './index.css'
 
+// Capture beforeinstallprompt early — before React mounts — so the event
+// is never missed by the PWAInstallPrompt component's useEffect.
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault()
+  window.__pwaInstallEvent = e
+})
+
 // Stale-chunk recovery: when a new deploy changes chunk hashes, lazy
 // imports fail with "Failed to fetch dynamically imported module". Catch
 // that and do a hard reload so the new service worker activates.

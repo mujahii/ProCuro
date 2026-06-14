@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-06-14 12:22 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-06-14 13:23 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -902,6 +902,7 @@ All ban checks read `supplier_profiles → users(is_banned)` via Supabase's fore
 
 - `PWAInstallPrompt` component intercepts the browser's `beforeinstallprompt` event and shows a custom install CTA.
 - Allows users to add ProCuro to their home screen on Android and desktop Chrome.
+- **Early event capture fix**: `beforeinstallprompt` fires very early in the page lifecycle — often before React has mounted and `useEffect` has run — causing the banner to never appear. `main.jsx` now registers a global listener (`window.__pwaInstallEvent`) before `ReactDOM.createRoot`, so the event is never missed. `PWAInstallPrompt` reads `window.__pwaInstallEvent` on mount; falls back to a live listener for cases where the event fires later.
 - **Service-worker updates are prompt-based** (`registerType: 'prompt'`, `vite.config.js`). The SW never auto-reloads; instead `main.jsx` registers it explicitly (`virtual:pwa-register`) and shows a small "A new version is available — Update" toast that reloads only when the user clicks it. This replaced `registerType: 'autoUpdate'`, which force-reloaded the page on every detected SW change — and because browsers re-check for SW updates on every tab refocus, that produced a repeated reload loop when returning to the tab.
 - **Precache** (`workbox.globPatterns`) covers app JS/CSS/HTML/icons; `og-image.png` is excluded via `globIgnores` since it is only used for social link previews. App icons are served at sensible sizes (favicon 16/32 px, `apple-touch-icon` 180 px, PWA icon 512 px) so the offline precache stays small (~2.7 MB, down from ~5.8 MB).
 - **iOS safe area**: `index.html` sets `viewport-fit=cover` so the app extends edge-to-edge on notched iPhones. `apple-mobile-web-app-status-bar-style: black-translucent` makes the status bar transparent. The CSS variable `--sat = env(safe-area-inset-top, 0px)` is defined in `index.css`. Every fixed/sticky bar receives `padding-top: var(--sat)`: the `<nav>` in `Navbar.jsx`, the `<header>` in `AdminLayout`, and all three mobile side drawers (`AdminLayout` sidebar, `OwnerLayout` drawer, `SupplierLayout` drawer). All layout content-area offsets in `OwnerLayout` and `SupplierLayout` use `calc(Xrem + var(--sat))` so content stays flush on all devices. **All 9 public pages** (About, Help Center, Privacy Policy, Terms, Press, Careers, Supplier List, Products List, Reset Password) also use `calc(4rem + var(--sat))` as inline `paddingTop` style (replacing `pt-16`) so the back-button and page title are never hidden behind the Navbar on devices where `--sat > 0`.

@@ -49,7 +49,7 @@ export default function OwnerLayout() {
 
   async function fetchPendingOrders() {
     if (!user) return
-    const { data: ords } = await supabase.from('orders').select('id').eq('user_id', user.id)
+    const { data: ords } = await supabase.from('orders').select('id').eq('restaurant_owner_id', user.id)
     const ids = ords?.map(o => o.id) || []
     if (!ids.length) { setPendingOrders(0); return }
     const { count } = await supabase

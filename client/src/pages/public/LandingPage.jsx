@@ -923,6 +923,10 @@ const WY_STYLES = `
   color: var(--wy-primary);
   max-width: 680px;
   margin: 0 auto 36px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .wy-mission-divider {
   width: 48px;
@@ -997,7 +1001,7 @@ const WY_STYLES = `
   padding: 18px 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 16px;
   flex-wrap: wrap;
 }
@@ -1557,6 +1561,7 @@ export default function LandingPage() {
         {/* ── mission quote ── */}
         <section className="wy-mission wy-reveal">
           <p className="wy-mission-label">{t('landingMissionLabel')}</p>
+          <blockquote className="wy-mission-quote">"{t('landingMissionQuote')}"</blockquote>
           <div className="wy-mission-divider" />
         </section>
 

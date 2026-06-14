@@ -368,7 +368,7 @@ function OrderTracker({ status, t }) {
   )
 }
 
-function OrderDetailView({ split, profile, onBack, onMarkDelivered, onMarkNotDelivered, onCancelRequest, onConfirmRefund, ratedSplitIds, onRate }) {
+function OrderDetailView({ split, profile, taxRate, onBack, onMarkDelivered, onMarkNotDelivered, onCancelRequest, onConfirmRefund, ratedSplitIds, onRate }) {
   const navigate = useNavigate()
   const { t } = useLanguage()
   const [showCancelModal, setShowCancelModal] = useState(false)
@@ -805,6 +805,7 @@ export default function OrdersPage() {
         <OrderDetailView
           split={selectedOrder}
           profile={profile}
+          taxRate={taxRate}
           onBack={() => { setSelectedOrder(null); fetchOrders() }}
           onMarkDelivered={markDelivered}
           onMarkNotDelivered={(splitToReport) => setNotReceivedTarget(splitToReport)}

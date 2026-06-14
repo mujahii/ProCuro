@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-06-14 13:23 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-06-14 13:36 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -697,7 +697,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - `generateInvoice(order, splits, ownerProfile, taxRate = 0.07)` — accepts an optional `taxRate` parameter (fetched from `platform_settings` by the caller); falls back to 0.07 if not supplied.
 - Grand total box shows the full order total across all suppliers.
 - **Download mechanism**: uses `doc.output('blob')` + `URL.createObjectURL()` + a programmatic anchor click. This approach works reliably across browsers, iOS, and PWA contexts — `doc.save()` (jsPDF's internal method) is not used as it fails in certain mobile/PWA environments.
-- `OrdersPage` wraps every `generateInvoice()` call in a try/catch that shows a bilingual `toast.error` on failure.
+- `OrdersPage` wraps every `generateInvoice()` call in a try/catch that shows a bilingual `toast.error` on failure. `taxRate` is passed as a prop from `OrdersPage` into `OrderDetailView` (which is a module-scope component and cannot close over `OrdersPage` state directly).
 - File saved as `ProCuro-Rechnung-<ID>.pdf` (invoices) or `ProCuro-Quittung-<ID>.pdf` (receipts).
 
 ---

@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { generateInvoice } from '../../lib/invoiceGenerator'
 import StatusBadge from '../../components/ui/StatusBadge'
-import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, ShoppingBag, Star, MessageSquare, Flag, Info, Clock, Truck } from 'lucide-react'
+import { Download, Package, ChevronRight, ArrowLeft, CheckCircle, ExternalLink, XCircle, AlertTriangle, Loader2, ShoppingBag, Star, MessageSquare, Flag, Info, Clock, Truck, MapPin } from 'lucide-react'
 import ModalPortal from '../../components/ui/ModalPortal'
 import ReportModal from '../../components/ui/ReportModal'
 import SupplierProfileModal from '../../components/profile/SupplierProfileModal'
@@ -398,14 +398,33 @@ function OrderDetailView({ split, profile, taxRate, onBack, onMarkDelivered, onM
 
       <OrderTracker status={split.status} t={t} />
 
-      {split.estimated_delivery_at && !['delivered', 'completed', 'cancelled', 'cancellation_requested', 'delivery_dispute'].includes(split.status) && (
-        <div className="flex items-center gap-2 px-1">
-          <Clock className="w-4 h-4 text-herb flex-shrink-0" />
-          <p className="text-sm text-slate-600">
-            {t('estimatedDelivery')}: <span className="font-semibold text-midnight">{format(new Date(split.estimated_delivery_at), 'd MMM yyyy')}</span>
-          </p>
+      {(split.estimated_delivery_at && !['delivered', 'completed', 'cancelled', 'cancellation_requested', 'delivery_dispute'].includes(split.status)) || split.order.delivery_address ? (
+        <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 space-y-2">
+          {split.estimated_delivery_at && !['delivered', 'completed', 'cancelled', 'cancellation_requested', 'delivery_dispute'].includes(split.status) && (
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-herb flex-shrink-0" />
+              <p className="text-sm text-slate-600">
+                {t('estimatedDelivery')}: <span className="font-semibold text-midnight">{format(new Date(split.estimated_delivery_at), 'd MMM yyyy')}</span>
+              </p>
+            </div>
+          )}
+          {split.order.delivery_address && (
+            <div className="flex items-start gap-2">
+              <MapPin className="w-4 h-4 text-celeste flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t('orderDeliveryAddress')}</p>
+                <p className="text-sm font-semibold text-midnight leading-snug">
+                  {[
+                    split.order.delivery_address.label,
+                    split.order.delivery_address.street,
+                    [split.order.delivery_address.postal_code, split.order.delivery_address.city].filter(Boolean).join(' '),
+                  ].filter(Boolean).join(', ')}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      ) : null}
 
       {/* Cancellation requested banner */}
       {split.status === 'cancellation_requested' && (

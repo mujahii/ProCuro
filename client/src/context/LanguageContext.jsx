@@ -139,7 +139,7 @@ const T = {
     halalVerifiedBadge: 'Halal Verified Suppliers',
     noHiddenFees: 'No Hidden Fees',
     landingMissionLabel: 'Our Mission',
-    landingMissionQuote: 'Connecting halal restaurants with verified suppliers — transparently, efficiently, and with trust.',
+    landingMissionQuote: 'Connecting halal restaurants with verified suppliers, transparently, efficiently, and with trust.',
     mobileComingToMobile: 'Coming to mobile',
     mobileTakeEverywhere: 'Take ProCuro Everywhere',
     mobileTagline: 'Our native app is on its way to all major platforms. Stay tuned!',
@@ -431,6 +431,7 @@ const T = {
 
     // Estimated delivery
     estimatedDelivery: 'Estimated Delivery',
+    orderDeliveryAddress: 'Delivery Address',
 
     // Date range filter
     dateFilterWeek: 'This Week',
@@ -1155,7 +1156,7 @@ const T = {
     halalVerifiedBadge: 'Halal-zertifizierte Lieferanten',
     noHiddenFees: 'Keine versteckten Gebühren',
     landingMissionLabel: 'Unsere Mission',
-    landingMissionQuote: 'Halal-Restaurants und geprüfte Lieferanten verbinden — transparent, effizient und vertrauenswürdig.',
+    landingMissionQuote: 'Halal-Restaurants und geprüfte Lieferanten verbinden, transparent, effizient und vertrauenswürdig.',
     mobileComingToMobile: 'Bald auf Mobilgeräten',
     mobileTakeEverywhere: 'ProCuro immer dabei',
     mobileTagline: 'Unsere App kommt bald auf alle großen Plattformen. Bleib dran!',
@@ -1447,6 +1448,7 @@ const T = {
 
     // Estimated delivery
     estimatedDelivery: 'Voraussichtliche Lieferung',
+    orderDeliveryAddress: 'Lieferadresse',
 
     // Date range filter
     dateFilterWeek: 'Diese Woche',

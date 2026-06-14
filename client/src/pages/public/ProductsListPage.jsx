@@ -149,7 +149,7 @@ export default function ProductsListPage() {
 
         {/* Product grid */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="card h-72 animate-pulse" />
             ))}
@@ -167,7 +167,7 @@ export default function ProductsListPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {filtered.map(product => (
               <ProductCard key={product.id} product={product} onLogin={() => navigate('/login')} />
             ))}
@@ -190,7 +190,7 @@ function ProductCard({ product, onLogin }) {
       await navigator.share({ title: product.name, text: `${product.name} at ${product.supplier?.business_name} on ProCuro`, url })
     } else {
       await navigator.clipboard.writeText(url)
-      toast.success(t('shareProfile') + ' — Link copied!')
+      toast.success(t('toastLinkCopied'))
     }
   }
 
@@ -199,49 +199,46 @@ function ProductCard({ product, onLogin }) {
       onClick={onLogin}
       className="card overflow-hidden cursor-pointer hover:shadow-md transition-shadow group"
     >
-      <div className="relative h-40 bg-slate-100">
+      <div className="relative h-28 sm:h-40 bg-slate-100">
         {imgUrl ? (
           <img src={imgUrl} alt={product.name} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-slate-300">
-            <Package className="w-12 h-12" />
+            <Package className="w-8 h-8 sm:w-12 sm:h-12" />
           </div>
         )}
         {!product.is_active && (
-          <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500">{t('outOfStockText')}</div>
+          <div className="absolute inset-0 bg-white/60 flex items-center justify-center font-bold text-slate-500 text-xs sm:text-sm">{t('outOfStockText')}</div>
         )}
-        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-bold shadow-sm text-slate-700">
+        <div className="absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm px-1.5 py-0.5 rounded text-[10px] font-bold shadow-sm text-slate-700">
           {product.category}
         </div>
         {product.discount_percent > 0 && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white px-1.5 py-0.5 rounded text-[10px] font-bold">
+          <div className="absolute top-1.5 left-1.5 bg-red-500 text-white px-1.5 py-0.5 rounded text-[10px] font-bold">
             -{product.discount_percent}%
           </div>
         )}
         <button
           onClick={handleShare}
-          className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-slate-500 hover:text-midnight transition-colors"
+          className="absolute bottom-1.5 right-1.5 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center text-slate-500 hover:text-midnight transition-colors"
           title="Share product"
         >
-          <Share2 className="w-3.5 h-3.5" />
+          <Share2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
         </button>
       </div>
-      <div className="p-4">
-        <h3 className="font-bold text-slate-900 text-base mb-1">{product.name}</h3>
-        {product.description && (
-          <p className="text-xs text-slate-500 mb-1">{product.description.substring(0, 40)}...</p>
-        )}
-        <p className="text-xs text-slate-400 mb-3">{product.supplier?.business_name}</p>
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-lg font-bold text-slate-900">€{Number(product.price).toFixed(2)}</span>
-            <span className="text-xs text-slate-400 ml-1">/ {product.unit_type}</span>
+      <div className="p-2.5 sm:p-4">
+        <h3 className="font-bold text-midnight text-xs sm:text-base mb-0.5 line-clamp-2 leading-tight">{product.name}</h3>
+        <p className="text-[10px] sm:text-xs text-slate-400 mb-2 sm:mb-3 truncate">{product.supplier?.business_name}</p>
+        <div className="flex items-center justify-between gap-1">
+          <div className="min-w-0">
+            <span className="text-sm sm:text-lg font-bold text-midnight">€{Number(product.price).toFixed(2)}</span>
+            <span className="text-[10px] sm:text-xs text-slate-400 ml-0.5 hidden xs:inline">/ {product.unit_type}</span>
           </div>
           <button
             onClick={e => { e.stopPropagation(); onLogin() }}
-            className="w-8 h-8 rounded-full bg-midnight text-white flex items-center justify-center hover:bg-midnight transition-colors"
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-midnight text-white flex items-center justify-center hover:bg-midnight-dark transition-colors flex-shrink-0"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>

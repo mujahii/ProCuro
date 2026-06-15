@@ -276,7 +276,7 @@ export default function ChatbotDrawer({ open, onClose }) {
       if (needsOrderContext(trimmed)) {
         const { data: splits } = await supabase
           .from('order_splits')
-          .select('id, status, subtotal, created_at, estimated_delivery_at, supplier:supplier_profiles(business_name)')
+          .select('id, order_id, status, subtotal, created_at, estimated_delivery_at, supplier:supplier_profiles(business_name)')
           .eq('restaurant_owner_id', user.id)
           .not('status', 'in', '("delivered","completed","cancelled")')
           .order('created_at', { ascending: false })
@@ -285,7 +285,7 @@ export default function ChatbotDrawer({ open, onClose }) {
         // Fall back to recent orders if no ongoing ones
         const { data: fallback } = orders ? { data: null } : await supabase
           .from('order_splits')
-          .select('id, status, subtotal, created_at, estimated_delivery_at, supplier:supplier_profiles(business_name)')
+          .select('id, order_id, status, subtotal, created_at, estimated_delivery_at, supplier:supplier_profiles(business_name)')
           .eq('restaurant_owner_id', user.id)
           .order('created_at', { ascending: false })
           .limit(5)
@@ -312,7 +312,7 @@ export default function ChatbotDrawer({ open, onClose }) {
   function pickChoice(msg, choice) {
     const label = msg.kind === 'address'
       ? [choice.street, choice.house_number].filter(Boolean).join(' ') + (choice.city ? `, ${choice.city}` : '')
-      : `${choice.supplier?.business_name} — €${Number(choice.subtotal).toFixed(2)}`
+      : `Order #${(choice.order_id || choice.id).slice(0, 8).toUpperCase()} — ${choice.supplier?.business_name}`
     const extra = msg.kind === 'address' ? { selectedAddress: choice } : { focusedOrder: choice }
     // Replace the choice bubble with a user selection bubble, then answer
     setMessages(prev => prev.filter(m => m !== msg).concat([{ role: 'user', content: label }]))
@@ -363,10 +363,10 @@ export default function ChatbotDrawer({ open, onClose }) {
                     {msg.choices.map((choice, ci) => {
                       const label = msg.kind === 'address'
                         ? [choice.street, choice.house_number].filter(Boolean).join(' ') || choice.label || choice.city
-                        : choice.supplier?.business_name || `Order ${choice.id.slice(0, 6)}`
+                        : `Order #${(choice.order_id || choice.id).slice(0, 8).toUpperCase()}`
                       const sub = msg.kind === 'address'
                         ? [choice.postal_code, choice.city].filter(Boolean).join(', ')
-                        : `€${Number(choice.subtotal).toFixed(2)} · ${new Date(choice.created_at).toLocaleDateString()}`
+                        : `${choice.supplier?.business_name} · €${Number(choice.subtotal).toFixed(2)} · ${new Date(choice.created_at).toLocaleDateString()}`
                       return (
                         <button
                           key={ci}

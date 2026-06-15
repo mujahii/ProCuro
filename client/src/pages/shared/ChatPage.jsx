@@ -48,6 +48,7 @@ export default function ChatPage() {
   const [showingAdmin, setShowingAdmin] = useState(false)
   const [adminUnread, setAdminUnread] = useState(0)
   const autoSentRef = useRef(false)
+  const orderRefUsedRef = useRef(false)
   const bottomRef = useRef(null)
   const fileInputRef = useRef(null)
   const lastVisibilityRefetch = useRef(0)
@@ -270,20 +271,10 @@ export default function ChatPage() {
   }
 
   useEffect(() => {
-    if (!selectedConv || !autoMessage || autoSentRef.current) return
+    if (!autoMessage || autoSentRef.current) return
     autoSentRef.current = true
-    setTimeout(() => {
-      supabase.from('messages').insert({
-        conversation_id: selectedConv.id,
-        sender_id: user.id,
-        content: autoMessage,
-        order_id: orderRef || null,
-        is_system: false,
-      }).select().single().then(({ data }) => {
-        if (data) setMessages(prev => [...prev, data])
-      })
-    }, 500)
-  }, [selectedConv])
+    setInput(autoMessage)
+  }, [autoMessage])
 
   useEffect(() => {
     if (!selectedConv) return
@@ -372,12 +363,15 @@ export default function ChatPage() {
       is_read: false,
       created_at: new Date().toISOString(),
     }])
+    const attachOrderRef = orderRef && !orderRefUsedRef.current
+    if (attachOrderRef) orderRefUsedRef.current = true
     const { data: inserted } = await supabase.from('messages').insert({
       conversation_id: selectedConv.id,
       sender_id: user.id,
       content: text,
       attachment_url: attachmentUrl || null,
       attachment_type: attachmentType || null,
+      order_id: attachOrderRef ? orderRef : null,
     }).select().single()
     if (inserted) setMessages(prev => prev.map(m => m.id === tempId ? inserted : m))
     setSending(false)

@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-06-15 03:43 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-06-15 12:03 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -590,6 +590,7 @@ Serverless equivalents of the AI routes, deployed to production alongside the Vi
 - Context data (e.g. recent orders, active products) is sent alongside the prompt so the model can give grounded answers.
 - **Language-aware:** client sends `language` (`en`/`de`) with each request; the backend appends a German-response instruction when `language === 'de'`, ensuring Gemini replies in the active app language.
 - Rate-limited to 20 requests/minute per user.
+- **Order picker**: When the user asks about order status/tracking and has multiple orders, the chatbot shows a "Which order do you mean?" picker. Each button shows `Order #XXXXXXXX` (first 8 chars of parent `order_id` uppercased) as the primary label, with supplier name + amount + date as the subtitle. The query fetches `order_id` alongside the split `id` so the label matches the `#XXXXXXXX` reference shown in the order detail UI.
 
 ### Analytics Summary (`AnalyticsSummary`)
 - Appears on the analytics pages for owners, suppliers, and admin.
@@ -665,6 +666,7 @@ The `NotificationBell` component in the top nav shows an unread count badge. Cli
 - Accessible from `/chat` (shared page).
 - One conversation per supplier–owner pair (UNIQUE constraint).
 - Supports text messages, file/image attachments (stored in `chat-attachments` bucket), and system messages linked to specific order splits.
+- **Order-context pre-fill**: When "Chat with Supplier" (owner) or "Chat with Owner" (supplier) is tapped from inside an order detail, the chat navigates to `/chat?supplier_id=...&order_ref=...&auto_message=RE: Order #XXXXXXXX — ProductName — Total €XX.XX`. On arrival, ChatPage pre-fills the message input with that text so the user can see and edit the order reference before sending. The first message the user sends also carries `order_id` in the DB row so it can be linked back to the order.
 - Conversations can be pinned by either party (`pinned_by_owner`, `pinned_by_supplier`).
 - Live updates via Supabase Realtime on `messages` and `conversations` tables.
 - `last_message_at` is updated automatically by the `on_new_message` trigger.

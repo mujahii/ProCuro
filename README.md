@@ -1,6 +1,6 @@
 # ProCuro
 
-**Last Updated:** 2026-06-15 12:07 (MYT — Kuala Lumpur)
+**Last Updated:** 2026-06-15 12:09 (MYT — Kuala Lumpur)
 
 **Halal Supply Chain, Simplified** — a procurement marketplace connecting Halal-certified suppliers with restaurant owners across Germany.
 
@@ -996,7 +996,7 @@ ProCuro/
 ├── netlify/functions/          Production serverless AI endpoints
 │   ├── ai-chat.js
 │   └── ai-analytics-summary.js
-└── supabase/migrations/        19 versioned SQL migrations (schema, RLS, RPCs, triggers)
+└── supabase/migrations/        24 versioned SQL migrations (schema, RLS, RPCs, triggers)
 ```
 
 ---
@@ -1025,6 +1025,10 @@ ProCuro/
 | `018_drop_not_null_on_nullable_fk_columns.sql` | Further FK constraint corrections for account deletion cascade |
 | `019_certificate_status_keeps_verification.sql` | Supplier verification follows approved-certificate count: `sync_supplier_verification()` + `halal_cert_status_resync` trigger keep `supplier_profiles.is_verified`/`is_active` in sync, so rejecting one cert no longer un-verifies a supplier who still has another approved cert. Includes one-off backfill |
 | `020_update_own_avatar_rpc.sql` | `update_own_avatar(p_url)` SECURITY DEFINER RPC: updates both `users.avatar_url` and `supplier_profiles.avatar_url` in one call, bypassing the `users_update_own` WITH CHECK constraint that rejects updates when `role IS NULL` (which happens for users created via OAuth before role selection) |
+| `021_enable_realtime_reports_and_certs.sql` | Adds `reports` and `halal_certificates` tables to Supabase Realtime publication so Admin reports panel and certificate review panel receive live updates without polling |
+| `022_random_avatar_on_signup.sql` | `on_auth_user_created` trigger assigns a random DiceBear avatar URL to `users.avatar_url` at the moment of signup, so new accounts never show a blank avatar placeholder |
+| `023_auto_cancel_stale_orders.sql` | `pg_cron` job (`auto_cancel_stale_orders`, runs daily) cancels `order_splits` that have been `pending_confirmation` for more than 7 days; updates `status` to `cancelled` and fires a cancellation notification to the restaurant owner |
+| `024_expand_avatar_presets.sql` | Expands the set of DiceBear avatar seed presets used by the random-avatar trigger, increasing visual variety for new signups |
 | `soft_delete_products` (applied remotely via Supabase MCP) | Adds `deleted_at TIMESTAMPTZ` and `deleted_by UUID` columns to `products` plus partial index `idx_products_deleted_at`. Powers the Admin Products → **Deleted** tab; soft-deleted products stay in `order_items` so analytics keep history |
 | `rls_initplan_wrap_auth_functions` (applied remotely via Supabase MCP) | Rewrites all 53 RLS policies that call `auth.uid()`/`auth.role()` to wrap them in `(select …)` so Postgres evaluates them once per query instead of once per row. Access logic unchanged; clears the `auth_rls_initplan` advisory |
 | `add_missing_fk_indexes` (applied remotely via Supabase MCP) | Adds 12 foreign-key cover indexes (addresses, admin_messages, deleted_accounts, halal_certificates, messages, order_items, products, supplier_ratings); clears `unindexed_foreign_keys` |

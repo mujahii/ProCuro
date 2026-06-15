@@ -520,7 +520,7 @@ export default function LandingPage() {
                   </button>
                 ))}
               </div>
-              <p style={{ fontSize: 12, color: 'rgba(192,213,214,0.50)', lineHeight: 1.6, maxWidth: 260, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{t('heroSubtitle')}</p>
+              <p className="wy-footer-tagline">{t('heroSubtitle')}</p>
             </div>
             <div>
               <div className="wy-footer-col-title">{t('footerCompany')}</div>

@@ -10,6 +10,9 @@ import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 import './landing.css'
 
+/* ─── module-level cache (survives component unmount/remount) ─── */
+const _cache = { products: {}, suppliers: null }
+
 /* ─── helpers ──────────────────────────────────────────────────── */
 function getProductImageUrl(path) {
   if (!path) return null
@@ -105,8 +108,8 @@ export default function LandingPage() {
   const [showComingSoon, setShowComingSoon]        = useState(false)
   const [drawerOpen, setDrawerOpen]               = useState(false)
   const [scrolled, setScrolled]                   = useState(false)
-  const [products, setProducts]                   = useState([])
-  const [suppliers, setSuppliers]                 = useState([])
+  const [products, setProducts]                   = useState(() => _cache.products['All'] || [])
+  const [suppliers, setSuppliers]                 = useState(() => _cache.suppliers || [])
 
   const HOW_IT_WORKS = [
     { icon: Shield,  title: t('howItWorksStep1Title'), desc: t('howItWorksStep1Desc') },
@@ -135,6 +138,8 @@ export default function LandingPage() {
   useEffect(() => { fetchSuppliers() }, [])
 
   async function fetchProducts() {
+    const cacheKey = selectedCategory
+    if (_cache.products[cacheKey]) setProducts(_cache.products[cacheKey])
     let q = supabase
       .from('products')
       .select('*, supplier:supplier_profiles(business_name, city)')
@@ -142,17 +147,22 @@ export default function LandingPage() {
       .limit(8)
     if (selectedCategory !== 'All') q = q.eq('category', selectedCategory)
     const { data } = await q
-    setProducts(data || [])
+    const result = data || []
+    _cache.products[cacheKey] = result
+    setProducts(result)
   }
 
   async function fetchSuppliers() {
+    if (_cache.suppliers) setSuppliers(_cache.suppliers)
     const { data } = await supabase
       .from('supplier_profiles')
       .select('*')
       .eq('is_verified', true)
       .eq('is_active', true)
       .limit(8)
-    setSuppliers(data || [])
+    const result = data || []
+    _cache.suppliers = result
+    setSuppliers(result)
   }
 
   /* scroll header class */

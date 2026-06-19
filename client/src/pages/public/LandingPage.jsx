@@ -8,6 +8,7 @@ import {
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
+import MeshHeroBackground from '../../components/public/MeshHeroBackground'
 import './landing.css'
 
 /* ─── module-level cache (survives component unmount/remount) ─── */
@@ -251,22 +252,10 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* ══ HERO — ProCuro structure: dark #052532 bg, rising blobs, 4-zone centered layout ══ */}
+        {/* ══ HERO — ProCuro structure: dark #052532 bg, animated mesh gradient, 4-zone centered layout ══ */}
         <section className="wy-hero">
-          {/* Rising brand-colour orbs */}
-          <div className="wy-orb"
-            style={{ left: '4%',  width: 176, height: 176, background: '#A58D66', animationDelay: '0s',    filter: 'blur(44px)' }} />
-          <div className="wy-orb"
-            style={{ left: '54%', width: 160, height: 160, background: '#C0D5D6', animationDelay: '-7s',   filter: 'blur(40px)' }} />
-          <div className="wy-orb"
-            style={{ left: '28%', width: 144, height: 144, background: '#5E96A4', animationDelay: '-14s',  filter: 'blur(36px)' }} />
-          <div className="wy-orb"
-            style={{ left: '70%', width: 160, height: 160, background: '#BFA988', animationDelay: '-21s',  filter: 'blur(40px)' }} />
-          <div className="wy-orb"
-            style={{ left: '40%', width: 128, height: 128, background: '#B07B8B', animationDelay: '-4s',   filter: 'blur(32px)' }} />
-          <div className="wy-orb"
-            style={{ left: '82%', width: 144, height: 144, background: '#B19CD9', animationDelay: '-11s',  filter: 'blur(36px)' }} />
-
+          {/* Animated mesh-gradient background (same brand orb palette, rendered as a drifting WebGL field) */}
+          <MeshHeroBackground className="wy-hero-canvas" />
 
           {/* Dark overlay */}
           <div className="wy-hero-overlay" />

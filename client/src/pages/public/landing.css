@@ -255,10 +255,24 @@
 @media (min-width: 640px) {
   .wy-orb { animation: wy-rise 15s linear infinite; }
 }
+/* Animated mesh-gradient background canvas.
+   Oversized past the hero so the heavy blur's faded edges never show, then
+   rendered below display size + blurred via CSS for a soft, dreamy look. */
+.wy-hero-canvas {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  z-index: 0;
+  filter: blur(40px);
+  transform: translateZ(0);
+  pointer-events: none;
+}
 .wy-hero-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(5,37,50,0.60);
+  background: rgba(5,37,50,0.45);
   pointer-events: none;
   z-index: 1;
 }

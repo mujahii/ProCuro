@@ -61,7 +61,7 @@ const FRAG = `
                   fbm(p + 2.0 * q + vec2(8.3, 2.8) - 0.20 * t));
     float f = fbm(p + 2.0 * r);
 
-    // Exact hero orb colours floating on the #052532 base.
+    // Exact hero orb colours floating on the #052532 base, plus added red + purple.
     vec3 base     = vec3(0.020, 0.145, 0.196); // #052532 midnight.dark (hero bg)
     vec3 tealL    = vec3(0.369, 0.588, 0.643); // #5E96A4 teal.light
     vec3 celeste  = vec3(0.753, 0.835, 0.839); // #C0D5D6 celeste
@@ -69,14 +69,18 @@ const FRAG = `
     vec3 sand     = vec3(0.749, 0.663, 0.533); // #BFA988 accent.light
     vec3 mauve    = vec3(0.690, 0.482, 0.545); // #B07B8B
     vec3 lavender = vec3(0.694, 0.612, 0.851); // #B19CD9
+    vec3 red      = vec3(0.839, 0.271, 0.271); // #D64545 added red
+    vec3 purple   = vec3(0.486, 0.227, 0.929); // #7C3AED added purple
 
     vec3 col = base;
-    col = mix(col, tealL,    smoothstep(0.25, 0.75, f)       * 0.85);
-    col = mix(col, celeste,  smoothstep(0.45, 0.95, r.y)     * 0.60);
-    col = mix(col, marigold, smoothstep(0.40, 0.90, q.x)     * 0.50);
-    col = mix(col, lavender, smoothstep(0.55, 1.00, q.y)     * 0.45);
-    col = mix(col, mauve,    smoothstep(0.55, 1.00, r.x)     * 0.35);
-    col = mix(col, sand,     smoothstep(0.60, 1.00, f * q.x) * 0.30);
+    col = mix(col, tealL,    smoothstep(0.25, 0.75, f)             * 0.85);
+    col = mix(col, celeste,  smoothstep(0.45, 0.95, r.y)           * 0.60);
+    col = mix(col, marigold, smoothstep(0.40, 0.90, q.x)           * 0.50);
+    col = mix(col, lavender, smoothstep(0.55, 1.00, q.y)           * 0.45);
+    col = mix(col, mauve,    smoothstep(0.55, 1.00, r.x)           * 0.35);
+    col = mix(col, sand,     smoothstep(0.60, 1.00, f * q.x)       * 0.30);
+    col = mix(col, purple,   smoothstep(0.40, 0.90, 1.0 - q.y)     * 0.45);
+    col = mix(col, red,      smoothstep(0.45, 0.95, 1.0 - r.y)     * 0.40);
 
     gl_FragColor = vec4(col, 1.0);
   }

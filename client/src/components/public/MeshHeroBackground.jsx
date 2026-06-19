@@ -79,7 +79,7 @@ const FRAG = `
     col = mix(col, lavender, smoothstep(0.55, 1.00, q.y)           * 0.45);
     col = mix(col, mauve,    smoothstep(0.55, 1.00, r.x)           * 0.35);
     col = mix(col, sand,     smoothstep(0.60, 1.00, f * q.x)       * 0.30);
-    col = mix(col, purple,   smoothstep(0.40, 0.90, 1.0 - q.y)     * 0.45);
+    col = mix(col, purple,   smoothstep(0.70, 1.00, 1.0 - q.y)     * 0.20);
     col = mix(col, red,      smoothstep(0.45, 0.95, 1.0 - r.y)     * 0.40);
 
     gl_FragColor = vec4(col, 1.0);
